@@ -14,12 +14,4 @@ deploy_stage:
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
     - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
-    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; npm install; composer i'
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "composer install --optimize-autoloader --no-dev"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "php artisan config:cache"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "cp .env.production .env"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "echo "APP_URL=$APP_URL" >> .env"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "echo "DB_USERNAME=$DB_USERNAME" >> .env"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "echo "DB_PASSWORD=$DB_PASSWORD" >> .env"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "php artisan migrate:rollback --force"
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "php artisan migrate --force"
+    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; npm install; composer i; composer install --optimize-autoloader --no-dev; php artisan config:cache; cp .env.production .env; echo "APP_URL=$APP_URL" >> .env; echo "DB_USERNAME=$DB_USERNAME" >> .env; echo "DB_PASSWORD=$DB_PASSWORD" >> .env; php artisan migrate:rollback --force; php artisan migrate --force'
