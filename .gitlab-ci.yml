@@ -1,0 +1,33 @@
+image: mklkj/php-node-composer-npm
+
+cache:
+  paths:
+    - node_modules/
+    - vendor/
+
+stages:
+  - deploy
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq sshpass
+
+deploy_stage:
+  stage: deploy
+  only:
+    - development
+  script:
+    - rm ./package-lock.json
+    - npm install
+    - composer i
+    - composer install --optimize-autoloader --no-dev
+    - php artisan config:cache
+    - php artisan route:cache
+    - cp .env.production .env
+    - echo "APP_URL=$APP_URL" >> .env
+    - echo "DB_USERNAME=$DB_USERNAME" >> .env
+    - echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+    - ls
+    - sshpass -V
+    - export SSHPASS=$SSH_PASSWORD
+    - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend > /dev/null
+    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "php artisan migrate:rollback --forcephp artisan migrate --force"
