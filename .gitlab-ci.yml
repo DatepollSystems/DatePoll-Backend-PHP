@@ -14,7 +14,9 @@ deploy_stage:
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
     - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST npm install
+    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "cd /var/www/datepoll-backend"
+    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "ls -la"
+    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "npm install"
     - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "composer i"
     - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "composer install --optimize-autoloader --no-dev"
     - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "php artisan config:cache"
