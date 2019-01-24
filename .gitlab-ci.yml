@@ -25,7 +25,7 @@ deploy_stage:
     - echo "APP_URL=$APP_URL" >> .env
     - echo "DB_USERNAME=$DB_USERNAME" >> .env
     - echo "DB_PASSWORD=$DB_PASSWORD" >> .env
-    - ls
+    - ls -la
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
     - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
