@@ -12,7 +12,7 @@
 */
 
 Route::get('/', function () {
-    return "Running DatePoll-Backend";
+    return "Running DatePoll-Backend. Version: " . config('app.version');
 });
 
 Route::group(['prefix' => 'api/v1'], function() {
