@@ -28,5 +28,6 @@ deploy_stage:
     - ls
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
-    - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend > /dev/null
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST "php artisan migrate:rollback --forcephp artisan migrate --force"
+    - ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+    - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
+
