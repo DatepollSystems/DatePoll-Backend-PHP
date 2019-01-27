@@ -32,7 +32,7 @@ class MovieController extends Controller
       }
 
       if($emergencyWorker == null) {
-        $movie->emergencyWorkerName = null;
+        $movie->emergencyWorkerName = "None";
       } else {
         $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
       }
