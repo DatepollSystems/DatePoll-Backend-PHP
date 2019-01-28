@@ -17,7 +17,7 @@ class CreateMoviesTable extends Migration
       $table->increments('id');
       $table->string('name')->nullable(false);
       $table->date('date')->nullable(false);
-      $table->string('trailerlink', '512')->nullable(true);
+      $table->string('trailerLink', '512')->nullable(true);
       $table->string('posterLink', '512')->nullable(true);
 
       $table->integer('bookedTickets')->nullable(false)->default(0);
