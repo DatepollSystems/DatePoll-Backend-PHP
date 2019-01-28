@@ -155,7 +155,7 @@ class MovieYearController extends Controller
     }
 
     $response = [
-      'msg' => 'Movie deleted',
+      'msg' => 'Year deleted',
       'create' => [
         'href' => 'api/v1/cinema/year',
         'method' => 'POST',
