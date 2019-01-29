@@ -1,11 +1,11 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-    (new Dotenv\Dotenv(dirname(__DIR__)))->load();
+  (new Dotenv\Dotenv(dirname(__DIR__)))->load();
 } catch (Dotenv\Exception\InvalidPathException $e) {
-    //
+  //
 }
 
 /*
@@ -20,7 +20,7 @@ try {
 */
 
 $app = new Laravel\Lumen\Application(
-    dirname(__DIR__)
+  dirname(__DIR__)
 );
 
 $app->withFacades();
@@ -38,13 +38,13 @@ $app->withEloquent();
 */
 
 $app->singleton(
-    Illuminate\Contracts\Debug\ExceptionHandler::class,
-    App\Exceptions\Handler::class
+  Illuminate\Contracts\Debug\ExceptionHandler::class,
+  App\Exceptions\Handler::class
 );
 
 $app->singleton(
-    Illuminate\Contracts\Console\Kernel::class,
-    App\Console\Kernel::class
+  Illuminate\Contracts\Console\Kernel::class,
+  App\Console\Kernel::class
 );
 
 /*
@@ -57,11 +57,12 @@ $app->singleton(
 | route or middleware that'll be assigned to some specific routes.
 |
 */
+$app->configure('cors');
 
- $app->middleware([
+$app->middleware([
 //     App\Http\Middleware\ExampleMiddleware::class
-   Vluzrmos\LumenCors\CorsMiddleware::class
- ]);
+  \Barryvdh\Cors\HandleCors::class,
+]);
 
 // $app->routeMiddleware([
 //     'auth' => App\Http\Middleware\Authenticate::class,
@@ -83,6 +84,7 @@ $app->routeMiddleware([
 */
 
 $app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
+$app->register(Barryvdh\Cors\ServiceProvider::class);
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
@@ -99,9 +101,9 @@ $app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::
 */
 
 $app->router->group([
-    'namespace' => 'App\Http\Controllers',
+  'namespace' => 'App\Http\Controllers',
 ], function ($router) {
-    require __DIR__.'/../routes/web.php';
+  require __DIR__ . '/../routes/web.php';
 });
 
 return $app;
