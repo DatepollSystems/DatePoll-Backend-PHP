@@ -17,7 +17,7 @@ class CreateUsersTable extends Migration
       $table->increments('id');
       $table->string('email')->unique();
       $table->boolean('email_verified')->default(false);
-      $table->string('email_verify_token', 6);
+      $table->string('email_verify_token', 6)->nullable(true);
       $table->string('password', '512')->nullable(false);
       $table->string('rank')->nullable(false);
 
@@ -25,7 +25,7 @@ class CreateUsersTable extends Migration
       $table->string('surname')->nullable(false);
 
 
-      $table->string('remember_token', 512);
+      $table->string('remember_token', 512)->nullable(true);
       $table->timestamps();
     });
   }

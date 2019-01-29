@@ -4,14 +4,25 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $year
+ * @property string $created_at
+ * @property string $updated_at
+ * @property Movie[] $movies
+ */
 class MovieYear extends Model
 {
-  protected $fillable = [
-    'year'
-  ];
+    /**
+     * @var array
+     */
+    protected $fillable = ['year', 'created_at', 'updated_at'];
 
-  public function getMovies()
-  {
-    return $this->hasMany('App\Movie');
-  }
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function movies()
+    {
+        return $this->hasMany('App\Movie');
+    }
 }
