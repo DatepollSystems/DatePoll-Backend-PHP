@@ -16,13 +16,5 @@ class DatabaseSeeder extends Seeder
       // Register the user seeder
       factory(App\User::class, 10)->create();
       Model::reguard();
-      $user = new \App\User([
-        'firstname' => "Franz",
-        'surname' => "Huber",
-        'email' => 'contact@email.at',
-        'password' => app('hash')->make('123456'),
-        'rank' => 'admin'
-      ]);
-      $user->save();
     }
 }

@@ -1,16 +1,17 @@
 <?php namespace App\Console\Commands;
 
+use App\User;
 use Schema;
 use Illuminate\Console\Command;
 
-class DropTables extends Command
+class AddAdminUser extends Command
 {
   /**
    * The name and signature of the console command.
    *
    * @var string
    */
-  protected $signature = 'droptables';
+  protected $signature = 'addadminuser';
 
   /**
    * The console command description.
@@ -36,9 +37,18 @@ class DropTables extends Command
    */
   public function handle()
   {
-    \Schema::dropAllTables();
-
-    $this->comment(PHP_EOL."If no errors showed up, all tables were dropped".PHP_EOL);
-
+    $user = new User([
+      'firstname' => 'Helmi',
+      'surname' => 'GIS',
+      'email' => 'admin@inter.datepoll',
+      'password' => app('hash')->make('123456'),
+      'rank' => 'admin',
+      'force_password_change' => true
+    ]);
+    if($user->save()) {
+      $this->comment(PHP_EOL."Added admin user".PHP_EOL);
+    } else {
+      $this->comment(PHP_EOL."Could not add admin user".PHP_EOL);
+    }
   }
 }

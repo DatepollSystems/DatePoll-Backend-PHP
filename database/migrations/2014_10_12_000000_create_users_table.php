@@ -18,6 +18,7 @@ class CreateUsersTable extends Migration
       $table->string('email')->unique();
       $table->boolean('email_verified')->default(false);
       $table->string('email_verify_token', 6)->nullable(true);
+      $table->boolean('force_password_change')->default(false);
       $table->string('password', '512')->nullable(false);
       $table->string('rank')->nullable(false);
 
