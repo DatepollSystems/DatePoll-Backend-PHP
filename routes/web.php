@@ -22,6 +22,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('signin', [
       'uses' => 'AuthController@signin'
     ]);
+    $router->post('changePasswortAfterSignin', [
+      'uses' => 'AuthController@changePasswortAfterSignin'
+    ]);
     $router->post('refresh', [
       'middleware' => 'jwt.auth',
       'uses' => 'AuthController@refresh'

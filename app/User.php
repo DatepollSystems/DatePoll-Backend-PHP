@@ -26,7 +26,7 @@ class User extends Model
     /**
      * @var array
      */
-    protected $fillable = ['email', 'email_verified', 'email_verify_token', 'force_password_reset', 'password', 'rank', 'firstname', 'surname', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['email', 'email_verified', 'email_verify_token', 'force_password_change', 'password', 'rank', 'firstname', 'surname', 'remember_token', 'created_at', 'updated_at'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

@@ -72,8 +72,49 @@ class AuthController extends Controller
         'error' => 'Email or password is wrong'
       ], 400);
     }
+    if (Hash::check($request->input('password'), $user->password)) {
+      if($user->force_password_change) {
+        return response()->json(['msg' => 'changePassword', 200]);
+      }
+    }
+
     // Verify the password and generate the token
     if (Hash::check($request->input('password'), $user->password)) {
+      return response()->json([
+        'token' => $this->jwt($user->id)
+      ], 200);
+    }
+    // Bad Request response
+    return response()->json([
+      'error' => 'Email or password is wrong'
+    ], 400);
+  }
+
+  public function changePasswortAfterSignin(Request $request) {
+    $this->validate($request, [
+      'email' => 'required|email',
+      'old_password' => 'required',
+      'new_password' => 'required'
+    ]);
+
+    // Find the user by email
+    $user = User::where('email', $request->input('email'))->first();
+    if (!$user) {
+      // You wil probably have some sort of helpers or whatever
+      // to make sure that you have the same response format for
+      // differents kind of responses. But let's return the
+      // below respose for now.
+      return response()->json([
+        'error' => 'Email or password is wrong'
+      ], 400);
+    }
+
+    // Verify the password and generate the token
+    if (Hash::check($request->input('old_password'), $user->password)) {
+      $user->force_password_change = false;
+      $user->password = app('hash')->make($request->input('new_password'));
+      $user->save();
+
       return response()->json([
         'token' => $this->jwt($user->id)
       ], 200);
