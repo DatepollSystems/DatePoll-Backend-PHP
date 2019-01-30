@@ -20,4 +20,4 @@ deploy_stage:
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
     - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
-    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; composer i; composer install --optimize-autoloader --no-dev; php artisan droptables; php artisan migrate --force; php artisan db:seed'
+    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; composer i; composer install --optimize-autoloader --no-dev; php artisan droptables; php artisan migrate --force; php artisan db:seed --force'
