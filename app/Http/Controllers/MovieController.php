@@ -248,6 +248,14 @@ class MovieController extends Controller
   public function getNotShownMovies()
   {
     $allMovies = Movie::all();
+    if($allMovies == null) {
+      $response = [
+        'msg' => 'List of not shown movies',
+        'movies' => $allMovies
+      ];
+
+      return response()->json($response);
+    }
 
     $movies = null;
 
