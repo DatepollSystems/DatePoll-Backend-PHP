@@ -10,24 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-//  /**
-//   * The request instance.
-//   *
-//   * @var \Illuminate\Http\Request
-//   */
-//  private $request;
-//
-//  /**
-//   * Create a new controller instance.
-//   *
-//   * @param  \Illuminate\Http\Request $request
-//   * @return void
-//   */
-//  public function __construct(Request $request)
-//  {
-//    $this->request = $request;
-//  }
-
   /**
    * Create a new token.
    *
@@ -61,30 +43,26 @@ class AuthController extends Controller
       'email' => 'required|email',
       'password' => 'required'
     ]);
-    // Find the user by email
+
     $user = User::where('email', $request->input('email'))->first();
     if (!$user) {
-      // You wil probably have some sort of helpers or whatever
-      // to make sure that you have the same response format for
-      // differents kind of responses. But let's return the
-      // below respose for now.
       return response()->json([
         'error' => 'Email or password is wrong'
       ], 400);
     }
+
     if (Hash::check($request->input('password'), $user->password)) {
       if($user->force_password_change) {
         return response()->json(['msg' => 'changePassword', 200]);
       }
     }
 
-    // Verify the password and generate the token
     if (Hash::check($request->input('password'), $user->password)) {
       return response()->json([
         'token' => $this->jwt($user->id)
       ], 200);
     }
-    // Bad Request response
+
     return response()->json([
       'error' => 'Email or password is wrong'
     ], 400);
@@ -97,19 +75,13 @@ class AuthController extends Controller
       'new_password' => 'required'
     ]);
 
-    // Find the user by email
     $user = User::where('email', $request->input('email'))->first();
     if (!$user) {
-      // You wil probably have some sort of helpers or whatever
-      // to make sure that you have the same response format for
-      // differents kind of responses. But let's return the
-      // below respose for now.
       return response()->json([
         'error' => 'Email or password is wrong'
       ], 400);
     }
 
-    // Verify the password and generate the token
     if (Hash::check($request->input('old_password'), $user->password)) {
       $user->force_password_change = false;
       $user->password = app('hash')->make($request->input('new_password'));
@@ -119,7 +91,7 @@ class AuthController extends Controller
         'token' => $this->jwt($user->id)
       ], 200);
     }
-    // Bad Request response
+
     return response()->json([
       'error' => 'Email or password is wrong'
     ], 400);
