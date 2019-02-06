@@ -40,10 +40,15 @@ class AddAdminUser extends Command
     $user = new User([
       'firstname' => 'Helmi',
       'surname' => 'GIS',
+      'birthday' => date('Y-m-d'),
       'email' => 'admin@inter.datepoll',
       'password' => app('hash')->make('123456'),
       'rank' => 'admin',
-      'force_password_change' => true
+      'force_password_change' => true,
+      'streetname' => 'Alauntalstraße',
+      'streetnumber' => '6-7',
+      'zipcode' => '3500',
+      'location' => 'Krems an der Donau'
     ]);
     if($user->save()) {
       $this->comment(PHP_EOL."Added admin user".PHP_EOL);
