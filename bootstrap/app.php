@@ -57,17 +57,13 @@ $app->singleton(
 | route or middleware that'll be assigned to some specific routes.
 |
 */
+/* Enable all CORS */
 $app->configure('cors');
-
 $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
   \Barryvdh\Cors\HandleCors::class,
 ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
-
+/* Enable JWT-Auth */
 $app->routeMiddleware([
   'jwt.auth' => App\Http\Middleware\JwtMiddleware::class,
 ]);
@@ -83,11 +79,24 @@ $app->routeMiddleware([
 |
 */
 
+/* IDE Helper*/
+$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+
+/* Generate classes from migration files*/
 $app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
+
 $app->register(Barryvdh\Cors\ServiceProvider::class);
- $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
+
+/* Make php artisan:make command as powerful as in laravel */
+$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+
+/* Mail configuration */
+$app->register(Illuminate\Mail\MailServiceProvider::class);
+$app->configure('mail');
+$app->alias('mailer', Illuminate\Mail\Mailer::class);
+$app->alias('mailer', Illuminate\Contracts\Mail\Mailer::class);
+$app->alias('mailer', Illuminate\Contracts\Mail\MailQueue::class);
 
 /*
 |--------------------------------------------------------------------------
