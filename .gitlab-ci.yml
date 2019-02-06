@@ -17,6 +17,10 @@ deploy_stage:
     - echo "DB_PASSWORD=$DB_PASSWORD" >> .env
     - echo "JWT_SECRET=$JWT_SECRET" >> .env
     - echo "APP_KEY=$APP_KEY" >> .env
+    - echo "MAIL_HOST=$MAIL_HOST" >> .env
+    - echo "MAIL_USERNAME=$MAIL_USERNAME" >> .env
+    - echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .env
+    - echo "MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS" >> .env
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
     - sshpass -e scp -o stricthostkeychecking=no -r . $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
