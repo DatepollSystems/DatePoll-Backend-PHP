@@ -34,8 +34,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
   $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
 
     $router->group(['prefix' => 'user'], function () use ($router) {
-      $router->get('yourself', [
-        'uses' => 'UserController@yourself'
+      $router->get('myself', [
+        'uses' => 'UserController@getMyself'
+      ]);
+      $router->put('myself', [
+        'uses' => 'UserController@updateMyself'
       ]);
     });
 
