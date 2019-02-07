@@ -29,6 +29,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
       'middleware' => 'jwt.auth',
       'uses' => 'AuthController@refresh'
     ]);
+    $router->group(['prefix' => 'forgotPassword'], function () use($router) {
+      $router->post('sendEmail', [
+        'uses' => 'AuthController@sendForgotPaswordEmail'
+      ]);
+      $router->post('checkCode', [
+        'uses' => 'AuthController@checkForgotPasswordCode'
+      ]);
+      $router->post('resetPassword', [
+        'uses' => 'AuthController@resetPasswordAfterForgotPassword'
+      ]);
+    });
   });
 
   $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
@@ -40,6 +51,28 @@ $router->group(['prefix' => 'api'], function () use ($router) {
       $router->put('myself', [
         'uses' => 'UserController@updateMyself'
       ]);
+
+      $router->group(['prefix' => 'myself/changeEmail'], function () use ($router) {
+        $router->get('oldEmailAddressVerification', [
+          'uses' => 'UserController@oldEmailAddressVerification'
+        ]);
+
+        $router->post('oldEmailAddressVerificationCodeVerification', [
+          'uses' => 'UserController@oldEmailAddressVerificationCodeVerification'
+        ]);
+
+        $router->post('newEmailAddressVerification', [
+          'uses' => 'UserController@newEmailAddressVerification'
+        ]);
+
+        $router->post('newEmailAddressVerificationCodeVerification', [
+          'uses' => 'UserController@newEmailAddressVerificationCodeVerification'
+        ]);
+
+        $router->post('changeEmailAddress', [
+          'uses' => 'UserController@changeEmailAddress'
+        ]);
+      });
     });
 
     $router->group(['prefix' => 'cinema'], function () use ($router) {
