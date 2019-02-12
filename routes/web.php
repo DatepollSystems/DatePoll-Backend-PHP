@@ -73,6 +73,16 @@ $router->group(['prefix' => 'api'], function () use ($router) {
           'uses' => 'UserController@changeEmailAddress'
         ]);
       });
+
+      $router->group(['prefix' => 'myself/changePassword'], function () use ($router) {
+        $router->post('checkOldPassword', [
+          'uses' => 'UserController@checkOldPassword'
+        ]);
+
+        $router->post('changePassword', [
+          'uses' => 'UserController@changePassword'
+        ]);
+      });
     });
 
     $router->group(['prefix' => 'cinema'], function () use ($router) {
