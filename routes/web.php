@@ -11,11 +11,20 @@
 |
 */
 
+use App\Http\Middleware\Services\CinemaMiddleware;
+
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
+
+  /** Setting routes */
+  $router->group(['prefix' => 'settings'], function () use ($router) {
+    $router->get('cinema', function () use ($router) {
+      return response()->json(['msg' => 'Is cinema service enabled' ,'enabled' => env('APP_CINEMA_ENABLED', false)], 200);
+    });
+  });
 
   /** Auth routes */
   $router->group(['prefix' => 'auth'], function () use ($router) {
@@ -85,51 +94,51 @@ $router->group(['prefix' => 'api'], function () use ($router) {
       });
     });
 
-    $router->group(['prefix' => 'cinema'], function () use ($router) {
+    $router->group(['prefix' => 'cinema', 'middleware' => CinemaMiddleware::class], function () use ($router) {
       /** Movie routes */
       $router->get('movie', [
-        'uses' => 'MovieController@index'
+        'uses' => 'CinemaControllers\MovieController@index'
       ]);
 
       $router->post('movie', [
-        'uses' => 'MovieController@store'
+        'uses' => 'CinemaControllers\MovieController@store'
       ]);
 
       $router->get('movie/{id}', [
-        'uses' => 'MovieController@show'
+        'uses' => 'CinemaControllers\MovieController@show'
       ]);
 
       $router->put('movie/{id}', [
-        'uses' => 'MovieController@update'
+        'uses' => 'CinemaControllers\MovieController@update'
       ]);
 
       $router->delete('movie/{id}', [
-        'uses' => 'MovieController@destory'
+        'uses' => 'CinemaControllers\MovieController@destory'
       ]);
 
       $router->get('notShownMovies', [
-        'uses' => 'MovieController@getNotShownMovies'
+        'uses' => 'CinemaControllers\MovieController@getNotShownMovies'
       ]);
 
       /** Year routes */
       $router->get('year', [
-        'uses' => 'MovieYearController@index'
+        'uses' => 'CinemaControllers\MovieYearController@index'
       ]);
 
       $router->post('year', [
-        'uses' => 'MovieYearController@store'
+        'uses' => 'CinemaControllers\MovieYearController@store'
       ]);
 
       $router->get('year/{id}', [
-        'uses' => 'MovieYearController@show'
+        'uses' => 'CinemaControllers\MovieYearController@show'
       ]);
 
       $router->put('year/{id}', [
-        'uses' => 'MovieYearController@update'
+        'uses' => 'CinemaControllers\MovieYearController@update'
       ]);
 
       $router->delete('year/{id}', [
-        'uses' => 'MovieYearController@destory'
+        'uses' => 'CinemaControllers\MovieYearController@destory'
       ]);
 
     });

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\CinemaControllers;
 
+use App\Http\Controllers\Controller;
 use App\MovieYear;
 use Illuminate\Http\Request;
 
