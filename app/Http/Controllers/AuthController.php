@@ -55,9 +55,7 @@ class AuthController extends Controller
       if($user->force_password_change) {
         return response()->json(['msg' => 'changePassword', 200]);
       }
-    }
 
-    if (Hash::check($request->input('password'), $user->password)) {
       return response()->json([
         'token' => $this->jwt($user->id)
       ], 200);
@@ -68,6 +66,11 @@ class AuthController extends Controller
     ], 400);
   }
 
+  /**
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
+   * @throws \Illuminate\Validation\ValidationException
+   */
   public function changePasswortAfterSignin(Request $request) {
     $this->validate($request, [
       'email' => 'required|email',

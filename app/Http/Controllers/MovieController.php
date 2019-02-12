@@ -96,7 +96,7 @@ class MovieController extends Controller
 
       $response = [
         'msg' => 'Movie created',
-        'year' => $movie
+        'movie' => $movie
       ];
 
       return response()->json($response, 201);
@@ -147,7 +147,7 @@ class MovieController extends Controller
 
     $response = [
       'msg' => 'Movie information',
-      'year' => $movie
+      'movie' => $movie
     ];
     return response()->json($response);
   }
