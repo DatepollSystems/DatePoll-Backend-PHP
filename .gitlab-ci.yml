@@ -21,6 +21,7 @@ deploy_stage:
     - echo "MAIL_USERNAME=$MAIL_USERNAME" >> .env
     - echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .env
     - echo "MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS" >> .env
+    - ls -la
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
     - sshpass -e scp -o stricthostkeychecking=no -r ./ $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
