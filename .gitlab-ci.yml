@@ -22,8 +22,7 @@ deploy_stage:
     - echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .env
     - echo "MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS" >> .env
     - ls -la
-    - mkdir datepoll-backend
-    - mv !(datepollbackend) datepoll-backend
+    - cd ..
     - ls -la
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
