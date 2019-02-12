@@ -16,8 +16,12 @@ class UserController extends Controller
   public function getMyself(Request $request)
   {
     $user = $request->auth;
+    $user->password = null;
+    $user->remember_token = null;
+    $user->force_password_change = null;
+    $user->email_verified = null;
 
-    return response()->json($user, 200);
+    return response()->json(['msg' => 'Get complete user', 'user' => $user], 200);
   }
 
   /**
