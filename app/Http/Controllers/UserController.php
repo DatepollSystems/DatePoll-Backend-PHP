@@ -67,6 +67,11 @@ class UserController extends Controller
         'method' => 'GET'
       ];
 
+      $user->password = null;
+      $user->remember_token = null;
+      $user->force_password_change = null;
+      $user->email_verified = null;
+
       $response = [
         'msg' => 'User updated',
         'user' => $user
