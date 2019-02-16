@@ -18,11 +18,13 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
     'surname' => $faker->lastName,
     'email'    => $faker->unique()->email,
     'password' => app('hash')->make('12345'),
-    'rank' => 'user',
+    'activated' => false,
     'streetname' => $faker->streetName,
-    'streetnumber' => $faker->streetAddress,
+    'streetnumber' => $faker->numberBetween(1, 60),
     'zipcode' => $faker->numberBetween(1000, 9999),
     'location' => $faker->city,
-    'birthday' => $faker->date()
+    'birthday' => date('Y-m-d'),
+    'join_date' => date('Y-m-d'),
+    'activity' => 'active'
   ];
 });
