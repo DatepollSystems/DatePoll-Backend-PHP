@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Middleware\Services;
+namespace App\Http\Middleware\Cinema;
 
 use Closure;
 
-class CinemaMiddleware
+class CinemaFeatureMiddleware
 {
     /**
      * Handle an incoming request.

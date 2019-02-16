@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\NewEmailVerifying;
 use App\Mail\OldEmailVerifying;
 use App\UserCode;
+use App\UserTelephoneNumber;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +22,27 @@ class UserController extends Controller
     $user->force_password_change = null;
     $user->email_verified = null;
 
-    return response()->json(['msg' => 'Get complete user', 'user' => $user], 200);
+    $userPermissions = DB::table('user_permissions')->where('user_id', '=', $user->id)->get();
+    $permissions = array();
+    foreach ($userPermissions as $permission) {
+      $permissions[] = $permission->permission;
+    }
+
+    $user->permissions = $permissions;
+
+    $userTelephoneNumbers = DB::table('user_telephone_numbers')->where('user_id', '=', $user->id)->get();
+    $telephoneNumbers = array();
+    foreach ($userTelephoneNumbers as $telephoneNumber) {
+      $telephoneNumbers[] = [
+        'id' => $telephoneNumber->id,
+        'number' => $telephoneNumber->number,
+        'label' => $telephoneNumber->label
+      ];
+    }
+
+    $user->telephoneNumbers = $telephoneNumbers;
+
+    return response()->json(['msg' => 'Get complete myself', 'user' => $user], 200);
   }
 
   /**
@@ -36,7 +57,7 @@ class UserController extends Controller
       'surname' => 'required|max:255|min:1',
       'streetname' => 'required|max:255|min:1',
       'streetnumber' => 'required|max:255|min:1',
-      'zipcode' => 'required|max:255|min:1',
+      'zipcode' => 'required|integer',
       'location' => 'required|max:255|min:1',
       'birthday' => 'required|date'
     ]);
@@ -331,5 +352,53 @@ class UserController extends Controller
     }
 
     return response()->json(['msg' => 'password_incorrect'], 400);
+  }
+
+  /**
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
+   * @throws \Illuminate\Validation\ValidationException
+   */
+  public function addPhoneNumber(Request $request) {
+    $this->validate($request, [
+      'label' => 'required|string|min:1|max:255',
+      'number' => 'required|string|min:1|max:255'
+    ]);
+
+    $user = $request->auth;
+
+    $phoneNumber = new UserTelephoneNumber([
+      'label' => $request->input('label'),
+      'number' => $request->input('number'),
+      'user_id' => $user->id
+    ]);
+
+    if($phoneNumber->save()) {
+      return response()->json(['msg' => 'Added phone number', 'phone_number_id' => $phoneNumber->id], 200);
+    }
+
+    return response()->json(['msg' => 'An error occurred'], 500);
+  }
+
+  public function removePhoneNumber($id) {
+    $phoneNumber = UserTelephoneNumber::find($id);
+    if($phoneNumber == null) {
+      return response()->json(['msg' => 'Phone number not found'], 404);
+    }
+
+    if(!$phoneNumber->delete()) {
+      return response()->json(['msg' => 'Deletion failed'], 500);
+    }
+
+    $response = [
+      'msg' => 'Phone number deleted',
+      'add' => [
+        'href' => 'api/v1/user/myself/phoneNumber',
+        'method' => 'POST',
+        'params' => 'label, number'
+      ]
+    ];
+
+    return response()->json($response);
   }
 }
