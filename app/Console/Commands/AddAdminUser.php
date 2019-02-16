@@ -59,7 +59,7 @@ class AddAdminUser extends Command
       $this->comment(PHP_EOL."Added admin user".PHP_EOL);
 
       $permission = new UserPermission([
-        'id' => $user->id,
+        'user_id' => $user->id,
         'permission' => 'root.administration'
       ]);
 
