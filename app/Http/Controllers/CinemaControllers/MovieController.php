@@ -7,9 +7,11 @@ use App\Movie;
 use App\MovieYear;
 use App\User;
 use Illuminate\Http\Request;
+use App\Permissions;
 
 class MovieController extends Controller
 {
+
   /**
    * Display a listing of the resource.
    *
@@ -231,7 +233,7 @@ class MovieController extends Controller
     }
 
     if(!$movie->delete()) {
-      return response()->json(['msg' => 'Deletion failed'], 404);
+      return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
     $response = [

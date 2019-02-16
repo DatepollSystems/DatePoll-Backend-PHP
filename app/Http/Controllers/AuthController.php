@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Validator;
 use App\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
