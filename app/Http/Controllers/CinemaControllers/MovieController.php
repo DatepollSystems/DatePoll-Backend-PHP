@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Movie;
 use App\MovieYear;
 use App\User;
+use DB;
 use Illuminate\Http\Request;
-use App\Permissions;
 
 class MovieController extends Controller
 {
@@ -17,7 +17,7 @@ class MovieController extends Controller
    *
    * @return \Illuminate\Http\Response
    */
-  public function index()
+  public function getAll()
   {
     $movies = Movie::all();
     foreach ($movies as $movie) {
@@ -60,7 +60,7 @@ class MovieController extends Controller
    * @return \Illuminate\Http\Response
    * @throws \Illuminate\Validation\ValidationException
    */
-  public function store(Request $request)
+  public function create(Request $request)
   {
     $this->validate($request, [
       'name' => 'required|max:255|min:1',
@@ -118,7 +118,7 @@ class MovieController extends Controller
    * @param  int $id
    * @return \Illuminate\Http\Response
    */
-  public function show($id)
+  public function getSingle($id)
   {
     $movie = Movie::find($id);
     if($movie == null) {
@@ -225,7 +225,7 @@ class MovieController extends Controller
    * @param  int $id
    * @return \Illuminate\Http\Response
    */
-  public function destroy($id)
+  public function delete($id)
   {
     $movie = Movie::find($id);
     if($movie == null) {
@@ -248,7 +248,7 @@ class MovieController extends Controller
     return response()->json($response);
   }
 
-  public function getNotShownMovies()
+  public function getNotShownMovies(Request $request)
   {
     $allMovies = Movie::all();
     if($allMovies == null) {
@@ -259,6 +259,8 @@ class MovieController extends Controller
 
       return response()->json($response);
     }
+
+    $user = $request->auth;
 
     $movies = null;
 
@@ -287,6 +289,16 @@ class MovieController extends Controller
         $movie->emergencyWorkerName = null;
       } else {
         $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
+      }
+
+      $movieBookingForYourself = DB::table('movies_bookings')
+        ->where('user_id', '=', $user->id)
+        ->where('movie_id', '=', $movie->id)->first();
+
+      if($movieBookingForYourself == null) {
+        $movie->bookedTicketsForYourself = 0;
+      } else {
+        $movie->bookedTicketsForYourself = $movieBookingForYourself->amount;
       }
 
       $movie->view_movie = [

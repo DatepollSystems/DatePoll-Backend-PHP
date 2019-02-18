@@ -80,27 +80,33 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     });
 
     /** Cinema routes */
-    $router->get('cinema/notShownMovies', ['uses' => 'CinemaControllers\MovieController@getNotShownMovies', 'middleware' => CinemaFeatureMiddleware::class]);
+    $router->group(['prefix' => 'cinema', 'middleware' => [CinemaFeatureMiddleware::class]], function () use ($router) {
+      $router->get('notShownMovies', ['uses' => 'CinemaControllers\MovieController@getNotShownMovies']);
 
-    $router->group([
-      'prefix' => 'cinema',
-      'middleware' => [CinemaFeatureMiddleware::class, CinemaPermissionMiddleware::class]],
-      function () use ($router) {
-        /** Movie routes */
-        $router->get('movie', ['uses' => 'CinemaControllers\MovieController@index']);
-        $router->post('movie', ['uses' => 'CinemaControllers\MovieController@store']);
-        $router->get('movie/{id}', ['uses' => 'CinemaControllers\MovieController@show']);
-        $router->put('movie/{id}', ['uses' => 'CinemaControllers\MovieController@update']);
-        $router->delete('movie/{id}', ['uses' => 'CinemaControllers\MovieController@destory']);
+      /** Booking routes */
+      $router->post('booking', ['uses' => 'CinemaControllers\MovieBookingController@bookTickets']);
+      $router->delete('booking/{id}', ['uses' => 'CinemaControllers\MovieBookingController@cancelBooking']);
 
-        /** Year routes */
-        $router->get('year', ['uses' => 'CinemaControllers\MovieYearController@index']);
-        $router->post('year', ['uses' => 'CinemaControllers\MovieYearController@store']);
-        $router->get('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@show']);
-        $router->put('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@update']);
-        $router->delete('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@destory']);
+      /** Movie administration routes */
+      $router->group([
+        'prefix' => 'administration',
+        'middleware' => [CinemaPermissionMiddleware::class]],
+        function () use ($router) {
+          /** Movie routes */
+          $router->get('movie', ['uses' => 'CinemaControllers\MovieController@getAll']);
+          $router->post('movie', ['uses' => 'CinemaControllers\MovieController@create']);
+          $router->get('movie/{id}', ['uses' => 'CinemaControllers\MovieController@getSingle']);
+          $router->put('movie/{id}', ['uses' => 'CinemaControllers\MovieController@update']);
+          $router->delete('movie/{id}', ['uses' => 'CinemaControllers\MovieController@delete']);
 
+          /** Year routes */
+          $router->get('year', ['uses' => 'CinemaControllers\MovieYearController@index']);
+          $router->post('year', ['uses' => 'CinemaControllers\MovieYearController@store']);
+          $router->get('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@show']);
+          $router->put('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@update']);
+          $router->delete('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@destory']);
+
+        });
     });
-
   });
 });
