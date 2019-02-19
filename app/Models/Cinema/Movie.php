@@ -33,7 +33,7 @@ class Movie extends Model
      */
     public function emergencyWorker()
     {
-        return $this->belongsTo('App\Models\User', 'emergency_worker_id');
+        return $this->belongsTo('App\Models\User', 'emergency_worker_id')->first();
     }
 
     /**
@@ -41,7 +41,7 @@ class Movie extends Model
      */
     public function movieYear()
     {
-        return $this->belongsTo('App\Models\Cinema\MovieYear');
+        return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
     }
 
     /**
@@ -49,7 +49,7 @@ class Movie extends Model
      */
     public function worker()
     {
-        return $this->belongsTo('App\Models\User', 'worker_id');
+        return $this->belongsTo('App\Models\User', 'worker_id')->first();
     }
 
     /**

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\CinemaControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
-use DB;
 use Illuminate\Http\Request;
 
 class MovieBookingController extends Controller
@@ -39,9 +38,7 @@ class MovieBookingController extends Controller
 
     $user = $request->auth;
 
-    $movieBooking = DB::table('movies_bookings')
-      ->where('user_id', '=', $user->id)
-      ->where('movie_id', '=', $movie->id)->first();
+    $movieBooking = MoviesBooking::where('user_id', $user->id)->where('movie_id', $movie->id)->first();
 
     /* If movie booking doesn't exist, create it */
     if ($movieBooking == null) {
@@ -68,8 +65,6 @@ class MovieBookingController extends Controller
       return response()->json(['msg' => 'An error occurred during booking saving'], 500);
     }
 
-    /* Get booking model */
-    $movieBooking = MoviesBooking::find($movieBooking->id);
     /* Else update existing booking */
     $movieBooking->amount += $ticketAmount;
 
@@ -100,18 +95,14 @@ class MovieBookingController extends Controller
 
     $user = $request->auth;
 
-    $movieBooking = DB::table('movies_bookings')
-      ->where('movie_id', '=', $movie->id)
-      ->where('user_id', '=', $user->id)->first();
+    $movieBooking = MoviesBooking::where('user_id', $user->id)->where('movie_id', $movie->id)->first();
 
     if ($movieBooking == null) {
       return response()->json(['msg' => 'Booking not found'], 404);
     }
 
     $ticketsAmount = $movieBooking->amount;
-    if (DB::table('movies_bookings')
-      ->where('movie_id', '=', $movie->id)
-      ->where('user_id', '=', $user->id)->delete()) {
+    if ($movieBooking->delete()) {
 
       $movie->bookedTickets -= $ticketsAmount;
       $movie->save();
