@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MovieYear;
 use App\Models\User;
-use DB;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -28,14 +27,18 @@ class MovieController extends Controller
       $emergencyWorker = User::find($emergencyWorkerID);
 
       if($worker == null) {
-        $movie->workerName = "None";
+        $movie->workerID = null;
+        $movie->workerName = '-';
       } else {
+        $movie->workerID = $worker->id;
         $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
       }
 
       if($emergencyWorker == null) {
-        $movie->emergencyWorkerName = "None";
+        $movie->emergencyWorkerID = null;
+        $movie->emergencyWorkerName = '-';
       } else {
+        $movie->emergencyWorkerID = $emergencyWorker->id;
         $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
       }
 
@@ -132,14 +135,18 @@ class MovieController extends Controller
     $emergencyWorker = User::find($emergencyWorkerID);
 
     if($worker == null) {
+      $movie->workerID = null;
       $movie->workerName = null;
     } else {
+      $movie->workerID = $worker->id;
       $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
     }
 
     if($emergencyWorker == null) {
+      $movie->emergencyWorkerID = null;
       $movie->emergencyWorkerName = null;
     } else {
+      $movie->emergencyWorkerID = $emergencyWorker->id;
       $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
     }
 
@@ -264,11 +271,9 @@ class MovieController extends Controller
 
     $movies = null;
 
-    $i = 0;
     foreach ($allMovies as $movie) {
       if((time()-(60*60*24)) < strtotime($movie->date. ' 20:00:00')) {
-        $movies[$i] = $movie;
-        $i++;
+        $movies[] = $movie;
       }
     }
 
@@ -280,20 +285,22 @@ class MovieController extends Controller
       $emergencyWorker = User::find($emergencyWorkerID);
 
       if($worker == null) {
+        $movie->workerID = null;
         $movie->workerName = null;
       } else {
+        $movie->workerID = $worker->id;
         $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
       }
 
       if($emergencyWorker == null) {
+        $movie->emergencyWorkerID = null;
         $movie->emergencyWorkerName = null;
       } else {
+        $movie->emergencyWorkerID = $emergencyWorker->id;
         $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
       }
 
-      $movieBookingForYourself = DB::table('movies_bookings')
-        ->where('user_id', '=', $user->id)
-        ->where('movie_id', '=', $movie->id)->first();
+      $movieBookingForYourself = $user->moviesBookings()->where('movie_id', $movie->id)->first();
 
       if($movieBookingForYourself == null) {
         $movie->bookedTicketsForYourself = 0;

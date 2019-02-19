@@ -37,50 +37,50 @@ class User extends Model
   protected $fillable = ['email', 'email_verified', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'remember_token', 'created_at', 'updated_at', 'activated', 'activity'];
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return \Illuminate\Database\Eloquent\Collection
    */
   public function emergencyWorkerMovies()
   {
-    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id');
+    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return \Illuminate\Database\Eloquent\Collection
    */
   public function workerMovies()
   {
-    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id');
+    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return \Illuminate\Database\Eloquent\Collection
    */
   public function moviesBookings()
   {
-    return $this->hasMany('App\Models\Cinema\MoviesBooking');
+    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return \Illuminate\Database\Eloquent\Collection
    */
   public function userCodes()
   {
-    return $this->hasMany('App\Models\UserCode');
+    return $this->hasMany('App\Models\UserCode')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return \Illuminate\Database\Eloquent\Collection
    */
   public function telephoneNumbers() {
-    return $this->hasMany('App\Models\UserTelephoneNumber');
+    return $this->hasMany('App\Models\UserTelephoneNumber')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return \Illuminate\Database\Eloquent\Collection
    */
   public function userPermissions()
   {
-    return $this->hasMany('App\Models\UserPermission');
+    return $this->hasMany('App\Models\UserPermission')->get();
   }
 
   /**

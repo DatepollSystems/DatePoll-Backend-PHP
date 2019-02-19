@@ -70,6 +70,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
       $router->delete('myself/phoneNumber/{id}', ['uses' => 'UserController@removePhoneNumber']);
     });
 
+    /** Management routes */
     $router->group(['prefix' => 'management'], function () use ($router) {
       /** Users routes */
       $router->get('users', ['uses' => 'ManagementControllers\UsersController@getAll']);
@@ -86,6 +87,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
       /** Booking routes */
       $router->post('booking', ['uses' => 'CinemaControllers\MovieBookingController@bookTickets']);
       $router->delete('booking/{id}', ['uses' => 'CinemaControllers\MovieBookingController@cancelBooking']);
+
+      /** Worker routes */
+      $router->post('worker/{id}', ['uses' => 'CinemaControllers\MovieWorkerController@applyForWorker']);
+      $router->delete('worker/{id}', ['uses' => 'CinemaControllers\MovieWorkerController@signOutForWorker']);
+      $router->post('emergencyWorker/{id}', ['uses' => 'CinemaControllers\MovieWorkerController@applyForEmergencyWorker']);
+      $router->delete('emergencyWorker/{id}', ['uses' => 'CinemaControllers\MovieWorkerController@signOutForEmergencyWorker']);
+      $router->get('worker', ['uses' => 'CinemaControllers\MovieWorkerController@getMovies']);
 
       /** Movie administration routes */
       $router->group([

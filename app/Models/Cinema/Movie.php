@@ -53,10 +53,10 @@ class Movie extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function moviesBookings()
     {
-        return $this->hasMany('App\Models\Cinema\MoviesBooking');
+        return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
     }
 }

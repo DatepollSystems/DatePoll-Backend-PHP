@@ -34,6 +34,6 @@ class MoviesBooking extends Model
      */
     public function user()
     {
-        return $this->belongsTo('App\Models\Cinema\User');
+        return $this->belongsTo('App\Models\User')->first();
     }
 }
