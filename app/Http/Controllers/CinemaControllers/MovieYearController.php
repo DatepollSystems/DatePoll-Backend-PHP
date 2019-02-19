@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\CinemaControllers;
 
 use App\Http\Controllers\Controller;
-use App\MovieYear;
+use App\Models\Cinema\MovieYear;
 use Illuminate\Http\Request;
 
 class MovieYearController extends Controller

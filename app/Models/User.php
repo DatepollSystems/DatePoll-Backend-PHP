@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -41,15 +41,15 @@ class User extends Model
    */
   public function emergencyWorkerMovies()
   {
-    return $this->hasMany('App\Movie', 'emergency_worker_id');
+    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id');
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\HasMany
    */
-  public function movies()
+  public function workerMovies()
   {
-    return $this->hasMany('App\Movie', 'worker_id');
+    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id');
   }
 
   /**
@@ -57,7 +57,7 @@ class User extends Model
    */
   public function moviesBookings()
   {
-    return $this->hasMany('App\MoviesBooking');
+    return $this->hasMany('App\Models\Cinema\MoviesBooking');
   }
 
   /**
@@ -65,14 +65,14 @@ class User extends Model
    */
   public function userCodes()
   {
-    return $this->hasMany('App\UserCode');
+    return $this->hasMany('App\Models\UserCode');
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\HasMany
    */
   public function telephoneNumbers() {
-    return $this->hasMany('App\UserTelephoneNumber');
+    return $this->hasMany('App\Models\UserTelephoneNumber');
   }
 
   /**
@@ -80,7 +80,7 @@ class User extends Model
    */
   public function userPermissions()
   {
-    return $this->hasMany('App\UserPermission');
+    return $this->hasMany('App\Models\UserPermission');
   }
 
   /**

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\CinemaControllers;
 
 use App\Http\Controllers\Controller;
-use App\Movie;
-use App\MoviesBooking;
+use App\Models\Cinema\Movie;
+use App\Models\Cinema\MoviesBooking;
 use DB;
 use Illuminate\Http\Request;
 

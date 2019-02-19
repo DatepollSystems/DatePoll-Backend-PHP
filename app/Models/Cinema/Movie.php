@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models\Cinema;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,7 +33,7 @@ class Movie extends Model
      */
     public function emergencyWorker()
     {
-        return $this->belongsTo('App\User', 'emergency_worker_id');
+        return $this->belongsTo('App\Models\User', 'emergency_worker_id');
     }
 
     /**
@@ -41,7 +41,7 @@ class Movie extends Model
      */
     public function movieYear()
     {
-        return $this->belongsTo('App\MovieYear');
+        return $this->belongsTo('App\Models\Cinema\MovieYear');
     }
 
     /**
@@ -49,7 +49,7 @@ class Movie extends Model
      */
     public function worker()
     {
-        return $this->belongsTo('App\User', 'worker_id');
+        return $this->belongsTo('App\Models\User', 'worker_id');
     }
 
     /**
@@ -57,6 +57,6 @@ class Movie extends Model
      */
     public function moviesBookings()
     {
-        return $this->hasMany('App\MoviesBooking');
+        return $this->hasMany('App\Models\Cinema\MoviesBooking');
     }
 }

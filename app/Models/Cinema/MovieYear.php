@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models\Cinema;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,6 +23,6 @@ class MovieYear extends Model
      */
     public function movies()
     {
-        return $this->hasMany('App\Movie');
+        return $this->hasMany('App\Models\Cinema\Movie');
     }
 }

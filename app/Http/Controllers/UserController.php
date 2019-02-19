@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Mail\NewEmailVerifying;
 use App\Mail\OldEmailVerifying;
-use App\UserCode;
-use App\UserTelephoneNumber;
+use App\Models\UserCode;
+use App\Models\UserTelephoneNumber;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

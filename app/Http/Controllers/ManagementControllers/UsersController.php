@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
-use App\Movie;
-use App\MovieYear;
-use App\User;
+use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 

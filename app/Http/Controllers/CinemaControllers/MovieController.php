@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\CinemaControllers;
 
 use App\Http\Controllers\Controller;
-use App\Movie;
-use App\MovieYear;
-use App\User;
+use App\Models\Cinema\Movie;
+use App\Models\Cinema\MovieYear;
+use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 

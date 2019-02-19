@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models\Cinema;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,7 +26,7 @@ class MoviesBooking extends Model
      */
     public function movie()
     {
-        return $this->belongsTo('App\Movie');
+        return $this->belongsTo('App\Models\Cinema\Movie');
     }
 
     /**
@@ -34,6 +34,6 @@ class MoviesBooking extends Model
      */
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\Models\Cinema\User');
     }
 }
