@@ -16,7 +16,6 @@ class CreateUsersTable extends Migration
     Schema::create('users', function (Blueprint $table) {
       $table->increments('id');
       $table->string('email')->unique();
-      $table->boolean('email_verified')->default(false);
       $table->boolean('force_password_change')->default(false);
       $table->string('password', '512')->nullable(false);
       $table->boolean('activated')->nullable(false);

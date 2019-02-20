@@ -34,7 +34,7 @@ class User extends Model
   /**
    * @var array
    */
-  protected $fillable = ['email', 'email_verified', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'remember_token', 'created_at', 'updated_at', 'activated', 'activity'];
+  protected $fillable = ['email', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'remember_token', 'created_at', 'updated_at', 'activated', 'activity'];
 
   /**
    * @return \Illuminate\Database\Eloquent\Collection

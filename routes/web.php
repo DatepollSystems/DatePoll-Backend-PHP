@@ -47,6 +47,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     /** User routes */
     $router->group(['prefix' => 'user'], function () use ($router) {
+      /** Home page route */
+      $router->get('homepage', ['uses' => 'UserController@homepage']);
+
+
+      /** Myself routes */
       $router->get('myself', ['uses' => 'UserController@getMyself']);
       $router->put('myself', ['uses' => 'UserController@updateMyself']);
 
@@ -113,7 +118,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
           $router->get('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@show']);
           $router->put('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@update']);
           $router->delete('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@destory']);
-
         });
     });
   });

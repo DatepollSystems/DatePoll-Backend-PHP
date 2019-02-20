@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\NewEmailVerifying;
 use App\Mail\OldEmailVerifying;
+use App\Models\User;
 use App\Models\UserCode;
 use App\Models\UserTelephoneNumber;
 use DB;
@@ -400,5 +401,51 @@ class UserController extends Controller
     ];
 
     return response()->json($response);
+  }
+
+  public function homepage(Request $request) {
+    $user = $request->auth;
+
+    $bookings = $user->moviesBookings();
+    $bookingsToShow = array();
+    foreach ($bookings as $booking) {
+      $movie = $booking->movie();
+
+      $bookingToShow = new \stdClass();
+      $bookingToShow->movieID = $movie->id;
+      $bookingToShow->movieName = $movie->name;
+      $bookingToShow->movieDate = $movie->date;
+      $bookingToShow->amount = $booking->amount;
+
+      if ($movie->worker() == null) {
+        $bookingToShow->workerName = null;
+      } else {
+        $bookingToShow->workerName = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+      }
+
+      if ($movie->emergencyWorker() == null) {
+        $bookingToShow->emergencyWorkerName = null;
+      } else {
+        $bookingToShow->emergencyWorkerName = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
+      }
+
+      $bookingsToShow[] = $bookingToShow;
+    }
+
+    $users = User::all();
+    $birthdaysToShow = array();
+    foreach ($users as $user) {
+      $d = date_parse_from_format("Y-m-d", $user->birthday);
+      if ($d["month"] == date('n')) {
+        $birthdayToShow = new \stdClass();
+
+        $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
+        $birthdayToShow->date = $user->birthday;
+
+        $birthdaysToShow[] = $birthdayToShow;
+      }
+    }
+
+    return response()->json(['msg' => 'List of your bookings and birthdays in the next month', 'bookings' => $bookingsToShow, 'birthdays' => $birthdaysToShow], 200);
   }
 }

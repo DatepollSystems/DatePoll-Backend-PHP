@@ -26,7 +26,7 @@ class MoviesBooking extends Model
      */
     public function movie()
     {
-        return $this->belongsTo('App\Models\Cinema\Movie');
+      return $this->belongsTo('App\Models\Cinema\Movie')->first();
     }
 
     /**
