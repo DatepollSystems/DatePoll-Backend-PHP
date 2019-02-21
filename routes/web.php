@@ -13,6 +13,7 @@
 
 use App\Http\Middleware\Cinema\CinemaFeatureMiddleware;
 use App\Http\Middleware\Cinema\CinemaPermissionMiddleware;
+use App\Http\Middleware\ManagementPermissionMiddleware;
 
 $router->get('/', function () use ($router) {
     return $router->app->version();
@@ -76,7 +77,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     });
 
     /** Management routes */
-    $router->group(['prefix' => 'management'], function () use ($router) {
+    $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionMiddleware::class]], function () use ($router) {
       /** Users routes */
       $router->get('users', ['uses' => 'ManagementControllers\UsersController@getAll']);
       $router->post('users', ['uses' => 'ManagementControllers\UsersController@create']);

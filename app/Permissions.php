@@ -6,5 +6,7 @@ class Permissions {
 
   public static $CINEMA_MOVIE_ADMINISTRATION = 'cinema.movie.administration';
 
+  public static $MANAGEMENT_ADMINISTRATION = 'management.administration';
+
   public static $SETTINGS_ADMINISTRATION = 'settings.administration';
 }

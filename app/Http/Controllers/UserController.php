@@ -18,10 +18,21 @@ class UserController extends Controller
   public function getMyself(Request $request)
   {
     $user = $request->auth;
-    $user->password = null;
-    $user->remember_token = null;
-    $user->force_password_change = null;
-    $user->email_verified = null;
+
+    $toReturnUser = new \stdClass();
+
+    $toReturnUser->id = $user->id;
+    $toReturnUser->email = $user->email;
+    $toReturnUser->title = $user->title;
+    $toReturnUser->firstname = $user->firstname;
+    $toReturnUser->surname = $user->surname;
+    $toReturnUser->birthday = $user->birthday;
+    $toReturnUser->join_date = $user->join_date;
+    $toReturnUser->streetname = $user->streetname;
+    $toReturnUser->streetnumber = $user->streetnumber;
+    $toReturnUser->zipcode = $user->zipcode;
+    $toReturnUser->location = $user->location;
+    $toReturnUser->activity = $user->activity;
 
     $userPermissions = DB::table('user_permissions')->where('user_id', '=', $user->id)->get();
     $permissions = array();
@@ -29,7 +40,7 @@ class UserController extends Controller
       $permissions[] = $permission->permission;
     }
 
-    $user->permissions = $permissions;
+    $toReturnUser->permissions = $permissions;
 
     $userTelephoneNumbers = DB::table('user_telephone_numbers')->where('user_id', '=', $user->id)->get();
     $telephoneNumbers = array();
@@ -41,9 +52,9 @@ class UserController extends Controller
       ];
     }
 
-    $user->telephoneNumbers = $telephoneNumbers;
+    $toReturnUser->telephoneNumbers = $telephoneNumbers;
 
-    return response()->json(['msg' => 'Get complete myself', 'user' => $user], 200);
+    return response()->json(['msg' => 'Get yourself', 'user' => $toReturnUser], 200);
   }
 
   /**

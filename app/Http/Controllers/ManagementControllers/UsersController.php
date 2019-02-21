@@ -17,10 +17,27 @@ class UsersController extends Controller
    */
   public function getAll()
   {
+    $toReturnUsers = array();
+
     $users = User::all();
     foreach ($users as $user) {
-      $user->password = null;
-      $user->remember_token = null;
+
+      $toReturnUser = new \stdClass();
+
+      $toReturnUser->id = $user->id;
+      $toReturnUser->email = $user->email;
+      $toReturnUser->title = $user->title;
+      $toReturnUser->firstname = $user->firstname;
+      $toReturnUser->surname = $user->surname;
+      $toReturnUser->birthday = $user->birthday;
+      $toReturnUser->join_date = $user->join_date;
+      $toReturnUser->streetname = $user->streetname;
+      $toReturnUser->streetnumber = $user->streetnumber;
+      $toReturnUser->zipcode = $user->zipcode;
+      $toReturnUser->location = $user->location;
+      $toReturnUser->force_password_change = $user->force_password_change;
+      $toReturnUser->activated = $user->activated;
+      $toReturnUser->activity = $user->activity;
 
       $user->view_user = [
         'href' => 'api/v1/management/users/'.$user->id,
@@ -33,7 +50,7 @@ class UsersController extends Controller
         $permissions[] = $permission->permission;
       }
 
-      $user->permissions = $permissions;
+      $toReturnUser->permissions = $permissions;
 
       $userTelephoneNumbers = DB::table('user_telephone_numbers')->where('user_id', '=', $user->id)->get();
       $telephoneNumbers = array();
@@ -44,12 +61,14 @@ class UsersController extends Controller
         ];
       }
 
-      $user->telephoneNumbers = $telephoneNumbers;
+      $toReturnUser->telephoneNumbers = $telephoneNumbers;
+
+      $toReturnUsers[] = $toReturnUser;
     }
 
     $response = [
       'msg' => 'List of all users',
-      'users' => $users
+      'users' => $toReturnUsers
     ];
 
     return response()->json($response);
