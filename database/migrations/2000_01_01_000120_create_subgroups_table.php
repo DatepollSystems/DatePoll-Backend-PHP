@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMoviesBookings extends Migration
+class CreateSubgroupsTable extends Migration
 {
   /**
    * Run the migrations.
@@ -13,22 +13,19 @@ class CreateMoviesBookings extends Migration
    */
   public function up()
   {
-    Schema::create('movies_bookings', function (Blueprint $table) {
+    Schema::create('subgroups', function (Blueprint $table) {
       $table->increments('id');
 
-      $table->integer('user_id')->unsigned();
-      $table->integer('movie_id')->unsigned();
-      $table->integer('amount');
+      $table->string('name');
+      $table->longText('description')->nullable(true);
 
-      $table->foreign('user_id')->references('id')->on('users');
-
-      $table->foreign('movie_id')
-        ->references('id')->on('movies')
+      $table->integer('group_id')->unsigned();;
+      $table->foreign('group_id')
+        ->references('id')->on('groups')
         ->onDelete('cascade');
 
       $table->timestamps();
     });
-
   }
 
   /**
@@ -38,6 +35,6 @@ class CreateMoviesBookings extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('movies_bookings');
+    Schema::dropIfExists('subgroups');
   }
 }
