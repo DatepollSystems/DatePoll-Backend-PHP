@@ -158,7 +158,7 @@ class UserChangeEmailController extends Controller
     $this->validate($request, [
       'oldEmailCode' => 'required|digits:6',
       'newEmailCode' => 'required|digits:6',
-      'newEmailAddress' => 'required|email'
+      'newEmailAddress' => 'required|email|max:190'
     ]);
 
     $oldEmailCode = $request->input('oldEmailCode');

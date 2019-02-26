@@ -16,8 +16,8 @@ class UserChangePhoneNumberController extends Controller
    */
   public function addPhoneNumber(Request $request) {
     $this->validate($request, [
-      'label' => 'required|string|min:1|max:255',
-      'number' => 'required|string|min:1|max:255'
+      'label' => 'required|string|min:1|max:190',
+      'number' => 'required|string|min:1|max:190'
     ]);
 
     $user = $request->auth;
