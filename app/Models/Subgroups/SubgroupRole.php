@@ -23,6 +23,6 @@ class SubgroupRole extends Model
    * @return \Illuminate\Database\Eloquent\Collection
    */
   public function usersMemberOfSubgroups() {
-    return $this->hasMany('App\UsersMemberOfSubgroups')->get();
+    return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();
   }
 }

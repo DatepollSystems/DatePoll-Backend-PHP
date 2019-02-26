@@ -23,6 +23,6 @@ class PerformanceBadge extends Model
    * @return \Illuminate\Database\Eloquent\Collection
    */
   public function usersHavePerformanceBadges() {
-    return $this->hasMany('App\UsersHavePerformanceBadge')->get();
+    return $this->hasMany('App\Models\PerformanceBadges\UsersHavePerformanceBadge')->get();
   }
 }

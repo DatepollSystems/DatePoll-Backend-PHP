@@ -23,6 +23,6 @@ class GroupRole extends Model
    * @return \Illuminate\Database\Eloquent\Collection
    */
   public function usersMemberOfGroups() {
-    return $this->hasMany('App\UsersMemberOfGroups')->get();
+    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();
   }
 }

@@ -24,13 +24,13 @@ class Group extends Model
    * @return \Illuminate\Database\Eloquent\Collection
    */
   public function subgroups() {
-    return $this->hasMany('App\Subgroup')->get();
+    return $this->hasMany('App\Models\Subgroups\Subgroup')->get();
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Collection
    */
   public function usersMemberOfGroups() {
-    return $this->hasMany('App\UsersMemberOfGroups')->get();
+    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();
   }
 }

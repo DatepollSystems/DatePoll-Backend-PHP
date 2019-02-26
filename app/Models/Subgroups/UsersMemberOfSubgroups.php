@@ -26,20 +26,20 @@ class UsersMemberOfSubgroups extends Model
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function subgroup() {
-    return $this->belongsTo('App\Subgroup')->first();
+    return $this->belongsTo('App\Models\Subgroups\Subgroup')->first();
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function subgroupRole() {
-    return $this->belongsTo('App\SubgroupRole')->first();
+    return $this->belongsTo('App\Models\Subgroups\SubgroupRole')->first();
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function user() {
-    return $this->belongsTo('App\User')->first();
+    return $this->belongsTo('App\Models\User')->first();
   }
 }

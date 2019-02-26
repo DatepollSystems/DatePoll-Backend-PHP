@@ -26,20 +26,20 @@ class UsersMemberOfGroups extends Model
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function group() {
-    return $this->belongsTo('App\Group')->first();
+    return $this->belongsTo('App\Models\Groups\Group')->first();
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function groupRole() {
-    return $this->belongsTo('App\GroupRole')->first();
+    return $this->belongsTo('App\Models\Groups\GroupRole')->first();
   }
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function user() {
-    return $this->belongsTo('App\User')->first();
+    return $this->belongsTo('App\Models\User')->first();
   }
 }

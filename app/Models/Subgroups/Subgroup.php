@@ -25,7 +25,7 @@ class Subgroup extends Model
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function group() {
-    return $this->belongsTo('App\Group')->first();
+    return $this->belongsTo('App\Models\Groups\Group')->first();
   }
 
   /**
