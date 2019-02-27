@@ -27,7 +27,7 @@ class SettingsController extends Controller
 
     $this->changeEnvironmentVariable('APP_CINEMA_ENABLED', $isEnabled);
 
-    return response()->json(['msg' => 'Set cinema service enabled']);
+    return response()->json(['msg' => 'Set cinema service enabled', 'isEnabled' => $isEnabled]);
   }
 
   private function changeEnvironmentVariable($key,$value)
