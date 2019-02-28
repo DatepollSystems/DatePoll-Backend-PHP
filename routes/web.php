@@ -12,10 +12,14 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ';
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
+
+  $router->get('/', function () use ($router) {
+    return response()->json(['version' => '0.0.1', 'version_number' => 1], 200);
+  });
 
   /** Setting routes */
   require_once (__DIR__ . '/SettingsRoutes.php');
