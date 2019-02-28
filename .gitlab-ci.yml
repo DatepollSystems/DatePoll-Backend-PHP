@@ -11,20 +11,6 @@ deploy_stage:
   only:
     - development
   script:
-    - cp .env.production .env
-    - echo "APP_URL=$APP_URL" >> .env
-    - echo "DB_USERNAME=$DB_USERNAME" >> .env
-    - echo "DB_PASSWORD=$DB_PASSWORD" >> .env
-    - echo "JWT_SECRET=$JWT_SECRET" >> .env
-    - echo "APP_KEY=$APP_KEY" >> .env
-    - echo "MAIL_HOST=$MAIL_HOST" >> .env
-    - echo "MAIL_USERNAME=$MAIL_USERNAME" >> .env
-    - echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .env
-    - echo "MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS" >> .env
-    - ls -la
-    - cd ..
-    - ls -la
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
-    - sshpass -e scp -o stricthostkeychecking=no -r datepoll-backend-php/* $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-backend
-    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; composer i; composer install --optimize-autoloader --no-dev; php artisan droptables; php artisan migrate --force; php artisan addadminuser;'
+    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; git checkout development; git pull; composer i; composer install --optimize-autoloader --no-dev; php artisan droptables; php artisan migrate --force; php artisan addadminuser;'
