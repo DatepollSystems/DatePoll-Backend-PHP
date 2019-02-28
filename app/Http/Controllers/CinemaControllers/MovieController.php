@@ -66,10 +66,10 @@ class MovieController extends Controller
   public function create(Request $request)
   {
     $this->validate($request, [
-      'name' => 'required|max:255|min:1',
+      'name' => 'required|max:190|min:1',
       'date' => 'required|date',
-      'trailerLink' => 'required|max:255|min:1',
-      'posterLink' => 'required|max:255|min:1',
+      'trailerLink' => 'required|max:190|min:1',
+      'posterLink' => 'required|max:190|min:1',
       'bookedTickets' => 'integer',
       'movie_year_id' => 'required|integer'
     ]);
@@ -173,10 +173,10 @@ class MovieController extends Controller
   public function update(Request $request, $id)
   {
     $this->validate($request, [
-      'name' => 'required|max:255|min:1',
+      'name' => 'required|max:190|min:1',
       'date' => 'required|date',
-      'trailerLink' => 'required|max:255|min:1',
-      'posterLink' => 'required|max:255|min:1',
+      'trailerLink' => 'required|max:190|min:1',
+      'posterLink' => 'required|max:190|min:1',
       'bookedTickets' => 'integer',
       'movie_year_id' => 'required|integer'
     ]);

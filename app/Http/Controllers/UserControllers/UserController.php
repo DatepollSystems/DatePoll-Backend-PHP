@@ -60,12 +60,12 @@ class UserController extends Controller
   public function updateMyself(Request $request)
   {
     $this->validate($request, [
-      'firstname' => 'required|max:255|min:1',
-      'surname' => 'required|max:255|min:1',
-      'streetname' => 'required|max:255|min:1',
-      'streetnumber' => 'required|max:255|min:1',
+      'firstname' => 'required|max:190|min:1',
+      'surname' => 'required|max:190|min:1',
+      'streetname' => 'required|max:190|min:1',
+      'streetnumber' => 'required|max:190|min:1',
       'zipcode' => 'required|integer',
-      'location' => 'required|max:255|min:1',
+      'location' => 'required|max:190|min:1',
       'birthday' => 'required|date'
     ]);
 

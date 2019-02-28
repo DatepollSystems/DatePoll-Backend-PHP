@@ -1,7 +1,7 @@
 <?php namespace App\Console\Commands;
 
-use App\User;
-use App\UserPermission;
+use App\Models\User;
+use App\Models\UserPermission;
 use Illuminate\Console\Command;
 
 class AddAdminUser extends Command
