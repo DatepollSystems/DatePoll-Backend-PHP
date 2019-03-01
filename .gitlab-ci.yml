@@ -12,5 +12,5 @@ deploy_stage:
     - development
   script:
     - sshpass -V
-    - sshpass -p '$SSH_PASSWORD' ssh $SSH_USERNAME@$SSH_HOST 'uptime'
+    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'uptime'
     - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; git checkout development; git pull; composer i; composer install --optimize-autoloader --no-dev; php artisan droptables; php artisan migrate --force; php artisan addadminuser;'
