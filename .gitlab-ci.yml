@@ -13,4 +13,4 @@ deploy_stage:
   script:
     - sshpass -V
     - export SSHPASS=$SSH_PASSWORD
-    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend; composer i; composer install --optimize-autoloader --no-dev; php artisan droptables; php artisan migrate --force; php artisan addadminuser;'
+    - sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST 'cd /var/www/datepoll-backend;'
