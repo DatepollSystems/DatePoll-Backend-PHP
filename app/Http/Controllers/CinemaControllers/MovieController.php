@@ -269,7 +269,7 @@ class MovieController extends Controller
 
     $user = $request->auth;
 
-    $movies = null;
+    $movies = [];
 
     foreach ($allMovies as $movie) {
       if((time()-(60*60*24)) < strtotime($movie->date. ' 20:00:00')) {
