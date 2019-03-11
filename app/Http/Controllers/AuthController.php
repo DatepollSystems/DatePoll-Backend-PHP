@@ -50,7 +50,7 @@ class AuthController extends Controller
       ], 400);
     }
 
-    if (Hash::check($request->input('password'), $user->password)) {
+    if (Hash::check($request->input('password') . $user->id, $user->password)) {
       if($user->force_password_change) {
         return response()->json(['msg' => 'changePassword', 200]);
       }
@@ -84,9 +84,9 @@ class AuthController extends Controller
       ], 400);
     }
 
-    if (Hash::check($request->input('old_password'), $user->password)) {
+    if (Hash::check($request->input('old_password') . $user->id, $user->password)) {
       $user->force_password_change = false;
-      $user->password = app('hash')->make($request->input('new_password'));
+      $user->password = app('hash')->make($request->input('new_password') . $user->id);
       $user->save();
 
       return response()->json([

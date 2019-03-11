@@ -21,7 +21,7 @@ class UserChangePasswordController extends Controller
 
     $user = $request->auth;
 
-    if (Hash::check($request->input('password'), $user->password)) {
+    if (Hash::check($request->input('password') . $user->id, $user->password)) {
 
       return response()->json(['msg' => 'password_correct'], 200);
     }
@@ -42,8 +42,8 @@ class UserChangePasswordController extends Controller
 
     $user = $request->auth;
 
-    if(Hash::check($request->input('old_password'), $user->password)) {
-      $user->password = app('hash')->make($request->input('new_password'));
+    if(Hash::check($request->input('old_password') . $user->id, $user->password)) {
+      $user->password = app('hash')->make($request->input('new_password') . $user->id);
       $user->save();
 
       return response()->json(['msg' => 'password_changed'], 200);

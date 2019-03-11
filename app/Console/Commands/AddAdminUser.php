@@ -54,7 +54,11 @@ class AddAdminUser extends Command
       'activity' => 'active'
     ]);
     if($user->save()) {
-      $this->comment(PHP_EOL."Added admin user".PHP_EOL);
+      $this->comment(PHP_EOL."Add Admin User | Created".PHP_EOL);
+
+      $user->password = app('hash')->make('123456' . $user->id);
+      $user->save();
+      $this->comment(PHP_EOL."Add Admin User | Set password to: 123456".PHP_EOL);
 
       $permission = new UserPermission([
         'user_id' => $user->id,
@@ -62,13 +66,13 @@ class AddAdminUser extends Command
       ]);
 
       if($permission->save()) {
-        $this->comment(PHP_EOL."Added permissions".PHP_EOL);
+        $this->comment(PHP_EOL."Add Admin User | Added permissions".PHP_EOL);
       } else {
-        $this->comment(PHP_EOL."Could not permissions".PHP_EOL);
+        $this->comment(PHP_EOL."Add Admin User | Could not permissions".PHP_EOL);
       }
 
     } else {
-      $this->comment(PHP_EOL."Could not add admin user".PHP_EOL);
+      $this->comment(PHP_EOL."Add Admin User | Error".PHP_EOL);
     }
   }
 }

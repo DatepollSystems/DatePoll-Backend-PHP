@@ -20,7 +20,7 @@ class CreateMoviesBookingsTable extends Migration
       $table->integer('movie_id')->unsigned();
       $table->integer('amount');
 
-      $table->foreign('user_id')->references('id')->on('users');
+      $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
       $table->foreign('movie_id')
         ->references('id')->on('movies')
