@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ActivateUser;
 use App\Models\User;
+use App\Models\UserCode;
+use App\Models\UserTelephoneNumber;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class UsersController extends Controller
 {
@@ -38,30 +42,13 @@ class UsersController extends Controller
       $toReturnUser->force_password_change = $user->force_password_change;
       $toReturnUser->activated = $user->activated;
       $toReturnUser->activity = $user->activity;
+      $toReturnUser->phoneNumbers = $user->telephoneNumbers();
+      $toReturnUser->permissions = $user->permissions();
 
-      $user->view_user = [
+      $toReturnUser->view_user = [
         'href' => 'api/v1/management/users/'.$user->id,
         'method' => 'GET'
       ];
-
-      $userPermissions = DB::table('user_permissions')->where('user_id', '=', $user->id)->get();
-      $permissions = array();
-      foreach ($userPermissions as $permission) {
-        $permissions[] = $permission->permission;
-      }
-
-      $toReturnUser->permissions = $permissions;
-
-      $userTelephoneNumbers = DB::table('user_telephone_numbers')->where('user_id', '=', $user->id)->get();
-      $telephoneNumbers = array();
-      foreach ($userTelephoneNumbers as $telephoneNumber) {
-        $telephoneNumbers[] = [
-          'number' => $telephoneNumber->number,
-          'label' => $telephoneNumber->label
-        ];
-      }
-
-      $toReturnUser->telephoneNumbers = $telephoneNumbers;
 
       $toReturnUsers[] = $toReturnUser;
     }
@@ -84,53 +71,100 @@ class UsersController extends Controller
   public function create(Request $request)
   {
     $this->validate($request, [
-      'name' => 'required|max:255|min:1',
-      'date' => 'required|date',
-      'trailerLink' => 'required|max:255|min:1',
-      'posterLink' => 'required|max:255|min:1',
-      'bookedTickets' => 'integer',
-      'movie_year_id' => 'required|integer'
+      'title' => 'max:190',
+      'email' => 'required|email',
+      'firstname' => 'required|max:190|min:1',
+      'surname' => 'required|max:190|min:1',
+      'birthday' => 'required|date',
+      'join_date' => 'required|date',
+      'streetname' => 'required|max:190|min:1',
+      'streetnumber' => 'required|max:190|min:1',
+      'zipcode' => 'required|integer',
+      'location' => 'required|max:190|min:1',
+      'activated' => 'required|boolean',
+      'activity' => 'required|max:190|min:1',
+      'phoneNumbers' => 'array'
     ]);
 
-    $name = $request->input('name');
-    $date = $request->input('date');
-    $trailerLink = $request->input('trailerLink');
-    $posterLink = $request->input('posterLink');
-    $bookedTickets = $request->input('bookedTickets');
-    $movie_year_id = $request->input('movie_year_id');
+    $email = $request->input('email');
+    $firstname = $request->input('firstname');
+    $surname = $request->input('surname');
+    $activated = $request->input('activated');
+    $phoneNumbers = $request->input('phoneNumbers');
 
-    if(MovieYear::find($movie_year_id) == null) {
-      return response()->json(['msg' => 'Movie year does not exist'], 404);
+    if(User::where('email', $email)->first() != null) {
+      return response()->json(['msg' => 'The email address is already used',
+        'error_code' => 'email_address_already_used'], 400);
     }
 
-    $movie = new Movie([
-      'name' => $name,
-      'date' => $date,
-      'trailerLink' => $trailerLink,
-      'posterLink' => $posterLink,
-      'bookedTickets' => $bookedTickets,
-      'movie_year_id' => $movie_year_id
+    $user = new User([
+      'title' => $request->input('title'),
+      'email' => $email,
+      'firstname' => $firstname,
+      'surname' => $surname,
+      'birthday' => $request->input('birthday'),
+      'join_date' => $request->input('join_date'),
+      'streetname' => $request->input('streetname'),
+      'streetnumber' => $request->input('streetnumber'),
+      'zipcode' => $request->input('zipcode'),
+      'location' => $request->input('location'),
+      'activated' => $activated,
+      'activity' => $request->input('activity'),
+      'password' => 'Null'
     ]);
 
-    if($movie->save()) {
-      $movie->view_movie = [
-        'href' => 'api/v1/cinema/movie/'.$movie->getAttribute('id'),
-        'method' => 'GET'
-      ];
-
-      $response = [
-        'msg' => 'Movie created',
-        'movie' => $movie
-      ];
-
-      return response()->json($response, 201);
+    if(!$user->save()) {
+      return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    $response = [
-      'msg' => 'An error occurred'
+    foreach ((array)$phoneNumbers as $phoneNumber) {
+      $phoneNumberToSave = new UserTelephoneNumber([
+        'label' => $phoneNumber['label'],
+        'number' => $phoneNumber['number'],
+        'user_id' => $user->id
+      ]);
+
+      $phoneNumberToSave->save();
+    }
+
+    if($activated) {
+      $randomPassword = UserCode::generateCode();
+      $user->password = app('hash')->make($randomPassword . $user->id);;
+      $user->force_password_change = true;
+      $user->save();
+
+      Mail::to($user->email)->send(new ActivateUser($firstname . " " . $surname, $randomPassword));
+    }
+
+    $user = User::find($user->id);
+
+    $userToShow = new \stdClass();
+    $userToShow->title = $user->title;
+    $userToShow->email = $user->email;
+    $userToShow->firstname = $user->firstname;
+    $userToShow->surname = $user->surname;
+    $userToShow->birthday = $user->birthday;
+    $userToShow->join_date = $user->join_date;
+    $userToShow->streetname = $user->streetname;
+    $userToShow->streetnumber = $user->streetnumber;
+    $userToShow->zipcode = $user->zipcode;
+    $userToShow->location = $user->location;
+    $userToShow->activated = $user->activated;
+    $userToShow->activity = $user->activity;
+    $userToShow->force_password_change = $user->force_password_change;
+    $userToShow->phoneNumbers = $user->telephoneNumbers();
+    $userToShow->permissions = $user->permissions();
+    $userToShow->view_user = [
+      'href' => 'api/v1/management/users/'.$user->id,
+      'method' => 'GET'
     ];
 
-    return response()->json($response, 404);
+    $response = [
+      'msg' => 'User successful created',
+      'user' => $userToShow
+    ];
+
+    return response()->json($response, 201);
   }
 
   /**
@@ -141,34 +175,37 @@ class UsersController extends Controller
    */
   public function getSingle($id)
   {
-    $movie = Movie::find($id);
-    if($movie == null) {
-      return response()->json(['msg' => 'Movie not found'], 404);
+    $user = User::find($id);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found'], 404);
     }
 
-    $worker = $movie->worker();
-    $emergencyWorker = $movie->emergencyWorker();
+    $userToShow = new \stdClass();
 
-    if($worker == null) {
-      $movie->workerName = null;
-    } else {
-      $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
-    }
+    $userToShow->title = $user->title;
+    $userToShow->firstname = $user->firstname;
+    $userToShow->surname = $user->surname;
+    $userToShow->email = $user->email;
+    $userToShow->birthday = $user->birthday;
+    $userToShow->join_date = $user->join_date;
+    $userToShow->streetname = $user->streetname;
+    $userToShow->streetnumber = $user->streetnumber;
+    $userToShow->zipcode = $user->zipcode;
+    $userToShow->location = $user->location;
+    $userToShow->activated = $user->activated;
+    $userToShow->activity = $user->activity;
+    $userToShow->force_password_change = $user->force_password_change;
+    $userToShow->phoneNumbers = $user->telephoneNumbers();
+    $userToShow->permissions = $user->permissions();
 
-    if($emergencyWorker == null) {
-      $movie->emergencyWorkerName = null;
-    } else {
-      $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
-    }
-
-    $movie->view_movies = [
-      'href' => 'api/v1/cinema/movie',
+    $userToShow->view_users = [
+      'href' => 'api/v1/management/users',
       'method' => 'GET'
     ];
 
     $response = [
-      'msg' => 'Movie information',
-      'movie' => $movie
+      'msg' => 'User information',
+      'user' => $userToShow
     ];
     return response()->json($response);
   }
@@ -184,57 +221,111 @@ class UsersController extends Controller
   public function update(Request $request, $id)
   {
     $this->validate($request, [
-      'name' => 'required|max:255|min:1',
-      'date' => 'required|date',
-      'trailerLink' => 'required|max:255|min:1',
-      'posterLink' => 'required|max:255|min:1',
-      'bookedTickets' => 'integer',
-      'movie_year_id' => 'required|integer'
+      'title' => 'max:190',
+      'email' => 'required|email',
+      'firstname' => 'required|max:190|min:1',
+      'surname' => 'required|max:190|min:1',
+      'birthday' => 'required|date',
+      'join_date' => 'required|date',
+      'streetname' => 'required|max:190|min:1',
+      'streetnumber' => 'required|max:190|min:1',
+      'zipcode' => 'required|integer',
+      'location' => 'required|max:190|min:1',
+      'activated' => 'required|boolean',
+      'activity' => 'required|max:190|min:1',
+      'phoneNumbers' => 'array'
     ]);
 
-    $name = $request->input('name');
-    $date = $request->input('date');
-    $trailerLink = $request->input('trailerLink');
-    $posterLink = $request->input('posterLink');
-    $bookedTickets = $request->input('bookedTickets');
-    $movie_year_id = $request->input('movie_year_id');
-
-    $movie = Movie::find($id);
-
-    if($movie == null) {
-      return response()->json(['msg' => 'Movie does not exist'], 404);
+    $user = User::find($id);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
     }
 
-    if(MovieYear::find($movie_year_id) == null) {
-      return response()->json(['msg' => 'Movie year does not exist'], 404);
+    $email = $request->input('email');
+
+    if($email != $user->email) {
+      if(User::where('email', $email)->first() != null) {
+        return response()->json(['msg' => 'The email address is already used',
+          'error_code' => 'email_address_already_used'], 400);
+      }
     }
 
-    $movie->name = $name;
-    $movie->date = $date;
-    $movie->trailerLink = $trailerLink;
-    $movie->posterLink = $posterLink;
-    $movie->bookedTickets = $bookedTickets;
-    $movie->movie_year_id = $movie_year_id;
+    $firstname = $request->input('firstname');
+    $surname = $request->input('surname');
+    $activated = $request->input('activated');
+    $phoneNumbers = $request->input('phoneNumbers');
 
-    if($movie->save()) {
-      $movie->view_movie = [
-        'href' => 'api/v1/cinema/movie/'.$movie->getAttribute('id'),
-        'method' => 'GET'
-      ];
+    $user->email = $email;
+    $user->title = $request->input('title');
+    $user->firstname = $firstname;
+    $user->surname = $surname;
+    $user->birthday = $request->input('birthday');
+    $user->join_date = $request->input('join_date');
+    $user->streetname = $request->input('streetname');
+    $user->streetnumber = $request->input('streetnumber');
+    $user->zipcode = $request->input('zipcode');
+    $user->location = $request->input('location');
+    $user->activated = $activated;
+    $user->activity = $request->input('activity');
 
-      $response = [
-        'msg' => 'Movie updated',
-        'year' => $movie
-      ];
-
-      return response()->json($response, 201);
+    if(!$user->save()) {
+      return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    $response = [
-      'msg' => 'An error occurred'
+    $phoneNumbersToDelete = $user->telephoneNumbers();
+    foreach ($phoneNumbersToDelete as $phoneNumberToDelete) {
+      $phoneNumberToDeleteObject = UserTelephoneNumber::find($phoneNumberToDelete->id);
+      if(!$phoneNumberToDeleteObject->delete()) {
+        return response()->json(['msg' => 'Failed during telephone number clearing...'], 500);
+      }
+    }
+
+    foreach ((array)$phoneNumbers as $phoneNumber) {
+      $phoneNumberToSave = new UserTelephoneNumber([
+        'label' => $phoneNumber['label'],
+        'number' => $phoneNumber['number'],
+        'user_id' => $user->id
+      ]);
+
+      $phoneNumberToSave->save();
+    }
+
+    if($activated) {
+      $randomPassword = UserCode::generateCode();
+      $user->password = app('hash')->make($randomPassword . $user->id);;
+      $user->force_password_change = true;
+      $user->save();
+
+      Mail::to($user->email)->send(new ActivateUser($firstname . " " . $surname, $randomPassword));
+    }
+
+    $userToShow = new \stdClass();
+    $userToShow->title = $user->title;
+    $userToShow->email = $user->email;
+    $userToShow->firstname = $user->firstname;
+    $userToShow->surname = $user->surname;
+    $userToShow->birthday = $user->birthday;
+    $userToShow->join_date = $user->join_date;
+    $userToShow->streetname = $user->streetname;
+    $userToShow->streetnumber = $user->streetnumber;
+    $userToShow->zipcode = $user->zipcode;
+    $userToShow->location = $user->location;
+    $userToShow->activated = $user->activated;
+    $userToShow->activity = $user->activity;
+    $userToShow->force_password_change = $user->force_password_change;
+    $userToShow->phoneNumbers = $user->telephoneNumbers();
+    $userToShow->permissions = $user->permissions();
+    $userToShow->view_user = [
+      'href' => 'api/v1/management/users/'.$user->id,
+      'method' => 'GET'
     ];
 
-    return response()->json($response, 404);
+    $response = [
+      'msg' => 'User updated created',
+      'user' => $userToShow
+    ];
+
+    return response()->json($response, 200);
   }
 
   /**
@@ -245,74 +336,22 @@ class UsersController extends Controller
    */
   public function delete($id)
   {
-    $movie = Movie::find($id);
-    if($movie == null) {
-      return response()->json(['msg' => 'Movie not found'], 404);
+    $user = User::find($id);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found'], 404);
     }
 
-    if(!$movie->delete()) {
-      return response()->json(['msg' => 'Deletion failed'], 404);
+    if(!$user->delete()) {
+      return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
     $response = [
-      'msg' => 'Movie deleted',
+      'msg' => 'User deleted',
       'create' => [
-        'href' => 'api/v1/cinema/movie',
+        'href' => 'api/v1/management/users',
         'method' => 'POST',
-        'params' => 'name, date, trailerLink, posterLink, bookedTickets, movie_year_id'
+        'params' => 'title, email, firstname, surname, birthday, join_date, streetname, streetnumber, zipcode, location, activated, activity, phoneNumbers'
       ]
-    ];
-
-    return response()->json($response);
-  }
-
-  public function getNotShownMovies()
-  {
-    $allMovies = Movie::all();
-    if($allMovies == null) {
-      $response = [
-        'msg' => 'List of not shown movies',
-        'movies' => $allMovies
-      ];
-
-      return response()->json($response);
-    }
-
-    $movies = null;
-
-    $i = 0;
-    foreach ($allMovies as $movie) {
-      if((time()-(60*60*24)) < strtotime($movie->date. ' 22:00:00')) {
-        $movies[$i] = $movie;
-        $i++;
-      }
-    }
-
-    foreach ($movies as $movie) {
-      $worker = $movie->worker();
-      $emergencyWorker = $movie->emergencyWorker();
-
-      if($worker == null) {
-        $movie->workerName = null;
-      } else {
-        $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
-      }
-
-      if($emergencyWorker == null) {
-        $movie->emergencyWorkerName = null;
-      } else {
-        $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
-      }
-
-      $movie->view_movie = [
-        'href' => 'api/v1/cinema/movie/'.$movie->getAttribute('id'),
-        'method' => 'GET'
-      ];
-    }
-
-    $response = [
-      'msg' => 'List of not shown movies',
-      'movies' => $movies
     ];
 
     return response()->json($response);

@@ -51,8 +51,12 @@ class AuthController extends Controller
     }
 
     if (Hash::check($request->input('password') . $user->id, $user->password)) {
+      if(!$user->activated) {
+        return response()->json(['msg' => 'notActivated'], 201);
+      }
+
       if($user->force_password_change) {
-        return response()->json(['msg' => 'changePassword', 200]);
+        return response()->json(['msg' => 'changePassword', 201]);
       }
 
       return response()->json([

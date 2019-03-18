@@ -34,7 +34,6 @@ class CreateUsersTable extends Migration
 
       $table->string('activity')->nullable(false);
 
-      $table->string('remember_token', 512)->nullable(true);
       $table->timestamps();
     });
   }

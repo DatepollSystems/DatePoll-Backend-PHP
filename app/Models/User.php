@@ -20,7 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $streetnumber
  * @property string $zipcode
  * @property string $location
- * @property string $remember_token
+ * @property boolean $activated
+ * @property string $activity
  * @property string $created_at
  * @property string $updated_at
  * @property Movie[] emergencyWorkerMovies
@@ -34,7 +35,7 @@ class User extends Model
   /**
    * @var array
    */
-  protected $fillable = ['email', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'remember_token', 'created_at', 'updated_at', 'activated', 'activity'];
+  protected $fillable = ['email', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'created_at', 'updated_at', 'activated', 'activity'];
 
   /**
    * @return \Illuminate\Database\Eloquent\Collection
@@ -78,7 +79,21 @@ class User extends Model
   /**
    * @return \Illuminate\Database\Eloquent\Collection
    */
-  public function userPermissions()
+  public function usersMemberOfGroups() {
+    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();
+  }
+
+  /**
+   * @return \Illuminate\Database\Eloquent\Collection
+   */
+  public function usersMemberOfSubgroups() {
+    return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();
+  }
+
+  /**
+   * @return \Illuminate\Database\Eloquent\Collection
+   */
+  public function permissions()
   {
     return $this->hasMany('App\Models\UserPermission')->get();
   }
@@ -89,7 +104,7 @@ class User extends Model
    */
   public function hasPermission($permission)
   {
-    if($this->userPermissions()->where("permission", "=", $permission)->first()) {
+    if($this->permissions()->where("permission", "=", $permission)->first()) {
       return true;
     }
 
