@@ -3,7 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-  (new Dotenv\Dotenv(dirname(__DIR__)))->load();
+  (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
+    dirname(__DIR__)
+  ))->bootstrap();
 } catch (Dotenv\Exception\InvalidPathException $e) {
   //
 }
@@ -78,6 +80,7 @@ $app->routeMiddleware([
 | totally optional, so you are not required to uncomment this line.
 |
 */
+$app->register(App\Providers\AppServiceProvider::class);
 
 /* IDE Helper*/
 $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
@@ -85,8 +88,8 @@ $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 /* Generate classes from migration files*/
 $app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
 
+/* Enable CORS on every route */
 $app->register(Barryvdh\Cors\ServiceProvider::class);
-$app->register(App\Providers\AppServiceProvider::class);
 
 /* Make php artisan:make command as powerful as in laravel */
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
