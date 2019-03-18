@@ -9,7 +9,6 @@ use App\Models\UserCode;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use PHPMailer\PHPMailer\PHPMailer;
 
 class UserChangeEmailController extends Controller
 {
@@ -28,25 +27,6 @@ class UserChangeEmailController extends Controller
 
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
-
-//      $mail = new PHPMailer(true); // notice the \  you have to use root namespace here
-//      try {
-//        $mail->isSMTP(); // tell to use smtp
-//        $mail->CharSet = "utf-8"; // set charset to utf8
-//        $mail->SMTPAuth = true;  // use smpt auth
-//        $mail->SMTPSecure = env('MAIL_ENCRYPTION'); // or ssl
-//        $mail->Host = env('MAIL_HOST');
-//        $mail->Port = env('MAIL_PORT'); // most likely something different for you. This is the mailtrap.io port i use for testing.
-//        $mail->Username = env('MAIL_USERNAME');
-//        $mail->Password = env('MAIL_PASSWORD');
-//        $mail->setFrom(env('MAIL_FROM_ADDRESS'), "DatePoll");
-//        $mail->Subject = "Test";
-//        $mail->MsgHTML("This is a test");
-//        $mail->addAddress($user->email, $name);
-//        $mail->send();
-//      } catch (\Exception $e) {
-//        dd($e);
-//      }
 
       Mail::to($user->email)->send(new OldEmailVerifying($name, $code));
 
