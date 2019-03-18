@@ -26,6 +26,8 @@ class UserChangeEmailController extends Controller
     ]);
 
     if ($userCode->save()) {
+      return response()->json(['msg' => 'test']);
+
       $name = $user->firstname . ' ' . $user->surname;
 
       Mail::to($user->email)->send(new OldEmailVerifying($name, $code));
