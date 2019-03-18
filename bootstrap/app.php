@@ -60,14 +60,14 @@ $app->singleton(
 |
 */
 /* Enable all CORS */
-//$app->middleware([
-//  \Barryvdh\Cors\HandleCors::class,
-//]);
+$app->middleware([
+  //\Barryvdh\Cors\HandleCors::class,
+  App\Http\Middleware\CORS::class
+]);
 
 $app->routeMiddleware([
   /* Enable JWT-Auth */
-  'jwt.auth' => App\Http\Middleware\JwtMiddleware::class,
-  'cors' => \App\Http\Middleware\CORS::class,
+  'jwt.auth' => App\Http\Middleware\JwtMiddleware::class
 ]);
 
 /*

@@ -15,7 +15,7 @@ $router->get('/', function () use ($router) {
     return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ';
 });
 
-$router->group(['prefix' => 'api', 'middleware' => 'cors'], function () use ($router) {
+$router->group(['prefix' => 'api'], function () use ($router) {
 
   $router->get('/', function () use ($router) {
     return response()->json(['version' => '0.0.1', 'version_number' => 1], 200);
