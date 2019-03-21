@@ -61,8 +61,7 @@ $app->singleton(
 */
 /* Enable all CORS */
 $app->middleware([
-  //\Barryvdh\Cors\HandleCors::class,
-  App\Http\Middleware\CORS::class
+  \Barryvdh\Cors\HandleCors::class,
 ]);
 
 $app->routeMiddleware([
