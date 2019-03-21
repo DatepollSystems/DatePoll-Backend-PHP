@@ -265,6 +265,7 @@ class UsersController extends Controller
     $user->streetnumber = $request->input('streetnumber');
     $user->zipcode = $request->input('zipcode');
     $user->location = $request->input('location');
+    $oldActivatedStatus = $user->activated;
     $user->activated = $activated;
     $user->activity = $request->input('activity');
 
@@ -290,7 +291,7 @@ class UsersController extends Controller
       $phoneNumberToSave->save();
     }
 
-    if($activated) {
+    if($activated AND !$oldActivatedStatus) {
       $randomPassword = UserCode::generateCode();
       $user->password = app('hash')->make($randomPassword . $user->id);;
       $user->force_password_change = true;
