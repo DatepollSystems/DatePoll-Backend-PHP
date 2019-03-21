@@ -14,13 +14,6 @@ class CreateUsersMemberOfGroupsTable extends Migration
   public function up()
   {
     Schema::create('users_member_of_groups', function (Blueprint $table) {
-      $table->increments('id');
-
-      $table->integer('group_role_id')->nullable(true)->unsigned();;
-      $table->foreign('group_role_id')
-        ->references('id')->on('group_roles')
-        ->onDelete('cascade');
-
       $table->integer('group_id')->unsigned();;
       $table->foreign('group_id')
         ->references('id')->on('groups')
@@ -30,6 +23,8 @@ class CreateUsersMemberOfGroupsTable extends Migration
       $table->foreign('user_id')
         ->references('id')->on('users')
         ->onDelete('cascade');
+
+      $table->string('role')->nullable(true);
 
       $table->timestamps();
     });

@@ -20,20 +20,13 @@ class UsersMemberOfSubgroups extends Model
   /**
    * @var array
    */
-  protected $fillable = ['subgroup_role_id', 'subgroup_id', 'user_id', 'created_at', 'updated_at'];
+  protected $fillable = ['role', 'subgroup_id', 'user_id', 'created_at', 'updated_at'];
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function subgroup() {
     return $this->belongsTo('App\Models\Subgroups\Subgroup')->first();
-  }
-
-  /**
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-   */
-  public function subgroupRole() {
-    return $this->belongsTo('App\Models\Subgroups\SubgroupRole')->first();
   }
 
   /**

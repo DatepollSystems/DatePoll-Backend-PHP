@@ -14,13 +14,6 @@ class CreateUsersMemberOfSubgroupsTable extends Migration
   public function up()
   {
     Schema::create('users_member_of_subgroups', function (Blueprint $table) {
-      $table->increments('id');
-
-      $table->integer('subgroup_role_id')->nullable(true)->unsigned();;
-      $table->foreign('subgroup_role_id')
-        ->references('id')->on('subgroup_roles')
-        ->onDelete('cascade');
-
       $table->integer('subgroup_id')->unsigned();;
       $table->foreign('subgroup_id')
         ->references('id')->on('subgroups')
@@ -30,6 +23,8 @@ class CreateUsersMemberOfSubgroupsTable extends Migration
       $table->foreign('user_id')
         ->references('id')->on('users')
         ->onDelete('cascade');
+
+      $table->string('role')->nullable(true);
 
       $table->timestamps();
     });

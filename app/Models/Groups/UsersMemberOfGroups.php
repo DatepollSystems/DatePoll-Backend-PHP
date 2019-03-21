@@ -20,20 +20,13 @@ class UsersMemberOfGroups extends Model
   /**
    * @var array
    */
-  protected $fillable = ['group_role_id', 'group_id', 'user_id', 'created_at', 'updated_at'];
+  protected $fillable = ['role', 'group_id', 'user_id', 'created_at', 'updated_at'];
 
   /**
    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
    */
   public function group() {
     return $this->belongsTo('App\Models\Groups\Group')->first();
-  }
-
-  /**
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-   */
-  public function groupRole() {
-    return $this->belongsTo('App\Models\Groups\GroupRole')->first();
   }
 
   /**
