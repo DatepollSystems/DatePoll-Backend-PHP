@@ -4,6 +4,8 @@ namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Groups\Group;
+use App\Models\Groups\UsersMemberOfGroups;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
@@ -81,6 +83,20 @@ class GroupController extends Controller
     }
 
     $group->subgroups = $group->subgroups();
+
+    $usersToShow = [];
+
+    $usersMembersOfGroups = $group->usersMemberOfGroups();
+    foreach ($usersMembersOfGroups as $userMemberOfGroup) {
+      $user = new \stdClass();
+      $user->id = $userMemberOfGroup->user()->id;
+      $user->firstname = $userMemberOfGroup->user()->firstname;
+      $user->surname = $userMemberOfGroup->user()->surname;
+
+      $usersToShow[] = $user;
+    }
+
+    $group->users = $usersToShow;
 
     $group->view_groups = [
       'href' => 'api/v1/management/groups',
@@ -166,6 +182,91 @@ class GroupController extends Controller
         'href' => 'api/v1/management/group',
         'method' => 'POST',
         'params' => 'name, description'
+      ]
+    ];
+
+    return response()->json($response, 200);
+  }
+
+  public function addUser(Request $request) {
+    $this->validate($request, [
+      'user_id' => 'required|integer',
+      'group_id' => 'required|integer',
+      'role' => 'max:190'
+    ]);
+
+    $userID = $request->input('user_id');
+    $groupID = $request->input('group_id');
+    $role = $request->input('role');
+
+    if(!User::exists($userID)) {
+      return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    if(Group::find($groupID) == null) {
+      return response()->json(['msg' => 'Group not found'], 404);
+    }
+
+    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)->where('user_id', $userID)->first();
+    if($userMemberOfGroup != null) {
+      return response()->json(['msg' => 'User is already member of this group'], 400);
+    }
+
+    $userMemberOfGroup = new UsersMemberOfGroups([
+      'user_id' => $userID,
+      'group_id' => $groupID,
+      'role' => $role
+    ]);
+
+    if(!$userMemberOfGroup->save()) {
+      return response()->json(['msg' => 'Could not add user to this group'], 500);
+    }
+
+    $response = [
+      'msg' => 'Successfully added user to group',
+      'userMemberOfGroup' => $userMemberOfGroup,
+      'removeUser' => [
+        'href' => 'api/v1/management/group/removeUser',
+        'method' => 'POST',
+        'params' => 'group_id, user_id'
+      ]
+    ];
+
+    return response()->json($response, 201);
+  }
+
+  public function removeUser(Request $request) {
+    $this->validate($request, [
+      'user_id' => 'required|integer',
+      'group_id' => 'required|integer'
+    ]);
+
+    $userID = $request->input('user_id');
+    $groupID = $request->input('group_id');
+
+    if(!User::exists($userID)) {
+      return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    if(Group::find($groupID) == null) {
+      return response()->json(['msg' => 'Group not found'], 404);
+    }
+
+    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)->where('user_id', $userID)->first();
+    if($userMemberOfGroup == null) {
+      return response()->json(['msg' => 'User is not a member of this group'], 400);
+    }
+
+    if(!$userMemberOfGroup->delete()) {
+      return response()->json(['msg' => 'Could not remove user of this group'], 500);
+    }
+
+    $response = [
+      'msg' => 'Successfully removed user from group',
+      'addUser' => [
+        'href' => 'api/v1/management/group/addUser',
+        'method' => 'POST',
+        'params' => 'group_id, user_id, role'
       ]
     ];
 

@@ -14,6 +14,8 @@ class CreateUsersMemberOfSubgroupsTable extends Migration
   public function up()
   {
     Schema::create('users_member_of_subgroups', function (Blueprint $table) {
+      $table->increments('id');
+
       $table->integer('subgroup_id')->unsigned();;
       $table->foreign('subgroup_id')
         ->references('id')->on('subgroups')

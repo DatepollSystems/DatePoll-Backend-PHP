@@ -37,6 +37,11 @@ class User extends Model
    */
   protected $fillable = ['email', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'created_at', 'updated_at', 'activated', 'activity'];
 
+  public static function exists($userID) {
+    $user = User::find($userID);
+    return $user != null;
+  }
+
   /**
    * @return \Illuminate\Database\Eloquent\Collection
    */
