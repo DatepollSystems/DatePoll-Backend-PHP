@@ -306,4 +306,58 @@ class SubgroupController extends Controller
 
     return response()->json($response, 200);
   }
+
+  public function joined($userID) {
+    $user = User::find($userID);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+    }
+
+    $subgroupsToReturn = array();
+
+    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userID)->get();
+    foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
+      $subgroup = $userMemberOfSubgroup->subgroup();
+
+      $subgroup->view_subgroup = [
+        'href' => 'api/v1/management/subgroups/'.$subgroup->id,
+        'method' => 'GET'
+      ];
+
+      $subgroupsToReturn[] = $subgroup;
+    }
+
+    return response()->json(['msg' => 'List of joined subgroups', 'subgroups' => $subgroupsToReturn], 200);
+  }
+
+  public function free($userID) {
+    $user = User::find($userID);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+    }
+
+    $allSubgroups = Subgroup::all();
+    $subgroupsToReturn = array();
+    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userID)->get();
+    foreach ($allSubgroups as $subgroup) {
+      $isInSubgroup = false;
+      foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
+        if($userMemberOfSubgroup->subgroup()->id == $subgroup->id) {
+          $isInSubgroup = true;
+          break;
+        }
+      }
+
+      if(!$isInSubgroup) {
+        $subgroup->view_subgroup = [
+          'href' => 'api/v1/management/subgroups/'.$subgroup->id,
+          'method' => 'GET'
+        ];
+
+        $subgroupsToReturn[] = $subgroup;
+      }
+    }
+
+    return response()->json(['msg' => 'List of free subgroups', 'subgroups' => $subgroupsToReturn], 200);
+  }
 }

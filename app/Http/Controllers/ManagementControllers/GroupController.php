@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ManagementControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
+use App\Models\Subgroups\UsersMemberOfSubgroups;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -261,8 +262,24 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Could not remove user of this group'], 500);
     }
 
+    /* Remove user from child subgroups */
+    $userMemberOfSubgroupsToRemove = array();
+    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userID)->get();
+    foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
+      if($userMemberOfSubgroup->subgroup()->group_id = $groupID) {
+        $userMemberOfSubgroupsToRemove[] = $userMemberOfSubgroup;
+      }
+    }
+
+    foreach ($userMemberOfSubgroupsToRemove as $userMemberOfSubgroupToRemove) {
+      if(!$userMemberOfSubgroupToRemove->delete()) {
+        return response()->json(['msg' => 'Could not remove user of child subgroups'], 500);
+      }
+    }
+
     $response = [
       'msg' => 'Successfully removed user from group',
+      'userMemberOfSubgroups' => $userMemberOfSubgroups,
       'addUser' => [
         'href' => 'api/v1/management/group/addUser',
         'method' => 'POST',
@@ -271,5 +288,58 @@ class GroupController extends Controller
     ];
 
     return response()->json($response, 200);
+  }
+
+  public function joined($userID) {
+    $user = User::find($userID);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+    }
+
+    $groupsToReturn = array();
+    $userMemberOfGroups = UsersMemberOfGroups::where('user_id', $userID)->get();
+    foreach ($userMemberOfGroups as $userMemberOfGroup) {
+      $group = $userMemberOfGroup->group();
+
+      $group->view_group = [
+        'href' => 'api/v1/management/groups/'.$group->id,
+        'method' => 'GET'
+      ];
+
+      $groupsToReturn[] = $group;
+    }
+
+    return response()->json(['msg' => 'List of joined groups', 'groups' => $groupsToReturn], 200);
+  }
+
+  public function free($userID) {
+    $user = User::find($userID);
+    if($user == null) {
+      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+    }
+
+    $allGroups = Group::all();
+    $groupsToReturn = array();
+    $userMemberOfGroups = UsersMemberOfGroups::where('user_id', $userID)->get();
+    foreach ($allGroups as $group) {
+      $isInGroup = false;
+      foreach ($userMemberOfGroups as $userMemberOfGroup) {
+        if($userMemberOfGroup->group()->id == $group->id) {
+          $isInGroup = true;
+          break;
+        }
+      }
+
+      if(!$isInGroup) {
+        $group->view_group = [
+          'href' => 'api/v1/management/groups/'.$group->id,
+          'method' => 'GET'
+        ];
+
+        $groupsToReturn[] = $group;
+      }
+    }
+
+    return response()->json(['msg' => 'List of free groups', 'groups' => $groupsToReturn], 200);
   }
 }
