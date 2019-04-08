@@ -35,6 +35,6 @@ class CreateUserCodesTable extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('users_codes');
+    Schema::dropIfExists('user_codes');
   }
 }
