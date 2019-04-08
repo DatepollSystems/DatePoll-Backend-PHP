@@ -39,4 +39,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     require_once (__DIR__ . '/CinemaRoutes.php');
 
   });
+
+  /** Calendar route */
+  $router->get('user/calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
+  $router->get('calendar/complete', ['uses' => 'CalendarController@getCompleteCalendar']);
 });

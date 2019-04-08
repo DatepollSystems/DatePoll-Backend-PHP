@@ -8,22 +8,29 @@ $router->group(['prefix' => 'user'], function () use ($router) {
   $router->get('myself', ['uses' => 'UserControllers\UserController@getMyself']);
   $router->put('myself', ['uses' => 'UserControllers\UserController@updateMyself']);
 
-  /** Change email */
-  $router->group(['prefix' => 'myself/changeEmail'], function () use ($router) {
-    $router->get('oldEmailAddressVerification', ['uses' => 'UserControllers\UserChangeEmailController@oldEmailAddressVerification']);
-    $router->post('oldEmailAddressVerificationCodeVerification', ['uses' => 'UserControllers\UserChangeEmailController@oldEmailAddressVerificationCodeVerification']);
-    $router->post('newEmailAddressVerification', ['uses' => 'UserControllers\UserChangeEmailController@newEmailAddressVerification']);
-    $router->post('newEmailAddressVerificationCodeVerification', ['uses' => 'UserControllers\UserChangeEmailController@newEmailAddressVerificationCodeVerification']);
-    $router->post('changeEmailAddress', ['uses' => 'UserControllers\UserChangeEmailController@changeEmailAddress']);
-  });
+  $router->group(['prefix' => 'myself'], function () use ($router) {
+    /** Change email */
+    $router->group(['prefix' => 'changeEmail'], function () use ($router) {
+      $router->get('oldEmailAddressVerification', ['uses' => 'UserControllers\UserChangeEmailController@oldEmailAddressVerification']);
+      $router->post('oldEmailAddressVerificationCodeVerification', ['uses' => 'UserControllers\UserChangeEmailController@oldEmailAddressVerificationCodeVerification']);
+      $router->post('newEmailAddressVerification', ['uses' => 'UserControllers\UserChangeEmailController@newEmailAddressVerification']);
+      $router->post('newEmailAddressVerificationCodeVerification', ['uses' => 'UserControllers\UserChangeEmailController@newEmailAddressVerificationCodeVerification']);
+      $router->post('changeEmailAddress', ['uses' => 'UserControllers\UserChangeEmailController@changeEmailAddress']);
+    });
 
-  /** Change password */
-  $router->group(['prefix' => 'myself/changePassword'], function () use ($router) {
-    $router->post('checkOldPassword', ['uses' => 'UserControllers\UserChangePasswordController@checkOldPassword']);
-    $router->post('changePassword', ['uses' => 'UserControllers\UserChangePasswordController@changePassword']);
-  });
+    /** Change password */
+    $router->group(['prefix' => 'changePassword'], function () use ($router) {
+      $router->post('checkOldPassword', ['uses' => 'UserControllers\UserChangePasswordController@checkOldPassword']);
+      $router->post('changePassword', ['uses' => 'UserControllers\UserChangePasswordController@changePassword']);
+    });
 
-  /** Change phone numbers */
-  $router->post('myself/phoneNumber', ['uses' => 'UserControllers\UserChangePhoneNumberController@addPhoneNumber']);
-  $router->delete('myself/phoneNumber/{id}', ['uses' => 'UserControllers\UserChangePhoneNumberController@removePhoneNumber']);
+    /** Change phone numbers */
+    $router->post('phoneNumber', ['uses' => 'UserControllers\UserChangePhoneNumberController@addPhoneNumber']);
+    $router->delete('phoneNumber/{id}', ['uses' => 'UserControllers\UserChangePhoneNumberController@removePhoneNumber']);
+
+    $router->group(['prefix' => 'token'], function () use ($router) {
+      $router->get('calendar', ['uses' => 'UserControllers\UserTokenController@getCalendarToken']);
+      $router->delete('calendar', ['uses' => 'UserControllers\UserTokenController@resetCalendarToken']);
+    });
+  });
 });
