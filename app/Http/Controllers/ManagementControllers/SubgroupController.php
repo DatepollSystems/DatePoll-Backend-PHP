@@ -97,6 +97,7 @@ class SubgroupController extends Controller
       $user->id = $userMemberOfSubgroup->user()->id;
       $user->firstname = $userMemberOfSubgroup->user()->firstname;
       $user->surname = $userMemberOfSubgroup->user()->surname;
+      $user->role = $userMemberOfSubgroup->role;
 
       $usersToShow[] = $user;
     }
@@ -229,7 +230,7 @@ class SubgroupController extends Controller
 
     $userMemberOfSubgroup = UsersMemberOfSubgroups::where('user_id', $userID)->where('subgroup_id', $subgroupID)->first();
     if($userMemberOfSubgroup != null) {
-      return response()->json(['msg' => 'User is already member of this subgroup'], 400);
+      return response()->json(['msg' => 'User is already member of this subgroup'], 201);
     }
 
     $userMemberOfParentGroup = UsersMemberOfGroups::where('user_id', $userID)->where('group_id', $subgroup->group_id)->first();
@@ -288,7 +289,7 @@ class SubgroupController extends Controller
 
     $userMemberOfSubgroup = UsersMemberOfSubgroups::where('subgroup_id', $subgroupID)->where('user_id', $userID)->first();
     if($userMemberOfSubgroup == null) {
-      return response()->json(['msg' => 'User is not a member of this subgroup'], 404);
+      return response()->json(['msg' => 'User is not a member of this subgroup'], 201);
     }
 
     if(!$userMemberOfSubgroup->delete()) {
@@ -301,6 +302,48 @@ class SubgroupController extends Controller
         'href' => 'api/v1/management/subgroup/addUser',
         'method' => 'POST',
         'params' => 'subgroup_id, user_id, role'
+      ]
+    ];
+
+    return response()->json($response, 200);
+  }
+
+  public function updateUser(Request $request) {
+    $this->validate($request, [
+      'user_id' => 'required|integer',
+      'subgroup_id' => 'required|integer',
+      'role' => 'max:190'
+    ]);
+
+    $userID = $request->input('user_id');
+    $subgroupID = $request->input('subgroup_id');
+    $role = $request->input('role');
+
+    if(!User::exists($userID)) {
+      return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    if(Subgroup::find($subgroupID) == null) {
+      return response()->json(['msg' => 'Subgroup not found'], 404);
+    }
+
+    $userMemberOfSubgroup = UsersMemberOfSubgroups::where('subgroup_id', $subgroupID)->where('user_id', $userID)->first();
+    if($userMemberOfSubgroup == null) {
+      return response()->json(['msg' => 'User is not a member of this subgroup'], 404);
+    }
+
+    $userMemberOfSubgroup->role = $role;
+    if(!$userMemberOfSubgroup->save()) {
+      return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
+    }
+
+    $response = [
+      'msg' => 'Successfully updated user in subgroup',
+      'userMemberOfSubgroup' => $userMemberOfSubgroup,
+      'addUser' => [
+        'href' => 'api/v1/management/subgroup/addUser',
+        'method' => 'POST',
+        'params' => 'group_id, user_id, role'
       ]
     ];
 

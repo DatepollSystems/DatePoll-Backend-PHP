@@ -31,11 +31,10 @@ class CalendarController extends Controller
     $user = $tokenObject->user();
 
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
-
-    /* Movie specific calendar */
     $calendar = new Calendar();
-    $calendar->setProdId('Mondscheinkino-Kalender//DE');
+    $calendar->setProdId('datepoll-calendar');
 
+    /* -------- Movie booking specific calendar -------------*/
     $movies = array();
     $movieBookings = MoviesBooking::where('user_id', $user->id)->get();
     foreach ($movieBookings as $movieBooking) {
@@ -55,7 +54,7 @@ class CalendarController extends Controller
       $movieEvent->setStart(new \DateTime($movie->date . 'T20:30:00'))
         ->setEnd(new \DateTime($movie->date . 'T23:59:59'))
         ->setSummary($movie->name)
-        ->setDescription('Booked tickets: ' . $movie->bookedTickets)
+        ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
         ->setUrl($movie->trailerLink)
         ->setGeo($geo)
         ->addLocation($location)
@@ -74,7 +73,51 @@ class CalendarController extends Controller
 
       $calendar->addEvent($movieEvent);
     }
-    /*-----------------------------------------------------------------*/
+
+    /* -------- Movie worker specific calendar -------------*/
+    $moviesWorker = $user->workerMovies();
+    foreach ($moviesWorker as $movie) {
+      $movieAlreadyInCalendar = false;
+      foreach ($movies as $movieB) {
+        if($movieB->id === $movie->id) {
+          $movieAlreadyInCalendar = true;
+          break;
+        }
+      }
+
+      if(!$movieAlreadyInCalendar) {
+        $geo = new Geo();
+        $geo->setLatitude(48.643865);
+        $geo->setLongitude(15.814679);
+
+        $location = new Location();
+        $location->setLanguage('de');
+        $location->setName('Kanzlerturm Wiese Eggenburg');
+
+        $movieEvent = new CalendarEvent();
+        $movieEvent->setStart(new \DateTime($movie->date . 'T20:30:00'))
+          ->setEnd(new \DateTime($movie->date . 'T23:59:59'))
+          ->setSummary($movie->name)
+          ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+          ->setUrl($movie->trailerLink)
+          ->setGeo($geo)
+          ->addLocation($location)
+          ->setUid($movie->id);
+
+        $worker = $movie->worker();
+        if($worker != null) {
+          $name = $worker->firstname . ' ' . $worker->surname;
+
+          $organizer = new Organizer(new Formatter());
+          $organizer->setValue($worker->email)
+            ->setName($name)
+            ->setLanguage('de');
+          $movieEvent->setOrganizer($organizer);
+        }
+
+        $calendar->addEvent($movieEvent);
+      }
+    }
 
     $calendarExport->addCalendar($calendar);
 

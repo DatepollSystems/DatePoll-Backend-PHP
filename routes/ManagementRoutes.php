@@ -18,6 +18,7 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
   $router->delete('groups/{id}', ['uses' => 'ManagementControllers\GroupController@delete']);
   $router->post('groups/addUser', ['uses' => 'ManagementControllers\GroupController@addUser']);
   $router->post('groups/removeUser', ['uses' => 'ManagementControllers\GroupController@removeUser']);
+  $router->post('groups/updateUser', ['uses' => 'ManagementControllers\GroupController@updateUser']);
   $router->get('groups/joined/{userID}', ['uses' => 'ManagementControllers\GroupController@joined']);
   $router->get('groups/free/{userID}', ['uses' => 'ManagementControllers\GroupController@free']);
 
@@ -29,6 +30,7 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
   $router->delete('subgroups/{id}', ['uses' => 'ManagementControllers\SubgroupController@delete']);
   $router->post('subgroups/addUser', ['uses' => 'ManagementControllers\SubgroupController@addUser']);
   $router->post('subgroups/removeUser', ['uses' => 'ManagementControllers\SubgroupController@removeUser']);
+  $router->post('subgroups/updateUser', ['uses' => 'ManagementControllers\SubgroupController@updateUser']);
   $router->get('subgroups/joined/{userID}', ['uses' => 'ManagementControllers\SubgroupController@joined']);
   $router->get('subgroups/free/{userID}', ['uses' => 'ManagementControllers\SubgroupController@free']);
 });
