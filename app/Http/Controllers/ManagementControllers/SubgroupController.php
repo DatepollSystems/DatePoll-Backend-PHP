@@ -362,6 +362,8 @@ class SubgroupController extends Controller
     foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
       $subgroup = $userMemberOfSubgroup->subgroup();
 
+      $subgroup->group_name = $subgroup->group()->name;
+
       $subgroup->view_subgroup = [
         'href' => 'api/v1/management/subgroups/'.$subgroup->id,
         'method' => 'GET'
@@ -392,6 +394,8 @@ class SubgroupController extends Controller
       }
 
       if(!$isInSubgroup) {
+        $subgroup->group_name = $subgroup->group()->name;
+
         $subgroup->view_subgroup = [
           'href' => 'api/v1/management/subgroups/'.$subgroup->id,
           'method' => 'GET'
