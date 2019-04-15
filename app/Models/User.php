@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -43,7 +44,7 @@ class User extends Model
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function emergencyWorkerMovies()
   {
@@ -51,7 +52,7 @@ class User extends Model
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function workerMovies()
   {
@@ -59,7 +60,7 @@ class User extends Model
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function moviesBookings()
   {
@@ -67,7 +68,7 @@ class User extends Model
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function userCodes()
   {
@@ -75,28 +76,28 @@ class User extends Model
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function telephoneNumbers() {
     return $this->hasMany('App\Models\UserTelephoneNumber')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function permissions()
   {

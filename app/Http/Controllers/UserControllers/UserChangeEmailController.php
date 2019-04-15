@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Mail\NewEmailVerifying;
 use App\Mail\OldEmailVerifying;
 use App\Models\UserCode;
-use DB;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 class UserChangeEmailController extends Controller
 {
@@ -38,8 +40,8 @@ class UserChangeEmailController extends Controller
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
   public function oldEmailAddressVerificationCodeVerification(Request $request)
   {
@@ -77,8 +79,8 @@ class UserChangeEmailController extends Controller
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
   public function newEmailAddressVerification(Request $request)
   {
@@ -111,8 +113,8 @@ class UserChangeEmailController extends Controller
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
   public function newEmailAddressVerificationCodeVerification(Request $request)
   {
@@ -150,8 +152,8 @@ class UserChangeEmailController extends Controller
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
   public function changeEmailAddress(Request $request)
   {
@@ -208,7 +210,6 @@ class UserChangeEmailController extends Controller
       if (!$newEmailUserCode->save()) {
         return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
       }
-
 
       return response()->json(['msg' => 'codes_incorrect'], 400);
     }

@@ -3,6 +3,7 @@
 namespace App\Models\PerformanceBadges;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -21,14 +22,14 @@ class UsersHavePerformanceBadges extends Model
   protected $fillable = ['performance_badge_id', 'user_id', 'created_at', 'updated_at'];
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
   public function performanceBadge() {
     return $this->belongsTo('App\Models\PerformanceBadges\PerformanceBadge')->first();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
   public function user() {
     return $this->belongsTo('App\Models\User')->first();

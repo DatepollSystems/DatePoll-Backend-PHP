@@ -2,6 +2,7 @@
 
 namespace App\Models\PerformanceBadges;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -20,7 +21,7 @@ class PerformanceBadge extends Model
   protected $fillable = ['name', 'description', 'created_at', 'updated_at'];
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function usersHavePerformanceBadges() {
     return $this->hasMany('App\Models\PerformanceBadges\UsersHavePerformanceBadge')->get();
