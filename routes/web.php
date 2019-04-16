@@ -12,7 +12,7 @@
 */
 
 $router->get('/', function () use ($router) {
-    return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ';
+  return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ';
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
@@ -22,21 +22,21 @@ $router->group(['prefix' => 'api'], function () use ($router) {
   });
 
   /** Setting routes */
-  require_once (__DIR__ . '/SettingsRoutes.php');
+  require_once(__DIR__ . '/SettingsRoutes.php');
 
   /** Auth routes */
-  require_once (__DIR__ . '/AuthRoutes.php');
+  require_once(__DIR__ . '/AuthRoutes.php');
 
   $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
 
     /** User routes */
-    require_once (__DIR__ . '/UserRoutes.php');
+    require_once(__DIR__ . '/UserRoutes.php');
 
     /** Management routes */
-    require_once (__DIR__ . '/ManagementRoutes.php');
+    require_once(__DIR__ . '/ManagementRoutes.php');
 
     /** Cinema routes */
-    require_once (__DIR__ . '/CinemaRoutes.php');
+    require_once(__DIR__ . '/CinemaRoutes.php');
 
   });
 

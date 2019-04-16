@@ -5,22 +5,20 @@ namespace App\Http\Controllers\CinemaControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MovieBookingController extends Controller
 {
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
-  public function bookTickets(Request $request)
-  {
-    $this->validate($request, [
-      'movie_id' => 'required|numeric',
-      'ticketAmount' => 'required|numeric'
-    ]);
+  public function bookTickets(Request $request) {
+    $this->validate($request, ['movie_id' => 'required|numeric', 'ticketAmount' => 'required|numeric']);
 
     /* Check if movie exists */
     $movie = Movie::find($request->input('movie_id'));
@@ -42,22 +40,14 @@ class MovieBookingController extends Controller
 
     /* If movie booking doesn't exist, create it */
     if ($movieBooking == null) {
-      $movieBooking = new MoviesBooking([
-        'user_id' => $user->id,
-        'movie_id' => $movie->id,
-        'amount' => $ticketAmount
-      ]);
+      $movieBooking = new MoviesBooking(['user_id' => $user->id, 'movie_id' => $movie->id, 'amount' => $ticketAmount]);
 
       if ($movieBooking->save()) {
         /* If movie booking was successful, update movie booked tickets */
         $movie->bookedTickets += $ticketAmount;
         $movie->save();
 
-        $movieBooking->cancel_booking = [
-          'href' => 'api/v1/cinema/booking',
-          'params' => 'movie_id',
-          'method' => 'DELETE'
-        ];
+        $movieBooking->cancel_booking = ['href' => 'api/v1/cinema/booking', 'params' => 'movie_id', 'method' => 'DELETE'];
 
         return response()->json(['msg' => 'Booking successful created', 'movieBooking' => $movieBooking], 200);
       }
@@ -73,11 +63,7 @@ class MovieBookingController extends Controller
       $movie->bookedTickets += $ticketAmount;
       $movie->save();
 
-      $movieBooking->cancel_booking = [
-        'href' => 'api/v1/cinema/booking',
-        'params' => 'movie_id',
-        'method' => 'DELETE'
-      ];
+      $movieBooking->cancel_booking = ['href' => 'api/v1/cinema/booking', 'params' => 'movie_id', 'method' => 'DELETE'];
 
       return response()->json(['msg' => 'Booking successful updated', 'movieBooking' => $movieBooking], 200);
     }
@@ -85,8 +71,7 @@ class MovieBookingController extends Controller
     return response()->json(['msg' => 'An error occurred during updating'], 500);
   }
 
-  public function cancelBooking(Request $request, $id)
-  {
+  public function cancelBooking(Request $request, $id) {
     /* Check if movie exists */
     $movie = Movie::find($id);
     if ($movie == null) {

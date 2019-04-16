@@ -2,7 +2,9 @@
 
 namespace App\Models\Cinema;
 
+use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -16,24 +18,22 @@ use Illuminate\Database\Eloquent\Model;
  */
 class MoviesBooking extends Model
 {
-    /**
-     * @var array
-     */
-    protected $fillable = ['user_id', 'movie_id', 'amount', 'created_at', 'updated_at'];
+  /**
+   * @var array
+   */
+  protected $fillable = ['user_id', 'movie_id', 'amount', 'created_at', 'updated_at'];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function movie()
-    {
-      return $this->belongsTo('App\Models\Cinema\Movie')->first();
-    }
+  /**
+   * @return BelongsTo
+   */
+  public function movie() {
+    return $this->belongsTo('App\Models\Cinema\Movie')->first();
+  }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function user()
-    {
-        return $this->belongsTo('App\Models\User')->first();
-    }
+  /**
+   * @return BelongsTo
+   */
+  public function user() {
+    return $this->belongsTo('App\Models\User\User')->first();
+  }
 }

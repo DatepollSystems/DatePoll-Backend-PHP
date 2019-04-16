@@ -7,8 +7,11 @@ use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
 use App\Models\Subgroups\Subgroup;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
-use App\Models\User;
+use App\Models\User\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 
 class SubgroupController extends Controller
 {
@@ -16,10 +19,9 @@ class SubgroupController extends Controller
   /**
    * Display a listing of the resource.
    *
-   * @return \Illuminate\Http\Response
+   * @return Response
    */
-  public function getAll()
-  {
+  public function getAll() {
     $subgroups = Subgroup::all();
 
     return response(['msg' => 'List of all subgroups', 'subgroups' => $subgroups], 200);
@@ -28,50 +30,33 @@ class SubgroupController extends Controller
   /**
    * Store a newly created resource in storage.
    *
-   * @param  \Illuminate\Http\Request $request
-   * @return \Illuminate\Http\Response
-   * @throws \Illuminate\Validation\ValidationException
+   * @param Request $request
+   * @return Response
+   * @throws ValidationException
    */
-  public function create(Request $request)
-  {
-    $this->validate($request, [
-      'name' => 'required|max:190|min:1',
-      'description' => 'max:65535',
-      'group_id' => 'required|integer'
-    ]);
+  public function create(Request $request) {
+    $this->validate($request, ['name' => 'required|max:190|min:1', 'description' => 'max:65535', 'group_id' => 'required|integer']);
 
     $group_id = $request->input('group_id');
 
-    if(Group::find($group_id) == null) {
+    if (Group::find($group_id) == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
     $name = $request->input('name');
     $description = $request->input('description');
 
-    $subgroup = new Subgroup([
-      'name' => $name,
-      'description' => $description,
-      'group_id' => $group_id
-    ]);
+    $subgroup = new Subgroup(['name' => $name, 'description' => $description, 'group_id' => $group_id]);
 
-    if($subgroup->save()) {
-      $subgroup->view_subgroup = [
-        'href' => 'api/v1/management/subgroups/'.$subgroup->id,
-        'method' => 'GET'
-      ];
+    if ($subgroup->save()) {
+      $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroups/' . $subgroup->id, 'method' => 'GET'];
 
-      $response = [
-        'msg' => 'Subgroup created',
-        'subgroup' => $subgroup
-      ];
+      $response = ['msg' => 'Subgroup created', 'subgroup' => $subgroup];
 
       return response()->json($response, 201);
     }
 
-    $response = [
-      'msg' => 'An error occurred'
-    ];
+    $response = ['msg' => 'An error occurred'];
 
     return response()->json($response, 500);
   }
@@ -79,13 +64,12 @@ class SubgroupController extends Controller
   /**
    * Display the specified resource.
    *
-   * @param  int $id
-   * @return \Illuminate\Http\Response
+   * @param int $id
+   * @return Response
    */
-  public function getSingle($id)
-  {
+  public function getSingle($id) {
     $subgroup = Subgroup::find($id);
-    if($subgroup == null) {
+    if ($subgroup == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
@@ -104,43 +88,32 @@ class SubgroupController extends Controller
 
     $subgroup->users = $usersToShow;
 
-    $subgroup->view_subgroups = [
-      'href' => 'api/v1/management/subgroups',
-      'method' => 'GET'
-    ];
+    $subgroup->view_subgroups = ['href' => 'api/v1/management/subgroups', 'method' => 'GET'];
 
-    $response = [
-      'msg' => 'Subgroup information',
-      'subgroup' => $subgroup
-    ];
+    $response = ['msg' => 'Subgroup information', 'subgroup' => $subgroup];
     return response()->json($response);
   }
 
   /**
    * Update the specified resource in storage.
    *
-   * @param  \Illuminate\Http\Request $request
-   * @param  int $id
-   * @return \Illuminate\Http\Response
-   * @throws \Illuminate\Validation\ValidationException
+   * @param Request $request
+   * @param int $id
+   * @return Response
+   * @throws ValidationException
    */
-  public function update(Request $request, $id)
-  {
-    $this->validate($request, [
-      'name' => 'required|max:255|min:1',
-      'description' => 'max:65535',
-      'group_id' => 'required|integer'
-    ]);
+  public function update(Request $request, $id) {
+    $this->validate($request, ['name' => 'required|max:255|min:1', 'description' => 'max:65535', 'group_id' => 'required|integer']);
 
     $subgroup = Subgroup::find($id);
 
-    if($subgroup == null) {
+    if ($subgroup == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
     $group_id = $request->input('group_id');
 
-    if(Group::find($group_id) == null) {
+    if (Group::find($group_id) == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
@@ -151,23 +124,15 @@ class SubgroupController extends Controller
     $subgroup->description = $description;
     $subgroup->group_id = $group_id;
 
-    if($subgroup->save()) {
-      $subgroup->view_subgroup = [
-        'href' => 'api/v1/management/subgroup/'.$subgroup->id,
-        'method' => 'GET'
-      ];
+    if ($subgroup->save()) {
+      $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroup/' . $subgroup->id, 'method' => 'GET'];
 
-      $response = [
-        'msg' => 'Subgroup updated',
-        'subgroup' => $subgroup
-      ];
+      $response = ['msg' => 'Subgroup updated', 'subgroup' => $subgroup];
 
       return response()->json($response, 201);
     }
 
-    $response = [
-      'msg' => 'An error occurred'
-    ];
+    $response = ['msg' => 'An error occurred'];
 
     return response()->json($response, 500);
   }
@@ -175,28 +140,20 @@ class SubgroupController extends Controller
   /**
    * Remove the specified resource from storage.
    *
-   * @param  int $id
-   * @return \Illuminate\Http\Response
+   * @param int $id
+   * @return Response
    */
-  public function delete($id)
-  {
+  public function delete($id) {
     $subgroup = Subgroup::find($id);
-    if($subgroup == null) {
+    if ($subgroup == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
-    if(!$subgroup->delete()) {
+    if (!$subgroup->delete()) {
       return response()->json(['msg' => 'Subgroup deletion failed'], 500);
     }
 
-    $response = [
-      'msg' => 'Subgroup deleted',
-      'create' => [
-        'href' => 'api/v1/management/subgroup',
-        'method' => 'POST',
-        'params' => 'name, description, group_id'
-      ]
-    ];
+    $response = ['msg' => 'Subgroup deleted', 'create' => ['href' => 'api/v1/management/subgroup', 'method' => 'POST', 'params' => 'name, description, group_id']];
 
     return response()->json($response, 200);
   }
@@ -205,154 +162,127 @@ class SubgroupController extends Controller
    * Add user to subgroup
    *
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
   public function addUser(Request $request) {
-    $this->validate($request, [
-      'user_id' => 'required|integer',
-      'subgroup_id' => 'required|integer',
-      'role' => 'max:190'
-    ]);
+    $this->validate($request, ['user_id' => 'required|integer', 'subgroup_id' => 'required|integer', 'role' => 'max:190']);
 
     $userID = $request->input('user_id');
     $subgroupID = $request->input('subgroup_id');
     $role = $request->input('role');
 
-    if(!User::exists($userID)) {
+    if (!User::exists($userID)) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
     $subgroup = Subgroup::find($subgroupID);
-    if($subgroup == null) {
+    if ($subgroup == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
     $userMemberOfSubgroup = UsersMemberOfSubgroups::where('user_id', $userID)->where('subgroup_id', $subgroupID)->first();
-    if($userMemberOfSubgroup != null) {
+    if ($userMemberOfSubgroup != null) {
       return response()->json(['msg' => 'User is already member of this subgroup'], 201);
     }
 
     $userMemberOfParentGroup = UsersMemberOfGroups::where('user_id', $userID)->where('group_id', $subgroup->group_id)->first();
-    if($userMemberOfParentGroup == null) {
-      $userMemberOfParentGroup = new UsersMemberOfGroups([
-        'group_id' => $subgroup->group_id,
-        'user_id' => $userID
-      ]);
+    if ($userMemberOfParentGroup == null) {
+      $userMemberOfParentGroup = new UsersMemberOfGroups(['group_id' => $subgroup->group_id, 'user_id' => $userID]);
 
-      if(!$userMemberOfParentGroup->save()) {
+      if (!$userMemberOfParentGroup->save()) {
         return response()->json(['msg' => 'Could not add user to the parent group'], 500);
       }
     }
 
-    $userMemberOfSubgroup = new UsersMemberOfSubgroups([
-      'subgroup_id' => $subgroupID,
-      'user_id' => $userID,
-      'role' => $role
-    ]);
+    $userMemberOfSubgroup = new UsersMemberOfSubgroups(['subgroup_id' => $subgroupID, 'user_id' => $userID, 'role' => $role]);
 
-    if(!$userMemberOfSubgroup->save()) {
+    if (!$userMemberOfSubgroup->save()) {
       return response()->json(['msg' => 'Could not add user to this subgroup'], 500);
     }
 
-    $response = [
-      'msg' => 'Successfully added user to subgroup',
-      'userMemberOfSubgroup' => $userMemberOfSubgroup,
-      'removeUser' => [
-        'href' => 'api/v1/management/subgroup/removeUser',
-        'method' => 'POST',
-        'params' => 'subgroup_id, user_id'
-      ]
-    ];
+    $response = ['msg' => 'Successfully added user to subgroup', 'userMemberOfSubgroup' => $userMemberOfSubgroup, 'removeUser' => ['href' => 'api/v1/management/subgroup/removeUser', 'method' => 'POST', 'params' => 'subgroup_id, user_id']];
 
     return response()->json($response, 201);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
   public function removeUser(Request $request) {
-    $this->validate($request, [
-      'user_id' => 'required|integer',
-      'subgroup_id' => 'required|integer'
-    ]);
+    $this->validate($request, ['user_id' => 'required|integer', 'subgroup_id' => 'required|integer']);
 
     $userID = $request->input('user_id');
     $subgroupID = $request->input('subgroup_id');
 
     $user = User::find($userID);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
     $subgroup = Subgroup::find($subgroupID);
-    if($subgroup == null) {
+    if ($subgroup == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
     $userMemberOfSubgroup = UsersMemberOfSubgroups::where('subgroup_id', $subgroupID)->where('user_id', $userID)->first();
-    if($userMemberOfSubgroup == null) {
+    if ($userMemberOfSubgroup == null) {
       return response()->json(['msg' => 'User is not a member of this subgroup'], 201);
     }
 
-    if(!$userMemberOfSubgroup->delete()) {
+    if (!$userMemberOfSubgroup->delete()) {
       return response()->json(['msg' => 'Could not remove user of this subgroup'], 500);
     }
 
-    $response = [
-      'msg' => 'Successfully removed user from subgroup',
-      'addUser' => [
-        'href' => 'api/v1/management/subgroup/addUser',
-        'method' => 'POST',
-        'params' => 'subgroup_id, user_id, role'
-      ]
-    ];
+    $response = ['msg' => 'Successfully removed user from subgroup', 'addUser' => ['href' => 'api/v1/management/subgroup/addUser', 'method' => 'POST', 'params' => 'subgroup_id, user_id, role']];
 
     return response()->json($response, 200);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
   public function updateUser(Request $request) {
-    $this->validate($request, [
-      'user_id' => 'required|integer',
-      'subgroup_id' => 'required|integer',
-      'role' => 'max:190'
-    ]);
+    $this->validate($request, ['user_id' => 'required|integer', 'subgroup_id' => 'required|integer', 'role' => 'max:190']);
 
     $userID = $request->input('user_id');
     $subgroupID = $request->input('subgroup_id');
     $role = $request->input('role');
 
-    if(!User::exists($userID)) {
+    if (!User::exists($userID)) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    if(Subgroup::find($subgroupID) == null) {
+    if (Subgroup::find($subgroupID) == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
     $userMemberOfSubgroup = UsersMemberOfSubgroups::where('subgroup_id', $subgroupID)->where('user_id', $userID)->first();
-    if($userMemberOfSubgroup == null) {
+    if ($userMemberOfSubgroup == null) {
       return response()->json(['msg' => 'User is not a member of this subgroup'], 404);
     }
 
     $userMemberOfSubgroup->role = $role;
-    if(!$userMemberOfSubgroup->save()) {
+    if (!$userMemberOfSubgroup->save()) {
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }
 
-    $response = [
-      'msg' => 'Successfully updated user in subgroup',
-      'userMemberOfSubgroup' => $userMemberOfSubgroup,
-      'addUser' => [
-        'href' => 'api/v1/management/subgroup/addUser',
-        'method' => 'POST',
-        'params' => 'group_id, user_id, role'
-      ]
-    ];
+    $response = ['msg' => 'Successfully updated user in subgroup', 'userMemberOfSubgroup' => $userMemberOfSubgroup, 'addUser' => ['href' => 'api/v1/management/subgroup/addUser', 'method' => 'POST', 'params' => 'group_id, user_id, role']];
 
     return response()->json($response, 200);
   }
 
+  /**
+   * @param $userID
+   * @return JsonResponse
+   */
   public function joined($userID) {
     $user = User::find($userID);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
     }
 
@@ -364,10 +294,7 @@ class SubgroupController extends Controller
 
       $subgroup->group_name = $subgroup->group()->name;
 
-      $subgroup->view_subgroup = [
-        'href' => 'api/v1/management/subgroups/'.$subgroup->id,
-        'method' => 'GET'
-      ];
+      $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroups/' . $subgroup->id, 'method' => 'GET'];
 
       $subgroupsToReturn[] = $subgroup;
     }
@@ -375,9 +302,13 @@ class SubgroupController extends Controller
     return response()->json(['msg' => 'List of joined subgroups', 'subgroups' => $subgroupsToReturn], 200);
   }
 
+  /**
+   * @param $userID
+   * @return JsonResponse
+   */
   public function free($userID) {
     $user = User::find($userID);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
     }
 
@@ -387,19 +318,16 @@ class SubgroupController extends Controller
     foreach ($allSubgroups as $subgroup) {
       $isInSubgroup = false;
       foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
-        if($userMemberOfSubgroup->subgroup()->id == $subgroup->id) {
+        if ($userMemberOfSubgroup->subgroup()->id == $subgroup->id) {
           $isInSubgroup = true;
           break;
         }
       }
 
-      if(!$isInSubgroup) {
+      if (!$isInSubgroup) {
         $subgroup->group_name = $subgroup->group()->name;
 
-        $subgroup->view_subgroup = [
-          'href' => 'api/v1/management/subgroups/'.$subgroup->id,
-          'method' => 'GET'
-        ];
+        $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroups/' . $subgroup->id, 'method' => 'GET'];
 
         $subgroupsToReturn[] = $subgroup;
       }

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\User;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -22,10 +23,10 @@ class UserToken extends Model
   protected $fillable = ['user_id', 'token', 'purpose', 'description', 'created_at', 'updated_at'];
 
   /**
-   * @return Model|\Illuminate\Database\Eloquent\Relations\BelongsTo|object
+   * @return Model|BelongsTo|object
    */
   public function user() {
-    return $this->belongsTo('App\Models\User')->first();
+    return $this->belongsTo('App\Models\User\User')->first();
   }
 
   public static function generateRandomString($length = 10) {

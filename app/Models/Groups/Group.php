@@ -2,6 +2,7 @@
 
 namespace App\Models\Groups;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -21,14 +22,14 @@ class Group extends Model
   protected $fillable = ['name', 'description', 'created_at', 'updated_at'];
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function subgroups() {
     return $this->hasMany('App\Models\Subgroups\Subgroup')->get();
   }
 
   /**
-   * @return \Illuminate\Database\Eloquent\Collection
+   * @return Collection
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();

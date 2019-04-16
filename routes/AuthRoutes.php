@@ -2,7 +2,7 @@
 
 $router->group(['prefix' => 'auth'], function () use ($router) {
   $router->post('signin', ['uses' => 'AuthController@signin']);
-  $router->post('changePasswortAfterSignin', ['uses' => 'AuthController@changePasswortAfterSignin']);
+  $router->post('changePasswordAfterSignin', ['uses' => 'AuthController@changePasswortAfterSignin']);
 
   $router->post('refresh', ['middleware' => 'jwt.auth', 'uses' => 'AuthController@refresh']);
 

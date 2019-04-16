@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cinema\MoviesBooking;
-use App\Models\UserToken;
+use App\Models\User\UserToken;
+use DateTime;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Jsvrcek\ICS\CalendarExport;
 use Jsvrcek\ICS\CalendarStream;
+use Jsvrcek\ICS\Exception\CalendarEventException;
 use Jsvrcek\ICS\Model\Calendar;
 use Jsvrcek\ICS\Model\CalendarEvent;
 use Jsvrcek\ICS\Model\Description\Geo;
@@ -17,14 +21,13 @@ class CalendarController extends Controller
 {
   /**
    * @param $token
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Jsvrcek\ICS\Exception\CalendarEventException
-   * @throws \Exception
+   * @return JsonResponse
+   * @throws CalendarEventException
+   * @throws Exception
    */
-  public function getCalendarOf($token)
-  {
+  public function getCalendarOf($token) {
     $tokenObject = UserToken::where('token', $token)->where('purpose', 'calendar')->first();
-    if($tokenObject == null) {
+    if ($tokenObject == null) {
       return response()->json(['msg' => 'Provided token is incorrect'], 401);
     }
 
@@ -51,23 +54,14 @@ class CalendarController extends Controller
       $location->setName('Kanzlerturm Wiese Eggenburg');
 
       $movieEvent = new CalendarEvent();
-      $movieEvent->setStart(new \DateTime($movie->date . 'T20:30:00'))
-        ->setEnd(new \DateTime($movie->date . 'T23:59:59'))
-        ->setSummary($movie->name)
-        ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
-        ->setUrl($movie->trailerLink)
-        ->setGeo($geo)
-        ->addLocation($location)
-        ->setUid($movie->id);
+      $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))->setEnd(new DateTime($movie->date . 'T23:59:59'))->setSummary($movie->name)->setDescription('Reservierte Karten: ' . $movie->bookedTickets)->setUrl($movie->trailerLink)->setGeo($geo)->addLocation($location)->setUid($movie->id);
 
       $worker = $movie->worker();
-      if($worker != null) {
+      if ($worker != null) {
         $name = $worker->firstname . ' ' . $worker->surname;
 
         $organizer = new Organizer(new Formatter());
-        $organizer->setValue($worker->email)
-          ->setName($name)
-          ->setLanguage('de');
+        $organizer->setValue($worker->email)->setName($name)->setLanguage('de');
         $movieEvent->setOrganizer($organizer);
       }
 
@@ -79,13 +73,13 @@ class CalendarController extends Controller
     foreach ($moviesWorker as $movie) {
       $movieAlreadyInCalendar = false;
       foreach ($movies as $movieB) {
-        if($movieB->id === $movie->id) {
+        if ($movieB->id === $movie->id) {
           $movieAlreadyInCalendar = true;
           break;
         }
       }
 
-      if(!$movieAlreadyInCalendar) {
+      if (!$movieAlreadyInCalendar) {
         $geo = new Geo();
         $geo->setLatitude(48.643865);
         $geo->setLongitude(15.814679);
@@ -95,23 +89,14 @@ class CalendarController extends Controller
         $location->setName('Kanzlerturm Wiese Eggenburg');
 
         $movieEvent = new CalendarEvent();
-        $movieEvent->setStart(new \DateTime($movie->date . 'T20:30:00'))
-          ->setEnd(new \DateTime($movie->date . 'T23:59:59'))
-          ->setSummary($movie->name)
-          ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
-          ->setUrl($movie->trailerLink)
-          ->setGeo($geo)
-          ->addLocation($location)
-          ->setUid($movie->id);
+        $movieEvent->setStart(new \DateTime($movie->date . 'T20:30:00'))->setEnd(new \DateTime($movie->date . 'T23:59:59'))->setSummary($movie->name)->setDescription('Reservierte Karten: ' . $movie->bookedTickets)->setUrl($movie->trailerLink)->setGeo($geo)->addLocation($location)->setUid($movie->id);
 
         $worker = $movie->worker();
-        if($worker != null) {
+        if ($worker != null) {
           $name = $worker->firstname . ' ' . $worker->surname;
 
           $organizer = new Organizer(new Formatter());
-          $organizer->setValue($worker->email)
-            ->setName($name)
-            ->setLanguage('de');
+          $organizer->setValue($worker->email)->setName($name)->setLanguage('de');
           $movieEvent->setOrganizer($organizer);
         }
 

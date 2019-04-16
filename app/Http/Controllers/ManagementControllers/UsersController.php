@@ -4,12 +4,14 @@ namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ActivateUser;
-use App\Models\User;
+use App\Models\User\User;
 use App\Models\UserCode;
-use App\Models\UserTelephoneNumber;
-use DB;
+use App\Models\User\UserTelephoneNumber;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class UsersController extends Controller
 {
@@ -17,10 +19,9 @@ class UsersController extends Controller
   /**
    * Display a listing of the resource.
    *
-   * @return \Illuminate\Http\Response
+   * @return Response
    */
-  public function getAll()
-  {
+  public function getAll() {
     $toReturnUsers = array();
 
     $users = User::all();
@@ -44,19 +45,14 @@ class UsersController extends Controller
       $toReturnUser->activity = $user->activity;
       $toReturnUser->phoneNumbers = $user->telephoneNumbers();
       $toReturnUser->permissions = $user->permissions();
+      $toReturnUser->performanceBadges = $user->performanceBadges();
 
-      $toReturnUser->view_user = [
-        'href' => 'api/v1/management/users/'.$user->id,
-        'method' => 'GET'
-      ];
+      $toReturnUser->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
       $toReturnUsers[] = $toReturnUser;
     }
 
-    $response = [
-      'msg' => 'List of all users',
-      'users' => $toReturnUsers
-    ];
+    $response = ['msg' => 'List of all users', 'users' => $toReturnUsers];
 
     return response()->json($response);
   }
@@ -64,27 +60,12 @@ class UsersController extends Controller
   /**
    * Store a newly created resource in storage.
    *
-   * @param  \Illuminate\Http\Request $request
-   * @return \Illuminate\Http\Response
-   * @throws \Illuminate\Validation\ValidationException
+   * @param Request $request
+   * @return Response
+   * @throws ValidationException
    */
-  public function create(Request $request)
-  {
-    $this->validate($request, [
-      'title' => 'max:190',
-      'email' => 'required|email',
-      'firstname' => 'required|max:190|min:1',
-      'surname' => 'required|max:190|min:1',
-      'birthday' => 'required|date',
-      'join_date' => 'required|date',
-      'streetname' => 'required|max:190|min:1',
-      'streetnumber' => 'required|max:190|min:1',
-      'zipcode' => 'required|integer',
-      'location' => 'required|max:190|min:1',
-      'activated' => 'required|boolean',
-      'activity' => 'required|max:190|min:1',
-      'phoneNumbers' => 'array'
-    ]);
+  public function create(Request $request) {
+    $this->validate($request, ['title' => 'max:190', 'email' => 'required|email', 'firstname' => 'required|max:190|min:1', 'surname' => 'required|max:190|min:1', 'birthday' => 'required|date', 'join_date' => 'required|date', 'streetname' => 'required|max:190|min:1', 'streetnumber' => 'required|max:190|min:1', 'zipcode' => 'required|integer', 'location' => 'required|max:190|min:1', 'activated' => 'required|boolean', 'activity' => 'required|max:190|min:1', 'phoneNumbers' => 'array']);
 
     $email = $request->input('email');
     $firstname = $request->input('firstname');
@@ -92,42 +73,25 @@ class UsersController extends Controller
     $activated = $request->input('activated');
     $phoneNumbers = $request->input('phoneNumbers');
 
-    if(User::where('email', $email)->first() != null) {
-      return response()->json(['msg' => 'The email address is already used',
-        'error_code' => 'email_address_already_used'], 400);
+    if (User::where('email', $email)->first() != null) {
+      return response()->json(['msg' => 'The email address is already used', 'error_code' => 'email_address_already_used'], 400);
     }
 
-    $user = new User([
-      'title' => $request->input('title'),
-      'email' => $email,
-      'firstname' => $firstname,
-      'surname' => $surname,
-      'birthday' => $request->input('birthday'),
-      'join_date' => $request->input('join_date'),
-      'streetname' => $request->input('streetname'),
-      'streetnumber' => $request->input('streetnumber'),
-      'zipcode' => $request->input('zipcode'),
-      'location' => $request->input('location'),
-      'activated' => $activated,
-      'activity' => $request->input('activity'),
-      'password' => 'Null'
-    ]);
+    $user = new User(['title' => $request->input('title'), 'email' => $email, 'firstname' => $firstname, 'surname' => $surname, 'birthday' => $request->input('birthday'), 'join_date' => $request->input('join_date'), 'streetname' => $request->input('streetname'), 'streetnumber' => $request->input('streetnumber'), 'zipcode' => $request->input('zipcode'), 'location' => $request->input('location'), 'activated' => $activated, 'activity' => $request->input('activity'), 'password' => 'Null']);
 
-    if(!$user->save()) {
+    if (!$user->save()) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    foreach ((array)$phoneNumbers as $phoneNumber) {
-      $phoneNumberToSave = new UserTelephoneNumber([
-        'label' => $phoneNumber['label'],
-        'number' => $phoneNumber['number'],
-        'user_id' => $user->id
-      ]);
+    if ($phoneNumbers != null) {
+      foreach ((array)$phoneNumbers as $phoneNumber) {
+        $phoneNumberToSave = new UserTelephoneNumber(['label' => $phoneNumber['label'], 'number' => $phoneNumber['number'], 'user_id' => $user->id]);
 
-      $phoneNumberToSave->save();
+        $phoneNumberToSave->save();
+      }
     }
 
-    if($activated) {
+    if ($activated) {
       $randomPassword = UserCode::generateCode();
       $user->password = app('hash')->make($randomPassword . $user->id);;
       $user->force_password_change = true;
@@ -138,7 +102,7 @@ class UsersController extends Controller
 
     $user = User::find($user->id);
 
-    $userToShow = new \stdClass();
+    $userToShow = new stdClass();
     $userToShow->title = $user->title;
     $userToShow->email = $user->email;
     $userToShow->firstname = $user->firstname;
@@ -154,15 +118,10 @@ class UsersController extends Controller
     $userToShow->force_password_change = $user->force_password_change;
     $userToShow->phoneNumbers = $user->telephoneNumbers();
     $userToShow->permissions = $user->permissions();
-    $userToShow->view_user = [
-      'href' => 'api/v1/management/users/'.$user->id,
-      'method' => 'GET'
-    ];
+    $userToShow->performanceBadges = $user->performanceBadges();
+    $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
-    $response = [
-      'msg' => 'User successful created',
-      'user' => $userToShow
-    ];
+    $response = ['msg' => 'User successful created', 'user' => $userToShow];
 
     return response()->json($response, 201);
   }
@@ -170,17 +129,16 @@ class UsersController extends Controller
   /**
    * Display the specified resource.
    *
-   * @param  int $id
-   * @return \Illuminate\Http\Response
+   * @param int $id
+   * @return Response
    */
-  public function getSingle($id)
-  {
+  public function getSingle($id) {
     $user = User::find($id);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    $userToShow = new \stdClass();
+    $userToShow = new stdClass();
 
     $userToShow->title = $user->title;
     $userToShow->firstname = $user->firstname;
@@ -197,56 +155,35 @@ class UsersController extends Controller
     $userToShow->force_password_change = $user->force_password_change;
     $userToShow->phoneNumbers = $user->telephoneNumbers();
     $userToShow->permissions = $user->permissions();
+    $userToShow->performanceBadges = $user->performanceBadges();
 
-    $userToShow->view_users = [
-      'href' => 'api/v1/management/users',
-      'method' => 'GET'
-    ];
+    $userToShow->view_users = ['href' => 'api/v1/management/users', 'method' => 'GET'];
 
-    $response = [
-      'msg' => 'User information',
-      'user' => $userToShow
-    ];
+    $response = ['msg' => 'User information', 'user' => $userToShow];
     return response()->json($response);
   }
 
   /**
    * Update the specified resource in storage.
    *
-   * @param  \Illuminate\Http\Request $request
-   * @param  int $id
-   * @return \Illuminate\Http\Response
-   * @throws \Illuminate\Validation\ValidationException
+   * @param Request $request
+   * @param int $id
+   * @return Response
+   * @throws ValidationException
    */
-  public function update(Request $request, $id)
-  {
-    $this->validate($request, [
-      'title' => 'max:190',
-      'email' => 'required|email',
-      'firstname' => 'required|max:190|min:1',
-      'surname' => 'required|max:190|min:1',
-      'birthday' => 'required|date',
-      'join_date' => 'required|date',
-      'streetname' => 'required|max:190|min:1',
-      'streetnumber' => 'required|max:190|min:1',
-      'zipcode' => 'required|integer',
-      'location' => 'required|max:190|min:1',
-      'activated' => 'required|boolean',
-      'activity' => 'required|max:190|min:1',
-      'phoneNumbers' => 'array'
-    ]);
+  public function update(Request $request, $id) {
+    $this->validate($request, ['title' => 'max:190', 'email' => 'required|email', 'firstname' => 'required|max:190|min:1', 'surname' => 'required|max:190|min:1', 'birthday' => 'required|date', 'join_date' => 'required|date', 'streetname' => 'required|max:190|min:1', 'streetnumber' => 'required|max:190|min:1', 'zipcode' => 'required|integer', 'location' => 'required|max:190|min:1', 'activated' => 'required|boolean', 'activity' => 'required|max:190|min:1', 'phoneNumbers' => 'array']);
 
     $user = User::find($id);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
     }
 
     $email = $request->input('email');
 
-    if($email != $user->email) {
-      if(User::where('email', $email)->first() != null) {
-        return response()->json(['msg' => 'The email address is already used',
-          'error_code' => 'email_address_already_used'], 400);
+    if ($email != $user->email) {
+      if (User::where('email', $email)->first() != null) {
+        return response()->json(['msg' => 'The email address is already used', 'error_code' => 'email_address_already_used'], 400);
       }
     }
 
@@ -269,29 +206,52 @@ class UsersController extends Controller
     $user->activated = $activated;
     $user->activity = $request->input('activity');
 
-    if(!$user->save()) {
+    if (!$user->save()) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    $phoneNumbersToDelete = $user->telephoneNumbers();
-    foreach ($phoneNumbersToDelete as $phoneNumberToDelete) {
-      $phoneNumberToDeleteObject = UserTelephoneNumber::find($phoneNumberToDelete->id);
-      if(!$phoneNumberToDeleteObject->delete()) {
-        return response()->json(['msg' => 'Failed during telephone number clearing...'], 500);
+    //----Phone numbers manager only deletes changed phone numbers---
+    $phoneNumbersWhichHaveNotBeenDeleted = array();
+
+    $OldPhoneNumbers = $user->telephoneNumbers();
+    foreach ($OldPhoneNumbers as $oldPhoneNumber) {
+      $toDelete = true;
+
+      foreach ((array)$phoneNumbers as $phoneNumber) {
+        if ($oldPhoneNumber['label'] == $phoneNumber['label'] AND $oldPhoneNumber['number'] == $phoneNumber['number']) {
+          $toDelete = false;
+          $phoneNumbersWhichHaveNotBeenDeleted[] = $phoneNumber;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $phoneNumberToDeleteObject = UserTelephoneNumber::find($oldPhoneNumber->id);
+        if (!$phoneNumberToDeleteObject->delete()) {
+          return response()->json(['msg' => 'Failed during telephone number clearing...'], 500);
+        }
       }
     }
 
     foreach ((array)$phoneNumbers as $phoneNumber) {
-      $phoneNumberToSave = new UserTelephoneNumber([
-        'label' => $phoneNumber['label'],
-        'number' => $phoneNumber['number'],
-        'user_id' => $user->id
-      ]);
+      $toAdd = true;
 
-      $phoneNumberToSave->save();
+      foreach ($phoneNumbersWhichHaveNotBeenDeleted as $phoneNumberWhichHasNotBeenDeleted) {
+        if ($phoneNumber['label'] == $phoneNumberWhichHasNotBeenDeleted['label'] AND $phoneNumber['number'] == $phoneNumberWhichHasNotBeenDeleted['number']) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $phoneNumberToSave = new UserTelephoneNumber(['label' => $phoneNumber['label'], 'number' => $phoneNumber['number'], 'user_id' => $user->id]);
+
+        $phoneNumberToSave->save();
+      }
     }
+    //---------------------------------------------------------------
 
-    if($activated AND !$oldActivatedStatus) {
+    if ($activated AND !$oldActivatedStatus) {
       $randomPassword = UserCode::generateCode();
       $user->password = app('hash')->make($randomPassword . $user->id);;
       $user->force_password_change = true;
@@ -316,15 +276,9 @@ class UsersController extends Controller
     $userToShow->force_password_change = $user->force_password_change;
     $userToShow->phoneNumbers = $user->telephoneNumbers();
     $userToShow->permissions = $user->permissions();
-    $userToShow->view_user = [
-      'href' => 'api/v1/management/users/'.$user->id,
-      'method' => 'GET'
-    ];
+    $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
-    $response = [
-      'msg' => 'User updated created',
-      'user' => $userToShow
-    ];
+    $response = ['msg' => 'User updated created', 'user' => $userToShow];
 
     return response()->json($response, 200);
   }
@@ -332,28 +286,20 @@ class UsersController extends Controller
   /**
    * Remove the specified resource from storage.
    *
-   * @param  int $id
-   * @return \Illuminate\Http\Response
+   * @param int $id
+   * @return Response
    */
-  public function delete($id)
-  {
+  public function delete($id) {
     $user = User::find($id);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    if(!$user->delete()) {
+    if (!$user->delete()) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
-    $response = [
-      'msg' => 'User deleted',
-      'create' => [
-        'href' => 'api/v1/management/users',
-        'method' => 'POST',
-        'params' => 'title, email, firstname, surname, birthday, join_date, streetname, streetnumber, zipcode, location, activated, activity, phoneNumbers'
-      ]
-    ];
+    $response = ['msg' => 'User deleted', 'create' => ['href' => 'api/v1/management/users', 'method' => 'POST', 'params' => 'title, email, firstname, surname, birthday, join_date, streetname, streetnumber, zipcode, location, activated, activity, phoneNumbers']];
 
     return response()->json($response);
   }

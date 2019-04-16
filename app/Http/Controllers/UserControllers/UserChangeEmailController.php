@@ -15,17 +15,12 @@ use Illuminate\Validation\ValidationException;
 class UserChangeEmailController extends Controller
 {
 
-  public function oldEmailAddressVerification(Request $request)
-  {
+  public function oldEmailAddressVerification(Request $request) {
     $user = $request->auth;
 
     $code = UserCode::generateCode();
 
-    $userCode = new UserCode([
-      "code" => $code,
-      "purpose" => "oldEmailVerify",
-      'user_id' => $user->id
-    ]);
+    $userCode = new UserCode(["code" => $code, "purpose" => "oldEmailVerify", 'user_id' => $user->id]);
 
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
@@ -43,19 +38,14 @@ class UserChangeEmailController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function oldEmailAddressVerificationCodeVerification(Request $request)
-  {
-    $this->validate($request, [
-      'code' => 'required|digits:6'
-    ]);
+  public function oldEmailAddressVerificationCodeVerification(Request $request) {
+    $this->validate($request, ['code' => 'required|digits:6']);
 
     $code = $request->input('code');
 
     $user = $request->auth;
 
-    $userCode = UserCode::where('purpose', 'oldEmailVerify')
-      ->where('user_id', $user->id)
-      ->orderBy('created_at', 'desc')->first();
+    $userCode = UserCode::where('purpose', 'oldEmailVerify')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
 
     if ($userCode == null) {
       return response()->json(['msg' => 'could_not_find_user_code'], 404);
@@ -82,11 +72,8 @@ class UserChangeEmailController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function newEmailAddressVerification(Request $request)
-  {
-    $this->validate($request, [
-      'email' => 'required|email'
-    ]);
+  public function newEmailAddressVerification(Request $request) {
+    $this->validate($request, ['email' => 'required|email']);
 
     $email = $request->input('email');
 
@@ -94,11 +81,7 @@ class UserChangeEmailController extends Controller
 
     $code = UserCode::generateCode();
 
-    $userCode = new UserCode([
-      "code" => $code,
-      "purpose" => "newEmailVerify",
-      'user_id' => $user->id
-    ]);
+    $userCode = new UserCode(["code" => $code, "purpose" => "newEmailVerify", 'user_id' => $user->id]);
 
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
@@ -116,19 +99,14 @@ class UserChangeEmailController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function newEmailAddressVerificationCodeVerification(Request $request)
-  {
-    $this->validate($request, [
-      'code' => 'required|digits:6'
-    ]);
+  public function newEmailAddressVerificationCodeVerification(Request $request) {
+    $this->validate($request, ['code' => 'required|digits:6']);
 
     $code = $request->input('code');
 
     $user = $request->auth;
 
-    $userCode = UserCode::where('purpose', 'newEmailVerify')
-      ->where('user_id', $user->id)
-      ->orderBy('created_at', 'desc')->first();
+    $userCode = UserCode::where('purpose', 'newEmailVerify')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
 
     if ($userCode == null) {
       return response()->json(['msg' => 'could_not_find_user_code'], 404);
@@ -155,13 +133,8 @@ class UserChangeEmailController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function changeEmailAddress(Request $request)
-  {
-    $this->validate($request, [
-      'oldEmailCode' => 'required|digits:6',
-      'newEmailCode' => 'required|digits:6',
-      'newEmailAddress' => 'required|email|max:190'
-    ]);
+  public function changeEmailAddress(Request $request) {
+    $this->validate($request, ['oldEmailCode' => 'required|digits:6', 'newEmailCode' => 'required|digits:6', 'newEmailAddress' => 'required|email|max:190']);
 
     $oldEmailCode = $request->input('oldEmailCode');
     $newEmailCode = $request->input('newEmailCode');
@@ -169,13 +142,9 @@ class UserChangeEmailController extends Controller
 
     $user = $request->auth;
 
-    $oldEmailUserCode = UserCode::where('purpose', 'oldEmailVerify')
-      ->where('user_id', $user->id)
-      ->orderBy('created_at', 'desc')->first();
+    $oldEmailUserCode = UserCode::where('purpose', 'oldEmailVerify')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
 
-    $newEmailUserCode = UserCode::where('purpose', 'newEmailVerify')
-      ->where('user_id', $user->id)
-      ->orderBy('created_at', 'desc')->first();
+    $newEmailUserCode = UserCode::where('purpose', 'newEmailVerify')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
 
     if ($oldEmailUserCode == null OR $newEmailUserCode == null) {
       return response()->json(['msg' => 'could_not_find_user_code'], 404);
@@ -189,13 +158,9 @@ class UserChangeEmailController extends Controller
       $user->email = $newEmailAddress;
       if ($user->save()) {
         /* Delete all other user_codes with email changing purpose because the process was finished */
-        DB::table('user_codes')
-          ->where('purpose', '=', 'oldEmailVerify')
-          ->where('user_id', '=', $user->id)->delete();
+        DB::table('user_codes')->where('purpose', '=', 'oldEmailVerify')->where('user_id', '=', $user->id)->delete();
 
-        DB::table('user_codes')
-          ->where('purpose', '=', 'newEmailVerify')
-          ->where('user_id', '=', $user->id)->delete();
+        DB::table('user_codes')->where('purpose', '=', 'newEmailVerify')->where('user_id', '=', $user->id)->delete();
 
         return response()->json(['msg' => 'email_changed'], 200);
       }

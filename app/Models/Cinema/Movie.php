@@ -2,7 +2,9 @@
 
 namespace App\Models\Cinema;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -23,40 +25,36 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Movie extends Model
 {
-    /**
-     * @var array
-     */
-    protected $fillable = ['movie_year_id', 'worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'created_at', 'updated_at'];
+  /**
+   * @var array
+   */
+  protected $fillable = ['movie_year_id', 'worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'created_at', 'updated_at'];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function emergencyWorker()
-    {
-        return $this->belongsTo('App\Models\User', 'emergency_worker_id')->first();
-    }
+  /**
+   * @return BelongsTo
+   */
+  public function emergencyWorker() {
+    return $this->belongsTo('App\Models\User', 'emergency_worker_id')->first();
+  }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function movieYear()
-    {
-        return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
-    }
+  /**
+   * @return BelongsTo
+   */
+  public function movieYear() {
+    return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
+  }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function worker()
-    {
-        return $this->belongsTo('App\Models\User', 'worker_id')->first();
-    }
+  /**
+   * @return BelongsTo
+   */
+  public function worker() {
+    return $this->belongsTo('App\Models\User', 'worker_id')->first();
+  }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function moviesBookings()
-    {
-        return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
-    }
+  /**
+   * @return Collection
+   */
+  public function moviesBookings() {
+    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
+  }
 }

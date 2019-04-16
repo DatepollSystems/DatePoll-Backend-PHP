@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller
 {
+  /**
+   * @return JsonResponse
+   */
   public function getCinemaFeatureIsEnabled() {
-    return response()->json(['msg' => 'Is cinema service enabled' ,'enabled' => env('APP_CINEMA_ENABLED', false)], 200);
+    return response()->json(['msg' => 'Is cinema service enabled', 'enabled' => env('APP_CINEMA_ENABLED', false)], 200);
   }
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
   public function setCinemaFeatureIsEnabled(Request $request) {
-    $this->validate($request, [
-      'isEnabled' => 'required|boolean'
-    ]);
+    $this->validate($request, ['isEnabled' => 'required|boolean']);
 
     $isEnabled = $request->input('isEnabled');
 
@@ -27,23 +30,23 @@ class SettingsController extends Controller
     return response()->json(['msg' => 'Set cinema service enabled', 'isEnabled' => $isEnabled]);
   }
 
-  private function changeEnvironmentVariable($key,$value)
-  {
+  /**
+   * @param $key
+   * @param $value
+   */
+  private function changeEnvironmentVariable($key, $value) {
     $path = base_path('.env');
 
-    if(is_bool(env($key)))
-    {
-      $old = env($key)? 'true' : 'false';
-    }
-    elseif(env($key)===null){
+    if (is_bool(env($key))) {
+      $old = env($key) ? 'true' : 'false';
+    } elseif (env($key) === null) {
       $old = 'null';
-    }
-    else{
+    } else {
       $old = env($key);
     }
 
-    if(is_bool($value)) {
-      if($value) {
+    if (is_bool($value)) {
+      if ($value) {
         $value = 'true';
       } else {
         $value = 'false';
@@ -51,9 +54,7 @@ class SettingsController extends Controller
     }
 
     if (file_exists($path)) {
-      file_put_contents($path, str_replace(
-        "$key=".$old, "$key=".$value, file_get_contents($path)
-      ));
+      file_put_contents($path, str_replace("$key=" . $old, "$key=" . $value, file_get_contents($path)));
     }
   }
 }

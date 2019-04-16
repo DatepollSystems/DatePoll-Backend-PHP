@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use DB;
+use App\Models\User\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
 
-  public function getMyself(Request $request)
-  {
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function getMyself(Request $request) {
     $user = $request->auth;
 
     $toReturnUser = new \stdClass();
@@ -40,11 +45,7 @@ class UserController extends Controller
     $userTelephoneNumbers = DB::table('user_telephone_numbers')->where('user_id', '=', $user->id)->get();
     $telephoneNumbers = array();
     foreach ($userTelephoneNumbers as $telephoneNumber) {
-      $telephoneNumbers[] = [
-        'id' => $telephoneNumber->id,
-        'number' => $telephoneNumber->number,
-        'label' => $telephoneNumber->label
-      ];
+      $telephoneNumbers[] = ['id' => $telephoneNumber->id, 'number' => $telephoneNumber->number, 'label' => $telephoneNumber->label];
     }
 
     $toReturnUser->telephoneNumbers = $telephoneNumbers;
@@ -54,20 +55,11 @@ class UserController extends Controller
 
   /**
    * @param Request $request
-   * @return \Illuminate\Http\JsonResponse
-   * @throws \Illuminate\Validation\ValidationException
+   * @return JsonResponse
+   * @throws ValidationException
    */
-  public function updateMyself(Request $request)
-  {
-    $this->validate($request, [
-      'firstname' => 'required|max:190|min:1',
-      'surname' => 'required|max:190|min:1',
-      'streetname' => 'required|max:190|min:1',
-      'streetnumber' => 'required|max:190|min:1',
-      'zipcode' => 'required|integer',
-      'location' => 'required|max:190|min:1',
-      'birthday' => 'required|date'
-    ]);
+  public function updateMyself(Request $request) {
+    $this->validate($request, ['firstname' => 'required|max:190|min:1', 'surname' => 'required|max:190|min:1', 'streetname' => 'required|max:190|min:1', 'streetnumber' => 'required|max:190|min:1', 'zipcode' => 'required|integer', 'location' => 'required|max:190|min:1', 'birthday' => 'required|date']);
 
     $user = $request->auth;
 
@@ -90,31 +82,27 @@ class UserController extends Controller
     $user->birthday = $birthday;
 
     if ($user->save()) {
-      $user->view_yourself = [
-        'href' => 'api/v1/user/yourself',
-        'method' => 'GET'
-      ];
+      $user->view_yourself = ['href' => 'api/v1/user/yourself', 'method' => 'GET'];
 
       $user->password = null;
       $user->remember_token = null;
       $user->force_password_change = null;
       $user->email_verified = null;
 
-      $response = [
-        'msg' => 'User updated',
-        'user' => $user
-      ];
+      $response = ['msg' => 'User updated', 'user' => $user];
 
       return response()->json($response, 201);
     }
 
-    $response = [
-      'msg' => 'An error occurred'
-    ];
+    $response = ['msg' => 'An error occurred'];
 
     return response()->json($response, 404);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
   public function homepage(Request $request) {
     $user = $request->auth;
 

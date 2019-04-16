@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\User;
 
+use App\Models\Cinema\Movie;
+use App\Models\Cinema\MoviesBooking;
+use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,40 +49,36 @@ class User extends Model
   /**
    * @return Collection
    */
-  public function emergencyWorkerMovies()
-  {
+  public function emergencyWorkerMovies() {
     return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')->get();
   }
 
   /**
    * @return Collection
    */
-  public function workerMovies()
-  {
+  public function workerMovies() {
     return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')->get();
   }
 
   /**
    * @return Collection
    */
-  public function moviesBookings()
-  {
+  public function moviesBookings() {
     return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
   }
 
   /**
    * @return Collection
    */
-  public function userCodes()
-  {
-    return $this->hasMany('App\Models\UserCode')->get();
+  public function userCodes() {
+    return $this->hasMany('App\Models\User\UserCode')->get();
   }
 
   /**
    * @return Collection
    */
   public function telephoneNumbers() {
-    return $this->hasMany('App\Models\UserTelephoneNumber')->get();
+    return $this->hasMany('App\Models\User\UserTelephoneNumber')->get();
   }
 
   /**
@@ -99,18 +98,16 @@ class User extends Model
   /**
    * @return Collection
    */
-  public function permissions()
-  {
-    return $this->hasMany('App\Models\UserPermission')->get();
+  public function permissions() {
+    return $this->hasMany('App\Models\User\UserPermission')->get();
   }
 
   /**
    * @param $permission
    * @return bool
    */
-  public function hasPermission($permission)
-  {
-    if($this->permissions()->where("permission", "=", $permission)->first()) {
+  public function hasPermission($permission) {
+    if ($this->permissions()->where("permission", "=", $permission)->first()) {
       return true;
     }
 
