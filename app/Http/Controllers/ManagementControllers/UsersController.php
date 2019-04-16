@@ -45,7 +45,6 @@ class UsersController extends Controller
       $toReturnUser->activity = $user->activity;
       $toReturnUser->phoneNumbers = $user->telephoneNumbers();
       $toReturnUser->permissions = $user->permissions();
-      $toReturnUser->performanceBadges = $user->performanceBadges();
 
       $toReturnUser->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
@@ -155,7 +154,6 @@ class UsersController extends Controller
     $userToShow->force_password_change = $user->force_password_change;
     $userToShow->phoneNumbers = $user->telephoneNumbers();
     $userToShow->permissions = $user->permissions();
-    $userToShow->performanceBadges = $user->performanceBadges();
 
     $userToShow->view_users = ['href' => 'api/v1/management/users', 'method' => 'GET'];
 

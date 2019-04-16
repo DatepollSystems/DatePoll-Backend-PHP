@@ -1,5 +1,7 @@
 <?php
 
+use Barryvdh\Cors\HandleCors;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
@@ -61,7 +63,7 @@ $app->singleton(
 */
 /* Enable all CORS */
 $app->middleware([
-  \Barryvdh\Cors\HandleCors::class,
+  HandleCors::class,
 ]);
 
 $app->routeMiddleware([
