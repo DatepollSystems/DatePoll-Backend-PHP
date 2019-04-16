@@ -6,7 +6,6 @@ use App\Models\Cinema\MoviesBooking;
 use App\Models\User\UserToken;
 use DateTime;
 use Exception;
-use Illuminate\Http\JsonResponse;
 use Jsvrcek\ICS\CalendarExport;
 use Jsvrcek\ICS\CalendarStream;
 use Jsvrcek\ICS\Exception\CalendarEventException;
@@ -21,7 +20,7 @@ class CalendarController extends Controller
 {
   /**
    * @param $token
-   * @return JsonResponse
+   * @return string
    * @throws CalendarEventException
    * @throws Exception
    */
@@ -106,6 +105,13 @@ class CalendarController extends Controller
 
     $calendarExport->addCalendar($calendar);
 
-    echo $calendarExport->getStream();
+    return $calendarExport->getStream();
+  }
+
+  /**
+   * @return string
+   */
+  public function getCompleteCalendar() {
+    return "Coming soon";
   }
 }

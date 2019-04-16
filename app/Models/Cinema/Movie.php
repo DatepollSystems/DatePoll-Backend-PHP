@@ -34,7 +34,7 @@ class Movie extends Model
    * @return BelongsTo
    */
   public function emergencyWorker() {
-    return $this->belongsTo('App\Models\User', 'emergency_worker_id')->first();
+    return $this->belongsTo('App\Models\User\User', 'emergency_worker_id')->first();
   }
 
   /**
@@ -48,7 +48,7 @@ class Movie extends Model
    * @return BelongsTo
    */
   public function worker() {
-    return $this->belongsTo('App\Models\User', 'worker_id')->first();
+    return $this->belongsTo('App\Models\User\User', 'worker_id')->first();
   }
 
   /**
