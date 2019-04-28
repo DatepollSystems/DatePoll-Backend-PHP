@@ -4,6 +4,7 @@ namespace App\Models\User;
 
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
+use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Movie[] $movies
  * @property MoviesBooking[] $moviesBookings
  * @property UserCode[] $userCodes
+ * @property UserHavePerformanceBadgeWithInstrument[] $userHavePerformanceBadgeWithInstrument
  * @property UserPermission[] $userPermissions
  */
 class User extends Model
@@ -93,6 +95,13 @@ class User extends Model
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();
+  }
+
+  /**
+   * @return Collection
+   */
+  public function performanceBadges() {
+    return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument')->get();
   }
 
   /**
