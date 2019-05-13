@@ -19,7 +19,7 @@ class MovieController extends Controller
    * @return Response
    */
   public function getAll() {
-    $movies = Movie::all();
+    $movies = Movie::orderBy('date')->get();
     foreach ($movies as $movie) {
       $workerID = $movie->worker_id;
       $emergencyWorkerID = $movie->emergency_worker_id;
@@ -197,7 +197,7 @@ class MovieController extends Controller
   }
 
   public function getNotShownMovies(Request $request) {
-    $allMovies = Movie::all();
+    $allMovies = Movie::orderBy('date')->get();
     if ($allMovies == null) {
       $response = ['msg' => 'List of not shown movies', 'movies' => $allMovies];
 
