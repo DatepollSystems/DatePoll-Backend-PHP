@@ -276,7 +276,7 @@ class UsersController extends Controller
     $userToShow->permissions = $user->permissions();
     $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
-    $response = ['msg' => 'User updated created', 'user' => $userToShow];
+    $response = ['msg' => 'User updated', 'user' => $userToShow];
 
     return response()->json($response, 200);
   }
