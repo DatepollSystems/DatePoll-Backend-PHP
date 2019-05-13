@@ -33,4 +33,21 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
   $router->post('subgroups/updateUser', ['uses' => 'ManagementControllers\SubgroupController@updateUser']);
   $router->get('subgroups/joined/{userID}', ['uses' => 'ManagementControllers\SubgroupController@joined']);
   $router->get('subgroups/free/{userID}', ['uses' => 'ManagementControllers\SubgroupController@free']);
+
+  /** Performance badges routes */
+  $router->get('performanceBadges', ['uses' => 'ManagementControllers\PerformanceBadgeController@getAll']);
+  $router->post('performanceBadges', ['uses' => 'ManagementControllers\PerformanceBadgeController@create']);
+  $router->get('performanceBadges/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@getSingle']);
+  $router->put('performanceBadges/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@update']);
+  $router->delete('performanceBadges/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@delete']);
+
+  /** Instrument routes */
+  $router->get('instruments', ['uses' => 'ManagementControllers\InstrumentController@getAll']);
+  $router->post('instruments', ['uses' => 'ManagementControllers\InstrumentController@create']);
+  $router->get('instruments/{id}', ['uses' => 'ManagementControllers\InstrumentController@getSingle']);
+  $router->put('instruments/{id}', ['uses' => 'ManagementControllers\InstrumentController@update']);
+  $router->delete('instruments/{id}', ['uses' => 'ManagementControllers\InstrumentController@delete']);
+
+  $router->post('addPerformanceBadgeForUserWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@addPerformanceBadgeForUserWithInstrument']);
+  $router->post('removePerformanceBadgeForUserWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']);
 });
