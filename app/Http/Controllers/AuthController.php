@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User\User;
+use App\Models\User\UserToken;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class AuthController extends Controller
     $payload = ['iss' => "lumen-jwt", // Issuer of the token
       'sub' => $userID, // Subject of the token
       'iat' => time(), // Time when JWT was issued.
-      'exp' => time() + 60 * 60 * 6// Expiration time
+      'exp' => time() + 60 * 60// Expiration time
     ];
 
     // As you can see we are passing `JWT_SECRET` as the second parameter that will
@@ -51,6 +52,33 @@ class AuthController extends Controller
 
       if ($user->force_password_change) {
         return response()->json(['msg' => 'changePassword', 201]);
+      }
+
+      $sessionInformation = $request->input('sessionInformation');
+      $stayLoggedIn = $request->input('stayLoggedIn');
+      if($stayLoggedIn != null && $sessionInformation != null) {
+        if($stayLoggedIn) {
+          $randomToken = '';
+          while (true) {
+            $randomToken = UserToken::generateRandomString(64);
+            if (UserToken::where('token', $randomToken)->first() == null) {
+              break;
+            }
+          }
+
+          $userToken = new UserToken([
+            'user_id' => $user->id,
+            'token' => $randomToken,
+            'purpose' => 'stayLoggedIn',
+            'description' => $sessionInformation
+          ]);
+
+          if(!$userToken->save()) {
+            return response()->json(['An error occurred during session token saving..'], 500);
+          }
+
+          return response()->json(['token' => $this->jwt($user->id), 'sessionToken' => $randomToken], 200);
+        }
       }
 
       return response()->json(['token' => $this->jwt($user->id)], 200);
@@ -97,5 +125,27 @@ class AuthController extends Controller
     $userID = $payload_array['sub'];
 
     return response()->json(['token' => $this->jwt($userID)], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function IamLoggedIn(Request $request) {
+    $this->validate($request, ['sessionToken' => 'required', 'sessionInformation' => 'required']);
+
+    $sessionToken = $request->input('sessionToken');
+
+    $userToken = UserToken::where('token', $sessionToken)->where('purpose', 'stayLoggedIn')->first();
+
+    if($userToken == null) {
+      return response()->json(['msg' => 'You have been logged out of this session or this session token is incorrect', 'error_code' => 'session_token_incorrect'], 400);
+    }
+
+    $userToken->description = $request->input('sessionInformation');
+    $userToken->save();
+    $userToken->touch();
+    return response()->json(['msg' => 'Session token is good', 'token' => $this->jwt($userToken->user_id)], 200);
   }
 }
