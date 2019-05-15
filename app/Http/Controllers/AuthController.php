@@ -124,7 +124,7 @@ class AuthController extends Controller
     $payload_array = (array)$payload;
     $userID = $payload_array['sub'];
 
-    return response()->json(['token' => $this->jwt($userID), 'msg' => 'Refresh successful'], 201);
+    return response()->json(['token' => $this->jwt($userID), 'msg' => 'Refresh successful'], 202);
   }
 
   /**
@@ -146,6 +146,6 @@ class AuthController extends Controller
     $userToken->description = $request->input('sessionInformation');
     $userToken->save();
     $userToken->touch();
-    return response()->json(['msg' => 'Session token is good', 'token' => $this->jwt($userToken->user_id)], 201);
+    return response()->json(['msg' => 'Session token is good', 'token' => $this->jwt($userToken->user_id)], 202);
   }
 }
