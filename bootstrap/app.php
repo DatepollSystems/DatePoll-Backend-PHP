@@ -63,8 +63,7 @@ $app->singleton(
 */
 /* Enable all CORS */
 $app->middleware([
-  'Nord\Lumen\Cors\CorsMiddleware',
-  //HandleCors::class,
+  HandleCors::class,
 ]);
 
 $app->routeMiddleware([
@@ -91,8 +90,7 @@ $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 $app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
 
 /* Enable CORS on every route */
-//$app->register(Barryvdh\Cors\ServiceProvider::class);
-$app->register('Nord\Lumen\Cors\CorsServiceProvider');
+$app->register(Barryvdh\Cors\ServiceProvider::class);
 
 /* Make php artisan:make command as powerful as in laravel */
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
