@@ -28,7 +28,7 @@ class UsersController extends Controller
     $users = User::all();
     foreach ($users as $user) {
 
-      $toReturnUser = new \stdClass();
+      $toReturnUser = new stdClass();
 
       $toReturnUser->id = $user->id;
       $toReturnUser->email = $user->email;
@@ -427,5 +427,53 @@ class UsersController extends Controller
     $response = ['msg' => 'User deleted', 'create' => ['href' => 'api/v1/management/users', 'method' => 'POST', 'params' => 'title, email, firstname, surname, birthday, join_date, streetname, streetnumber, zipcode, location, activated, activity, phoneNumbers']];
 
     return response()->json($response);
+  }
+
+  public function export() {
+    $toReturnUsers = array();
+
+    $users = User::all();
+    foreach ($users as $user) {
+
+      $toReturnUser = new stdClass();
+
+      $toReturnUser->Email = $user->email;
+      $toReturnUser->Titel = $user->title;
+      $toReturnUser->Vorname = $user->firstname;
+      $toReturnUser->Nachname = $user->surname;
+      $toReturnUser->Geburtstag = $user->birthday;
+      $toReturnUser->Beitrittsdatum = $user->join_date;
+      $toReturnUser->Straßenname = $user->streetname;
+      $toReturnUser->Hausnummer = $user->streetnumber;
+      $toReturnUser->Postleitzahl = $user->zipcode;
+      $toReturnUser->Ortsname = $user->location;
+      $toReturnUser->Aktivitaet = $user->activity;
+
+      $telephoneNumbers = '';
+      foreach ($user->telephoneNumbers() as $telephoneNumber) {
+        $telephoneNumbers .= $telephoneNumber->number . ', ';
+      }
+
+      $toReturnUser->Telefonnummern = $telephoneNumbers;
+
+      $groups = '';
+      foreach ($user->usersMemberOfGroups() as $usersMemberOfGroup) {
+        $groups .= $usersMemberOfGroup->group()->name . ', ';
+      }
+
+      $toReturnUser->Gruppen = $groups;
+
+      $subgroups = '';
+      foreach ($user->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
+        $subgroups .= $usersMemberOfSubgroup->subgroup()->name . ', ';
+      }
+
+      $toReturnUser->Register = $subgroups;
+
+      $toReturnUsers[] = $toReturnUser;
+    }
+
+    return response()->json(['msg' => 'List of users to export', 'users' => $toReturnUsers], 200);
+
   }
 }

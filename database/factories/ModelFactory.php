@@ -11,7 +11,7 @@
 |
 */
 
-use App\Models\User;
+use App\Models\User\User;
 
 $factory->define(User::class, function (Faker\Generator $faker) {
   return [
@@ -27,6 +27,6 @@ $factory->define(User::class, function (Faker\Generator $faker) {
     'location' => $faker->city,
     'birthday' => date('Y-m-d'),
     'join_date' => date('Y-m-d'),
-    'activity' => 'active'
+    'activity' => 'aktiv'
   ];
 });
