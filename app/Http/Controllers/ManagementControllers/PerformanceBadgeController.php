@@ -18,7 +18,7 @@ class PerformanceBadgeController extends Controller
    * @return Response
    */
   public function getAll() {
-    $performanceBadges = PerformanceBadge::all();
+    $performanceBadges = PerformanceBadge::orderBy('name')->get();
     foreach ($performanceBadges as $performanceBadge) {
       $performanceBadge->view_performanceBadge = ['href' => 'api/v1/management/performanceBadges/' . $performanceBadge->id, 'method' => 'GET'];
     }

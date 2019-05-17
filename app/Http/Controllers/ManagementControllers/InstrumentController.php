@@ -17,7 +17,7 @@ class InstrumentController extends Controller
    * @return Response
    */
   public function getAll() {
-    $instruments = Instrument::all();
+    $instruments = Instrument::orderBy('name')->get();
     foreach ($instruments as $instrument) {
       $instrument->view_instrument = ['href' => 'api/v1/management/instruments/' . $instrument->id, 'method' => 'GET'];
     }
