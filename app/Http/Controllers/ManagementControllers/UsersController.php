@@ -460,15 +460,26 @@ class UsersController extends Controller
       foreach ($user->usersMemberOfGroups() as $usersMemberOfGroup) {
         $groups .= $usersMemberOfGroup->group()->name . ', ';
       }
-
       $toReturnUser->Gruppen = $groups;
 
       $subgroups = '';
       foreach ($user->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
-        $subgroups .= $usersMemberOfSubgroup->subgroup()->name . ', ';
+        $subgroups .= $usersMemberOfSubgroup->subgroup()->group()->name . ' - ' . $usersMemberOfSubgroup->subgroup()->name . ', ';
       }
-
       $toReturnUser->Register = $subgroups;
+
+      $performanceBadgeForUser = '';
+      foreach($user->performanceBadges() as $performanceBadge) {
+        $performanceBadgeForUser .= $performanceBadge->instrument()->name . ': ' . $performanceBadge->performanceBadge()->name;
+        if($performanceBadge->date != '1970-01-01') {
+          $performanceBadgeForUser .= ' am ' . $performanceBadge->date;
+        }
+        if($performanceBadge->grade != null) {
+          $performanceBadgeForUser .= ' mit ' . $performanceBadge->grade . ' Erfolg';
+        }
+        $performanceBadgeForUser .= '; ';
+      }
+      $toReturnUser->Leistungsabzeichen = $performanceBadgeForUser;
 
       $toReturnUsers[] = $toReturnUser;
     }

@@ -49,6 +49,8 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
   $router->put('instruments/{id}', ['uses' => 'ManagementControllers\InstrumentController@update']);
   $router->delete('instruments/{id}', ['uses' => 'ManagementControllers\InstrumentController@delete']);
 
-  $router->post('addPerformanceBadgeForUserWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@addPerformanceBadgeForUserWithInstrument']);
-  $router->post('removePerformanceBadgeForUserWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']);
+  $router->post('performanceBadgeWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@addPerformanceBadgeForUserWithInstrument']);
+  $router->delete('performanceBadgeWithInstrument/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']);
+
+  $router->get('performanceBadgesForUser/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@performanceBadgesForUser']);
 });
