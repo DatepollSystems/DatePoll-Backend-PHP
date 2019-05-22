@@ -28,9 +28,15 @@ $router->group(['prefix' => 'user'], function () use ($router) {
     $router->post('phoneNumber', ['uses' => 'UserControllers\UserChangePhoneNumberController@addPhoneNumber']);
     $router->delete('phoneNumber/{id}', ['uses' => 'UserControllers\UserChangePhoneNumberController@removePhoneNumber']);
 
+    /** Token */
     $router->group(['prefix' => 'token'], function () use ($router) {
       $router->get('calendar', ['uses' => 'UserControllers\UserTokenController@getCalendarToken']);
       $router->delete('calendar', ['uses' => 'UserControllers\UserTokenController@resetCalendarToken']);
     });
+
+    /** Session management */
+    $router->get('session', ['uses' => 'UserControllers\UserTokenController@getAllSessions']);
+    $router->post('session/logoutCurrentSession', ['uses' => 'UserControllers\UserTokenController@logoutCurrentSession']);
+    $router->delete('session/{id}', ['uses' => 'UserControllers\UserTokenController@removeSession']);
   });
 });

@@ -7,8 +7,8 @@ use App\Mail\NewEmailVerifying;
 use App\Mail\OldEmailVerifying;
 use App\Models\UserCode;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 

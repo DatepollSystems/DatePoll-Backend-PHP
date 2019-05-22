@@ -35,14 +35,14 @@ class UserHavePerformanceBadgeWithInstrument extends Model
    * @return BelongsTo
    */
   public function instrument() {
-    return $this->belongsTo('App\Models\PerformanceBadge\Instrument');
+    return $this->belongsTo('App\Models\PerformanceBadge\Instrument')->first();
   }
 
   /**
    * @return BelongsTo
    */
   public function performanceBadge() {
-    return $this->belongsTo('App\Models\PerformanceBadge\PerformanceBadge');
+    return $this->belongsTo('App\Models\PerformanceBadge\PerformanceBadge')->first();
   }
 
   /**

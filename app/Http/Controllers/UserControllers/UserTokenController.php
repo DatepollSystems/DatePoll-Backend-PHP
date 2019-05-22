@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User\UserToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use stdClass;
 
 class UserTokenController extends Controller
 {
@@ -53,5 +54,65 @@ class UserTokenController extends Controller
       return response()->json(['msg' => 'Could not delete token'], 500);
     }
     return response()->json(['msg' => 'Deleted token successfully'], 200);
+  }
+
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function getAllSessions(Request $request) {
+    $user = $request->auth;
+
+    $sessionsToReturn = [];
+
+    $sessions = UserToken::where('user_id', $user->id)->where('purpose', 'stayLoggedIn')->get();
+    foreach ($sessions as $session) {
+      $sessionToReturn = new stdClass();
+      $sessionToReturn->id = $session->id;
+      $sessionToReturn->information = $session->description;
+      $sessionToReturn->lastUsed = $session->updated_at;
+
+      $sessionToReturn->delete_session = [
+        'href' => 'api/v1/user/myself/session/{id}',
+        'method' => 'DELETE'
+      ];
+
+      $sessionsToReturn[] = $sessionToReturn;
+    }
+
+    return response()->json(['msg' => 'List of all sessions', 'sessions' => $sessionsToReturn]);
+  }
+
+  public function logoutCurrentSession(Request $request) {
+    $this->validate($request, ['sessionToken' => 'required']);
+
+    $user = $request->auth;
+
+    $session = UserToken::where('user_id', $user->id)->where('token', $request->input('sessionToken'))
+      ->where('purpose', 'stayLoggedIn')->first();
+    if($session == null) {
+      return response()->json(['msg' => 'Session token is incorrect'], 404);
+    }
+
+    if(!$session->delete()) {
+      return response()->json(['msg' => 'Could not delete session'], 500);
+    }
+    return response()->json(['msg' => 'Successfully logged out and deleted session'], 200);
+  }
+
+  public function removeSession(Request $request, $id) {
+    $user = $request->auth;
+
+    $session = UserToken::where('purpose', 'stayLoggedIn')->where('user_id', $user->id)->where('id', $id);
+    if($session == null) {
+      return response()->json(['msg' => 'Session token does not exist!'], 404);
+    }
+
+    if(!$session->delete()) {
+      return response()->json(['msg' => 'Could not delete session'], 500);
+    }
+
+    return response()->json(['msg' => 'Successfully deleted session'], 200);
   }
 }
