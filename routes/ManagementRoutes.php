@@ -1,4 +1,6 @@
 <?php
+/** @noinspection ALL */
+/** @noinspection PhpUndefinedMethodInspection */
 
 use App\Http\Middleware\ManagementPermissionMiddleware;
 
@@ -9,6 +11,7 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
   $router->get('users/{id}', ['uses' => 'ManagementControllers\UsersController@getSingle']);
   $router->put('users/{id}', ['uses' => 'ManagementControllers\UsersController@update']);
   $router->delete('users/{id}', ['uses' => 'ManagementControllers\UsersController@delete']);
+  $router->post('users/activate', ['uses' => 'ManagementControllers\UsersController@activateAll']);
   $router->get('export/users', ['uses' => 'ManagementControllers\UsersController@export']);
 
   /** Groups routes */

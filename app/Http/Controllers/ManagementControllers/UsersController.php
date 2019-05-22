@@ -8,6 +8,7 @@ use App\Models\User\User;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\UserCode;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
@@ -429,6 +430,9 @@ class UsersController extends Controller
     return response()->json($response);
   }
 
+  /**
+   * @return JsonResponse
+   */
   public function export() {
     $toReturnUsers = array();
 
@@ -486,5 +490,21 @@ class UsersController extends Controller
 
     return response()->json(['msg' => 'List of users to export', 'users' => $toReturnUsers], 200);
 
+  }
+
+  public function activateAll() {
+    $users = User::where('activated', 0)->get();
+
+    foreach ($users as $user) {
+      $randomPassword = UserCode::generateCode();
+      $user->password = app('hash')->make($randomPassword . $user->id);;
+      $user->force_password_change = true;
+      $user->activated = true;
+      $user->save();
+
+      Mail::to($user->email)->send(new ActivateUser($user->firstname . " " . $user->surname, $randomPassword));
+    }
+
+    return response()->json(['msg' => 'All users have been activated and will receive a mail'], 200);
   }
 }
