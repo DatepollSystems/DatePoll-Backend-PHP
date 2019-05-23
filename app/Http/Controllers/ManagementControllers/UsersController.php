@@ -129,10 +129,12 @@ class UsersController extends Controller
       }
     }
 
-    if($permissions != null) {
-      foreach ((array)$permissions as $permission) {
-        $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
-        $permissionToSave->save();
+    if($request->auth->hasPermission('root.administration')) {
+      if($permissions != null) {
+        foreach ((array)$permissions as $permission) {
+          $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
+          $permissionToSave->save();
+        }
       }
     }
 
@@ -329,41 +331,44 @@ class UsersController extends Controller
     }
     //---------------------------------------------------------------
     //---- Permissions manager only deletes changed permissions -----
-    $permissionsWhichHaveNotBeenDeleted = array();
+    if($request->auth->hasPermission('root.administration')) {
 
-    $OldPermissions = $user->permissions();
-    foreach ($OldPermissions as $oldPermission) {
-      $toDelete = true;
+      $permissionsWhichHaveNotBeenDeleted = array();
+
+      $OldPermissions = $user->permissions();
+      foreach ($OldPermissions as $oldPermission) {
+        $toDelete = true;
+
+        foreach ((array) $permissions as $permission) {
+          if($oldPermission['permission'] == $permission) {
+            $toDelete = false;
+            $permissionsWhichHaveNotBeenDeleted[] = $permission;
+            break;
+          }
+        }
+
+        if($toDelete) {
+          $permissionToDeleteObject = UserPermission::find($oldPermission->id);
+          if (!$permissionToDeleteObject->delete()) {
+            return response()->json(['msg' => 'Failed during permission clearing...'], 500);
+          }
+        }
+      }
 
       foreach ((array) $permissions as $permission) {
-        if($oldPermission['permission'] == $permission) {
-          $toDelete = false;
-          $permissionsWhichHaveNotBeenDeleted[] = $permission;
-          break;
+        $toAdd = true;
+
+        foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
+          if($permission == $permissionWhichHaveNotBeenDeleted) {
+            $toAdd = false;
+            break;
+          }
         }
-      }
 
-      if($toDelete) {
-        $permissionToDeleteObject = UserPermission::find($oldPermission->id);
-        if (!$permissionToDeleteObject->delete()) {
-          return response()->json(['msg' => 'Failed during permission clearing...'], 500);
+        if($toAdd) {
+          $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
+          $permissionToSave->save();
         }
-      }
-    }
-
-    foreach ((array) $permissions as $permission) {
-      $toAdd = true;
-
-      foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
-        if($permission == $permissionWhichHaveNotBeenDeleted) {
-          $toAdd = false;
-          break;
-        }
-      }
-
-      if($toAdd) {
-        $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
-        $permissionToSave->save();
       }
     }
     //---------------------------------------------------------------
@@ -492,6 +497,9 @@ class UsersController extends Controller
 
   }
 
+  /**
+   * @return JsonResponse
+   */
   public function activateAll() {
     $users = User::where('activated', 0)->get();
 

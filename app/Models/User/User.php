@@ -116,7 +116,11 @@ class User extends Model
    * @return bool
    */
   public function hasPermission($permission) {
-    if ($this->permissions()->where("permission", "=", $permission)->first()) {
+    if ($this->permissions()->where('permission', '=', 'root.administration')->first() != null) {
+      return true;
+    }
+
+    if ($this->permissions()->where("permission", "=", $permission)->first() != null) {
       return true;
     }
 
