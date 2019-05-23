@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cinema\Movie;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use stdClass;
 
 class MovieWorkerController extends Controller
 {
@@ -134,7 +135,7 @@ class MovieWorkerController extends Controller
       if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
         $moviesIDs[] = $movie->id;
 
-        $localMovie = new \stdClass();
+        $localMovie = new stdClass();
         $localMovie->movieName = $movie->name;
         $localMovie->movieID = $movie->id;
         $localMovie->date = $movie->date;

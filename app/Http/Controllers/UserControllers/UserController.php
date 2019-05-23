@@ -4,10 +4,10 @@ namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class UserController extends Controller
 {
@@ -19,36 +19,7 @@ class UserController extends Controller
   public function getMyself(Request $request) {
     $user = $request->auth;
 
-    $toReturnUser = new \stdClass();
-
-    $toReturnUser->id = $user->id;
-    $toReturnUser->email = $user->email;
-    $toReturnUser->title = $user->title;
-    $toReturnUser->firstname = $user->firstname;
-    $toReturnUser->surname = $user->surname;
-    $toReturnUser->birthday = $user->birthday;
-    $toReturnUser->join_date = $user->join_date;
-    $toReturnUser->streetname = $user->streetname;
-    $toReturnUser->streetnumber = $user->streetnumber;
-    $toReturnUser->zipcode = $user->zipcode;
-    $toReturnUser->location = $user->location;
-    $toReturnUser->activity = $user->activity;
-
-    $userPermissions = DB::table('user_permissions')->where('user_id', '=', $user->id)->get();
-    $permissions = array();
-    foreach ($userPermissions as $permission) {
-      $permissions[] = $permission->permission;
-    }
-
-    $toReturnUser->permissions = $permissions;
-
-    $userTelephoneNumbers = DB::table('user_telephone_numbers')->where('user_id', '=', $user->id)->get();
-    $telephoneNumbers = array();
-    foreach ($userTelephoneNumbers as $telephoneNumber) {
-      $telephoneNumbers[] = ['id' => $telephoneNumber->id, 'number' => $telephoneNumber->number, 'label' => $telephoneNumber->label];
-    }
-
-    $toReturnUser->telephoneNumbers = $telephoneNumbers;
+    $toReturnUser = $user->getReturnable();
 
     return response()->json(['msg' => 'Get yourself', 'user' => $toReturnUser], 200);
   }
@@ -82,14 +53,11 @@ class UserController extends Controller
     $user->birthday = $birthday;
 
     if ($user->save()) {
-      $user->view_yourself = ['href' => 'api/v1/user/yourself', 'method' => 'GET'];
+      $userToShow = $user->getReturnable();
 
-      $user->password = null;
-      $user->remember_token = null;
-      $user->force_password_change = null;
-      $user->email_verified = null;
+      $userToShow->view_yourself = ['href' => 'api/v1/user/yourself', 'method' => 'GET'];
 
-      $response = ['msg' => 'User updated', 'user' => $user];
+      $response = ['msg' => 'User updated', 'user' => $userToShow];
 
       return response()->json($response, 201);
     }
@@ -111,7 +79,7 @@ class UserController extends Controller
     foreach ($bookings as $booking) {
       $movie = $booking->movie();
 
-      $bookingToShow = new \stdClass();
+      $bookingToShow = new stdClass();
       $bookingToShow->movieID = $movie->id;
       $bookingToShow->movieName = $movie->name;
       $bookingToShow->movieDate = $movie->date;
@@ -141,7 +109,7 @@ class UserController extends Controller
     foreach ($users as $user) {
       $d = date_parse_from_format("Y-m-d", $user->birthday);
       if ($d["month"] == date('n')) {
-        $birthdayToShow = new \stdClass();
+        $birthdayToShow = new stdClass();
 
         $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
         $birthdayToShow->date = $user->birthday;
