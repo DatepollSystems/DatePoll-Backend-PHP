@@ -29,33 +29,7 @@ class UsersController extends Controller
     $users = User::all();
     foreach ($users as $user) {
 
-      $toReturnUser = new stdClass();
-
-      $toReturnUser->id = $user->id;
-      $toReturnUser->email = $user->email;
-      $toReturnUser->title = $user->title;
-      $toReturnUser->firstname = $user->firstname;
-      $toReturnUser->surname = $user->surname;
-      $toReturnUser->birthday = $user->birthday;
-      $toReturnUser->join_date = $user->join_date;
-      $toReturnUser->streetname = $user->streetname;
-      $toReturnUser->streetnumber = $user->streetnumber;
-      $toReturnUser->zipcode = $user->zipcode;
-      $toReturnUser->location = $user->location;
-      $toReturnUser->force_password_change = $user->force_password_change;
-      $toReturnUser->activated = $user->activated;
-      $toReturnUser->activity = $user->activity;
-      $toReturnUser->phoneNumbers = $user->telephoneNumbers();
-
-      $permissions = array();
-      if($user->permissions() != null) {
-        foreach ($user->permissions() as $permission) {
-          $permissions[] = $permission->permission;
-        }
-      }
-
-      $toReturnUser->permissions = $permissions;
-      $toReturnUser->performanceBadges = $user->performanceBadges();
+      $toReturnUser = $user->getReturnable();
 
       $toReturnUser->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
@@ -147,35 +121,7 @@ class UsersController extends Controller
       Mail::to($user->email)->send(new ActivateUser($firstname . " " . $surname, $randomPassword));
     }
 
-    $user = User::find($user->id);
-
-    $userToShow = new stdClass();
-    $userToShow->id = $user->id;
-    $userToShow->title = $user->title;
-    $userToShow->email = $user->email;
-    $userToShow->firstname = $user->firstname;
-    $userToShow->surname = $user->surname;
-    $userToShow->birthday = $user->birthday;
-    $userToShow->join_date = $user->join_date;
-    $userToShow->streetname = $user->streetname;
-    $userToShow->streetnumber = $user->streetnumber;
-    $userToShow->zipcode = $user->zipcode;
-    $userToShow->location = $user->location;
-    $userToShow->activated = $user->activated;
-    $userToShow->activity = $user->activity;
-    $userToShow->force_password_change = $user->force_password_change;
-    $userToShow->phoneNumbers = $user->telephoneNumbers();
-
-    $permissions = array();
-    if($user->permissions() != null) {
-      foreach ($user->permissions() as $permission) {
-        $permissions[] = $permission->permission;
-      }
-    }
-
-    $userToShow->permissions = $permissions;
-
-    $userToShow->performanceBadges = $user->performanceBadges();
+    $userToShow = $user->getReturnable();
     $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
     $response = ['msg' => 'User successful created', 'user' => $userToShow];
@@ -195,32 +141,7 @@ class UsersController extends Controller
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    $userToShow = new stdClass();
-
-    $userToShow->title = $user->title;
-    $userToShow->firstname = $user->firstname;
-    $userToShow->surname = $user->surname;
-    $userToShow->email = $user->email;
-    $userToShow->birthday = $user->birthday;
-    $userToShow->join_date = $user->join_date;
-    $userToShow->streetname = $user->streetname;
-    $userToShow->streetnumber = $user->streetnumber;
-    $userToShow->zipcode = $user->zipcode;
-    $userToShow->location = $user->location;
-    $userToShow->activated = $user->activated;
-    $userToShow->activity = $user->activity;
-    $userToShow->force_password_change = $user->force_password_change;
-    $userToShow->phoneNumbers = $user->telephoneNumbers();
-
-    $permissions = array();
-    if($user->permissions() != null) {
-      foreach ($user->permissions() as $permission) {
-        $permissions[] = $permission->permission;
-      }
-    }
-
-    $userToShow->permissions = $permissions;
-    $userToShow->performanceBadges = $user->performanceBadges();
+    $userToShow = $user->getReturnable();
 
     $userToShow->view_users = ['href' => 'api/v1/management/users', 'method' => 'GET'];
 
@@ -382,31 +303,7 @@ class UsersController extends Controller
       Mail::to($user->email)->send(new ActivateUser($firstname . " " . $surname, $randomPassword));
     }
 
-    $userToShow = new stdClass();
-    $userToShow->id = $user->id;
-    $userToShow->title = $user->title;
-    $userToShow->email = $user->email;
-    $userToShow->firstname = $user->firstname;
-    $userToShow->surname = $user->surname;
-    $userToShow->birthday = $user->birthday;
-    $userToShow->join_date = $user->join_date;
-    $userToShow->streetname = $user->streetname;
-    $userToShow->streetnumber = $user->streetnumber;
-    $userToShow->zipcode = $user->zipcode;
-    $userToShow->location = $user->location;
-    $userToShow->activated = $user->activated;
-    $userToShow->activity = $user->activity;
-    $userToShow->force_password_change = $user->force_password_change;
-    $userToShow->phoneNumbers = $user->telephoneNumbers();
-
-    $permissions = array();
-    if($user->permissions() != null) {
-      foreach ($user->permissions() as $permission) {
-        $permissions[] = $permission->permission;
-      }
-    }
-
-    $userToShow->performanceBadges = $user->performanceBadges();
+    $userToShow = $user->getReturnable();
     $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
 
     $response = ['msg' => 'User updated', 'user' => $userToShow];
@@ -436,6 +333,8 @@ class UsersController extends Controller
   }
 
   /**
+   * Gives an array of user for export
+   *
    * @return JsonResponse
    */
   public function export() {
@@ -498,6 +397,8 @@ class UsersController extends Controller
   }
 
   /**
+   * Activates all unactivated users
+   *
    * @return JsonResponse
    */
   public function activateAll() {
