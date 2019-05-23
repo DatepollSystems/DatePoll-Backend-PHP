@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class PerformanceBadgeController extends Controller
 {
@@ -201,7 +202,7 @@ class PerformanceBadgeController extends Controller
 
     $userHasPerformanceBadgesWithInstruments = $user->performanceBadges();
     foreach ($userHasPerformanceBadgesWithInstruments as $performanceBadgeWithInstrument) {
-      $performanceBadgeToReturn = new \stdClass();
+      $performanceBadgeToReturn = new stdClass();
       $performanceBadgeToReturn->id = $performanceBadgeWithInstrument->id;
       $performanceBadgeToReturn->performanceBadge_id = $performanceBadgeWithInstrument->performance_badge_id;
       $performanceBadgeToReturn->instrument_id = $performanceBadgeWithInstrument->instrument_id;

@@ -60,14 +60,17 @@ class User extends Model
    * @return Collection
    */
   public function workerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')->get();
+    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')->orderBy('date')->get();
   }
 
   /**
    * @return Collection
    */
   public function moviesBookings() {
-    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
+    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
+      ->orderBy('m.date')
+      ->select('movies_bookings.*')
+      ->where('user_id', $this->id)->get();
   }
 
   /**
@@ -127,7 +130,6 @@ class User extends Model
 
     return false;
   }
-
 
   /**
    * Returns a DTO object for the user
