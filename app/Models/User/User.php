@@ -139,6 +139,7 @@ class User extends Model
   public function getReturnable() {
     $returnableUser = new stdClass();
 
+    $returnableUser->id = $this->id;
     $returnableUser->title = $this->title;
     $returnableUser->firstname = $this->firstname;
     $returnableUser->surname = $this->surname;
