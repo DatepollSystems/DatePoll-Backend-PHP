@@ -42,11 +42,13 @@ class AuthController extends Controller
    * @throws ValidationException
    */
   public function signin(Request $request) {
-    $this->validate($request, ['email' => 'required|email', 'password' => 'required']);
+    $this->validate($request, [
+      'username' => 'required|min:1|max:190',
+      'password' => 'required']);
 
-    $user = User::where('email', $request->input('email'))->first();
+    $user = User::where('username', $request->input('username'))->first();
     if (!$user) {
-      return response()->json(['error' => 'Email or password is wrong'], 400);
+      return response()->json(['error' => 'Username or password is wrong'], 400);
     }
 
     if (Hash::check($request->input('password') . $user->id, $user->password)) {
@@ -88,7 +90,7 @@ class AuthController extends Controller
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }
 
-    return response()->json(['error' => 'Email or password is wrong'], 400);
+    return response()->json(['error' => 'Username or password is wrong'], 400);
   }
 
   /**
@@ -97,11 +99,14 @@ class AuthController extends Controller
    * @throws ValidationException
    */
   public function changePasswordAfterSignin(Request $request) {
-    $this->validate($request, ['email' => 'required|email', 'old_password' => 'required', 'new_password' => 'required']);
+    $this->validate($request, [
+      'username' => 'required|min:1|max:190',
+      'old_password' => 'required',
+      'new_password' => 'required']);
 
-    $user = User::where('email', $request->input('email'))->first();
+    $user = User::where('username', $request->input('username'))->first();
     if (!$user) {
-      return response()->json(['error' => 'Email or password is wrong'], 400);
+      return response()->json(['error' => 'Username or password is wrong'], 400);
     }
 
     if (Hash::check($request->input('old_password') . $user->id, $user->password)) {
@@ -112,7 +117,7 @@ class AuthController extends Controller
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }
 
-    return response()->json(['error' => 'Email or password is wrong'], 400);
+    return response()->json(['error' => 'Username or password is wrong'], 400);
   }
 
   /**
@@ -160,14 +165,14 @@ class AuthController extends Controller
    */
   public function sendForgotPasswordEmail(Request $request) {
     $this->validate($request, [
-      'emailAddress' => 'required|email|max:190'
+      'username' => 'required|min:1|max:190'
     ]);
 
-    $emailAddress = $request->input('emailAddress');
+    $username = $request->input('username');
 
-    $user = User::where('email', $emailAddress)->first();
+    $user = User::where('username', $username)->first();
     if($user == null) {
-      return response()->json(['msg' => 'Unknown email address', 'code' => 'unknown_email'], 404);
+      return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
 
     $code = UserCode::generateCode();
@@ -176,7 +181,7 @@ class AuthController extends Controller
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
 
-      Mail::to($emailAddress)->send(new ForgotPassword($name, $code));
+      Mail::to($user->getEmailAddresses())->send(new ForgotPassword($name, $code));
 
       return response()->json(['msg' => 'Sent'], 200);
     }
@@ -192,14 +197,14 @@ class AuthController extends Controller
   public function checkForgotPasswordCode(Request $request) {
     $this->validate($request, [
       'code' => 'required|digits:6',
-      'emailAddress' => 'required|email|max:190'
+      'username' => 'required|min:1|max:190'
     ]);
 
-    $emailAddress = $request->input('emailAddress');
+    $username = $request->input('username');
 
-    $user = User::where('email', $emailAddress)->first();
+    $user = User::where('username', $username)->first();
     if($user == null) {
-      return response()->json(['msg' => 'Unknown email address', 'code' => 'unknown_email'], 404);
+      return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
 
     $userCode = UserCode::where('purpose', 'forgotPassword')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
@@ -233,13 +238,13 @@ class AuthController extends Controller
   public function resetPasswordAfterForgotPassword(Request $request) {
     $this->validate($request, [
       'code' => 'required|digits:6',
-      'emailAddress' => 'required|email|max:190',
+      'username' => 'required|min:1|max:190',
       'new_password' => 'required'
     ]);
 
-    $emailAddress = $request->input('emailAddress');
+    $username = $request->input('username');
 
-    $user = User::where('email', $emailAddress)->first();
+    $user = User::where('username', $username)->first();
     if($user == null) {
       return response()->json(['msg' => 'Unknown email address', 'code' => 'unknown_email'], 404);
     }
