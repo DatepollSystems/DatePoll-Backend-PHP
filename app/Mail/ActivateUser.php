@@ -12,6 +12,7 @@ class ActivateUser extends Mailable
   use Queueable, SerializesModels;
 
   public $name;
+  public $username;
   public $code;
   public $DatePollAddress;
 
@@ -21,9 +22,10 @@ class ActivateUser extends Mailable
    * @param $name
    * @param $code
    */
-  public function __construct($name, $code)
+  public function __construct($name, $username, $code)
   {
     $this->DatePollAddress = env("APP_URL");
+    $this->username = $username;
     $this->name = $name;
     $this->code = $code;
   }

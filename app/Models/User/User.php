@@ -2,17 +2,19 @@
 
 namespace App\Models\User;
 
+use App\Mail\ActivateUser;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 use stdClass;
 
 /**
  * @property int $id
- * @property string $email
+ * @property string $username
  * @property boolean $email_verified
  * @property boolean $force_password_change
  * @property string $password
@@ -42,7 +44,23 @@ class User extends Model
   /**
    * @var array
    */
-  protected $fillable = ['email', 'force_password_change', 'password', 'title', 'firstname', 'surname', 'birthday', 'join_date', 'streetname', 'streetnumber', 'zipcode', 'location', 'created_at', 'updated_at', 'activated', 'activity'];
+  protected $fillable = [
+    'username',
+    'force_password_change',
+    'password',
+    'title',
+    'firstname',
+    'surname',
+    'birthday',
+    'join_date',
+    'streetname',
+    'streetnumber',
+    'zipcode',
+    'location',
+    'created_at',
+    'updated_at',
+    'activated',
+    'activity'];
 
   public static function exists($userID) {
     $user = User::find($userID);
@@ -67,10 +85,7 @@ class User extends Model
    * @return Collection
    */
   public function moviesBookings() {
-    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
-      ->orderBy('m.date')
-      ->select('movies_bookings.*')
-      ->where('user_id', $this->id)->get();
+    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')->orderBy('m.date')->select('movies_bookings.*')->where('user_id', $this->id)->get();
   }
 
   /**
@@ -85,6 +100,31 @@ class User extends Model
    */
   public function telephoneNumbers() {
     return $this->hasMany('App\Models\User\UserTelephoneNumber')->get();
+  }
+
+  /**
+   * @return Collection
+   */
+  public function emailAddresses() {
+    return $this->hasMany('App\Models\User\UserEmailAddress')->get();
+  }
+
+  /**
+   * @return bool
+   */
+  public function hasEmailAddresses() {
+    return (sizeof($this->emailAddresses()) > 0);
+  }
+
+  /**
+   * @return array
+   */
+  public function getEmailAddresses() {
+    $emailAddresses = [];
+    foreach ($this->emailAddresses() as $emailAddressObject) {
+      $emailAddresses[] = $emailAddressObject['email'];
+    }
+    return $emailAddresses;
   }
 
   /**
@@ -143,7 +183,7 @@ class User extends Model
     $returnableUser->title = $this->title;
     $returnableUser->firstname = $this->firstname;
     $returnableUser->surname = $this->surname;
-    $returnableUser->email = $this->email;
+    $returnableUser->username = $this->username;
     $returnableUser->birthday = $this->birthday;
     $returnableUser->join_date = $this->join_date;
     $returnableUser->streetname = $this->streetname;
@@ -154,6 +194,7 @@ class User extends Model
     $returnableUser->activity = $this->activity;
     $returnableUser->force_password_change = $this->force_password_change;
     $returnableUser->phoneNumbers = $this->telephoneNumbers();
+    $returnableUser->emailAddresses = $this->getEmailAddresses();
 
     $permissions = array();
     if($this->permissions() != null) {
@@ -188,5 +229,17 @@ class User extends Model
     $returnableUser->performanceBadges = $performanceBadgesToReturn;
 
     return $returnableUser;
+  }
+
+  /**
+   * Activates a user
+   */
+  public function activate() {
+    $randomPassword = UserCode::generateCode();
+    $this->password = app('hash')->make($randomPassword . $this->id);;
+    $this->force_password_change = true;
+    $this->save();
+
+    Mail::bcc($this->getEmailAddresses())->send(new ActivateUser($this->firstname . " " . $this->surname, $this->username, $randomPassword));
   }
 }

@@ -1,7 +1,7 @@
 <?php namespace App\Console\Commands;
 
-use App\Models\User;
-use App\Models\UserPermission;
+use App\Models\User\User;
+use App\Models\User\UserPermission;
 use Illuminate\Console\Command;
 
 class AddAdminUser extends Command
@@ -42,7 +42,7 @@ class AddAdminUser extends Command
       'surname' => 'GIS',
       'birthday' => date('Y-m-d'),
       'join_date' => date('Y-m-d'),
-      'email' => 'admin@inter.datepoll',
+      'username' => 'admin',
       'password' => app('hash')->make('123456'),
       'activated' => true,
       'rank' => 'admin',
@@ -58,7 +58,7 @@ class AddAdminUser extends Command
 
       $user->password = app('hash')->make('123456' . $user->id);
       $user->save();
-      $this->comment(PHP_EOL."Add Admin User | Set password to: 123456".PHP_EOL);
+      $this->comment(PHP_EOL."Add Admin User | Added password ".PHP_EOL);
 
       $permission = new UserPermission([
         'user_id' => $user->id,
@@ -70,6 +70,8 @@ class AddAdminUser extends Command
       } else {
         $this->comment(PHP_EOL."Add Admin User | Could not permissions".PHP_EOL);
       }
+
+      $this->comment(PHP_EOL."Add Admin User | Now login in | Username: admin | Password: 123456".PHP_EOL);
 
     } else {
       $this->comment(PHP_EOL."Add Admin User | Error".PHP_EOL);

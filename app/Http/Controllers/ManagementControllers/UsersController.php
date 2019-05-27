@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ActivateUser;
 use App\Models\User\User;
+use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
-use App\Models\UserCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
@@ -51,7 +49,7 @@ class UsersController extends Controller
   public function create(Request $request) {
     $this->validate($request, [
       'title' => 'max:190',
-      'email' => 'required|email',
+      'username' => 'required|min:1|max:190',
       'firstname' => 'required|max:190|min:1',
       'surname' => 'required|max:190|min:1',
       'birthday' => 'required|date',
@@ -63,22 +61,26 @@ class UsersController extends Controller
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
       'phoneNumbers' => 'array',
-      'permissions' => 'array']);
+      'permissions' => 'array',
+      'emailAddresses' => 'array']);
 
-    $email = $request->input('email');
+    $username = $request->input('username');
     $firstname = $request->input('firstname');
     $surname = $request->input('surname');
     $activated = $request->input('activated');
+    $emailAddresses = $request->input('emailAddresses');
     $phoneNumbers = $request->input('phoneNumbers');
     $permissions = $request->input('permissions');
 
-    if (User::where('email', $email)->first() != null) {
-      return response()->json(['msg' => 'The email address is already used', 'error_code' => 'email_address_already_used'], 400);
+    if (User::where('username', $username)->first() != null) {
+      return response()->json([
+        'msg' => 'The username is already used',
+        'error_code' => 'username_already_used'], 400);
     }
 
     $user = new User([
       'title' => $request->input('title'),
-      'email' => $email,
+      'username' => $username,
       'firstname' => $firstname,
       'surname' => $surname,
       'birthday' => $request->input('birthday'),
@@ -93,6 +95,15 @@ class UsersController extends Controller
 
     if (!$user->save()) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
+    }
+
+    if ($emailAddresses != null) {
+      foreach ((array)$emailAddresses as $emailAddress) {
+        $emailAddressToSave = new UserEmailAddress([
+          'email' => $emailAddress,
+          'user_id' => $user->id]);
+        $emailAddressToSave->save();
+      }
     }
 
     if ($phoneNumbers != null) {
@@ -112,13 +123,9 @@ class UsersController extends Controller
       }
     }
 
-    if ($activated) {
-      $randomPassword = UserCode::generateCode();
-      $user->password = app('hash')->make($randomPassword . $user->id);;
-      $user->force_password_change = true;
-      $user->save();
 
-      Mail::to($user->email)->send(new ActivateUser($firstname . " " . $surname, $randomPassword));
+    if ($activated AND $user->hasEmailAddresses()) {
+      $user->activate();
     }
 
     $userToShow = $user->getReturnable();
@@ -160,7 +167,7 @@ class UsersController extends Controller
   public function update(Request $request, $id) {
     $this->validate($request, [
       'title' => 'max:190',
-      'email' => 'required|email',
+      'username' => 'required|min:1|max:190',
       'firstname' => 'required|max:190|min:1',
       'surname' => 'required|max:190|min:1',
       'birthday' => 'required|date',
@@ -171,6 +178,7 @@ class UsersController extends Controller
       'location' => 'required|max:190|min:1',
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
+      'emailAddresses' => 'array',
       'phoneNumbers' => 'array',
       'permissions' => 'array']);
 
@@ -179,21 +187,24 @@ class UsersController extends Controller
       return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
     }
 
-    $email = $request->input('email');
+    $username = $request->input('username');
 
-    if ($email != $user->email) {
-      if (User::where('email', $email)->first() != null) {
-        return response()->json(['msg' => 'The email address is already used', 'error_code' => 'email_address_already_used'], 400);
+    if ($username != $user->username) {
+      if (User::where('username', $username)->first() != null) {
+        return response()->json([
+          'msg' => 'The username is already used',
+          'error_code' => 'username_already_used'], 400);
       }
     }
 
     $firstname = $request->input('firstname');
     $surname = $request->input('surname');
     $activated = $request->input('activated');
+    $emailAddresses = $request->input('emailAddresses');
     $phoneNumbers = $request->input('phoneNumbers');
     $permissions = $request->input('permissions');
 
-    $user->email = $email;
+    $user->username = $username;
     $user->title = $request->input('title');
     $user->firstname = $firstname;
     $user->surname = $surname;
@@ -211,6 +222,48 @@ class UsersController extends Controller
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
+    //----Email addresses manager only deletes changed email addresses---
+    $emailAddressesWhichHaveNotBeenDeleted = array();
+
+    $OldEmailAddresses = $user->emailAddresses();
+    foreach ($OldEmailAddresses as $oldEmailAddress) {
+      $toDelete = true;
+
+      foreach ((array)$emailAddresses as $emailAddress) {
+        if ($oldEmailAddress['email'] == $emailAddress) {
+          $toDelete = false;
+          $emailAddressesWhichHaveNotBeenDeleted[] = $emailAddress;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $emailAddressToDeleteObject = UserEmailAddress::find($oldEmailAddress->id);
+        if (!$emailAddressToDeleteObject->delete()) {
+          return response()->json(['msg' => 'Failed during email address clearing...'], 500);
+        }
+      }
+    }
+
+    foreach ((array)$emailAddresses as $emailAddress) {
+      $toAdd = true;
+
+      foreach ($emailAddressesWhichHaveNotBeenDeleted as $EmailAddressWhichHasNotBeenDeleted) {
+        if ($emailAddress == $EmailAddressWhichHasNotBeenDeleted) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $emailAddressToSave = new UserEmailAddress([
+          'email' => $emailAddress,
+          'user_id' => $user->id]);
+
+        $emailAddressToSave->save();
+      }
+    }
+    //---------------------------------------------------------------
     //----Phone numbers manager only deletes changed phone numbers---
     $phoneNumbersWhichHaveNotBeenDeleted = array();
 
@@ -294,13 +347,9 @@ class UsersController extends Controller
     }
     //---------------------------------------------------------------
 
-    if ($activated AND !$oldActivatedStatus) {
-      $randomPassword = UserCode::generateCode();
-      $user->password = app('hash')->make($randomPassword . $user->id);;
-      $user->force_password_change = true;
-      $user->save();
 
-      Mail::to($user->email)->send(new ActivateUser($firstname . " " . $surname, $randomPassword));
+    if ($activated AND !$oldActivatedStatus AND $user->hasEmailAddresses()) {
+      $user->activate();
     }
 
     $userToShow = $user->getReturnable();
@@ -345,7 +394,13 @@ class UsersController extends Controller
 
       $toReturnUser = new stdClass();
 
-      $toReturnUser->Email = $user->email;
+      $toReturnUser->Email = '';
+
+      $emailAddresses = $user->emailAddresses();
+      foreach ($emailAddresses as $emailAddress) {
+        $toReturnUser->Email = $emailAddress['email'] . ';';
+      }
+
       $toReturnUser->Titel = $user->title;
       $toReturnUser->Vorname = $user->firstname;
       $toReturnUser->Nachname = $user->surname;
@@ -405,13 +460,9 @@ class UsersController extends Controller
     $users = User::where('activated', 0)->get();
 
     foreach ($users as $user) {
-      $randomPassword = UserCode::generateCode();
-      $user->password = app('hash')->make($randomPassword . $user->id);;
-      $user->force_password_change = true;
-      $user->activated = true;
-      $user->save();
-
-      Mail::to($user->email)->send(new ActivateUser($user->firstname . " " . $user->surname, $randomPassword));
+      if ($user->hasEmailAddresses()) {
+        $user->activate();
+      }
     }
 
     return response()->json(['msg' => 'All users have been activated and will receive a mail'], 200);
