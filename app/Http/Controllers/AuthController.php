@@ -175,6 +175,10 @@ class AuthController extends Controller
       return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
 
+    if(!$user->hasEmailAddresses()) {
+      return response()->json(['msg' => 'There are no email addresses for this account', 'code' => 'no_email_addresses'], 400);
+    }
+
     $code = UserCode::generateCode();
     $userCode = new UserCode(["code" => $code, "purpose" => "forgotPassword", 'user_id' => $user->id]);
 
