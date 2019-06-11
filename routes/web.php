@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedVariableInspection */
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +37,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     /** Cinema routes */
     require_once(__DIR__ . '/CinemaRoutes.php');
+
+    /** Events */
+    require_once (__DIR__ . '/EventRoutes.php');
 
   });
 

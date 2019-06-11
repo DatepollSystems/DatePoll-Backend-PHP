@@ -151,6 +151,13 @@ class User extends Model
   /**
    * @return Collection
    */
+  public function votedForDecisions() {
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')->get();
+  }
+
+  /**
+   * @return Collection
+   */
   public function permissions() {
     return $this->hasMany('App\Models\User\UserPermission')->get();
   }

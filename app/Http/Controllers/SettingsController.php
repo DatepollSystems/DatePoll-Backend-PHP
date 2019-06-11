@@ -31,6 +31,28 @@ class SettingsController extends Controller
   }
 
   /**
+   * @return JsonResponse
+   */
+  public function getEventsFeatureIsEnabled() {
+    return response()->json(['msg' => 'Is events service enabled', 'enabled' => env('APP_EVENTS_ENABLED', false)], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setEventsFeatureIsEnabled(Request $request) {
+    $this->validate($request, ['isEnabled' => 'required|boolean']);
+
+    $isEnabled = $request->input('isEnabled');
+
+    $this->changeEnvironmentVariable('APP_EVENTS_ENABLED', $isEnabled);
+
+    return response()->json(['msg' => 'Set events service enabled', 'isEnabled' => $isEnabled]);
+  }
+
+  /**
    * @param $key
    * @param $value
    */
