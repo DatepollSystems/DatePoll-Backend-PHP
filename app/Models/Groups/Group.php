@@ -2,6 +2,7 @@
 
 namespace App\Models\Groups;
 
+use App\Models\Subgroups\Subgroup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 

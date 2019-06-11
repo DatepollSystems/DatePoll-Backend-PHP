@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedVariableInspection */
 
 use App\Http\Middleware\Cinema\CinemaFeatureMiddleware;
 use App\Http\Middleware\Cinema\CinemaPermissionMiddleware;

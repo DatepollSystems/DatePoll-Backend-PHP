@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class GroupController extends Controller
 {
@@ -75,7 +76,7 @@ class GroupController extends Controller
 
     $usersMembersOfGroups = $group->usersMemberOfGroups();
     foreach ($usersMembersOfGroups as $userMemberOfGroup) {
-      $user = new \stdClass();
+      $user = new stdClass();
       $user->id = $userMemberOfGroup->user()->id;
       $user->firstname = $userMemberOfGroup->user()->firstname;
       $user->surname = $userMemberOfGroup->user()->surname;

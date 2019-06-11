@@ -7,6 +7,7 @@ use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
+use App\Permissions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -114,7 +115,8 @@ class UsersController extends Controller
       }
     }
 
-    if($request->auth->hasPermission('root.administration')) {
+    if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+      $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
       if($permissions != null) {
         foreach ((array)$permissions as $permission) {
           $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
@@ -305,7 +307,8 @@ class UsersController extends Controller
     }
     //---------------------------------------------------------------
     //---- Permissions manager only deletes changed permissions -----
-    if($request->auth->hasPermission('root.administration')) {
+    if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+      $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
 
       $permissionsWhichHaveNotBeenDeleted = array();
 
