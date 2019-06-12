@@ -12,7 +12,8 @@ use stdClass;
  * @property int $id
  * @property string $name
  * @property string $description
- * @property string $date
+ * @property string $startDate
+ * @property string $endDate
  * @property string $openedUntil
  * @property boolean $forEveryone
  * @property string $created_at
@@ -231,6 +232,10 @@ class Event extends Model
     return $results;
   }
 
+  /**
+   * @param $user
+   * @return stdClass
+   */
   private function getDecision($user) {
     $userToSave = new stdClass();
     $userToSave->id = $user->id;

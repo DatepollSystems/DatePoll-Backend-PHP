@@ -6,11 +6,10 @@ use App\Http\Middleware\Events\EventsFeatureMiddleware;
 $router->group(['prefix' => 'event', 'middleware' => [EventsFeatureMiddleware::class]], function () use($router) {
 
   //TODO:THIS
-  $router->get('open', ['uses' => 'EventControllers\EventListController@getOpenEvents']);
-  $router->get('closed', ['uses' => 'EventControllers\EventListController@getClosedEvents']);
+  $router->get('', ['uses' => 'EventControllers\EventListController@getOpenEvents']);
 
   $router->post('vote', ['uses' => 'EventControllers\EventVoteController@vote']);
-  $router->delete('vote', ['uses' => 'EventControllers\EventVoteController@removeVoting']);
+  $router->delete('vote/{id}', ['uses' => 'EventControllers\EventVoteController@removeVoting']);
 
   // Get single event route out of EventsAdministrationPermissionMiddleware because the results are in this response
   $router->get('{id}', ['uses' => 'EventControllers\EventController@getSingle']);
