@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cinema\MoviesBooking;
+use App\Models\Events\Event;
 use App\Models\User\UserToken;
 use DateTime;
 use Exception;
@@ -101,6 +102,24 @@ class CalendarController extends Controller
 
         $calendar->addEvent($movieEvent);
       }
+    }
+
+    foreach (Event::all() as $event) {
+//      $geo = new Geo();
+//      $geo->setLatitude(48.643865);
+//      $geo->setLongitude(15.814679);
+
+//      $location = new Location();
+//      $location->setLanguage('de');
+//      $location->setName('Kanzlerturm Wiese Eggenburg');
+
+      $eventEvent = new CalendarEvent();
+      $eventEvent->setStart(new DateTime($event->startDate))->setEnd(new DateTime($event->endDate))->setSummary($event->name)->setDescription($event->description)//        ->setUrl($movie->trailerLink)
+//        ->setGeo($geo)
+//        ->addLocation($location)
+        ->setUid($event->id);
+
+      $calendar->addEvent($eventEvent);
     }
 
     $calendarExport->addCalendar($calendar);
