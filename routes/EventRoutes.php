@@ -3,7 +3,7 @@
 use App\Http\Middleware\Events\EventsAdministrationPermissionMiddleware;
 use App\Http\Middleware\Events\EventsFeatureMiddleware;
 
-$router->group(['prefix' => 'event', 'middleware' => [EventsFeatureMiddleware::class]], function () use($router) {
+$router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::class]], function () use($router) {
 
   //TODO:THIS
   $router->get('', ['uses' => 'EventControllers\EventListController@getOpenEvents']);
@@ -20,10 +20,10 @@ $router->group(['prefix' => 'event', 'middleware' => [EventsFeatureMiddleware::c
     'middleware' => [EventsAdministrationPermissionMiddleware::class]],
     function () use ($router) {
       /** Event routes */
-      $router->get('event', ['uses' => 'EventControllers\EventController@getAll']);
-      $router->post('event', ['uses' => 'EventControllers\EventController@create']);
-      $router->put('event/{id}', ['uses' => 'EventControllers\EventController@update']);
-      $router->delete('event/{id}', ['uses' => 'EventControllers\EventController@delete']);
+      $router->get('avent', ['uses' => 'EventControllers\EventController@getAll']);
+      $router->post('avent', ['uses' => 'EventControllers\EventController@create']);
+      $router->put('avent/{id}', ['uses' => 'EventControllers\EventController@update']);
+      $router->delete('avent/{id}', ['uses' => 'EventControllers\EventController@delete']);
 
       $router->post('addGroupToEvent', ['uses' => 'EventControllers\EventGroupController@addGroupToEvent']);
       $router->post('addSubgroupToEvent', ['uses' => 'EventControllers\EventGroupController@addSubgroupToEvent']);

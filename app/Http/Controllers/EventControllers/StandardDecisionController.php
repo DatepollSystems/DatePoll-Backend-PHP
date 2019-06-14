@@ -21,7 +21,7 @@ class StandardDecisionController extends Controller
     foreach ($standardDecisions as $standardDecision) {
 
       $standardDecision->view_standard_decision = [
-        'href' => 'api/v1/event/administration/standardDecision/' . $standardDecision->id,
+        'href' => 'api/v1/avent/administration/standardDecision/' . $standardDecision->id,
         'method' => 'GET'];
 
       $toReturn[] = $standardDecision;
@@ -44,7 +44,7 @@ class StandardDecisionController extends Controller
     }
 
     $standardDecision->view_standard_decisions = [
-      'href' => 'api/v1/event/administration/standardDecision',
+      'href' => 'api/v1/avent/administration/standardDecision',
       'method' => 'GET'];
 
     return response()->json([
@@ -69,7 +69,7 @@ class StandardDecisionController extends Controller
     }
 
     $decisionObject->view_standard_decision = [
-      'href' => 'api/v1/event/administration/standardDecision/' . $decisionObject->id,
+      'href' => 'api/v1/avent/administration/standardDecision/' . $decisionObject->id,
       'method' => 'GET'];
 
     return response()->json([
@@ -99,7 +99,7 @@ class StandardDecisionController extends Controller
     }
 
     $standardDecision->view_standard_decision = [
-      'href' => 'api/v1/event/administration/standardDecision/' . $standardDecision->id,
+      'href' => 'api/v1/avent/administration/standardDecision/' . $standardDecision->id,
       'method' => 'GET'];
 
     return response()->json([

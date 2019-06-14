@@ -24,7 +24,7 @@ class EventController extends Controller
       $eventToReturn = $event->getReturnable();
 
       $eventToReturn->view_event = [
-        'href' => 'api/v1/event/administration/event/' . $event->id,
+        'href' => 'api/v1/avent/administration/avent/' . $event->id,
         'method' => 'GET'];
 
       $toReturnEvents[] = $eventToReturn;
@@ -49,7 +49,7 @@ class EventController extends Controller
     $toReturnEvent = $event->getReturnable();
     $toReturnEvent->resultGroups = $event->getResults();
     $toReturnEvent->view_events = [
-      'href' => 'api/v1/event/administration/event',
+      'href' => 'api/v1/avent/administration/avent',
       'method' => 'GET'];
 
     return response()->json([
@@ -100,7 +100,7 @@ class EventController extends Controller
 
     $returnable = $event->getReturnable();
     $returnable->view_event = [
-      'href' => 'api/v1/event/administration/event/' . $event->id,
+      'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
 
     return response()->json([
@@ -152,7 +152,7 @@ class EventController extends Controller
 
     $returnable = $event->getReturnable();
     $returnable->view_event = [
-      'href' => 'api/v1/event/administration/event/' . $event->id,
+      'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
 
     return response()->json([
