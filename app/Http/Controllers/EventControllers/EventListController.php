@@ -26,21 +26,26 @@ class EventListController extends Controller
 
         $in = false;
 
-        foreach ($event->eventsForGroups() as $eventForGroup) {
-          foreach ($eventForGroup->group()->usersMemberOfGroups() as $userMemberOfGroup) {
-            if ($userMemberOfGroup->user_id == $user->id) {
-              $in = true;
-              break;
-            }
-          }
-        }
+        if ($event->forEveryone) {
+          $in = true;
+        } else {
 
-        if (!$in) {
-          foreach ($event->eventsForSubgroups() as $eventForSubgroup) {
-            foreach ($eventForSubgroup->subgroup()->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-              if ($userMemberOfSubgroup->user_id == $user->id) {
+          foreach ($event->eventsForGroups() as $eventForGroup) {
+            foreach ($eventForGroup->group()->usersMemberOfGroups() as $userMemberOfGroup) {
+              if ($userMemberOfGroup->user_id == $user->id) {
                 $in = true;
                 break;
+              }
+            }
+          }
+
+          if (!$in) {
+            foreach ($event->eventsForSubgroups() as $eventForSubgroup) {
+              foreach ($eventForSubgroup->subgroup()->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+                if ($userMemberOfSubgroup->user_id == $user->id) {
+                  $in = true;
+                  break;
+                }
               }
             }
           }
