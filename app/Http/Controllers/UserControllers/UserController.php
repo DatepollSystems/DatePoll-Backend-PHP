@@ -74,34 +74,41 @@ class UserController extends Controller
   public function homepage(Request $request) {
     $user = $request->auth;
 
-    $bookings = $user->moviesBookings();
     $bookingsToShow = array();
-    foreach ($bookings as $booking) {
-      $movie = $booking->movie();
+    if (env('APP_CINEMA_ENABLED', false)) {
+      $bookings = $user->moviesBookings();
+      foreach ($bookings as $booking) {
+        $movie = $booking->movie();
 
-      $bookingToShow = new stdClass();
-      $bookingToShow->movieID = $movie->id;
-      $bookingToShow->movieName = $movie->name;
-      $bookingToShow->movieDate = $movie->date;
-      $bookingToShow->amount = $booking->amount;
+        $bookingToShow = new stdClass();
+        $bookingToShow->movieID = $movie->id;
+        $bookingToShow->movieName = $movie->name;
+        $bookingToShow->movieDate = $movie->date;
+        $bookingToShow->amount = $booking->amount;
 
-      if ($movie->worker() == null) {
-        $bookingToShow->workerID = null;
-        $bookingToShow->workerName = null;
-      } else {
-        $bookingToShow->workerID = $movie->worker()->id;
-        $bookingToShow->workerName = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+        if ($movie->worker() == null) {
+          $bookingToShow->workerID = null;
+          $bookingToShow->workerName = null;
+        } else {
+          $bookingToShow->workerID = $movie->worker()->id;
+          $bookingToShow->workerName = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+        }
+
+        if ($movie->emergencyWorker() == null) {
+          $bookingToShow->emergencyWorkerID = null;
+          $bookingToShow->emergencyWorkerName = null;
+        } else {
+          $bookingToShow->emergencyWorkerID = $movie->emergencyWorker()->id;
+          $bookingToShow->emergencyWorkerName = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
+        }
+
+        $bookingsToShow[] = $bookingToShow;
       }
+    }
 
-      if ($movie->emergencyWorker() == null) {
-        $bookingToShow->emergencyWorkerID = null;
-        $bookingToShow->emergencyWorkerName = null;
-      } else {
-        $bookingToShow->emergencyWorkerID = $movie->emergencyWorker()->id;
-        $bookingToShow->emergencyWorkerName = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
-      }
-
-      $bookingsToShow[] = $bookingToShow;
+    $eventsToShow = array();
+    if (env('APP_EVENTS_ENABLED', false)) {
+      $eventsToShow = $user->getOpenEvents();
     }
 
     $users = User::all();
@@ -118,6 +125,10 @@ class UserController extends Controller
       }
     }
 
-    return response()->json(['msg' => 'List of your bookings and birthdays in the next month', 'bookings' => $bookingsToShow, 'birthdays' => $birthdaysToShow], 200);
+    return response()->json([
+      'msg' => 'List of your bookings, events and birthdays in the next month',
+      'events' => $eventsToShow,
+      'bookings' => $bookingsToShow,
+      'birthdays' => $birthdaysToShow], 200);
   }
 }
