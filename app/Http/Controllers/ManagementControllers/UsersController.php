@@ -369,10 +369,14 @@ class UsersController extends Controller
    * @param int $id
    * @return Response
    */
-  public function delete($id) {
+  public function delete(Request $request, $id) {
     $user = User::find($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    if ($request->auth->id == $id) {
+      return response()->json(['msg' => 'Can not delete yourself'], 400);
     }
 
     if (!$user->delete()) {
