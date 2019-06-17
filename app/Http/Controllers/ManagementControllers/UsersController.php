@@ -364,6 +364,30 @@ class UsersController extends Controller
   }
 
   /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function changePassword(Request $request, $id) {
+    $this->validate($request, [
+      'password' => 'required'
+    ]);
+
+    $user = User::find($id);
+    if ($user == null) {
+      return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    $user->password = app('hash')->make($request->input('password') . $user->id);
+    if (!$user->save()) {
+      return response()->json(['msg' => 'Could not save user'], 500);
+    }
+
+    return response()->json(['msg' => 'Saved password from user successfully', 'user' => $user->getReturnable()], 200);
+  }
+
+  /**
    * Remove the specified resource from storage.
    *
    * @param int $id
