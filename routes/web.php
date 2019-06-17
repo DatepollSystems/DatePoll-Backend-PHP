@@ -18,7 +18,7 @@ $router->get('/', function () use ($router) {
 $router->group(['prefix' => 'api'], function () use ($router) {
 
   $router->get('/', function () use ($router) {
-    return response()->json(['version' => '0.2.1-beta', 'version_number' => 3], 200);
+    return response()->json(['version' => '0.3.0', 'version_number' => 4], 200);
   });
 
   /** Setting routes */
