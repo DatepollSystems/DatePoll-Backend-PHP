@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Middleware\Cinema;
+namespace App\Http\Middleware\Events;
 
 use Closure;
 use Illuminate\Http\Request;
 
-class CinemaFeatureMiddleware
+class EventsFeatureMiddleware
 {
   /**
    * Handle an incoming request.
@@ -15,7 +15,7 @@ class CinemaFeatureMiddleware
    * @return mixed
    */
   public function handle($request, Closure $next) {
-    if (!env('APP_CINEMA_ENABLED', false)) {
+    if (!env('APP_EVENTS_ENABLED', false)) {
       return response()->json(['msg' => 'The cinema feature is disabled on this DatePoll server'], 503);
     }
 

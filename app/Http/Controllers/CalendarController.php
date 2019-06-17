@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cinema\MoviesBooking;
+use App\Models\Events\Event;
 use App\Models\User\UserToken;
 use DateTime;
 use Exception;
@@ -53,7 +54,14 @@ class CalendarController extends Controller
       $location->setName('Kanzlerturm Wiese Eggenburg');
 
       $movieEvent = new CalendarEvent();
-      $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))->setEnd(new DateTime($movie->date . 'T23:59:59'))->setSummary($movie->name)->setDescription('Reservierte Karten: ' . $movie->bookedTickets)->setUrl($movie->trailerLink)->setGeo($geo)->addLocation($location)->setUid($movie->id);
+      $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
+                 ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+                 ->setSummary($movie->name)
+                 ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                 ->setUrl($movie->trailerLink)
+                 ->setGeo($geo)
+                 ->addLocation($location)
+                 ->setUid($movie->id);
 
       $worker = $movie->worker();
       if ($worker != null) {
@@ -88,7 +96,14 @@ class CalendarController extends Controller
         $location->setName('Kanzlerturm Wiese Eggenburg');
 
         $movieEvent = new CalendarEvent();
-        $movieEvent->setStart(new \DateTime($movie->date . 'T20:30:00'))->setEnd(new \DateTime($movie->date . 'T23:59:59'))->setSummary($movie->name)->setDescription('Reservierte Karten: ' . $movie->bookedTickets)->setUrl($movie->trailerLink)->setGeo($geo)->addLocation($location)->setUid($movie->id);
+        $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
+                   ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+                   ->setSummary($movie->name)
+                   ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                   ->setUrl($movie->trailerLink)
+                   ->setGeo($geo)
+                   ->addLocation($location)
+                   ->setUid($movie->id);
 
         $worker = $movie->worker();
         if ($worker != null) {
@@ -101,6 +116,27 @@ class CalendarController extends Controller
 
         $calendar->addEvent($movieEvent);
       }
+    }
+
+    foreach (Event::all() as $event) {
+//      $geo = new Geo();
+//      $geo->setLatitude(48.643865);
+//      $geo->setLongitude(15.814679);
+
+//      $location = new Location();
+//      $location->setLanguage('de');
+//      $location->setName('Kanzlerturm Wiese Eggenburg');
+
+      $eventEvent = new CalendarEvent();
+      $eventEvent->setStart(new DateTime($event->startDate))
+                 ->setEnd(new DateTime($event->endDate))
+                 ->setSummary($event->name)
+                 ->setDescription($event->description)//       ->setUrl($movie->trailerLink)
+//        ->setGeo($geo)
+//        ->addLocation($location)
+                 ->setUid($event->id);
+
+      $calendar->addEvent($eventEvent);
     }
 
     $calendarExport->addCalendar($calendar);

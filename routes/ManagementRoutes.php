@@ -9,6 +9,7 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
   $router->get('users', ['uses' => 'ManagementControllers\UsersController@getAll']);
   $router->post('users', ['uses' => 'ManagementControllers\UsersController@create']);
   $router->get('users/{id}', ['uses' => 'ManagementControllers\UsersController@getSingle']);
+  $router->put('users/changePassword/{id}', ['uses' => 'ManagementControllers\UsersController@changePassword']);
   $router->put('users/{id}', ['uses' => 'ManagementControllers\UsersController@update']);
   $router->delete('users/{id}', ['uses' => 'ManagementControllers\UsersController@delete']);
   $router->post('users/activate', ['uses' => 'ManagementControllers\UsersController@activateAll']);

@@ -2,6 +2,7 @@
 
 namespace App\Models\Cinema;
 
+use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,5 +57,35 @@ class Movie extends Model
    */
   public function moviesBookings() {
     return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
+  }
+
+  /**
+   * @return Movie
+   */
+  public function getReturnable() {
+    $returnableMovie = $this;
+    $workerID = $this->worker_id;
+    $emergencyWorkerID = $this->emergency_worker_id;
+
+    $worker = User::find($workerID);
+    $emergencyWorker = User::find($emergencyWorkerID);
+
+    if ($worker == null) {
+      $returnableMovie->workerID = null;
+      $returnableMovie->workerName = null;
+    } else {
+      $returnableMovie->workerID = $worker->id;
+      $returnableMovie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
+    }
+
+    if ($emergencyWorker == null) {
+      $returnableMovie->emergencyWorkerID = null;
+      $returnableMovie->emergencyWorkerName = null;
+    } else {
+      $returnableMovie->emergencyWorkerID = $emergencyWorker->id;
+      $returnableMovie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
+    }
+
+    return $returnableMovie;
   }
 }

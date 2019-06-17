@@ -5,10 +5,11 @@ namespace App\Http\Controllers\CinemaControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MovieYear;
-use App\Models\User\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class MovieController extends Controller
 {
@@ -19,34 +20,27 @@ class MovieController extends Controller
    * @return Response
    */
   public function getAll() {
+    $toReturnMovies = array();
+
     $movies = Movie::orderBy('date')->get();
     foreach ($movies as $movie) {
-      $workerID = $movie->worker_id;
-      $emergencyWorkerID = $movie->emergency_worker_id;
+      $returnable = $movie->getReturnable();
 
-      $worker = User::find($workerID);
-      $emergencyWorker = User::find($emergencyWorkerID);
-
-      if ($worker == null) {
-        $movie->workerID = null;
-        $movie->workerName = '-';
-      } else {
-        $movie->workerID = $worker->id;
-        $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
+      $bookings = array();
+      foreach ($movie->moviesBookings() as $moviesBooking) {
+        $booking = new stdClass();
+        $booking->firstname = $moviesBooking->user()->firstname;
+        $booking->surname = $moviesBooking->user()->surname;
+        $booking->amount = $moviesBooking->amount;
+        $bookings[] = $booking;
       }
+      $returnable->bookings = $bookings;
 
-      if ($emergencyWorker == null) {
-        $movie->emergencyWorkerID = null;
-        $movie->emergencyWorkerName = '-';
-      } else {
-        $movie->emergencyWorkerID = $emergencyWorker->id;
-        $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
-      }
-
-      $movie->view_movie = ['href' => 'api/v1/cinema/movie/' . $movie->getAttribute('id'), 'method' => 'GET'];
+      $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
+      $toReturnMovies[] = $returnable;
     }
 
-    $response = ['msg' => 'List of all movies', 'movies' => $movies];
+    $response = ['msg' => 'List of all movies', 'movies' => $toReturnMovies];
 
     return response()->json($response);
   }
@@ -75,9 +69,10 @@ class MovieController extends Controller
     $movie = new Movie(['name' => $name, 'date' => $date, 'trailerLink' => $trailerLink, 'posterLink' => $posterLink, 'bookedTickets' => $bookedTickets, 'movie_year_id' => $movie_year_id]);
 
     if ($movie->save()) {
-      $movie->view_movie = ['href' => 'api/v1/cinema/movie/' . $movie->getAttribute('id'), 'method' => 'GET'];
+      $returnable = $movie->getReturnable();
+      $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
 
-      $response = ['msg' => 'Movie created', 'movie' => $movie];
+      $response = ['msg' => 'Movie created', 'movie' => $returnable];
 
       return response()->json($response, 201);
     }
@@ -99,29 +94,19 @@ class MovieController extends Controller
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    $workerID = $movie->worker_id;
-    $emergencyWorkerID = $movie->emergency_worker_id;
+    $returnable = $movie->getReturnable();
 
-    $worker = User::find($workerID);
-    $emergencyWorker = User::find($emergencyWorkerID);
-
-    if ($worker == null) {
-      $movie->workerID = null;
-      $movie->workerName = null;
-    } else {
-      $movie->workerID = $worker->id;
-      $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
+    $bookings = array();
+    foreach ($movie->moviesBookings() as $moviesBooking) {
+      $booking = new stdClass();
+      $booking->firstname = $moviesBooking->user()->firstname;
+      $booking->surname = $moviesBooking->user()->surname;
+      $booking->amount = $moviesBooking->amount;
+      $bookings[] = $booking;
     }
+    $returnable->bookings = $bookings;
 
-    if ($emergencyWorker == null) {
-      $movie->emergencyWorkerID = null;
-      $movie->emergencyWorkerName = null;
-    } else {
-      $movie->emergencyWorkerID = $emergencyWorker->id;
-      $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
-    }
-
-    $movie->view_movies = ['href' => 'api/v1/cinema/movie', 'method' => 'GET'];
+    $returnable->view_movies = ['href' => 'api/v1/cinema/administration/movie', 'method' => 'GET'];
 
     $response = ['msg' => 'Movie information', 'movie' => $movie];
     return response()->json($response);
@@ -163,9 +148,10 @@ class MovieController extends Controller
     $movie->movie_year_id = $movie_year_id;
 
     if ($movie->save()) {
-      $movie->view_movie = ['href' => 'api/v1/cinema/movie/' . $movie->getAttribute('id'), 'method' => 'GET'];
+      $returnable = $movie->getReturnable();
+      $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
 
-      $response = ['msg' => 'Movie updated', 'year' => $movie];
+      $response = ['msg' => 'Movie updated', 'movie' => $returnable];
 
       return response()->json($response, 201);
     }
@@ -191,11 +177,15 @@ class MovieController extends Controller
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
-    $response = ['msg' => 'Movie deleted', 'create' => ['href' => 'api/v1/cinema/movie', 'method' => 'POST', 'params' => 'name, date, trailerLink, posterLink, bookedTickets, movie_year_id']];
+    $response = ['msg' => 'Movie deleted', 'create' => ['href' => 'api/v1/cinema/administration/movie', 'method' => 'POST', 'params' => 'name, date, trailerLink, posterLink, bookedTickets, movie_year_id']];
 
     return response()->json($response);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
   public function getNotShownMovies(Request $request) {
     $allMovies = Movie::orderBy('date')->get();
     if ($allMovies == null) {
@@ -214,41 +204,23 @@ class MovieController extends Controller
       }
     }
 
+    $returnableMovies = array();
     foreach ($movies as $movie) {
-      $workerID = $movie->worker_id;
-      $emergencyWorkerID = $movie->emergency_worker_id;
-
-      $worker = User::find($workerID);
-      $emergencyWorker = User::find($emergencyWorkerID);
-
-      if ($worker == null) {
-        $movie->workerID = null;
-        $movie->workerName = null;
-      } else {
-        $movie->workerID = $worker->id;
-        $movie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
-      }
-
-      if ($emergencyWorker == null) {
-        $movie->emergencyWorkerID = null;
-        $movie->emergencyWorkerName = null;
-      } else {
-        $movie->emergencyWorkerID = $emergencyWorker->id;
-        $movie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
-      }
+      $returnable = $movie->getReturnable();
 
       $movieBookingForYourself = $user->moviesBookings()->where('movie_id', $movie->id)->first();
 
       if ($movieBookingForYourself == null) {
-        $movie->bookedTicketsForYourself = 0;
+        $returnable->bookedTicketsForYourself = 0;
       } else {
-        $movie->bookedTicketsForYourself = $movieBookingForYourself->amount;
+        $returnable->bookedTicketsForYourself = $movieBookingForYourself->amount;
       }
 
-      $movie->view_movie = ['href' => 'api/v1/cinema/movie/' . $movie->getAttribute('id'), 'method' => 'GET'];
+      $returnable->view_movie = ['href' => 'api/v1/cinema/movie/administration/' . $movie->getAttribute('id'), 'method' => 'GET'];
+      $returnableMovies[] = $returnable;
     }
 
-    $response = ['msg' => 'List of not shown movies', 'movies' => $movies];
+    $response = ['msg' => 'List of not shown movies', 'movies' => $returnableMovies];
 
     return response()->json($response);
   }

@@ -5,6 +5,8 @@ namespace App\Models\User;
 use App\Mail\ActivateUser;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
+use App\Models\Events\Event;
+use App\Models\Events\EventUserVotedForDecision;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
@@ -151,6 +153,13 @@ class User extends Model
   /**
    * @return Collection
    */
+  public function votedForDecisions() {
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')->get();
+  }
+
+  /**
+   * @return Collection
+   */
   public function permissions() {
     return $this->hasMany('App\Models\User\UserPermission')->get();
   }
@@ -241,5 +250,56 @@ class User extends Model
     $this->save();
 
     Mail::bcc($this->getEmailAddresses())->send(new ActivateUser($this->firstname . " " . $this->surname, $this->username, $randomPassword));
+  }
+
+  /**
+   * @return array
+   */
+  public function getOpenEvents() {
+    $events = array();
+    $allEvents = Event::orderBy('startDate')->get();
+    foreach ($allEvents as $event) {
+      if ((time() - (60 * 60 * 24)) < strtotime($event->startDate)) {
+
+        $in = false;
+
+        if ($event->forEveryone) {
+          $in = true;
+        } else {
+
+          foreach ($event->eventsForGroups() as $eventForGroup) {
+            foreach ($eventForGroup->group()->usersMemberOfGroups() as $userMemberOfGroup) {
+              if ($userMemberOfGroup->user_id == $this->id) {
+                $in = true;
+                break;
+              }
+            }
+          }
+
+          if (!$in) {
+            foreach ($event->eventsForSubgroups() as $eventForSubgroup) {
+              foreach ($eventForSubgroup->subgroup()->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+                if ($userMemberOfSubgroup->user_id == $this->id) {
+                  $in = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        if ($in) {
+          $eventUserVotedFor = EventUserVotedForDecision::where('event_id', $event->id)->where('user_id', $this->id)->first();
+          $alreadyVoted = ($eventUserVotedFor != null);
+
+          $eventToReturn = new stdClass();
+          $eventToReturn = $event->getReturnable();
+          $eventToReturn->alreadyVoted = $alreadyVoted;
+          $events[] = $eventToReturn;
+        }
+      }
+    }
+
+    return $events;
   }
 }

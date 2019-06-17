@@ -7,6 +7,7 @@ use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
+use App\Permissions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -114,7 +115,8 @@ class UsersController extends Controller
       }
     }
 
-    if($request->auth->hasPermission('root.administration')) {
+    if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+      $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
       if($permissions != null) {
         foreach ((array)$permissions as $permission) {
           $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
@@ -305,7 +307,8 @@ class UsersController extends Controller
     }
     //---------------------------------------------------------------
     //---- Permissions manager only deletes changed permissions -----
-    if($request->auth->hasPermission('root.administration')) {
+    if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+      $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
 
       $permissionsWhichHaveNotBeenDeleted = array();
 
@@ -361,15 +364,43 @@ class UsersController extends Controller
   }
 
   /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function changePassword(Request $request, $id) {
+    $this->validate($request, [
+      'password' => 'required'
+    ]);
+
+    $user = User::find($id);
+    if ($user == null) {
+      return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    $user->password = app('hash')->make($request->input('password') . $user->id);
+    if (!$user->save()) {
+      return response()->json(['msg' => 'Could not save user'], 500);
+    }
+
+    return response()->json(['msg' => 'Saved password from user successfully', 'user' => $user->getReturnable()], 200);
+  }
+
+  /**
    * Remove the specified resource from storage.
    *
    * @param int $id
    * @return Response
    */
-  public function delete($id) {
+  public function delete(Request $request, $id) {
     $user = User::find($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
+    }
+
+    if ($request->auth->id == $id) {
+      return response()->json(['msg' => 'Can not delete yourself'], 400);
     }
 
     if (!$user->delete()) {
