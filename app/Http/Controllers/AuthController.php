@@ -185,7 +185,7 @@ class AuthController extends Controller
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
 
-      Mail::to($user->getEmailAddresses())->send(new ForgotPassword($name, $code));
+      Mail::bcc($user->getEmailAddresses())->send(new ForgotPassword($name, $code));
 
       return response()->json(['msg' => 'Sent'], 200);
     }
