@@ -37,6 +37,8 @@ class CalendarController extends Controller
     $calendar = new Calendar();
     $calendar->setProdId('datepoll-calendar');
 
+    $calendarEventId = 1;
+
     /* -------- Movie booking specific calendar -------------*/
     $movies = array();
     $movieBookings = MoviesBooking::where('user_id', $user->id)->get();
@@ -61,7 +63,8 @@ class CalendarController extends Controller
                  ->setUrl($movie->trailerLink)
                  ->setGeo($geo)
                  ->addLocation($location)
-                 ->setUid($movie->id);
+                 ->setUid($calendarEventId);
+      $calendarEventId++;
 
       $worker = $movie->worker();
       if ($worker != null) {
@@ -103,7 +106,8 @@ class CalendarController extends Controller
                    ->setUrl($movie->trailerLink)
                    ->setGeo($geo)
                    ->addLocation($location)
-                   ->setUid($movie->id);
+                   ->setUid($calendarEventId);
+        $calendarEventId++;
 
         $worker = $movie->worker();
         if ($worker != null) {
@@ -134,7 +138,8 @@ class CalendarController extends Controller
                  ->setDescription($event->description)//       ->setUrl($movie->trailerLink)
 //        ->setGeo($geo)
 //        ->addLocation($location)
-                 ->setUid($event->id);
+                 ->setUid($calendarEventId);
+      $calendarEventId++;
 
       $calendar->addEvent($eventEvent);
     }
