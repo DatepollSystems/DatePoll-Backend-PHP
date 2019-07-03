@@ -6,6 +6,7 @@ use App\Http\Middleware\SettingsPermissionMiddleware;
 $router->group(['prefix' => 'settings'], function () use ($router) {
   $router->get('cinema', ['uses' => 'SettingsController@getCinemaFeatureIsEnabled']);
   $router->get('events', ['uses' => 'SettingsController@getEventsFeatureIsEnabled']);
+  $router->get('name', ['uses' => 'SettingsController@getCommunityName']);
 });
 
 $router->group(['prefix' => 'settings/administration', 'middleware' => [JwtMiddleware::class, SettingsPermissionMiddleware::class]], function () use ($router) {

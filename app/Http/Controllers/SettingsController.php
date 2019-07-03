@@ -53,6 +53,13 @@ class SettingsController extends Controller
   }
 
   /**
+   * @return JsonResponse
+   */
+  public function getCommunityName() {
+    return response()->json(['msg' => 'Community name', 'community_name' => env('APP_COMMUNITY_NAME')], 200);
+  }
+
+  /**
    * @param $key
    * @param $value
    */
