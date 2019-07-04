@@ -12,4 +12,5 @@ $router->group(['prefix' => 'settings'], function () use ($router) {
 $router->group(['prefix' => 'settings/administration', 'middleware' => [JwtMiddleware::class, SettingsPermissionMiddleware::class]], function () use ($router) {
   $router->post('cinema', ['uses' => 'SettingsController@setCinemaFeatureIsEnabled']);
   $router->post('events', ['uses' => 'SettingsController@setEventsFeatureIsEnabled']);
+  $router->post('name', ['uses' => 'SettingsController@setCommunityName']);
 });

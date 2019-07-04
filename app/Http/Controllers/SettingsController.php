@@ -60,6 +60,21 @@ class SettingsController extends Controller
   }
 
   /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setCommunityName(Request $request) {
+    $this->validate($request, ['community_name' => 'required|min:1|max:50']);
+
+    $communityName = $request->input('community_name');
+
+    $this->changeEnvironmentVariable('APP_COMMUNITY_NAME', $communityName);
+
+    return response()->json(['msg' => 'Set community name', 'community_name' => $communityName]);
+  }
+
+  /**
    * @param $key
    * @param $value
    */
@@ -71,7 +86,7 @@ class SettingsController extends Controller
     } elseif (env($key) === null) {
       $old = 'null';
     } else {
-      $old = env($key);
+      $old = '"'.env($key).'"';
     }
 
     if (is_bool($value)) {
