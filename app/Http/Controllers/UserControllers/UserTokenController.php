@@ -66,7 +66,7 @@ class UserTokenController extends Controller
 
     $sessionsToReturn = [];
 
-    $sessions = UserToken::where('user_id', $user->id)->where('purpose', 'stayLoggedIn')->get();
+    $sessions = UserToken::where('user_id', $user->id)->where('purpose', 'stayLoggedIn')->orderBy('updated_at')->get();
     foreach ($sessions as $session) {
       $sessionToReturn = new stdClass();
       $sessionToReturn->id = $session->id;
