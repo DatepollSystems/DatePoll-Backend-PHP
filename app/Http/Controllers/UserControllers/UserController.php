@@ -80,29 +80,31 @@ class UserController extends Controller
       foreach ($bookings as $booking) {
         $movie = $booking->movie();
 
-        $bookingToShow = new stdClass();
-        $bookingToShow->movieID = $movie->id;
-        $bookingToShow->movieName = $movie->name;
-        $bookingToShow->movieDate = $movie->date;
-        $bookingToShow->amount = $booking->amount;
+        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
+          $bookingToShow = new stdClass();
+          $bookingToShow->movieID = $movie->id;
+          $bookingToShow->movieName = $movie->name;
+          $bookingToShow->movieDate = $movie->date;
+          $bookingToShow->amount = $booking->amount;
 
-        if ($movie->worker() == null) {
-          $bookingToShow->workerID = null;
-          $bookingToShow->workerName = null;
-        } else {
-          $bookingToShow->workerID = $movie->worker()->id;
-          $bookingToShow->workerName = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+          if ($movie->worker() == null) {
+            $bookingToShow->workerID = null;
+            $bookingToShow->workerName = null;
+          } else {
+            $bookingToShow->workerID = $movie->worker()->id;
+            $bookingToShow->workerName = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+          }
+
+          if ($movie->emergencyWorker() == null) {
+            $bookingToShow->emergencyWorkerID = null;
+            $bookingToShow->emergencyWorkerName = null;
+          } else {
+            $bookingToShow->emergencyWorkerID = $movie->emergencyWorker()->id;
+            $bookingToShow->emergencyWorkerName = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
+          }
+
+          $bookingsToShow[] = $bookingToShow;
         }
-
-        if ($movie->emergencyWorker() == null) {
-          $bookingToShow->emergencyWorkerID = null;
-          $bookingToShow->emergencyWorkerName = null;
-        } else {
-          $bookingToShow->emergencyWorkerID = $movie->emergencyWorker()->id;
-          $bookingToShow->emergencyWorkerName = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
-        }
-
-        $bookingsToShow[] = $bookingToShow;
       }
     }
 
