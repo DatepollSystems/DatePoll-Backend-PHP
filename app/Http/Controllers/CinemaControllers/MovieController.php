@@ -199,7 +199,7 @@ class MovieController extends Controller
     $movies = [];
 
     foreach ($allMovies as $movie) {
-      if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
+      if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
         $movies[] = $movie;
       }
     }

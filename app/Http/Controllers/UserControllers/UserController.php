@@ -80,7 +80,7 @@ class UserController extends Controller
       foreach ($bookings as $booking) {
         $movie = $booking->movie();
 
-        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
+        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
           $bookingToShow = new stdClass();
           $bookingToShow->movieID = $movie->id;
           $bookingToShow->movieName = $movie->name;
