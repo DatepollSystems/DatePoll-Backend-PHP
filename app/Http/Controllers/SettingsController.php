@@ -12,7 +12,7 @@ class SettingsController extends Controller
    * @return JsonResponse
    */
   public function getCinemaFeatureIsEnabled() {
-    return response()->json(['msg' => 'Is cinema service enabled', 'enabled' => env('APP_CINEMA_ENABLED', false)], 200);
+    return response()->json(['msg' => 'Is cinema service enabled', 'enabled' => env('APP_FEATURE_CINEMA_ENABLED', false)], 200);
   }
 
   /**
@@ -25,7 +25,7 @@ class SettingsController extends Controller
 
     $isEnabled = $request->input('isEnabled');
 
-    $this->changeEnvironmentVariable('APP_CINEMA_ENABLED', $isEnabled);
+    $this->changeEnvironmentVariable('APP_FEATURE_CINEMA_ENABLED', $isEnabled);
 
     return response()->json(['msg' => 'Set cinema service enabled', 'isEnabled' => $isEnabled]);
   }
@@ -34,7 +34,7 @@ class SettingsController extends Controller
    * @return JsonResponse
    */
   public function getEventsFeatureIsEnabled() {
-    return response()->json(['msg' => 'Is events service enabled', 'enabled' => env('APP_EVENTS_ENABLED', false)], 200);
+    return response()->json(['msg' => 'Is events service enabled', 'enabled' => env('APP_FEATURE_EVENTS_ENABLED', false)], 200);
   }
 
   /**
@@ -47,7 +47,7 @@ class SettingsController extends Controller
 
     $isEnabled = $request->input('isEnabled');
 
-    $this->changeEnvironmentVariable('APP_EVENTS_ENABLED', $isEnabled);
+    $this->changeEnvironmentVariable('APP_FEATURE_EVENTS_ENABLED', $isEnabled);
 
     return response()->json(['msg' => 'Set events service enabled', 'isEnabled' => $isEnabled]);
   }
