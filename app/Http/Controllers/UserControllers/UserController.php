@@ -75,7 +75,7 @@ class UserController extends Controller
     $user = $request->auth;
 
     $bookingsToShow = array();
-    if (env('APP_CINEMA_ENABLED', false)) {
+    if (env('APP_FEATURE_CINEMA_ENABLED', false)) {
       $bookings = $user->moviesBookings();
       foreach ($bookings as $booking) {
         $movie = $booking->movie();
@@ -109,7 +109,7 @@ class UserController extends Controller
     }
 
     $eventsToShow = array();
-    if (env('APP_EVENTS_ENABLED', false)) {
+    if (env('APP_FEATURE_EVENTS_ENABLED', false)) {
       $eventsToShow = $user->getOpenEvents();
     }
 
