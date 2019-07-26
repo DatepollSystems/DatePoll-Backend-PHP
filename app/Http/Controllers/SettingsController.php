@@ -75,6 +75,50 @@ class SettingsController extends Controller
   }
 
   /**
+   * @return JsonResponse
+   */
+  public function getOpenWeatherMapKey() {
+    return response()->json(['msg' => 'OpenWeatherMap key', 'openweathermap_key' => env('APP_OPENWEATHERMAP_KEY')], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setOpenWeatherMapKey(Request $request) {
+    $this->validate($request, ['openweathermap_key' => 'required|max:50']);
+
+    $openWeatherMapKey = $request->input('openweathermap_key');
+
+    $this->changeEnvironmentVariable('APP_OPENWEATHERMAP_KEY', $openWeatherMapKey);
+
+    return response()->json(['msg' => 'Set OpenWeatherMap key', 'openweathermap_key' => $openWeatherMapKey]);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  public function getOpenWeatherMapCinemaCityId() {
+    return response()->json(['msg' => 'OpenWeatherMap cinema city id', 'openweathermap_cinema_city_id' => env('APP_OPENWEATHERMAP_CINEMA_CITY_ID')], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setOpenWeatherMapCinemaCityId(Request $request) {
+    $this->validate($request, ['openweathermap_cinema_city_id' => 'required|max:50']);
+
+    $openWeatherMapCinemaCityId = $request->input('openweathermap_cinema_city_id');
+
+    $this->changeEnvironmentVariable('APP_OPENWEATHERMAP_CINEMA_CITY_ID', $openWeatherMapCinemaCityId);
+
+    return response()->json(['msg' => 'Set OpenWeatherMap cinema city id', 'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId]);
+  }
+
+  /**
    * @param $key
    * @param $value
    */
