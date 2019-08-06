@@ -142,7 +142,7 @@ class MovieWorkerController extends Controller
 
         $orders = array();
         foreach ($movie->moviesBookings() as $moviesBooking) {
-          $localBooking = new \stdClass();
+          $localBooking = new stdClass();
           $bookingUser = $moviesBooking->user();
           $localBooking->userName = $bookingUser->firstname . ' ' . $bookingUser->surname;
           $localBooking->userID = $bookingUser->id;
@@ -158,14 +158,14 @@ class MovieWorkerController extends Controller
     foreach ($user->emergencyWorkerMovies() as $movie) {
       if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
         if (!in_array($movie->id, $moviesIDs)) {
-          $localMovie = new \stdClass();
+          $localMovie = new stdClass();
           $localMovie->movieName = $movie->name;
           $localMovie->movieID = $movie->id;
           $localMovie->date = $movie->date;
 
           $orders = array();
           foreach ($movie->moviesBookings() as $moviesBooking) {
-            $localBooking = new \stdClass();
+            $localBooking = new stdClass();
             $bookingUser = $moviesBooking->user();
             $localBooking->userName = $bookingUser->firstname . ' ' . $bookingUser->surname;
             $localBooking->userID = $bookingUser->id;
