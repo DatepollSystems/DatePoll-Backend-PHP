@@ -5,7 +5,6 @@ use App\Http\Middleware\Events\EventsFeatureMiddleware;
 
 $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::class]], function () use($router) {
 
-  //TODO:THIS
   $router->get('', ['uses' => 'EventControllers\EventListController@getOpenEvents']);
 
   $router->post('vote', ['uses' => 'EventControllers\EventVoteController@vote']);
@@ -25,6 +24,9 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
       $router->put('avent/{id}', ['uses' => 'EventControllers\EventController@update']);
       $router->delete('avent/{id}', ['uses' => 'EventControllers\EventController@delete']);
 
+      $router->post('avent/{id}/voteForUsers', ['uses' => 'EventControllers\EventVoteController@voteForUsers']);
+      $router->post('avent/{id}/cancelVotingForUsers', ['uses' => 'EventControllers\EventVoteController@cancelVotingForUsers']);
+
       $router->post('addGroupToEvent', ['uses' => 'EventControllers\EventGroupController@addGroupToEvent']);
       $router->post('addSubgroupToEvent', ['uses' => 'EventControllers\EventGroupController@addSubgroupToEvent']);
       $router->post('removeGroupFromEvent', ['uses' => 'EventControllers\EventGroupController@removeGroupFromEvent']);
@@ -41,7 +43,5 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
       $router->get('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@getSingle']);
       $router->put('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@update']);
       $router->delete('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@delete']);
-
-
     });
 });

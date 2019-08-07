@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property int $id
  * @property string $decision
+ * @property boolean $showInCalendar
  * @property string $created_at
  * @property string $updated_at
  */
@@ -22,6 +23,6 @@ class EventStandardDecision extends Model
     /**
      * @var array
      */
-    protected $fillable = ['decision', 'created_at', 'updated_at'];
+    protected $fillable = ['decision', 'showInCalendar', 'created_at', 'updated_at'];
 
 }
