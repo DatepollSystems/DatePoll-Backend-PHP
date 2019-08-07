@@ -29,8 +29,7 @@ class JwtMiddleware
     } catch (ExpiredException $e) {
       return response()->json(['error' => 'Provided token is expired.'], 401);
     } catch (Exception $e) {
-      // This is the only 418 error. It's here to let the web application know that the token is incorrect.
-      return response()->json(['error' => 'Your token is incorrect!'], 418);
+      return response()->json(['error' => 'Your token is incorrect!'], 401);
     }
     $user = User::find($credentials->sub);
     // Put the user into the request
