@@ -16,6 +16,7 @@ use stdClass;
  * @property string $endDate
  * @property string $openedUntil
  * @property boolean $forEveryone
+ * @property string $location
  * @property string $created_at
  * @property string $updated_at
  * @property EventDecision[] $eventsDecisions
@@ -41,6 +42,7 @@ class Event extends Model
     'startDate',
     'endDate',
     'forEveryone',
+    'location',
     'created_at',
     'updated_at'];
 
@@ -80,7 +82,7 @@ class Event extends Model
 
     $decisions = array();
     foreach ($this->eventsDecisions() as $eventsDecision) {
-      $decisions[] = $eventsDecision->decision;
+      $decisions[] = $eventsDecision;
     }
 
     $returnable->decisions = $decisions;
@@ -244,8 +246,10 @@ class Event extends Model
 
     $decision = EventUserVotedForDecision::where('user_id', $user->id)->where('event_id', $this->id)->first();
     if ($decision == null) {
+      $userToSave->decisionId = null;
       $userToSave->decision = null;
     } else {
+      $userToSave->decisionId = $decision->decision()->id;
       $userToSave->decision = $decision->decision()->decision;
     }
 

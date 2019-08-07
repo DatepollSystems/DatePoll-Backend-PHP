@@ -15,7 +15,7 @@ class CinemaFeatureMiddleware
    * @return mixed
    */
   public function handle($request, Closure $next) {
-    if (!env('APP_CINEMA_ENABLED', false)) {
+    if (!env('APP_FEATURE_CINEMA_ENABLED', false)) {
       return response()->json(['msg' => 'The cinema feature is disabled on this DatePoll server'], 503);
     }
 

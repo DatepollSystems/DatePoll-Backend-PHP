@@ -5,12 +5,12 @@ namespace App\Models\Events;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
  * @property int $event_id
  * @property string $decision
+ * @property boolean $showInCalendar
  * @property string $created_at
  * @property string $updated_at
  * @property Event $event
@@ -31,6 +31,7 @@ class EventDecision extends Model
   protected $fillable = [
     'event_id',
     'decision',
+    'showInCalendar',
     'created_at',
     'updated_at'];
 

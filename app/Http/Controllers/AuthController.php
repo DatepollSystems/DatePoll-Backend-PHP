@@ -44,7 +44,9 @@ class AuthController extends Controller
   public function signin(Request $request) {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
-      'password' => 'required']);
+      'password' => 'required',
+      'sessionInformation' => 'min:1|max:190',
+      'stayLoggedIn' => 'boolean']);
 
     $user = User::where('username', $request->input('username'))->first();
     if (!$user) {
@@ -102,7 +104,9 @@ class AuthController extends Controller
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'old_password' => 'required',
-      'new_password' => 'required']);
+      'new_password' => 'required',
+      'sessionInformation' => 'min:1|max:190',
+      'stayLoggedIn' => 'boolean']);
 
     $user = User::where('username', $request->input('username'))->first();
     if (!$user) {
@@ -113,6 +117,33 @@ class AuthController extends Controller
       $user->force_password_change = false;
       $user->password = app('hash')->make($request->input('new_password') . $user->id);
       $user->save();
+
+      $sessionInformation = $request->input('sessionInformation');
+      $stayLoggedIn = $request->input('stayLoggedIn');
+      if($stayLoggedIn != null && $sessionInformation != null) {
+        if($stayLoggedIn) {
+          $randomToken = '';
+          while (true) {
+            $randomToken = UserToken::generateRandomString(64);
+            if (UserToken::where('token', $randomToken)->first() == null) {
+              break;
+            }
+          }
+
+          $userToken = new UserToken([
+            'user_id' => $user->id,
+            'token' => $randomToken,
+            'purpose' => 'stayLoggedIn',
+            'description' => $sessionInformation
+          ]);
+
+          if(!$userToken->save()) {
+            return response()->json(['An error occurred during session token saving..'], 500);
+          }
+
+          return response()->json(['token' => $this->jwt($user->id), 'sessionToken' => $randomToken], 200);
+        }
+      }
 
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }

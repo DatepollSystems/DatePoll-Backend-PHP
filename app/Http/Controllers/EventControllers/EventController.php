@@ -7,7 +7,6 @@ use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
@@ -68,6 +67,8 @@ class EventController extends Controller
       'startDate' => 'required|date',
       'endDate' => 'required|date',
       'forEveryone' => 'required|boolean',
+      'description' => 'string|nullable',
+      'location' => 'string|nullable|max:190',
       'decisions' => 'array|required']);
 
     $name = $request->input('name');
@@ -75,25 +76,39 @@ class EventController extends Controller
     $endDate = $request->input('endDate');
     $forEveryone = $request->input('forEveryone');
     $description = $request->input('description');
+    $location = $request->input('location');
 
     $event = new Event([
       'name' => $name,
       'startDate' => $startDate,
       'endDate' => $endDate,
       'forEveryone' => $forEveryone,
-      'description' => $description]);
+      'description' => $description,
+      'location' => $location]);
 
     if (!$event->save()) {
       return response()->json(['msg' => 'An error occurred during event saving...'], 500);
     }
 
     $decisions = $request->input('decisions');
-    foreach ((array)$decisions as $decision) {
+    foreach ((array)$decisions as $decisionObject) {
+      $decisionObject = (object) $decisionObject;
+
+      $decision = $decisionObject->decision;
+      $showInCalendar = $decisionObject->showInCalendar;
+
+//      if (!is_string($decision) || !is_bool($showInCalendar)) {
+//      $event->delete();
+//        return response()->json(['msg' => 'Could not save event decisions... decision must be a string and showInCalendar must be a boolean'], 401);
+//      }
+
       $eventDecision = new EventDecision([
         'event_id' => $event->id,
-        'decision' => $decision]);
+        'decision' => $decision,
+        'showInCalendar' => $showInCalendar]);
 
       if (!$eventDecision->save()) {
+        $event->delete();
         return response()->json(['msg' => 'Could not save event decisions'], 500);
       }
     }
@@ -120,6 +135,8 @@ class EventController extends Controller
       'startDate' => 'required|date',
       'endDate' => 'required|date',
       'forEveryone' => 'required|boolean',
+      'description' => 'string|nullable',
+      'location' => 'string|nullable|max:190',
       'decisions' => 'array']);
 
     $event = Event::find($id);
@@ -132,23 +149,64 @@ class EventController extends Controller
     $event->endDate = $request->input('endDate');
     $event->forEveryone = $request->input('forEveryone');
     $event->description = $request->input('description');
+    $event->location = $request->input('location');;
 
     if (!$event->save()) {
       return response()->json(['msg' => 'An error occurred during event saving...'], 500);
     }
 
-    DB::table('events_decisions')->where('event_id', '=', $event->id)->delete();
-
+    //-------------------------------- Only delete changed decisions --------------------------------------
     $decisions = $request->input('decisions');
-    foreach ((array)$decisions as $decision) {
-      $eventDecision = new EventDecision([
-        'event_id' => $event->id,
-        'decision' => $decision]);
+    $decisionsWhichHaveNotBeenDeleted = array();
 
-      if (!$eventDecision->save()) {
-        return response()->json(['msg' => 'Could not save event decisions'], 500);
+    $oldDecisions = $event->eventsDecisions();
+    foreach ($oldDecisions as $oldDecision) {
+      $toDelete = true;
+
+      foreach ((array)$decisions as $decision) {
+        $decisionObject = (object) $decision;
+        if ($oldDecision->id == $decisionObject->id) {
+          $toDelete = false;
+          $decisionsWhichHaveNotBeenDeleted[] = $oldDecision;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $decisionToDeleteObject = EventDecision::find($oldDecision->id);
+        if (!$decisionToDeleteObject->delete()) {
+          return response()->json(['msg' => 'Failed during decision clearing...'], 500);
+        }
       }
     }
+
+    foreach ((array)$decisions as $decision) {
+      $decisionObject = (object) $decision;
+      $toAdd = true;
+
+      foreach ($decisionsWhichHaveNotBeenDeleted as $decisionWhichHaveNotBeenDeleted) {
+        if ($decisionObject->id == $decisionWhichHaveNotBeenDeleted->id) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $decisionString = $decisionObject->decision;
+        $showInCalendar = $decisionObject->showInCalendar;
+
+        $eventDecision = new EventDecision([
+          'event_id' => $event->id,
+          'decision' => $decisionString,
+          'showInCalendar' => $showInCalendar]);
+
+        if (!$eventDecision->save()) {
+          $event->delete();
+          return response()->json(['msg' => 'Could not save event decisions'], 500);
+        }
+      }
+    }
+    // ----------------------------------------------------------------------------------------------------
 
     $returnable = $event->getReturnable();
     $returnable->view_event = [

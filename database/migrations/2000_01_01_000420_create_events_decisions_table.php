@@ -17,6 +17,7 @@ class CreateEventsDecisionsTable extends Migration
       $table->increments('id');
 
       $table->string('decision')->nullable(false);
+      $table->boolean('showInCalendar')->nullable(false);
 
       $table->integer('event_id')->unsigned();;
       $table->foreign('event_id')

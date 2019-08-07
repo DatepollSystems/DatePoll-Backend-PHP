@@ -19,7 +19,6 @@ class StandardDecisionController extends Controller
 
     $toReturn = array();
     foreach ($standardDecisions as $standardDecision) {
-
       $standardDecision->view_standard_decision = [
         'href' => 'api/v1/avent/administration/standardDecision/' . $standardDecision->id,
         'method' => 'GET'];
@@ -58,11 +57,12 @@ class StandardDecisionController extends Controller
    * @throws ValidationException
    */
   public function create(Request $request) {
-    $this->validate($request, ['decision' => 'required|max:190|min:1']);
+    $this->validate($request, ['decision' => 'required|max:190|min:1', 'showInCalendar' => 'required|boolean']);
 
     $decision = $request->input('decision');
+    $showInCalendar = $request->input('showInCalendar');
 
-    $decisionObject = new EventStandardDecision(['decision' => $decision]);
+    $decisionObject = new EventStandardDecision(['decision' => $decision, 'showInCalendar' => $showInCalendar]);
 
     if (!$decisionObject->save()) {
       return response()->json(['msg' => 'An error occurred during standard decision saving...'], 500);
@@ -84,7 +84,7 @@ class StandardDecisionController extends Controller
    * @throws ValidationException
    */
   public function update(Request $request, $id) {
-    $this->validate($request, ['decision' => 'required|max:190|min:1']);
+    $this->validate($request, ['decision' => 'required|max:190|min:1', 'showInCalendar' => 'required|boolean']);
 
     $standardDecision = EventStandardDecision::find($id);
 
@@ -93,6 +93,7 @@ class StandardDecisionController extends Controller
     }
 
     $standardDecision->decision = $request->input('decision');
+    $standardDecision->showInCalendar = $request->input('showInCalendar');
 
     if (!$standardDecision->save()) {
       return response()->json(['msg' => 'An error occurred during standard decision saving...'], 500);

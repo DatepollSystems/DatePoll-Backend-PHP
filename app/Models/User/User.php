@@ -292,7 +292,6 @@ class User extends Model
           $eventUserVotedFor = EventUserVotedForDecision::where('event_id', $event->id)->where('user_id', $this->id)->first();
           $alreadyVoted = ($eventUserVotedFor != null);
 
-          $eventToReturn = new stdClass();
           $eventToReturn = $event->getReturnable();
           $eventToReturn->alreadyVoted = $alreadyVoted;
           $events[] = $eventToReturn;

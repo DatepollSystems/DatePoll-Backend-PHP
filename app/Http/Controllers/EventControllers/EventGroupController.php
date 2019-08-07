@@ -77,18 +77,6 @@ class EventGroupController extends Controller
       return response()->json(['msg' => 'Subgroup is already added to event'], 201);
     }
 
-    // Disable subgroup and group locking
-//    $eventForParentGroup = EventForGroup::where('event_id', $eventId)->where('group_id', $subgroup->group_id)->first();
-//    if ($eventForParentGroup == null) {
-//      $eventForParentGroup = new EventForGroup([
-//        'group_id' => $subgroup->group_id,
-//        'event_id' => $eventId]);
-//
-//      if (!$eventForParentGroup->save()) {
-//        return response()->json(['msg' => 'Could not add parent group to event'], 500);
-//      }
-//    }
-
     $eventForSubgroup = new EventForSubgroup([
       'event_id' => $eventId,
       'subgroup_id' => $subgroupId]);
@@ -128,16 +116,6 @@ class EventGroupController extends Controller
     if (!$eventForGroup->delete()) {
       return response()->json(['msg' => 'Could not remove group from event'], 500);
     }
-
-    // Disable subgroup and group linking
-//    $subgroupsForEvent = EventForSubgroup::where('event_id', $eventId)->get();
-//    foreach ($subgroupsForEvent as $subgroupForEvent) {
-//      if ($subgroupForEvent->subgroup()->group_id == $groupId) {
-//        if (!$subgroupForEvent->delete()) {
-//          return response()->json(['msg' => 'Could not remove subgroups from event'], 500);
-//        }
-//      }
-//    }
 
     return response()->json(['msg' => 'Successfully remove group from event'], 200);
   }

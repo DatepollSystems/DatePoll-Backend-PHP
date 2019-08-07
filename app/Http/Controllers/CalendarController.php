@@ -7,6 +7,7 @@ use App\Models\Events\Event;
 use App\Models\User\UserToken;
 use DateTime;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Jsvrcek\ICS\CalendarExport;
 use Jsvrcek\ICS\CalendarStream;
 use Jsvrcek\ICS\Exception\CalendarEventException;
@@ -101,8 +102,7 @@ class CalendarController extends Controller
         $movieEvent = new CalendarEvent();
         $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
                    ->setEnd(new DateTime($movie->date . 'T23:59:59'))
-                   ->setSummary($movie->name)
-                   ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                   ->setSummary($movie->name)//->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
                    ->setUrl($movie->trailerLink)
                    ->setGeo($geo)
                    ->addLocation($location)
@@ -122,14 +122,28 @@ class CalendarController extends Controller
       }
     }
 
-    foreach (Event::all() as $event) {
+    // Find events where user answered a question with decision which also has showInCalendar on true
+    $eventIds = DB::table('events_users_voted_for')
+                  ->join('events_decisions', 'events_decisions.id', '=', 'events_users_voted_for.decision_id')
+                  ->join('events', 'events.id', '=', 'events_users_voted_for.event_id')
+                  ->where('events_decisions.showInCalendar', '=', 1)
+                  ->where('events_users_voted_for.user_id', '=', $user->id)
+                  ->addSelect('events.id')
+                  ->get();
+
+    $events = array();
+    foreach ($eventIds as $eventId) {
+      $events[] = Event::find($eventId->id);
+    }
+
+    foreach ($events as $event) {
 //      $geo = new Geo();
 //      $geo->setLatitude(48.643865);
 //      $geo->setLongitude(15.814679);
 
-//      $location = new Location();
-//      $location->setLanguage('de');
-//      $location->setName('Kanzlerturm Wiese Eggenburg');
+      $location = new Location();
+      $location->setLanguage('de');
+      $location->setName($event->location);
 
       $eventEvent = new CalendarEvent();
       $eventEvent->setStart(new DateTime($event->startDate))
@@ -137,7 +151,7 @@ class CalendarController extends Controller
                  ->setSummary($event->name)
                  ->setDescription($event->description)//       ->setUrl($movie->trailerLink)
 //        ->setGeo($geo)
-//        ->addLocation($location)
+                 ->addLocation($location)
                  ->setUid($calendarEventId);
       $calendarEventId++;
 
