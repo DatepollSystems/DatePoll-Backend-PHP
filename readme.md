@@ -76,8 +76,8 @@ You should be able to see
 Coming soon...
 
 ## 🎈 Usage <a name="usage"></a>
-Um den ersten Benutzer anzulegen führe folgenden Befehl aus.
-**Warnung, dieser Benutzer hat Administratorrechte.**
+To create the first user execute the following command.
+**Warning, this user has administrator rights.**
 ```
 php artisan addadminuser
 ```
