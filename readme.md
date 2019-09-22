@@ -70,7 +70,7 @@ php -S localhost:8000 -t public
 <br></br>
 Now visit with your browser the website `http://localhost:8000`.
 You should be able to see
-> Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) w
+> Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)
 
 ## 🔧 Running the tests <a name = "tests"></a>
 Coming soon...
