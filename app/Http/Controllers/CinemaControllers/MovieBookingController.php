@@ -71,6 +71,11 @@ class MovieBookingController extends Controller
     return response()->json(['msg' => 'An error occurred during updating'], 500);
   }
 
+  /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   */
   public function cancelBooking(Request $request, $id) {
     /* Check if movie exists */
     $movie = Movie::find($id);
@@ -96,5 +101,93 @@ class MovieBookingController extends Controller
     }
 
     return response()->json(['msg' => 'An error occurred during removing'], 500);
+  }
+
+  /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function bookForUsers(Request $request, $id) {
+    $movie = Movie::find($id);
+    if ($movie == null) {
+      return response()->json(['msg' => 'Movie not found'], 404);
+    }
+
+    $this->validate($request, ['bookings' => 'required|array']);
+
+    $bookings = (array)$request->input('bookings');
+
+    foreach ($bookings as $booking) {
+      $amount = $booking['amount'];
+      $user_id = $booking['user_id'];
+
+      $movieBooking = MoviesBooking::where('user_id', '=', $user_id)
+                                   ->where('movie_id', '=', $id)
+                                   ->first();
+
+      if ($movieBooking == null) {
+        $movieBooking = new MoviesBooking([
+          'user_id' => $user_id,
+          'movie_id' => $id,
+          'amount' => $amount]);
+
+        if (!$movieBooking->save()) {
+          return response()->json(['msg' => 'An error occurred during booking saving!'], 500);
+        }
+
+        $movie->bookedTickets += $amount;
+      } else {
+        $movieBooking->amount += $amount;
+
+        if (!$movieBooking->save()) {
+          return response()->json(['msg' => 'An error occurred during booking saving!'], 500);
+        }
+
+        $movie->bookedTickets += $amount;
+      }
+    }
+    $movie->save();
+
+    return response()->json(['msg' => 'Saved selected bookings successfully!'], 201);
+  }
+
+  /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function cancelBookingForUsers(Request $request, $id) {
+    $movie = Movie::find($id);
+    if ($movie == null) {
+      return response()->json(['msg' => 'Movie not found'], 404);
+    }
+
+    $this->validate($request, ['user_ids' => 'required|array']);
+
+    $userIds = (array)$request->input('user_ids');
+
+    foreach ($userIds as $userId) {
+      $movieBooking = MoviesBooking::where('user_id', $userId)
+                                   ->where('movie_id', $id)
+                                   ->first();
+
+      if ($movieBooking != null) {
+        $ticketsAmount = $movieBooking->amount;
+        if (!$movieBooking->delete()) {
+          return response()->json(['msg' => 'Could not remove booking!'], 500);
+        }
+
+        $movie->bookedTickets -= $ticketsAmount;
+      }
+    }
+
+    $movie->save();
+
+    return response()->json([
+      'msg' => 'Removed selected bookings successfully!',
+      'available_tickets' => $movie->bookedTickets], 201);
   }
 }

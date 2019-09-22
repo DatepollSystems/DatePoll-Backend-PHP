@@ -29,6 +29,9 @@ $router->group(['prefix' => 'cinema', 'middleware' => [CinemaFeatureMiddleware::
       $router->put('movie/{id}', ['uses' => 'CinemaControllers\MovieController@update']);
       $router->delete('movie/{id}', ['uses' => 'CinemaControllers\MovieController@delete']);
 
+      $router->post('movie/{id}/bookForUsers', ['uses' => 'CinemaControllers\MovieBookingController@bookForUsers']);
+      $router->post('movie/{id}/cancelBookingForUsers', ['uses' => 'CinemaControllers\MovieBookingController@cancelBookingForUsers']);
+
       /** Year routes */
       $router->get('year', ['uses' => 'CinemaControllers\MovieYearController@index']);
       $router->post('year', ['uses' => 'CinemaControllers\MovieYearController@store']);

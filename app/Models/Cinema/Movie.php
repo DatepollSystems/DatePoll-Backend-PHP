@@ -6,6 +6,8 @@ use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
+use stdClass;
 
 /**
  * @property int $id
@@ -64,18 +66,16 @@ class Movie extends Model
    */
   public function getReturnable() {
     $returnableMovie = $this;
-    $workerID = $this->worker_id;
-    $emergencyWorkerID = $this->emergency_worker_id;
 
-    $worker = User::find($workerID);
-    $emergencyWorker = User::find($emergencyWorkerID);
+    $worker = $this->worker();
+    $emergencyWorker = $this->emergencyWorker();
 
     if ($worker == null) {
       $returnableMovie->workerID = null;
       $returnableMovie->workerName = null;
     } else {
       $returnableMovie->workerID = $worker->id;
-      $returnableMovie->workerName = $worker->getAttribute('firstname') . ' ' . $worker->getAttribute('surname');
+      $returnableMovie->workerName = $worker->firstname . ' ' . $worker->surname;
     }
 
     if ($emergencyWorker == null) {
@@ -83,9 +83,42 @@ class Movie extends Model
       $returnableMovie->emergencyWorkerName = null;
     } else {
       $returnableMovie->emergencyWorkerID = $emergencyWorker->id;
-      $returnableMovie->emergencyWorkerName = $emergencyWorker->getAttribute('firstname') . ' ' . $emergencyWorker->getAttribute('surname');
+      $returnableMovie->emergencyWorkerName = $emergencyWorker->firstname . ' ' . $emergencyWorker->surname;
     }
 
+    return $returnableMovie;
+  }
+
+  /**
+   * @return Movie
+   */
+  public function getAdminReturnable() {
+    $returnableMovie = $this->getReturnable();
+    $bookings = array();
+    foreach ($this->moviesBookings() as $moviesBooking) {
+      $booking = new stdClass();
+      $booking->user_id = $moviesBooking->user()->id;
+      $booking->firstname = $moviesBooking->user()->firstname;
+      $booking->surname = $moviesBooking->user()->surname;
+      $booking->amount = $moviesBooking->amount;
+      $bookings[] = $booking;
+    }
+
+    $usersNotBooked = DB::select("SELECT id, firstname, surname FROM users WHERE users.id 
+                                                                     NOT IN (SELECT mb.user_id FROM movies_bookings mb 
+                                                                     WHERE mb.movie_id = " . $this->id . ")");
+
+    foreach ($usersNotBooked as $user) {
+      $booking = new stdClass();
+      $booking->user_id = $user->id;
+      $booking->firstname = $user->firstname;
+      $booking->surname = $user->surname;
+      $booking->amount = 0;
+
+      $bookings[] = $booking;
+    }
+
+    $returnableMovie->bookings = $bookings;
     return $returnableMovie;
   }
 }
