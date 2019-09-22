@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CinemaControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MovieYear;
+use App\Models\User\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,16 +26,6 @@ class MovieController extends Controller
     $movies = Movie::orderBy('date')->get();
     foreach ($movies as $movie) {
       $returnable = $movie->getReturnable();
-
-      $bookings = array();
-      foreach ($movie->moviesBookings() as $moviesBooking) {
-        $booking = new stdClass();
-        $booking->firstname = $moviesBooking->user()->firstname;
-        $booking->surname = $moviesBooking->user()->surname;
-        $booking->amount = $moviesBooking->amount;
-        $bookings[] = $booking;
-      }
-      $returnable->bookings = $bookings;
 
       $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
       $toReturnMovies[] = $returnable;
@@ -94,17 +85,7 @@ class MovieController extends Controller
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    $returnable = $movie->getReturnable();
-
-    $bookings = array();
-    foreach ($movie->moviesBookings() as $moviesBooking) {
-      $booking = new stdClass();
-      $booking->firstname = $moviesBooking->user()->firstname;
-      $booking->surname = $moviesBooking->user()->surname;
-      $booking->amount = $moviesBooking->amount;
-      $bookings[] = $booking;
-    }
-    $returnable->bookings = $bookings;
+    $returnable = $movie->getAdminReturnable();
 
     $returnable->view_movies = ['href' => 'api/v1/cinema/administration/movie', 'method' => 'GET'];
 
