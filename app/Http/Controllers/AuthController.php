@@ -45,8 +45,8 @@ class AuthController extends Controller
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'password' => 'required',
-      'sessionInformation' => 'min:1|max:190',
-      'stayLoggedIn' => 'boolean']);
+      'session_information' => 'min:1|max:190',
+      'stay_logged_in' => 'boolean']);
 
     $user = User::where('username', $request->input('username'))->first();
     if (!$user) {
@@ -62,8 +62,8 @@ class AuthController extends Controller
         return response()->json(['msg' => 'changePassword', 201]);
       }
 
-      $sessionInformation = $request->input('sessionInformation');
-      $stayLoggedIn = $request->input('stayLoggedIn');
+      $sessionInformation = $request->input('session_information');
+      $stayLoggedIn = $request->input('stay_logged_in');
       if($stayLoggedIn != null && $sessionInformation != null) {
         if($stayLoggedIn) {
           $randomToken = '';
@@ -82,10 +82,10 @@ class AuthController extends Controller
           ]);
 
           if(!$userToken->save()) {
-            return response()->json(['An error occurred during session token saving..'], 500);
+            return response()->json(['error' => 'An error occurred during session token saving..'], 500);
           }
 
-          return response()->json(['token' => $this->jwt($user->id), 'sessionToken' => $randomToken], 200);
+          return response()->json(['token' => $this->jwt($user->id), 'session_token' => $randomToken], 200);
         }
       }
 
@@ -105,8 +105,8 @@ class AuthController extends Controller
       'username' => 'required|min:1|max:190',
       'old_password' => 'required',
       'new_password' => 'required',
-      'sessionInformation' => 'min:1|max:190',
-      'stayLoggedIn' => 'boolean']);
+      'session_information' => 'min:1|max:190',
+      'stay_logged_in' => 'boolean']);
 
     $user = User::where('username', $request->input('username'))->first();
     if (!$user) {
@@ -114,12 +114,20 @@ class AuthController extends Controller
     }
 
     if (Hash::check($request->input('old_password') . $user->id, $user->password)) {
+      if (!$user->activated) {
+        return response()->json(['msg' => 'notActivated'], 201);
+      }
+
+      if (!$user->force_password_change) {
+        return response()->json(['error' => 'User does not need to change his password'], 400);
+      }
+
       $user->force_password_change = false;
       $user->password = app('hash')->make($request->input('new_password') . $user->id);
       $user->save();
 
-      $sessionInformation = $request->input('sessionInformation');
-      $stayLoggedIn = $request->input('stayLoggedIn');
+      $sessionInformation = $request->input('session_information');
+      $stayLoggedIn = $request->input('stay_logged_in');
       if($stayLoggedIn != null && $sessionInformation != null) {
         if($stayLoggedIn) {
           $randomToken = '';
@@ -133,15 +141,15 @@ class AuthController extends Controller
           $userToken = new UserToken([
             'user_id' => $user->id,
             'token' => $randomToken,
-            'purpose' => 'stayLoggedIn',
+            'purpose' => 'stay_logged_in',
             'description' => $sessionInformation
           ]);
 
           if(!$userToken->save()) {
-            return response()->json(['An error occurred during session token saving..'], 500);
+            return response()->json(['error' => 'An error occurred during session token saving..'], 500);
           }
 
-          return response()->json(['token' => $this->jwt($user->id), 'sessionToken' => $randomToken], 200);
+          return response()->json(['token' => $this->jwt($user->id), 'session_token' => $randomToken], 200);
         }
       }
 
@@ -173,9 +181,11 @@ class AuthController extends Controller
    * @throws ValidationException
    */
   public function IamLoggedIn(Request $request) {
-    $this->validate($request, ['sessionToken' => 'required', 'sessionInformation' => 'required']);
+    $this->validate($request, [
+      'session_token' => 'required',
+      'session_information' => 'required|min:1|max:190']);
 
-    $sessionToken = $request->input('sessionToken');
+    $sessionToken = $request->input('session_token');
 
     $userToken = UserToken::where('token', $sessionToken)->where('purpose', 'stayLoggedIn')->first();
 
@@ -183,7 +193,7 @@ class AuthController extends Controller
       return response()->json(['msg' => 'You have been logged out of this session or this session token is incorrect', 'error_code' => 'session_token_incorrect'], 400);
     }
 
-    $userToken->description = $request->input('sessionInformation');
+    $userToken->description = $request->input('session_information');
     $userToken->save();
     $userToken->touch();
     return response()->json(['msg' => 'Session token is good', 'token' => $this->jwt($userToken->user_id)], 202);
@@ -244,7 +254,7 @@ class AuthController extends Controller
 
     $userCode = UserCode::where('purpose', 'forgotPassword')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
     if($userCode == null) {
-      return response()->json(['msg' => 'There is no code for forgotPassword'], 400);
+      return response()->json(['msg' => 'There was no code for a password reset requested'], 400);
     }
 
     if ($userCode->rate_limit >= 11) {
@@ -281,12 +291,12 @@ class AuthController extends Controller
 
     $user = User::where('username', $username)->first();
     if($user == null) {
-      return response()->json(['msg' => 'Unknown email address', 'code' => 'unknown_email'], 404);
+      return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
 
     $userCode = UserCode::where('purpose', 'forgotPassword')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
     if($userCode == null) {
-      return response()->json(['msg' => 'There is no code for forgotPassword'], 400);
+      return response()->json(['msg' => 'There was no code for a password reset requested'], 400);
     }
 
     if ($userCode->rate_limit >= 11) {

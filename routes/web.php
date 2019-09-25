@@ -12,7 +12,7 @@
 */
 
 $router->get('/', function () use ($router) {
-  return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ';
+  return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)';
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
