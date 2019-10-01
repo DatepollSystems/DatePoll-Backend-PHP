@@ -13,4 +13,6 @@ class Permissions {
   public static $MANAGEMENT_ADMINISTRATION = 'management.administration';
 
   public static $SETTINGS_ADMINISTRATION = 'settings.administration';
+
+  public static $SYSTEM_LOGS = 'system.logs.*';
 }

@@ -29,6 +29,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
   $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
 
+    /** System */
+    require_once (__DIR__ . '/SystemRoutes.php');
+
     /** User routes */
     require_once(__DIR__ . '/UserRoutes.php');
 
