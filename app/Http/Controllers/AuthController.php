@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Logging;
 use App\Mail\ForgotPassword;
 use App\Models\User\User;
 use App\Models\User\UserToken;
@@ -23,10 +24,10 @@ class AuthController extends Controller
    * @return string
    */
   protected function jwt($userID) {
-    $payload = ['iss' => "lumen-jwt", // Issuer of the token
-      'sub' => $userID, // Subject of the token
-      'iat' => time(), // Time when JWT was issued.
-      'exp' => time() + 60 * 60// Expiration time
+    $payload = ['iss' => "lumen-jwt",// Issuer of the token
+                'sub' => $userID,// Subject of the token
+                'iat' => time(),// Time when JWT was issued.
+                'exp' => time() + 60 * 60// Expiration time
     ];
 
     // As you can see we are passing `JWT_SECRET` as the second parameter that will
@@ -78,16 +79,20 @@ class AuthController extends Controller
             'user_id' => $user->id,
             'token' => $randomToken,
             'purpose' => 'stayLoggedIn',
-            'description' => $sessionInformation
-          ]);
+            'description' => $sessionInformation]);
 
           if(!$userToken->save()) {
+            Logging::error("signin", "User - " . $user->id . " | Could not save user token");
             return response()->json(['error' => 'An error occurred during session token saving..'], 500);
           }
+
+          Logging::info("signin", "User - " . $user->id . " | logged in; Session token: true");
 
           return response()->json(['token' => $this->jwt($user->id), 'session_token' => $randomToken], 200);
         }
       }
+
+      Logging::info("signin", "User - " . $user->id . " | logged in; Session token: false");
 
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }
@@ -142,16 +147,20 @@ class AuthController extends Controller
             'user_id' => $user->id,
             'token' => $randomToken,
             'purpose' => 'stay_logged_in',
-            'description' => $sessionInformation
-          ]);
+            'description' => $sessionInformation]);
 
           if(!$userToken->save()) {
+            Logging::error("changePasswordAfterSignin", "User - " . $user->id . " | Could not save user token");
             return response()->json(['error' => 'An error occurred during session token saving..'], 500);
           }
+
+          Logging::info("changePasswordAfterSignin", "User - " . $user->id . " | Changed password after sign in; Session token: true");
 
           return response()->json(['token' => $this->jwt($user->id), 'session_token' => $randomToken], 200);
         }
       }
+
+      Logging::info("changePasswordAfterSignin", "User - " . $user->id . " | Changed password after sign in; Session token: false");
 
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }
@@ -172,6 +181,7 @@ class AuthController extends Controller
     $payload_array = (array)$payload;
     $userID = $payload_array['sub'];
 
+    Logging::info("refresh", "User - " . $userID . " | refreshed JWT");
     return response()->json(['token' => $this->jwt($userID), 'msg' => 'Refresh successful'], 202);
   }
 
@@ -196,6 +206,8 @@ class AuthController extends Controller
     $userToken->description = $request->input('session_information');
     $userToken->save();
     $userToken->touch();
+
+    Logging::info("IamLoggedIn", "User - " . $userToken->user_id . " | User token - " . $userToken->id . " | Got new JWT with session token");
     return response()->json(['msg' => 'Session token is good', 'token' => $this->jwt($userToken->user_id)], 202);
   }
 
@@ -206,8 +218,7 @@ class AuthController extends Controller
    */
   public function sendForgotPasswordEmail(Request $request) {
     $this->validate($request, [
-      'username' => 'required|min:1|max:190'
-    ]);
+      'username' => 'required|min:1|max:190']);
 
     $username = $request->input('username');
 
@@ -228,9 +239,11 @@ class AuthController extends Controller
 
       Mail::bcc($user->getEmailAddresses())->send(new ForgotPassword($name, $code));
 
+      Logging::info("sendForgotPasswordEmail", "User -" . $user->id . " | Email sent");
       return response()->json(['msg' => 'Sent'], 200);
     }
 
+    Logging::error("sendForgotPasswordEmail", "User - " . $user->id . " | Could not send email");
     return response()->json(['msg' => 'An error occurred during user_code saving'], 500);
   }
 
@@ -242,8 +255,7 @@ class AuthController extends Controller
   public function checkForgotPasswordCode(Request $request) {
     $this->validate($request, [
       'code' => 'required|digits:6',
-      'username' => 'required|min:1|max:190'
-    ]);
+      'username' => 'required|min:1|max:190']);
 
     $username = $request->input('username');
 
@@ -264,10 +276,12 @@ class AuthController extends Controller
     $code = $request->input('code');
 
     if ($userCode->code == $code) {
+      Logging::info("checkForgotPasswordCode", "User - " . $user->id . " | Code correct");
       return response()->json(['msg' => 'Code correct', 'code' => 'code_correct'], 200);
     } else {
       $userCode->rate_limit++;
       if (!$userCode->save()) {
+        Logging::error("checkForgotPasswordCode", "User - " . $user->id . " | User code " . $userCode->id . " | Could not save after rate limit adding");
         return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
       }
 
@@ -284,8 +298,7 @@ class AuthController extends Controller
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190',
-      'new_password' => 'required'
-    ]);
+      'new_password' => 'required']);
 
     $username = $request->input('username');
 
@@ -315,11 +328,13 @@ class AuthController extends Controller
         ->where('purpose', '=', 'forgotPassword')
         ->where('user_id', '=', $user->id)->delete();
 
+      Logging::info("resetPasswordAfterForgotPassword", "User - " . $user->id . " | Changed password");
       return response()->json(['msg' => 'Changed password successful'], 200);
 
     } else {
       $userCode->rate_limit++;
       if (!$userCode->save()) {
+        Logging::error("resetPasswordAfterForgotPassword", "User - " . $user->id . " | User code " . $userCode->id . " | Could not save user code after ");
         return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
       }
 

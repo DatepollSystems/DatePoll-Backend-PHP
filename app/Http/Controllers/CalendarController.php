@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
 use App\Models\User\UserToken;
@@ -160,6 +161,7 @@ class CalendarController extends Controller
 
     $calendarExport->addCalendar($calendar);
 
+    Logging::info("getCalendarOf", "User | " . $user->id . " | ICS personal calendar request");
     return $calendarExport->getStream();
   }
 

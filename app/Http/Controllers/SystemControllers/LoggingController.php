@@ -4,13 +4,19 @@ namespace App\Http\Controllers\SystemControllers;
 
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Models\System\Log;
+use App\Repositories\Log\ILogRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class LoggingController extends Controller
 {
+
+  protected $logRepository = null;
+
+  public function __construct(ILogRepository $logRepository)
+  {
+    $this->logRepository = $logRepository;
+  }
 
   /**
    * @param Request $request
@@ -19,7 +25,7 @@ class LoggingController extends Controller
   public function getAllLogs(Request $request) {
     $logs = array();
 
-    foreach (Log::all() as $log) {
+    foreach ($this->logRepository->getAllLogs() as $log) {
       $logs[] = $log->getReturnable();
     }
 
@@ -33,12 +39,12 @@ class LoggingController extends Controller
    * @return JsonResponse
    */
   public function deleteLog(Request $request, $id) {
-    $log = Log::find($id);
+    $log = $this->logRepository->getLogById($id);
     if ($log == null) {
       return response()->json(['msg' => 'Log not found'], 404);
     }
 
-    if (!$log->delete()) {
+    if (!$this->logRepository->deleteLogByLog($log)) {
       return response()->json(['msg' => 'Could not delete log'], 404);
     }
 
@@ -51,7 +57,7 @@ class LoggingController extends Controller
    * @return JsonResponse
    */
   public function deleteAllLogs(Request $request) {
-    DB::table('logs')->truncate();
+    $this->logRepository->deleteAllLogs();
 
     Logging::info("deleteAllLogs", "User - " . $request->auth->id . " | Successful");
     return response()->json(['msg' => 'All logs deleted'], 200);

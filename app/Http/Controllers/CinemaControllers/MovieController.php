@@ -3,17 +3,25 @@
 namespace App\Http\Controllers\CinemaControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cinema\Movie;
-use App\Models\Cinema\MovieYear;
-use App\Models\User\User;
+use App\Logging;
+use App\Repositories\Cinema\Movie\IMovieRepository;
+use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
-use stdClass;
 
 class MovieController extends Controller
 {
+
+  protected $movieRepository = null;
+  protected $movieYearRepository = null;
+
+  public function __construct(IMovieRepository $movieRepository, IMovieYearRepository $movieYearRepository) {
+    $this->movieRepository = $movieRepository;
+    $this->movieYearRepository = $movieYearRepository;
+  }
 
   /**
    * Display a listing of the resource.
@@ -23,7 +31,7 @@ class MovieController extends Controller
   public function getAll() {
     $toReturnMovies = array();
 
-    $movies = Movie::orderBy('date')->get();
+    $movies = $this->movieRepository->getAllMoviesOrderedByDate();
     foreach ($movies as $movie) {
       $returnable = $movie->getReturnable();
 
@@ -44,22 +52,26 @@ class MovieController extends Controller
    * @throws ValidationException
    */
   public function create(Request $request) {
-    $this->validate($request, ['name' => 'required|max:190|min:1', 'date' => 'required|date', 'trailerLink' => 'required|max:190|min:1', 'posterLink' => 'required|max:190|min:1', 'bookedTickets' => 'integer', 'movie_year_id' => 'required|integer']);
+    $this->validate($request, [
+      'name' => 'required|max:190|min:1',
+      'date' => 'required|date',
+      'trailer_link' => 'required|max:190|min:1',
+      'poster_link' => 'required|max:190|min:1',
+      'booked_tickets' => 'integer',
+      'movie_year_id' => 'required|integer']);
 
-    $name = $request->input('name');
-    $date = $request->input('date');
-    $trailerLink = $request->input('trailerLink');
-    $posterLink = $request->input('posterLink');
-    $bookedTickets = $request->input('bookedTickets');
-    $movie_year_id = $request->input('movie_year_id');
+    $movieYearId = $request->input('movie_year_id');
 
-    if (MovieYear::find($movie_year_id) == null) {
+    if ($this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
+      Logging::warning('createMovie', 'User - ' . $request->auth->id . ' | Tried to create new movie with non-existing movie_year_id - ' . $movieYearId);
       return response()->json(['msg' => 'Movie year does not exist'], 404);
     }
 
-    $movie = new Movie(['name' => $name, 'date' => $date, 'trailerLink' => $trailerLink, 'posterLink' => $posterLink, 'bookedTickets' => $bookedTickets, 'movie_year_id' => $movie_year_id]);
+    $movie = $this->movieRepository->createMovie($request->input('name'), $request->input('date'), $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $movieYearId);
 
-    if ($movie->save()) {
+    if ($movie != null) {
+      Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
+
       $returnable = $movie->getReturnable();
       $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
 
@@ -68,20 +80,21 @@ class MovieController extends Controller
       return response()->json($response, 201);
     }
 
-    $response = ['msg' => 'An error occurred'];
-
-    return response()->json($response, 404);
+    Logging::error('createMovie', 'User - ' . $request->auth->id . ' | Could not create movie');
+    return response()->json(['msg' => 'An error occurred during movie creating!'], 500);
   }
 
   /**
    * Display the specified resource.
    *
+   * @param Request $request
    * @param int $id
    * @return Response
    */
-  public function getSingle($id) {
-    $movie = Movie::find($id);
+  public function getSingle(Request $request, $id) {
+    $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
+      Logging::warning('getSingleMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
@@ -102,65 +115,68 @@ class MovieController extends Controller
    * @throws ValidationException
    */
   public function update(Request $request, $id) {
-    $this->validate($request, ['name' => 'required|max:190|min:1', 'date' => 'required|date', 'trailerLink' => 'required|max:190|min:1', 'posterLink' => 'required|max:190|min:1', 'bookedTickets' => 'integer', 'movie_year_id' => 'required|integer']);
+    $this->validate($request, [
+      'name' => 'required|max:190|min:1',
+      'date' => 'required|date',
+      'trailer_link' => 'required|max:190|min:1',
+      'poster_link' => 'required|max:190|min:1',
+      'booked_tickets' => 'integer',
+      'movie_year_id' => 'required|integer']);
 
-    $name = $request->input('name');
-    $date = $request->input('date');
-    $trailerLink = $request->input('trailerLink');
-    $posterLink = $request->input('posterLink');
-    $bookedTickets = $request->input('bookedTickets');
-    $movie_year_id = $request->input('movie_year_id');
+    $movieYearId = $request->input('movie_year_id');
 
-    $movie = Movie::find($id);
-
+    $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
+      Logging::warning('updateMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
       return response()->json(['msg' => 'Movie does not exist'], 404);
     }
 
-    if (MovieYear::find($movie_year_id) == null) {
+    if ($this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
+      Logging::warning('updateMovie', 'User - ' . $request->auth->id . ' | Tried to update movie with non-existing movie_year_id - ' . $movieYearId);
       return response()->json(['msg' => 'Movie year does not exist'], 404);
     }
 
-    $movie->name = $name;
-    $movie->date = $date;
-    $movie->trailerLink = $trailerLink;
-    $movie->posterLink = $posterLink;
-    $movie->bookedTickets = $bookedTickets;
-    $movie->movie_year_id = $movie_year_id;
+    $movie = $this->movieRepository->updateMovie($movie, $request->input('name'), $request->input('date'), $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $movieYearId);
 
-    if ($movie->save()) {
+    if ($movie != null) {
       $returnable = $movie->getReturnable();
       $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
 
-      $response = ['msg' => 'Movie updated', 'movie' => $returnable];
-
-      return response()->json($response, 201);
+      return response()->json([
+        'msg' => 'Movie updated',
+        'movie' => $returnable], 201);
     }
 
-    $response = ['msg' => 'An error occurred'];
-
-    return response()->json($response, 404);
+    Logging::error('updateMovie', 'User . ' . $request->auth->id . ' | Could not update movie');
+    return response()->json(['msg' => 'An error occurred during movie saving'], 500);
   }
 
   /**
    * Remove the specified resource from storage.
    *
+   * @param Request $request
    * @param int $id
    * @return Response
+   * @throws Exception
    */
-  public function delete($id) {
-    $movie = Movie::find($id);
+  public function delete(Request $request, $id) {
+    $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
+      Logging::warning('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    if (!$movie->delete()) {
-      return response()->json(['msg' => 'Deletion failed'], 500);
+    if (!$this->movieRepository->deleteMovie($movie)) {
+      Logging::error('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Could not delete movie');
+      return response()->json(['msg' => 'Movie deletion failed'], 500);
     }
 
-    $response = ['msg' => 'Movie deleted', 'create' => ['href' => 'api/v1/cinema/administration/movie', 'method' => 'POST', 'params' => 'name, date, trailerLink, posterLink, bookedTickets, movie_year_id']];
-
-    return response()->json($response);
+    return response()->json([
+      'msg' => 'Movie deleted',
+      'create' => [
+        'href' => 'api/v1/cinema/administration/movie',
+        'method' => 'POST',
+        'params' => 'name, date, trailer_link, poster_link, booked_tickets, movie_year_id']]);
   }
 
   /**
@@ -168,38 +184,9 @@ class MovieController extends Controller
    * @return JsonResponse
    */
   public function getNotShownMovies(Request $request) {
-    $allMovies = Movie::orderBy('date')->get();
-    if ($allMovies == null) {
-      $response = ['msg' => 'List of not shown movies', 'movies' => $allMovies];
-
-      return response()->json($response);
-    }
-
     $user = $request->auth;
 
-    $movies = [];
-
-    foreach ($allMovies as $movie) {
-      if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
-        $movies[] = $movie;
-      }
-    }
-
-    $returnableMovies = array();
-    foreach ($movies as $movie) {
-      $returnable = $movie->getReturnable();
-
-      $movieBookingForYourself = $user->moviesBookings()->where('movie_id', $movie->id)->first();
-
-      if ($movieBookingForYourself == null) {
-        $returnable->bookedTicketsForYourself = 0;
-      } else {
-        $returnable->bookedTicketsForYourself = $movieBookingForYourself->amount;
-      }
-
-      $returnable->view_movie = ['href' => 'api/v1/cinema/movie/administration/' . $movie->getAttribute('id'), 'method' => 'GET'];
-      $returnableMovies[] = $returnable;
-    }
+    $returnableMovies = $this->movieRepository->getNotShownMoviesForUser($user);
 
     $response = ['msg' => 'List of not shown movies', 'movies' => $returnableMovies];
 

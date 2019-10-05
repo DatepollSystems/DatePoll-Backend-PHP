@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Models\System\Log;
+use App\Repositories\Log\LogRepository;
 
 abstract class LogTypes
 {
@@ -14,33 +14,27 @@ abstract class LogTypes
 class Logging
 {
 
+  private static $logRepository = null;
+
   public static function info(string $function, string $message) {
-    $message = $function . " | " . $message;
-
-    $log = new Log([
-      'type' => LogTypes::INFO,
-      'message' => $message]);
-
-    return $log->save();
+    return self::log("INFO", $function, $message);
   }
 
   public static function warning(string $function, string $message) {
-    $message = $function . " | " . $message;
-
-    $log = new Log([
-      'type' => LogTypes::WARNING,
-      'message' => $message]);
-
-    return $log->save();
+    return self::log("WARNING", $function, $message);
   }
 
   public static function error(string $function, string $message) {
+    return self::log("ERROR", $function, $message);
+  }
+
+  private static function log(string $type, string $function, string $message) {
+    if (self::$logRepository == null) {
+      self::$logRepository = new LogRepository();
+    }
+
     $message = $function . " | " . $message;
 
-    $log = new Log([
-      'type' => LogTypes::ERROR,
-      'message' => $message]);
-
-    return $log->save();
+    return self::$logRepository->createLog($type, $message);
   }
 }
