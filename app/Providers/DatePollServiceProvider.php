@@ -13,6 +13,9 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind('App\Repositories\Cinema\MovieYear\IMovieYearRepository', 'App\Repositories\Cinema\MovieYear\MovieYearRepository');
     $this->app->bind('App\Repositories\Cinema\MovieBooking\IMovieBookingRepository', 'App\Repositories\Cinema\MovieBooking\MovieBookingRepository');
 
+    /** User repositories */
+    $this->app->bind('App\Repositories\User\User\IUserRepository', 'App\Repositories\User\User\UserRepository');
+
     /** System repositories */
     $this->app->bind('App\Repositories\Log\ILogRepository', 'App\Repositories\Log\LogRepository');
   }

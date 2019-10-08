@@ -10,11 +10,11 @@ class UserChangeEmailController extends Controller
 {
 
   public function changeEmailAddresses(Request $request) {
-    $this->validate($request, ['emailAddresses' => 'required|array']);
+    $this->validate($request, ['email_addresses' => 'required|array']);
 
     $user = $request->auth;
 
-    $emailAddresses = $request->input('emailAddresses');
+    $emailAddresses = $request->input('email_addresses');
 
     $emailAddressesWhichHaveNotBeenDeleted = array();
 

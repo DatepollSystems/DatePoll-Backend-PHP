@@ -4,9 +4,9 @@ namespace App\Http\Controllers\CinemaControllers;
 
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Models\User\User;
 use App\Repositories\Cinema\Movie\IMovieRepository;
 use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
+use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,10 +17,12 @@ class MovieBookingController extends Controller
 
   protected $movieBookingRepository = null;
   protected $movieRepository = null;
+  protected $userRepository = null;
 
-  public function __construct(IMovieBookingRepository $movieBookingRepository, IMovieRepository $movieRepository) {
+  public function __construct(IMovieBookingRepository $movieBookingRepository, IMovieRepository $movieRepository, IUserRepository $userRepository) {
     $this->movieBookingRepository = $movieBookingRepository;
     $this->movieRepository = $movieRepository;
+    $this->userRepository = $userRepository;
   }
 
   /**
@@ -116,8 +118,7 @@ class MovieBookingController extends Controller
     foreach ($bookings as $booking) {
       $ticketAmount = $booking['ticket_amount'];
 
-      // TODO: user repository
-      $user = User::find($booking['user_id']);
+      $user = $this->userRepository->getUserById($booking['user_id']);
       if ($user == null) {
         Logging::error("bookForUsers", "User - " . $user->id . " | Movie - " . $id . " | User not found");
         return response()->json(['msg' => 'User ' . $user->id . ' not found!'], 404);
@@ -153,8 +154,7 @@ class MovieBookingController extends Controller
     $userIds = (array)$request->input('user_ids');
 
     foreach ($userIds as $userId) {
-      // TODO: add user repository
-      $user = User::find($userId);
+      $user = $this->userRepository->getUserById($userId);
       if ($user == null) {
         Logging::error("bookForUsers", "User - " . $user->id . " | Movie - " . $id . " | User not found");
         return response()->json(['msg' => 'User ' . $user->id . ' not found!'], 404);

@@ -3,13 +3,20 @@
 namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class UserChangePasswordController extends Controller
 {
+
+  protected $userRepository;
+
+  public function __construct(IUserRepository $userRepository) {
+    $this->userRepository = $userRepository;
+  }
+
   /**
    * @param Request $request
    * @return JsonResponse
@@ -20,8 +27,7 @@ class UserChangePasswordController extends Controller
 
     $user = $request->auth;
 
-    if (Hash::check($request->input('password') . $user->id, $user->password)) {
-
+    if ($this->userRepository->checkPasswordOfUser($user, $request->input('password'))) {
       return response()->json(['msg' => 'password_correct'], 200);
     }
 
@@ -38,9 +44,10 @@ class UserChangePasswordController extends Controller
 
     $user = $request->auth;
 
-    if (Hash::check($request->input('old_password') . $user->id, $user->password)) {
-      $user->password = app('hash')->make($request->input('new_password') . $user->id);
-      $user->save();
+    if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {
+      if (!$this->userRepository->changePasswordOfUser($user, $request->input('new_password'))) {
+        return response()->json(['msg' => 'Could not save user'], 500);
+      }
 
       return response()->json(['msg' => 'password_changed'], 200);
     }

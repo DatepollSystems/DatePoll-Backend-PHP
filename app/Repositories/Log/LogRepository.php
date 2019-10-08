@@ -3,7 +3,6 @@
 namespace App\Repositories\Log;
 
 use App\Models\System\Log;
-use Exception;
 use Illuminate\Support\Facades\DB;
 
 class LogRepository implements ILogRepository

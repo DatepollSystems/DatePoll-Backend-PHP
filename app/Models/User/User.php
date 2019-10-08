@@ -2,7 +2,6 @@
 
 namespace App\Models\User;
 
-use App\Mail\ActivateUser;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
@@ -11,7 +10,6 @@ use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Mail;
 use stdClass;
 
 /**
@@ -238,18 +236,6 @@ class User extends Model
     $returnableUser->performance_badges = $performanceBadgesToReturn;
 
     return $returnableUser;
-  }
-
-  /**
-   * Activates a user
-   */
-  public function activate() {
-    $randomPassword = UserCode::generateCode();
-    $this->password = app('hash')->make($randomPassword . $this->id);;
-    $this->force_password_change = true;
-    $this->save();
-
-    Mail::bcc($this->getEmailAddresses())->send(new ActivateUser($this->firstname . " " . $this->surname, $this->username, $randomPassword));
   }
 
   /**

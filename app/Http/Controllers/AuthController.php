@@ -4,19 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Logging;
 use App\Mail\ForgotPassword;
-use App\Models\User\User;
 use App\Models\User\UserToken;
 use App\Models\UserCode;
+use App\Repositories\User\User\IUserRepository;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+
+  protected $userRepository = null;
+
+  public function __construct(IUserRepository $userRepository) {
+    $this->userRepository = $userRepository;
+  }
+
   /**
    * Create a new token.
    *
@@ -49,12 +55,12 @@ class AuthController extends Controller
       'session_information' => 'min:1|max:190',
       'stay_logged_in' => 'boolean']);
 
-    $user = User::where('username', $request->input('username'))->first();
-    if (!$user) {
+    $user = $this->userRepository->getUserByUsername($request->input('username'));
+    if ($user == null) {
       return response()->json(['error' => 'Username or password is wrong'], 400);
     }
 
-    if (Hash::check($request->input('password') . $user->id, $user->password)) {
+    if ($this->userRepository->checkPasswordOfUser($user, $request->input('password'))) {
       if (!$user->activated) {
         return response()->json(['msg' => 'notActivated'], 201);
       }
@@ -113,12 +119,12 @@ class AuthController extends Controller
       'session_information' => 'min:1|max:190',
       'stay_logged_in' => 'boolean']);
 
-    $user = User::where('username', $request->input('username'))->first();
-    if (!$user) {
+    $user = $this->userRepository->getUserByUsername($request->input('username'));
+    if ($user == null) {
       return response()->json(['error' => 'Username or password is wrong'], 400);
     }
 
-    if (Hash::check($request->input('old_password') . $user->id, $user->password)) {
+    if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {
       if (!$user->activated) {
         return response()->json(['msg' => 'notActivated'], 201);
       }
@@ -128,8 +134,10 @@ class AuthController extends Controller
       }
 
       $user->force_password_change = false;
-      $user->password = app('hash')->make($request->input('new_password') . $user->id);
-      $user->save();
+      if(!$this->userRepository->changePasswordOfUser($user, $request->input('new_password'))) {
+        Logging::error('changePasswordAfterSignin', 'Could not save new password');
+        return response()->json(['msg' => 'Could not save password'], 500);
+      }
 
       $sessionInformation = $request->input('session_information');
       $stayLoggedIn = $request->input('stay_logged_in');
@@ -222,7 +230,7 @@ class AuthController extends Controller
 
     $username = $request->input('username');
 
-    $user = User::where('username', $username)->first();
+    $user = $this->userRepository->getUserByUsername($username);
     if($user == null) {
       return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
@@ -259,7 +267,7 @@ class AuthController extends Controller
 
     $username = $request->input('username');
 
-    $user = User::where('username', $username)->first();
+    $user = $this->userRepository->getUserByUsername($username);
     if($user == null) {
       return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
@@ -302,7 +310,7 @@ class AuthController extends Controller
 
     $username = $request->input('username');
 
-    $user = User::where('username', $username)->first();
+    $user = $this->userRepository->getUserByUsername($username);
     if($user == null) {
       return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
     }
