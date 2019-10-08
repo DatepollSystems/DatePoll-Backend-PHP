@@ -87,9 +87,6 @@ $app->register(AppServiceProvider::class);
 /* IDE Helper*/
 $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
-/* Generate classes from migration files*/
-$app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
-
 /* Enable CORS on every route */
 $app->register(Barryvdh\Cors\ServiceProvider::class);
 
