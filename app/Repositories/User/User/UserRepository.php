@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Repositories\Cinema\Movie;
+namespace App\Repositories\User\User;
 
 use App\Logging;
 use App\Mail\ActivateUser;
@@ -9,7 +9,6 @@ use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\UserCode;
-use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
