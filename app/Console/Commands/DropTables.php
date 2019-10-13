@@ -1,6 +1,6 @@
 <?php namespace App\Console\Commands;
 
-use Schema;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Console\Command;
 
 class DropTables extends Command
@@ -10,7 +10,7 @@ class DropTables extends Command
    *
    * @var string
    */
-  protected $signature = 'droptables';
+  protected $signature = 'drop-all-tables';
 
   /**
    * The console command description.
@@ -36,9 +36,9 @@ class DropTables extends Command
    */
   public function handle()
   {
-    \Schema::dropAllTables();
+    Schema::dropAllTables();
 
-    $this->comment(PHP_EOL."If no errors showed up, all tables were dropped".PHP_EOL);
+    $this->comment(PHP_EOL."If no errors showed up, all tables were dropped successfully".PHP_EOL);
 
   }
 }
