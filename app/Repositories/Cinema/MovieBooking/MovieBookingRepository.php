@@ -42,6 +42,7 @@ class MovieBookingRepository implements IMovieBookingRepository
     if ($movieBooking->save()) {
       /* If movie booking was successful, update movie booked tickets */
       $movie->bookedTickets += $ticketAmount;
+      $movie->save();
 
       return $movieBooking;
     } else {
