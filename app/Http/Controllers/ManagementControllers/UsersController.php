@@ -64,9 +64,9 @@ class UsersController extends Controller
       'location' => 'required|max:190|min:1',
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
-      'phone_numbers' => 'required|array',
-      'permissions' => 'required|array',
-      'email_addresses' => 'required|array']);
+      'phone_numbers' => 'array',
+      'permissions' => 'array',
+      'email_addresses' => 'array']);
 
     $title = $request->input('title');
     $username = $request->input('username');
@@ -90,7 +90,7 @@ class UsersController extends Controller
         'error_code' => 'username_already_used'], 400);
     }
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $permissions, $emailAddresses);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
@@ -160,9 +160,9 @@ class UsersController extends Controller
       'location' => 'required|max:190|min:1',
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
-      'email_addresses' => 'required|array',
-      'phone_numbers' => 'required|array',
-      'permissions' => 'required|array']);
+      'email_addresses' => 'array',
+      'phone_numbers' => 'array',
+      'permissions' => 'array']);
 
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
@@ -191,11 +191,11 @@ class UsersController extends Controller
     $oldActivatedStatus = $user->activated;
     $activated = $request->input('activated');
     $activity = $request->input('activity');
-    $emailAddresses = $request->input('email_addresses');
-    $phoneNumbers = $request->input('phone_numbers');
-    $permissions = $request->input('permissions');
+    $emailAddresses = (array)$request->input('email_addresses');
+    $phoneNumbers = (array)$request->input('phone_numbers');
+    $permissions = (array)$request->input('permissions');
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $user);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $permissions, $emailAddresses, $user);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
