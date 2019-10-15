@@ -40,7 +40,7 @@ class EventVoteController extends Controller
     $allowedToVote = false;
     foreach ($user->getOpenEvents() as $openEvent) {
       if ($eventId === $openEvent->id) {
-        if ($openEvent->alreadyVoted) {
+        if ($openEvent->already_voted) {
           return response()->json(['msg' => 'User already voted for event'], 400);
         }
 
