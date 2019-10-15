@@ -62,7 +62,7 @@ class MovieController extends Controller
 
     $movieYearId = $request->input('movie_year_id');
 
-    if ($this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
+    if (!$this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
       Logging::warning('createMovie', 'User - ' . $request->auth->id . ' | Tried to create new movie with non-existing movie_year_id - ' . $movieYearId);
       return response()->json(['msg' => 'Movie year does not exist'], 404);
     }
@@ -131,7 +131,7 @@ class MovieController extends Controller
       return response()->json(['msg' => 'Movie does not exist'], 404);
     }
 
-    if ($this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
+    if (!$this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
       Logging::warning('updateMovie', 'User - ' . $request->auth->id . ' | Tried to update movie with non-existing movie_year_id - ' . $movieYearId);
       return response()->json(['msg' => 'Movie year does not exist'], 404);
     }
