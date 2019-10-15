@@ -160,7 +160,11 @@ class MovieBookingController extends Controller
         return response()->json(['msg' => 'User ' . $user->id . ' not found!'], 404);
       }
 
-      $ticketAmount = $this->movieBookingRepository->getMovieBookingByMovieAndUser($movie, $user)->amount;
+      if ($this->movieBookingRepository->getMovieBookingByMovieAndUser($movie, $user) != null) {
+        $ticketAmount = $this->movieBookingRepository->getMovieBookingByMovieAndUser($movie, $user)->amount;
+      } else {
+        $ticketAmount = 0;
+      }
 
       $movieBooking = $this->movieBookingRepository->cancelBooking($movie, $user);
 
@@ -168,15 +172,12 @@ class MovieBookingController extends Controller
         Logging::error("cancelBookingForUsers", "Movie booking - " . $movieBooking->id . " | Could not delete");
         return response()->json(['msg' => 'Could not remove booking!'], 500);
       }
-
-      $movie->bookedTickets -= $ticketAmount;
     }
 
     $movie->save();
 
     Logging::info("cancelBookingForUsers", "User - " . $request->auth->id . " | Successful");
     return response()->json([
-      'msg' => 'Removed selected bookings successfully!',
-      'available_tickets' => $movie->bookedTickets], 201);
+      'msg' => 'Removed selected bookings successfully!'], 201);
   }
 }
