@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SystemControllers;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Log\ILogRepository;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,7 +26,7 @@ class LoggingController extends Controller
   public function getAllLogs(Request $request) {
     $logs = array();
 
-    foreach ($this->logRepository->getAllLogs() as $log) {
+    foreach ($this->logRepository->getAllLogsOrderedByDate() as $log) {
       $logs[] = $log->getReturnable();
     }
 
@@ -37,6 +38,7 @@ class LoggingController extends Controller
    * @param Request $request
    * @param $id
    * @return JsonResponse
+   * @throws Exception
    */
   public function deleteLog(Request $request, $id) {
     $log = $this->logRepository->getLogById($id);

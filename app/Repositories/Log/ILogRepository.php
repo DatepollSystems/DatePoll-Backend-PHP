@@ -10,7 +10,7 @@ interface ILogRepository
   /**
    * @return Log[]
    */
-  public function getAllLogs();
+  public function getAllLogsOrderedByDate();
 
   /**
    * @param $id

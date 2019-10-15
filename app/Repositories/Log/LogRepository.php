@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\DB;
 class LogRepository implements ILogRepository
 {
 
-  public function getAllLogs() {
-    return Log::all();
+  public function getAllLogsOrderedByDate() {
+    return Log::orderBy('created_at', 'desc')
+              ->get();
   }
 
   public function getLogById($id) {
