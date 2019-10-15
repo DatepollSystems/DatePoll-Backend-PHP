@@ -30,8 +30,7 @@ class UserRepository implements IUserRepository
   }
 
   public function createOrUpdateUser(string $title, string $username, string $firstname, string $surname, string $birthday, string $joinDate, string $streetname, string $streetnumber, int $zipcode, string $location, bool $activated, string $activity, array $phoneNumbers, array $permissions, array $emailAddresses, User $user = null) {
-
-    if ($user != null) {
+    if ($user == null) {
       $user = new User([
         'title' => $title,
         'username' => $username,
@@ -64,7 +63,7 @@ class UserRepository implements IUserRepository
       $user->location = $location;
       $user->activated = $activated;
       $user->activity = $activity;
-
+      $user->save();
     }
 
     //----Email addresses manager only deletes changed email addresses---

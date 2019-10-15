@@ -44,7 +44,7 @@ interface IUserRepository
    * @param User|null $user
    * @return User|null
    */
-  public function createOrUpdateUser(string $title, string $username, string $firstname, string $surname, string $birthday, string $joinDate, string $streetname, string $streetnumber, int $zipcode, string $location, bool $activated, string $activity, array $phoneNumbers, array $permissions, array $emailAddresses, User $user);
+  public function createOrUpdateUser(string $title, string $username, string $firstname, string $surname, string $birthday, string $joinDate, string $streetname, string $streetnumber, int $zipcode, string $location, bool $activated, string $activity, array $phoneNumbers, array $permissions, array $emailAddresses, User $user = null);
 
   /**
    * @param User $user
