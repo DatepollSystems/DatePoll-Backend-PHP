@@ -85,11 +85,11 @@ class UserTokenController extends Controller
   }
 
   public function logoutCurrentSession(Request $request) {
-    $this->validate($request, ['sessionToken' => 'required']);
+    $this->validate($request, ['session_token' => 'required']);
 
     $user = $request->auth;
 
-    $session = UserToken::where('user_id', $user->id)->where('token', $request->input('sessionToken'))
+    $session = UserToken::where('user_id', $user->id)->where('token', $request->input('session_token'))
       ->where('purpose', 'stayLoggedIn')->first();
     if($session == null) {
       return response()->json(['msg' => 'Session token is incorrect'], 404);
