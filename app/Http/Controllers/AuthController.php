@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Logging;
 use App\Mail\ForgotPassword;
-use App\Models\User\UserToken;
 use App\Models\UserCode;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserToken\IUserTokenRepository;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,9 +18,11 @@ class AuthController extends Controller
 {
 
   protected $userRepository = null;
+  protected $userTokenRepository = null;
 
-  public function __construct(IUserRepository $userRepository) {
+  public function __construct(IUserRepository $userRepository, IUserTokenRepository $userTokenRepository) {
     $this->userRepository = $userRepository;
+    $this->userTokenRepository = $userTokenRepository;
   }
 
   /**
@@ -73,21 +75,11 @@ class AuthController extends Controller
       $stayLoggedIn = $request->input('stay_logged_in');
       if($stayLoggedIn != null && $sessionInformation != null) {
         if($stayLoggedIn) {
-          $randomToken = '';
-          while (true) {
-            $randomToken = UserToken::generateRandomString(64);
-            if (UserToken::where('token', $randomToken)->first() == null) {
-              break;
-            }
-          }
+          $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
-          $userToken = new UserToken([
-            'user_id' => $user->id,
-            'token' => $randomToken,
-            'purpose' => 'stayLoggedIn',
-            'description' => $sessionInformation]);
+          $userToken = $this->userTokenRepository->createUserToken($user, $randomToken, 'stayLoggedIn', $sessionInformation);
 
-          if(!$userToken->save()) {
+          if ($userToken == null) {
             Logging::error("signin", "User - " . $user->id . " | Could not save user token");
             return response()->json(['error' => 'An error occurred during session token saving..'], 500);
           }
@@ -143,21 +135,11 @@ class AuthController extends Controller
       $stayLoggedIn = $request->input('stay_logged_in');
       if($stayLoggedIn != null && $sessionInformation != null) {
         if($stayLoggedIn) {
-          $randomToken = '';
-          while (true) {
-            $randomToken = UserToken::generateRandomString(64);
-            if (UserToken::where('token', $randomToken)->first() == null) {
-              break;
-            }
-          }
+          $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
-          $userToken = new UserToken([
-            'user_id' => $user->id,
-            'token' => $randomToken,
-            'purpose' => 'stay_logged_in',
-            'description' => $sessionInformation]);
+          $userToken = $this->userTokenRepository->createUserToken($user, $randomToken, 'stayLoggedIn', $sessionInformation);
 
-          if(!$userToken->save()) {
+          if ($userToken == null) {
             Logging::error("changePasswordAfterSignin", "User - " . $user->id . " | Could not save user token");
             return response()->json(['error' => 'An error occurred during session token saving..'], 500);
           }
@@ -205,7 +187,7 @@ class AuthController extends Controller
 
     $sessionToken = $request->input('session_token');
 
-    $userToken = UserToken::where('token', $sessionToken)->where('purpose', 'stayLoggedIn')->first();
+    $userToken = $this->userTokenRepository->getUserTokenByTokenAndPurpose($sessionToken, 'stayLoggedIn');
 
     if($userToken == null) {
       return response()->json(['msg' => 'You have been logged out of this session or this session token is incorrect', 'error_code' => 'session_token_incorrect'], 400);

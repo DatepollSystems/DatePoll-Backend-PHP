@@ -2,21 +2,38 @@
 
 namespace App\Providers;
 
+use App\Repositories\Cinema\Movie\IMovieRepository;
+use App\Repositories\Cinema\Movie\MovieRepository;
+use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
+use App\Repositories\Cinema\MovieBooking\MovieBookingRepository;
+use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
+use App\Repositories\Cinema\MovieWorker\MovieWorkerRepository;
+use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
+use App\Repositories\Cinema\MovieYear\MovieYearRepository;
+use App\Repositories\Files\File\FileRepository;
+use App\Repositories\Files\File\IFileRepository;
+use App\Repositories\Log\ILogRepository;
+use App\Repositories\Log\LogRepository;
+use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\User\UserRepository;
+use App\Repositories\User\UserToken\IUserTokenRepository;
+use App\Repositories\User\UserToken\UserTokenRepository;
 use Illuminate\Support\ServiceProvider;
 
 class DatePollServiceProvider extends ServiceProvider
 {
   public function register() {
     /** Cinema repositories */
-    $this->app->bind('App\Repositories\Cinema\Movie\IMovieRepository', 'App\Repositories\Cinema\Movie\MovieRepository');
-    $this->app->bind('App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository', 'App\Repositories\Cinema\MovieWorker\MovieWorkerRepository');
-    $this->app->bind('App\Repositories\Cinema\MovieYear\IMovieYearRepository', 'App\Repositories\Cinema\MovieYear\MovieYearRepository');
-    $this->app->bind('App\Repositories\Cinema\MovieBooking\IMovieBookingRepository', 'App\Repositories\Cinema\MovieBooking\MovieBookingRepository');
+    $this->app->bind(IMovieRepository::class, MovieRepository::class);
+    $this->app->bind(IMovieWorkerRepository::class, MovieWorkerRepository::class);
+    $this->app->bind(IMovieYearRepository::class, MovieYearRepository::class);
+    $this->app->bind(IMovieBookingRepository::class, MovieBookingRepository::class);
 
     /** User repositories */
-    $this->app->bind('App\Repositories\User\User\IUserRepository', 'App\Repositories\User\User\UserRepository');
+    $this->app->bind(IUserRepository::class, UserRepository::class);
+    $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
 
     /** System repositories */
-    $this->app->bind('App\Repositories\Log\ILogRepository', 'App\Repositories\Log\LogRepository');
+    $this->app->bind(ILogRepository::class, LogRepository::class);
   }
 }
