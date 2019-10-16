@@ -90,7 +90,7 @@ class UsersController extends Controller
         'error_code' => 'username_already_used'], 400);
     }
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $permissions, $emailAddresses);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
@@ -98,11 +98,9 @@ class UsersController extends Controller
 
     if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
       $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
-      if($permissions != null) {
-        foreach ((array)$permissions as $permission) {
-          $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
-          $permissionToSave->save();
-        }
+
+      if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
+        return response()->json(['msg' => 'Failed during permission clearing...'], 500);
       }
     }
 
@@ -195,7 +193,7 @@ class UsersController extends Controller
     $phoneNumbers = (array)$request->input('phone_numbers');
     $permissions = (array)$request->input('permissions');
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $permissions, $emailAddresses, $user);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $user);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
@@ -206,42 +204,8 @@ class UsersController extends Controller
     if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
       $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
 
-      $permissionsWhichHaveNotBeenDeleted = array();
-
-      $OldPermissions = $user->permissions();
-      foreach ($OldPermissions as $oldPermission) {
-        $toDelete = true;
-
-        foreach ((array) $permissions as $permission) {
-          if($oldPermission['permission'] == $permission) {
-            $toDelete = false;
-            $permissionsWhichHaveNotBeenDeleted[] = $permission;
-            break;
-          }
-        }
-
-        if($toDelete) {
-          $permissionToDeleteObject = UserPermission::find($oldPermission->id);
-          if (!$permissionToDeleteObject->delete()) {
-            return response()->json(['msg' => 'Failed during permission clearing...'], 500);
-          }
-        }
-      }
-
-      foreach ((array) $permissions as $permission) {
-        $toAdd = true;
-
-        foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
-          if($permission == $permissionWhichHaveNotBeenDeleted) {
-            $toAdd = false;
-            break;
-          }
-        }
-
-        if($toAdd) {
-          $permissionToSave = new UserPermission(['permission' => $permission, 'user_id' => $user->id]);
-          $permissionToSave->save();
-        }
+      if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
+        return response()->json(['msg' => 'Failed during permission clearing...'], 500);
       }
     }
     //---------------------------------------------------------------
