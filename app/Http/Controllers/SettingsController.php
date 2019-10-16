@@ -81,6 +81,29 @@ class SettingsController extends Controller
   /**
    * @return JsonResponse
    */
+  public function getCommunityUrl() {
+    return response()->json(['msg' => 'Community url', 'community_url' => env('APP_COMMUNITY_URL')], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setCommunityUrl(Request $request) {
+    $this->validate($request, ['community_url' => 'required|min:1|max:128']);
+
+    $communityUrl = $request->input('community_url');
+
+    $this->changeEnvironmentVariable('APP_COMMUNITY_URL', $communityUrl);
+
+    Logging::info("setCommunityUrl", "User - " . $request->auth->id . " | Changed to " . $communityUrl);
+    return response()->json(['msg' => 'Set community url', 'community_url' => $communityUrl]);
+  }
+
+  /**
+   * @return JsonResponse
+   */
   public function getOpenWeatherMapKey() {
     return response()->json(['msg' => 'OpenWeatherMap key', 'openweathermap_key' => env('APP_OPENWEATHERMAP_KEY')], 200);
   }
