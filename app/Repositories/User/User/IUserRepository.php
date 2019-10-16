@@ -26,7 +26,7 @@ interface IUserRepository
   public function getUserByUsername(string $username);
 
   /**
-   * @param string $title
+   * @param string|null $title
    * @param string $username
    * @param string $firstname
    * @param string $surname
@@ -39,12 +39,18 @@ interface IUserRepository
    * @param bool $activated
    * @param string $activity
    * @param array $phoneNumbers
-   * @param array $permissions
-   * @param array $emailAddresses
+   * @param string[] $emailAddresses
    * @param User|null $user
    * @return User|null
    */
-  public function createOrUpdateUser(string $title, string $username, string $firstname, string $surname, string $birthday, string $joinDate, string $streetname, string $streetnumber, int $zipcode, string $location, bool $activated, string $activity, array $phoneNumbers, array $permissions, array $emailAddresses, User $user = null);
+  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, User $user = null);
+
+  /**
+   * @param array $permissions
+   * @param User $user
+   * @return bool
+   */
+  public function createOrUpdatePermissionsForUser($permissions, User $user);
 
   /**
    * @param User $user

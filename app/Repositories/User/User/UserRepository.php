@@ -7,6 +7,7 @@ use App\Logging;
 use App\Mail\ActivateUser;
 use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
+use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\UserCode;
 use Exception;
@@ -29,7 +30,7 @@ class UserRepository implements IUserRepository
                ->first();
   }
 
-  public function createOrUpdateUser(string $title, string $username, string $firstname, string $surname, string $birthday, string $joinDate, string $streetname, string $streetnumber, int $zipcode, string $location, bool $activated, string $activity, array $phoneNumbers, array $permissions, array $emailAddresses, User $user = null) {
+  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, User $user = null) {
     if ($user == null) {
       $user = new User([
         'title' => $title,
@@ -160,6 +161,57 @@ class UserRepository implements IUserRepository
     }
 
     return $user;
+  }
+
+  public function createOrUpdatePermissionsForUser($permissions, User $user) {
+    $permissionsWhichHaveNotBeenDeleted = array();
+
+    $OldPermissions = $user->permissions();
+    foreach ($OldPermissions as $oldPermission) {
+      $toDelete = true;
+
+      foreach ((array)$permissions as $permission) {
+        if ($oldPermission['permission'] == $permission) {
+          $toDelete = false;
+          $permissionsWhichHaveNotBeenDeleted[] = $permission;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $permissionToDeleteObject = UserPermission::find($oldPermission->id);
+        if (!$permissionToDeleteObject->delete()) {
+          Logging::error('createOrUpdatePermissionsForUser', 'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for user: ' . $user->id);
+          return false;
+        }
+      }
+    }
+
+    if ($permissions == null) {
+      return true;
+    }
+    foreach ((array)$permissions as $permission) {
+      $toAdd = true;
+
+      foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
+        if ($permission == $permissionWhichHaveNotBeenDeleted) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $permissionToSave = new UserPermission([
+          'permission' => $permission,
+          'user_id' => $user->id]);
+        if (!$permissionToSave->save()) {
+          Logging::error('createOrUpdatePermissionsForUser', 'Could not add permission: ' . $permission . ' for user: ' . $user->id);
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   public function activateUser(User $user) {
