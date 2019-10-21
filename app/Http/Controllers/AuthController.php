@@ -64,11 +64,11 @@ class AuthController extends Controller
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('password'))) {
       if (!$user->activated) {
-        return response()->json(['msg' => 'notActivated'], 201);
+        return response()->json(['msg' => 'Account is not activated', 'error_code' => 'notActivated'], 201);
       }
 
       if ($user->force_password_change) {
-        return response()->json(['msg' => 'changePassword', 201]);
+        return response()->json(['msg' => 'You have to change your password', 'error_code' => 'changePassword'], 201);
       }
 
       $sessionInformation = $request->input('session_information');
@@ -81,7 +81,7 @@ class AuthController extends Controller
 
           if ($userToken == null) {
             Logging::error("signin", "User - " . $user->id . " | Could not save user token");
-            return response()->json(['error' => 'An error occurred during session token saving..'], 500);
+            return response()->json(['msg' => 'An error occurred during session token saving..'], 500);
           }
 
           Logging::info("signin", "User - " . $user->id . " | logged in; Session token: true");
@@ -95,7 +95,7 @@ class AuthController extends Controller
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }
 
-    return response()->json(['error' => 'Username or password is wrong'], 400);
+    return response()->json(['msg' => 'Username or password is wrong', 'error_code' => 'username_or_password_incorrect'], 400);
   }
 
   /**
@@ -113,16 +113,16 @@ class AuthController extends Controller
 
     $user = $this->userRepository->getUserByUsername($request->input('username'));
     if ($user == null) {
-      return response()->json(['error' => 'Username or password is wrong'], 400);
+      return response()->json(['msg' => 'Username or password is wrong'], 400);
     }
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {
       if (!$user->activated) {
-        return response()->json(['msg' => 'notActivated'], 201);
+        return response()->json(['msg' => 'Account is not activated', 'error_code' => 'notActivated'], 201);
       }
 
       if (!$user->force_password_change) {
-        return response()->json(['error' => 'User does not need to change his password'], 400);
+        return response()->json(['msg' => 'User does not need to change his password', 'error_code' => 'no_password_change_needed_for_user'], 400);
       }
 
       $user->force_password_change = false;
@@ -141,7 +141,7 @@ class AuthController extends Controller
 
           if ($userToken == null) {
             Logging::error("changePasswordAfterSignin", "User - " . $user->id . " | Could not save user token");
-            return response()->json(['error' => 'An error occurred during session token saving..'], 500);
+            return response()->json(['msg' => 'An error occurred during session token saving..'], 500);
           }
 
           Logging::info("changePasswordAfterSignin", "User - " . $user->id . " | Changed password after sign in; Session token: true");
@@ -155,7 +155,7 @@ class AuthController extends Controller
       return response()->json(['token' => $this->jwt($user->id)], 200);
     }
 
-    return response()->json(['error' => 'Username or password is wrong'], 400);
+    return response()->json(['msg' => 'Username or password is wrong', 'error_code' => 'username_or_password_incorrect'], 400);
   }
 
   /**
@@ -214,11 +214,11 @@ class AuthController extends Controller
 
     $user = $this->userRepository->getUserByUsername($username);
     if($user == null) {
-      return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
+      return response()->json(['msg' => 'Unknown username', 'error_code' => 'unknown_username'], 404);
     }
 
     if(!$user->hasEmailAddresses()) {
-      return response()->json(['msg' => 'There are no email addresses for this account', 'code' => 'no_email_addresses'], 400);
+      return response()->json(['msg' => 'There are no email addresses for this account', 'error_code' => 'no_email_addresses'], 400);
     }
 
     $code = UserCode::generateCode();
@@ -251,7 +251,7 @@ class AuthController extends Controller
 
     $user = $this->userRepository->getUserByUsername($username);
     if($user == null) {
-      return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
+      return response()->json(['msg' => 'Unknown username', 'error_code' => 'unknown_username'], 404);
     }
 
     $userCode = UserCode::where('purpose', 'forgotPassword')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
@@ -260,14 +260,14 @@ class AuthController extends Controller
     }
 
     if ($userCode->rate_limit >= 11) {
-      return response()->json(['msg' => 'Rate limit exceeded', 'code' => 'rate_limit_exceeded'], 400);
+      return response()->json(['msg' => 'Rate limit exceeded', 'error_code' => 'rate_limit_exceeded'], 400);
     }
 
     $code = $request->input('code');
 
     if ($userCode->code == $code) {
       Logging::info("checkForgotPasswordCode", "User - " . $user->id . " | Code correct");
-      return response()->json(['msg' => 'Code correct', 'code' => 'code_correct'], 200);
+      return response()->json(['msg' => 'Code correct', 'success_code' => 'code_correct'], 200);
     } else {
       $userCode->rate_limit++;
       if (!$userCode->save()) {
@@ -275,7 +275,7 @@ class AuthController extends Controller
         return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
       }
 
-      return response()->json(['msg' => 'The code is incorrect', 'code' => 'code_incorrect'], 400);
+      return response()->json(['msg' => 'The code is incorrect', 'error_code' => 'code_incorrect'], 400);
     }
   }
 
@@ -294,7 +294,7 @@ class AuthController extends Controller
 
     $user = $this->userRepository->getUserByUsername($username);
     if($user == null) {
-      return response()->json(['msg' => 'Unknown username', 'code' => 'unknown_username'], 404);
+      return response()->json(['msg' => 'Unknown username', 'error_code' => 'unknown_username'], 404);
     }
 
     $userCode = UserCode::where('purpose', 'forgotPassword')->where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
@@ -303,7 +303,7 @@ class AuthController extends Controller
     }
 
     if ($userCode->rate_limit >= 11) {
-      return response()->json(['msg' => 'Rate limit exceeded', 'code' => 'rate_limit_exceeded'], 400);
+      return response()->json(['msg' => 'Rate limit exceeded', 'error_code' => 'rate_limit_exceeded'], 400);
     }
 
     $code = $request->input('code');
@@ -328,7 +328,7 @@ class AuthController extends Controller
         return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
       }
 
-      return response()->json(['msg' => 'The code is incorrect', 'code' => 'code_incorrect'], 400);
+      return response()->json(['msg' => 'The code is incorrect', 'error_code' => 'code_incorrect'], 400);
     }
 
   }

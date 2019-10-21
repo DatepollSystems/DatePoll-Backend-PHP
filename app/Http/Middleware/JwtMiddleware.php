@@ -22,14 +22,14 @@ class JwtMiddleware
 
     if (!$token) {
       // Unauthorized response if token not there
-      return response()->json(['error' => 'Token not provided.'], 401);
+      return response()->json(['msg' => 'Token not provided.', 'error_code' => 'token_not_provided'], 401);
     }
     try {
       $credentials = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
     } catch (ExpiredException $e) {
-      return response()->json(['error' => 'Provided token is expired.'], 401);
+      return response()->json(['msg' => 'Provided token is expired.', 'error_code' => 'token_expired'], 401);
     } catch (Exception $e) {
-      return response()->json(['error' => 'Your token is incorrect!'], 401);
+      return response()->json(['msg' => 'Your token is incorrect!', 'error_code' => 'token_incorrect'], 401);
     }
     $user = User::find($credentials->sub);
     // Put the user into the request
