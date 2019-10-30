@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
    */
   protected $commands = [
     'App\Console\Commands\AddAdminUser',
-    'App\Console\Commands\DropTables'
+    'App\Console\Commands\DropTables',
+    'App\Console\Commands\SetupDatePoll'
   ];
 
   /**
