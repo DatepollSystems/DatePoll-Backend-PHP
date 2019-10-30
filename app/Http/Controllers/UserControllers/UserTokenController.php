@@ -7,6 +7,7 @@ use App\Repositories\User\UserToken\IUserTokenRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class UserTokenController extends Controller
@@ -76,7 +77,7 @@ class UserTokenController extends Controller
       $sessionToReturn->last_used = $session->updated_at;
 
       $sessionToReturn->delete_session = [
-        'href' => 'api/v1/user/myself/session/{id}',
+        'href' => 'api/v1/user/myself/session/' . $session->id,
         'method' => 'DELETE'
       ];
 
@@ -86,6 +87,11 @@ class UserTokenController extends Controller
     return response()->json(['msg' => 'List of all sessions', 'sessions' => $sessionsToReturn]);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
   public function logoutCurrentSession(Request $request) {
     $this->validate($request, ['session_token' => 'required']);
 
@@ -93,7 +99,7 @@ class UserTokenController extends Controller
 
     $session = $this->userTokenRepository->getUserTokenByUserAndTokenAndPurpose($user, $request->input('session_token'), 'stayLoggedIn');
     if($session == null) {
-      return response()->json(['msg' => 'Session token is incorrect'], 404);
+      return response()->json(['msg' => 'Session token is incorrect', 'error_code' => 'session_token_incorrect'], 404);
     }
 
     if ($this->userTokenRepository->deleteUserToken($session) != null) {
@@ -102,12 +108,17 @@ class UserTokenController extends Controller
     return response()->json(['msg' => 'Successfully logged out and deleted session'], 200);
   }
 
+  /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   */
   public function removeSession(Request $request, $id) {
     $user = $request->auth;
 
     $session = $this->userTokenRepository->getUserTokenByIdAndUserAndPurpose($id, $user, 'stayLoggedIn');
     if($session == null) {
-      return response()->json(['msg' => 'Session token does not exist!'], 404);
+      return response()->json(['msg' => 'Session token does not exist!', 'error_code' => 'session_token_not_found'], 404);
     }
 
     if ($this->userTokenRepository->deleteUserToken($session) != null) {

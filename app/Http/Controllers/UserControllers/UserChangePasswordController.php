@@ -28,10 +28,10 @@ class UserChangePasswordController extends Controller
     $user = $request->auth;
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('password'))) {
-      return response()->json(['msg' => 'password_correct'], 200);
+      return response()->json(['msg' => 'Password correct'], 200);
     }
 
-    return response()->json(['msg' => 'password_incorrect'], 400);
+    return response()->json(['msg' => 'Password incorrect', 'error_code' => 'password_incorrect'], 400);
   }
 
   /**
@@ -49,9 +49,9 @@ class UserChangePasswordController extends Controller
         return response()->json(['msg' => 'Could not save user'], 500);
       }
 
-      return response()->json(['msg' => 'password_changed'], 200);
+      return response()->json(['msg' => 'Password changed'], 200);
     }
 
-    return response()->json(['msg' => 'password_incorrect'], 400);
+    return response()->json(['msg' => 'Password incorrect', 'error_code' => 'password_incorrect'], 400);
   }
 }
