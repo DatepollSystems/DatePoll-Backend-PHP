@@ -4,21 +4,16 @@
 |--------------------------------------------------------------------------
 | Application Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It is a breeze. Simply tell Lumen the URIs it should respond to
-| and give it the Closure to call when that URI is requested.
-|
 */
 
 $router->get('/', function () use ($router) {
-  return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ';
+  return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)';
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
   $router->get('/', function () use ($router) {
-    return response()->json(['version' => '0.4.2', 'version_number' => 7], 200);
+    return response()->json(['version' => '0.5.0', 'version_number' => 8], 200);
   });
 
   /** Setting routes */
@@ -28,6 +23,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
   require_once(__DIR__ . '/AuthRoutes.php');
 
   $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
+
+    /** System */
+    require_once (__DIR__ . '/SystemRoutes.php');
 
     /** User routes */
     require_once(__DIR__ . '/UserRoutes.php');

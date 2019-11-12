@@ -3,13 +3,21 @@
 namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User\UserToken;
+use App\Repositories\User\UserToken\IUserTokenRepository;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class UserTokenController extends Controller
 {
+
+  protected $userTokenRepository = null;
+
+  public function __construct(IUserTokenRepository $userTokenRepository) {
+    $this->userTokenRepository = $userTokenRepository;
+  }
 
   /**
    * @param Request $request
@@ -18,18 +26,12 @@ class UserTokenController extends Controller
   public function getCalendarToken(Request $request) {
     $user = $request->auth;;
 
-    $tokenObject = UserToken::where('user_id', $user->id)->where('purpose', 'calendar')->first();
+    $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
     if ($tokenObject == null) {
-      $randomToken = '';
-      while (true) {
-        $randomToken = UserToken::generateRandomString(10);
-        if (UserToken::where('token', $randomToken)->first() == null) {
-          break;
-        }
-      }
+      $randomToken = $this->userTokenRepository->generateUniqueRandomToken(10);
 
-      $tokenObject = new UserToken(['token' => $randomToken, 'purpose' => 'calendar', 'user_id' => $user->id]);
-      if (!$tokenObject->save()) {
+      $tokenObject = $this->userTokenRepository->createUserToken($user, $randomToken, 'calendar');
+      if ($tokenObject == null) {
         return response()->json(['msg' => 'Could not save the calendar token', 'error_code' => 'token_not_saved'], 500);
       }
 
@@ -42,15 +44,16 @@ class UserTokenController extends Controller
   /**
    * @param Request $request
    * @return JsonResponse
+   * @throws Exception
    */
   public function resetCalendarToken(Request $request) {
     $user = $request->auth;
 
-    $tokenObject = UserToken::where('user_id', $user->id)->where('purpose', 'calendar')->first();
+    $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
     if ($tokenObject == null) {
       return response()->json(['msg' => 'There is no token to delete'], 200);
     }
-    if (!$tokenObject->delete()) {
+    if ($this->userTokenRepository->deleteUserToken($tokenObject) != null) {
       return response()->json(['msg' => 'Could not delete token'], 500);
     }
     return response()->json(['msg' => 'Deleted token successfully'], 200);
@@ -66,15 +69,15 @@ class UserTokenController extends Controller
 
     $sessionsToReturn = [];
 
-    $sessions = UserToken::where('user_id', $user->id)->where('purpose', 'stayLoggedIn')->orderBy('updated_at')->get();
+    $sessions = $this->userTokenRepository->getUserTokensByUserAndPurposeOrderedByDate($user, 'stayLoggedIn');
     foreach ($sessions as $session) {
       $sessionToReturn = new stdClass();
       $sessionToReturn->id = $session->id;
       $sessionToReturn->information = $session->description;
-      $sessionToReturn->lastUsed = $session->updated_at;
+      $sessionToReturn->last_used = $session->updated_at;
 
       $sessionToReturn->delete_session = [
-        'href' => 'api/v1/user/myself/session/{id}',
+        'href' => 'api/v1/user/myself/session/' . $session->id,
         'method' => 'DELETE'
       ];
 
@@ -84,32 +87,41 @@ class UserTokenController extends Controller
     return response()->json(['msg' => 'List of all sessions', 'sessions' => $sessionsToReturn]);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
   public function logoutCurrentSession(Request $request) {
-    $this->validate($request, ['sessionToken' => 'required']);
+    $this->validate($request, ['session_token' => 'required']);
 
     $user = $request->auth;
 
-    $session = UserToken::where('user_id', $user->id)->where('token', $request->input('sessionToken'))
-      ->where('purpose', 'stayLoggedIn')->first();
+    $session = $this->userTokenRepository->getUserTokenByUserAndTokenAndPurpose($user, $request->input('session_token'), 'stayLoggedIn');
     if($session == null) {
-      return response()->json(['msg' => 'Session token is incorrect'], 404);
+      return response()->json(['msg' => 'Session token is incorrect', 'error_code' => 'session_token_incorrect'], 404);
     }
 
-    if(!$session->delete()) {
+    if ($this->userTokenRepository->deleteUserToken($session) != null) {
       return response()->json(['msg' => 'Could not delete session'], 500);
     }
     return response()->json(['msg' => 'Successfully logged out and deleted session'], 200);
   }
 
+  /**
+   * @param Request $request
+   * @param $id
+   * @return JsonResponse
+   */
   public function removeSession(Request $request, $id) {
     $user = $request->auth;
 
-    $session = UserToken::where('purpose', 'stayLoggedIn')->where('user_id', $user->id)->where('id', $id);
+    $session = $this->userTokenRepository->getUserTokenByIdAndUserAndPurpose($id, $user, 'stayLoggedIn');
     if($session == null) {
-      return response()->json(['msg' => 'Session token does not exist!'], 404);
+      return response()->json(['msg' => 'Session token does not exist!', 'error_code' => 'session_token_not_found'], 404);
     }
 
-    if(!$session->delete()) {
+    if ($this->userTokenRepository->deleteUserToken($session) != null) {
       return response()->json(['msg' => 'Could not delete session'], 500);
     }
 

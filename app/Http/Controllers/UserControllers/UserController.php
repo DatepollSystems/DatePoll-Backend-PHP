@@ -30,7 +30,16 @@ class UserController extends Controller
    * @throws ValidationException
    */
   public function updateMyself(Request $request) {
-    $this->validate($request, ['firstname' => 'required|max:190|min:1', 'surname' => 'required|max:190|min:1', 'streetname' => 'required|max:190|min:1', 'streetnumber' => 'required|max:190|min:1', 'zipcode' => 'required|integer', 'location' => 'required|max:190|min:1', 'birthday' => 'required|date']);
+    $this->validate($request, [
+      'title' => 'max:190',
+      'firstname' => 'required|max:190|min:1',
+      'surname' => 'required|max:190|min:1',
+      'streetname' => 'required|max:190|min:1',
+      'streetnumber' => 'required|max:190|min:1',
+      'zipcode' => 'required|integer',
+      'location' => 'required|max:190|min:1',
+      'birthday' => 'required|date'
+    ]);
 
     $user = $request->auth;
 
@@ -55,7 +64,7 @@ class UserController extends Controller
     if ($user->save()) {
       $userToShow = $user->getReturnable();
 
-      $userToShow->view_yourself = ['href' => 'api/v1/user/yourself', 'method' => 'GET'];
+      $userToShow->view_yourself = ['href' => 'api/v1/user/myself', 'method' => 'GET'];
 
       $response = ['msg' => 'User updated', 'user' => $userToShow];
 
@@ -82,25 +91,25 @@ class UserController extends Controller
 
         if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
           $bookingToShow = new stdClass();
-          $bookingToShow->movieID = $movie->id;
-          $bookingToShow->movieName = $movie->name;
-          $bookingToShow->movieDate = $movie->date;
+          $bookingToShow->movie_id = $movie->id;
+          $bookingToShow->movie_name = $movie->name;
+          $bookingToShow->movie_date = $movie->date;
           $bookingToShow->amount = $booking->amount;
 
           if ($movie->worker() == null) {
-            $bookingToShow->workerID = null;
-            $bookingToShow->workerName = null;
+            $bookingToShow->worker_id = null;
+            $bookingToShow->worker_name = null;
           } else {
-            $bookingToShow->workerID = $movie->worker()->id;
-            $bookingToShow->workerName = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+            $bookingToShow->worker_id = $movie->worker()->id;
+            $bookingToShow->worker_name = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
           }
 
           if ($movie->emergencyWorker() == null) {
-            $bookingToShow->emergencyWorkerID = null;
-            $bookingToShow->emergencyWorkerName = null;
+            $bookingToShow->emergency_worker_id = null;
+            $bookingToShow->emergency_worker_name = null;
           } else {
-            $bookingToShow->emergencyWorkerID = $movie->emergencyWorker()->id;
-            $bookingToShow->emergencyWorkerName = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
+            $bookingToShow->emergency_worker_id = $movie->emergencyWorker()->id;
+            $bookingToShow->emergency_worker_name = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
           }
 
           $bookingsToShow[] = $bookingToShow;

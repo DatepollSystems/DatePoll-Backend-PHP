@@ -1,5 +1,6 @@
 <?php
 
+use App\Providers\AppServiceProvider;
 use Barryvdh\Cors\HandleCors;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -81,19 +82,19 @@ $app->routeMiddleware([
 | totally optional, so you are not required to uncomment this line.
 |
 */
-$app->register(App\Providers\AppServiceProvider::class);
+$app->register(AppServiceProvider::class);
 
 /* IDE Helper*/
 $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
-
-/* Generate classes from migration files*/
-$app->register(Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
 
 /* Enable CORS on every route */
 $app->register(Barryvdh\Cors\ServiceProvider::class);
 
 /* Make php artisan:make command as powerful as in laravel */
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+
+/* Register DatePoll Service providers to implement the Repository Pattern */
+$app->register('App\Providers\DatePollServiceProvider');
 
 /* Mail configuration */
 $app->register(Illuminate\Mail\MailServiceProvider::class);

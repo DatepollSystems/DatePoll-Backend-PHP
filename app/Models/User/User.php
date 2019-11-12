@@ -2,7 +2,6 @@
 
 namespace App\Models\User;
 
-use App\Mail\ActivateUser;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
@@ -11,7 +10,6 @@ use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Mail;
 use stdClass;
 
 /**
@@ -202,8 +200,8 @@ class User extends Model
     $returnableUser->activated = $this->activated;
     $returnableUser->activity = $this->activity;
     $returnableUser->force_password_change = $this->force_password_change;
-    $returnableUser->phoneNumbers = $this->telephoneNumbers();
-    $returnableUser->emailAddresses = $this->getEmailAddresses();
+    $returnableUser->phone_numbers = $this->telephoneNumbers();
+    $returnableUser->email_addresses = $this->getEmailAddresses();
 
     $permissions = array();
     if($this->permissions() != null) {
@@ -220,7 +218,7 @@ class User extends Model
     foreach ($userHasPerformanceBadgesWithInstruments as $performanceBadgeWithInstrument) {
       $performanceBadgeToReturn = new stdClass();
       $performanceBadgeToReturn->id = $performanceBadgeWithInstrument->id;
-      $performanceBadgeToReturn->performanceBadge_id = $performanceBadgeWithInstrument->performance_badge_id;
+      $performanceBadgeToReturn->performance_badge_id = $performanceBadgeWithInstrument->performance_badge_id;
       $performanceBadgeToReturn->instrument_id = $performanceBadgeWithInstrument->instrument_id;
       $performanceBadgeToReturn->grade = $performanceBadgeWithInstrument->grade;
       $performanceBadgeToReturn->note = $performanceBadgeWithInstrument->note;
@@ -229,27 +227,15 @@ class User extends Model
       } else {
         $performanceBadgeToReturn->date = null;
       }
-      $performanceBadgeToReturn->performanceBadge_name = $performanceBadgeWithInstrument->performanceBadge()->name;
+      $performanceBadgeToReturn->performance_badge_name = $performanceBadgeWithInstrument->performanceBadge()->name;
       $performanceBadgeToReturn->instrument_name = $performanceBadgeWithInstrument->instrument()->name;
 
       $performanceBadgesToReturn[] = $performanceBadgeToReturn;
     }
 
-    $returnableUser->performanceBadges = $performanceBadgesToReturn;
+    $returnableUser->performance_badges = $performanceBadgesToReturn;
 
     return $returnableUser;
-  }
-
-  /**
-   * Activates a user
-   */
-  public function activate() {
-    $randomPassword = UserCode::generateCode();
-    $this->password = app('hash')->make($randomPassword . $this->id);;
-    $this->force_password_change = true;
-    $this->save();
-
-    Mail::bcc($this->getEmailAddresses())->send(new ActivateUser($this->firstname . " " . $this->surname, $this->username, $randomPassword));
   }
 
   /**
@@ -293,7 +279,7 @@ class User extends Model
           $alreadyVoted = ($eventUserVotedFor != null);
 
           $eventToReturn = $event->getReturnable();
-          $eventToReturn->alreadyVoted = $alreadyVoted;
+          $eventToReturn->already_voted = $alreadyVoted;
           $events[] = $eventToReturn;
         }
       }

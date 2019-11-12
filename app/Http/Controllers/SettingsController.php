@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Logging;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -27,6 +28,7 @@ class SettingsController extends Controller
 
     $this->changeEnvironmentVariable('APP_FEATURE_CINEMA_ENABLED', $isEnabled);
 
+    Logging::info("setCinemaFeatureIsEnabled", "User - " . $request->auth->id . " | Changed to " . $isEnabled);
     return response()->json(['msg' => 'Set cinema service enabled', 'isEnabled' => $isEnabled]);
   }
 
@@ -49,6 +51,7 @@ class SettingsController extends Controller
 
     $this->changeEnvironmentVariable('APP_FEATURE_EVENTS_ENABLED', $isEnabled);
 
+    Logging::info("setEventsFeatureIsEnabled", "User - " . $request->auth->id . " | Changed to " . $isEnabled);
     return response()->json(['msg' => 'Set events service enabled', 'isEnabled' => $isEnabled]);
   }
 
@@ -71,7 +74,31 @@ class SettingsController extends Controller
 
     $this->changeEnvironmentVariable('APP_COMMUNITY_NAME', $communityName);
 
+    Logging::info("setCommunityName", "User - " . $request->auth->id . " | Changed to " . $communityName);
     return response()->json(['msg' => 'Set community name', 'community_name' => $communityName]);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  public function getCommunityUrl() {
+    return response()->json(['msg' => 'Community url', 'community_url' => env('APP_COMMUNITY_URL')], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setCommunityUrl(Request $request) {
+    $this->validate($request, ['community_url' => 'required|min:1|max:128']);
+
+    $communityUrl = $request->input('community_url');
+
+    $this->changeEnvironmentVariable('APP_COMMUNITY_URL', $communityUrl);
+
+    Logging::info("setCommunityUrl", "User - " . $request->auth->id . " | Changed to " . $communityUrl);
+    return response()->json(['msg' => 'Set community url', 'community_url' => $communityUrl]);
   }
 
   /**
@@ -93,6 +120,8 @@ class SettingsController extends Controller
 
     $this->changeEnvironmentVariable('APP_OPENWEATHERMAP_KEY', $openWeatherMapKey);
 
+    Logging::info("setOpenWeatherMapKey", "User - " . $request->auth->id .
+      " | Changed to " . $openWeatherMapKey);
     return response()->json(['msg' => 'Set OpenWeatherMap key', 'openweathermap_key' => $openWeatherMapKey]);
   }
 
@@ -115,6 +144,8 @@ class SettingsController extends Controller
 
     $this->changeEnvironmentVariable('APP_OPENWEATHERMAP_CINEMA_CITY_ID', $openWeatherMapCinemaCityId);
 
+    Logging::info("setOpenWeatherMapCinemaCityId", "User - " . $request->auth->id .
+      " | Changed to " . $openWeatherMapCinemaCityId);
     return response()->json(['msg' => 'Set OpenWeatherMap cinema city id', 'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId]);
   }
 

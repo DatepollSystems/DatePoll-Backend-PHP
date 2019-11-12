@@ -14,7 +14,7 @@ class ExampleTest extends TestCase
     {
         $this->get('/');
 
-        $this->assertEquals("Running DatePoll-Backend! ( ͡° ͜ʖ ͡°) ", $this->response->getContent()
+        $this->assertEquals("Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)", $this->response->getContent()
         );
     }
 }

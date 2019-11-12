@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedVariableInspection */
 
 $router->group(['prefix' => 'user'], function () use ($router) {
   /** Home page route */

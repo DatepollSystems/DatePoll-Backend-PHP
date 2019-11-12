@@ -71,19 +71,19 @@ class Movie extends Model
     $emergencyWorker = $this->emergencyWorker();
 
     if ($worker == null) {
-      $returnableMovie->workerID = null;
-      $returnableMovie->workerName = null;
+      $returnableMovie->worker_id = null;
+      $returnableMovie->worker_name = null;
     } else {
-      $returnableMovie->workerID = $worker->id;
-      $returnableMovie->workerName = $worker->firstname . ' ' . $worker->surname;
+      $returnableMovie->worker_id = $worker->id;
+      $returnableMovie->worker_name = $worker->firstname . ' ' . $worker->surname;
     }
 
     if ($emergencyWorker == null) {
-      $returnableMovie->emergencyWorkerID = null;
-      $returnableMovie->emergencyWorkerName = null;
+      $returnableMovie->emergency_worker_id = null;
+      $returnableMovie->emergency_worker_name = null;
     } else {
-      $returnableMovie->emergencyWorkerID = $emergencyWorker->id;
-      $returnableMovie->emergencyWorkerName = $emergencyWorker->firstname . ' ' . $emergencyWorker->surname;
+      $returnableMovie->emergency_worker_id = $emergencyWorker->id;
+      $returnableMovie->emergency_worker_name = $emergencyWorker->firstname . ' ' . $emergencyWorker->surname;
     }
 
     return $returnableMovie;

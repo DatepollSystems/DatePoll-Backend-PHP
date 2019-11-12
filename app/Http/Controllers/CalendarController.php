@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
-use App\Models\User\UserToken;
+use App\Repositories\User\UserToken\IUserTokenRepository;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,13 @@ use Jsvrcek\ICS\Utility\Formatter;
 
 class CalendarController extends Controller
 {
+
+  protected $userTokenRepository = null;
+
+  public function __construct(IUserTokenRepository $userTokenRepository) {
+    $this->userTokenRepository = $userTokenRepository;
+  }
+
   /**
    * @param $token
    * @return string
@@ -27,7 +35,7 @@ class CalendarController extends Controller
    * @throws Exception
    */
   public function getCalendarOf($token) {
-    $tokenObject = UserToken::where('token', $token)->where('purpose', 'calendar')->first();
+    $tokenObject = $this->userTokenRepository->getUserTokenByTokenAndPurpose($token, 'calendar');
     if ($tokenObject == null) {
       return response()->json(['msg' => 'Provided token is incorrect'], 401);
     }
@@ -160,6 +168,7 @@ class CalendarController extends Controller
 
     $calendarExport->addCalendar($calendar);
 
+    Logging::info("getCalendarOf", "User | " . $user->id . " | ICS personal calendar request");
     return $calendarExport->getStream();
   }
 

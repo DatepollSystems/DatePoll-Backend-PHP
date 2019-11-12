@@ -3,13 +3,22 @@
 namespace App\Http\Controllers\CinemaControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cinema\Movie;
+use App\Repositories\Cinema\Movie\IMovieRepository;
+use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use stdClass;
 
 class MovieWorkerController extends Controller
 {
+
+  protected $movieWorkerRepository = null;
+  protected $movieRepository = null;
+
+  public function __construct(IMovieWorkerRepository $movieWorkerRepository, IMovieRepository $movieRepository)
+  {
+    $this->movieWorkerRepository = $movieWorkerRepository;
+    $this->movieRepository = $movieRepository;
+  }
 
   /**
    * @param Request $request
@@ -18,9 +27,13 @@ class MovieWorkerController extends Controller
    */
   public function applyForWorker(Request $request, $id) {
     /* Check if movie exists */
-    $movie = Movie::find($id);
+    $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found'], 404);
+    }
+
+    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
+      return response()->json(['msg' => 'Movie already showed'], 400);
     }
 
     if ($movie->worker() != null) {
@@ -29,9 +42,7 @@ class MovieWorkerController extends Controller
 
     $user = $request->auth;
 
-    $movie->worker_id = $user->id;
-
-    if ($movie->save()) {
+    if ($this->movieWorkerRepository->setWorkerForMovie($user, $movie)) {
       return response()->json(['msg' => 'Successfully applied for worker'], 200);
     }
 
@@ -45,9 +56,13 @@ class MovieWorkerController extends Controller
    */
   public function signOutForWorker(Request $request, $id) {
     /* Check if movie exists */
-    $movie = Movie::find($id);
+    $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found'], 404);
+    }
+
+    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
+      return response()->json(['msg' => 'Movie already showed'], 400);
     }
 
     if ($movie->worker() == null) {
@@ -56,12 +71,11 @@ class MovieWorkerController extends Controller
 
     $user = $request->auth;
 
-    if ($movie->worker()->id != $user->id) {
+    if ($movie->worker_id != $user->id) {
       return response()->json(['msg' => 'You are not the worker for this movie'], 400);
     }
 
-    $movie->worker_id = null;
-    if ($movie->save()) {
+    if ($this->movieWorkerRepository->removeWorkerFromMovie($movie)) {
       return response()->json(['msg' => 'Successfully signed out for worker'], 200);
     }
 
@@ -75,9 +89,14 @@ class MovieWorkerController extends Controller
    */
   public function applyForEmergencyWorker(Request $request, $id) {
     /* Check if movie exists */
-    $movie = Movie::find($id);
+    $movie = $this->movieRepository->getMovieById($id);
+
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found'], 404);
+    }
+
+    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
+      return response()->json(['msg' => 'Movie already showed'], 400);
     }
 
     if ($movie->emergencyWorker() != null) {
@@ -86,9 +105,7 @@ class MovieWorkerController extends Controller
 
     $user = $request->auth;
 
-    $movie->emergency_worker_id = $user->id;
-
-    if ($movie->save()) {
+    if ($this->movieWorkerRepository->setEmergencyWorkerForMovie($user, $movie)) {
       return response()->json(['msg' => 'Successfully applied for emergency worker'], 200);
     }
 
@@ -102,9 +119,13 @@ class MovieWorkerController extends Controller
    */
   public function signOutForEmergencyWorker(Request $request, $id) {
     /* Check if movie exists */
-    $movie = Movie::find($id);
+    $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found'], 404);
+    }
+
+    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
+      return response()->json(['msg' => 'Movie already showed'], 400);
     }
 
     if ($movie->emergencyWorker() == null) {
@@ -117,67 +138,21 @@ class MovieWorkerController extends Controller
       return response()->json(['msg' => 'You are not the emergency worker for this movie'], 400);
     }
 
-    $movie->emergency_worker_id = null;
-    if ($movie->save()) {
+    if ($this->movieWorkerRepository->removeEmergencyWorkerFromMovie($movie)) {
       return response()->json(['msg' => 'Successfully signed out for emergency worker'], 200);
     }
 
     return response()->json(['msg' => 'An error occurred during signing out'], 500);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
   public function getMovies(Request $request) {
     $user = $request->auth;
 
-    $movies = array();
-    $moviesIDs = array();
-
-    foreach ($user->workerMovies() as $movie) {
-      if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
-        $moviesIDs[] = $movie->id;
-
-        $localMovie = new stdClass();
-        $localMovie->movieName = $movie->name;
-        $localMovie->movieID = $movie->id;
-        $localMovie->date = $movie->date;
-
-        $orders = array();
-        foreach ($movie->moviesBookings() as $moviesBooking) {
-          $localBooking = new stdClass();
-          $bookingUser = $moviesBooking->user();
-          $localBooking->userName = $bookingUser->firstname . ' ' . $bookingUser->surname;
-          $localBooking->userID = $bookingUser->id;
-          $localBooking->amount = $moviesBooking->amount;
-          $orders[] = $localBooking;
-        }
-        $localMovie->orders = $orders;
-
-        $movies[] = $localMovie;
-      }
-    }
-
-    foreach ($user->emergencyWorkerMovies() as $movie) {
-      if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
-        if (!in_array($movie->id, $moviesIDs)) {
-          $localMovie = new stdClass();
-          $localMovie->movieName = $movie->name;
-          $localMovie->movieID = $movie->id;
-          $localMovie->date = $movie->date;
-
-          $orders = array();
-          foreach ($movie->moviesBookings() as $moviesBooking) {
-            $localBooking = new stdClass();
-            $bookingUser = $moviesBooking->user();
-            $localBooking->userName = $bookingUser->firstname . ' ' . $bookingUser->surname;
-            $localBooking->userID = $bookingUser->id;
-            $localBooking->amount = $moviesBooking->amount;
-            $orders[] = $localBooking;
-          }
-          $localMovie->orders = $orders;
-
-          $movies[] = $localMovie;
-        }
-      }
-    }
+    $movies = $this->movieWorkerRepository->getMoviesWhereUserAppliedAsWorker($user);
 
     return response()->json(['msg' => 'Booked tickets for your movie service', 'movies' => $movies], 200);
   }

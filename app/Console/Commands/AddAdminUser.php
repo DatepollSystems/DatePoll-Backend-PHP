@@ -11,14 +11,14 @@ class AddAdminUser extends Command
    *
    * @var string
    */
-  protected $signature = 'addadminuser';
+  protected $signature = 'add-admin-user';
 
   /**
    * The console command description.
    *
    * @var string
    */
-  protected $description = 'Drops all tables';
+  protected $description = 'Creates admin user with all permissions.';
 
   /**
    * Create a new command instance.
@@ -68,7 +68,7 @@ class AddAdminUser extends Command
       if($permission->save()) {
         $this->comment(PHP_EOL."Add Admin User | Added permissions".PHP_EOL);
       } else {
-        $this->comment(PHP_EOL."Add Admin User | Could not permissions".PHP_EOL);
+        $this->comment(PHP_EOL."Add Admin User | Could not add permissions".PHP_EOL);
       }
 
       $this->comment(PHP_EOL."Add Admin User | Now login in | Username: admin | Password: 123456".PHP_EOL);

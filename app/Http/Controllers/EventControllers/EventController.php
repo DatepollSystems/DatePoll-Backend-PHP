@@ -53,7 +53,7 @@ class EventController extends Controller
 
     return response()->json([
       'msg' => 'Event information',
-      'event' => $event]);
+      'event' => $toReturnEvent]);
   }
 
   /**
