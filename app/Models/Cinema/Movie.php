@@ -62,10 +62,20 @@ class Movie extends Model
   }
 
   /**
-   * @return Movie
+   * @return stdClass
    */
   public function getReturnable() {
-    $returnableMovie = $this;
+    $returnableMovie = new stdClass();
+
+    $returnableMovie->id = $this->id;
+    $returnableMovie->name = $this->name;
+    $returnableMovie->date = $this->date;
+    $returnableMovie->trailer_link = $this->trailerLink;
+    $returnableMovie->poster_link = $this->posterLink;
+    $returnableMovie->booked_tickets = $this->bookedTickets;
+    $returnableMovie->movie_year_id = $this->movie_year_id;
+    $returnableMovie->created_at = $this->created_at;
+    $returnableMovie->updated_at = $this->updated_at;
 
     $worker = $this->worker();
     $emergencyWorker = $this->emergencyWorker();
@@ -90,7 +100,7 @@ class Movie extends Model
   }
 
   /**
-   * @return Movie
+   * @return stdClass
    */
   public function getAdminReturnable() {
     $returnableMovie = $this->getReturnable();
