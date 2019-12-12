@@ -62,7 +62,7 @@ class Movie extends Model
   }
 
   /**
-   * @return stdClass
+   * @return stdClass | Movie
    */
   public function getReturnable() {
     $returnableMovie = new stdClass();
