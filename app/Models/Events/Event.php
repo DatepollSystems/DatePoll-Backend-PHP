@@ -50,28 +50,32 @@ class Event extends Model
    * @return Collection
    */
   public function eventsDecisions() {
-    return $this->hasMany('App\Models\Events\EventDecision', 'event_id')->get();
+    return $this->hasMany('App\Models\Events\EventDecision', 'event_id')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function eventsForGroups() {
-    return $this->hasMany('App\Models\Events\EventForGroup')->get();
+    return $this->hasMany('App\Models\Events\EventForGroup')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function eventsForSubgroups() {
-    return $this->hasMany('App\Models\Events\EventForSubgroup')->get();;
+    return $this->hasMany('App\Models\Events\EventForSubgroup')
+                ->get();;
   }
 
   /**
    * @return Collection
    */
   public function usersVotedForDecision() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')->get();;
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
+                ->get();;
   }
 
   /**
@@ -111,9 +115,7 @@ class Event extends Model
   public function getResults($user) {
     $results = new stdClass();
 
-    $anonymous = $user->hasPermission(Permissions::$ROOT_ADMINISTRATION)
-              || $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION)
-              || $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS) ? false : true;
+    $anonymous = $user->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) || $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS) ? false : true;
 
     if ($this->forEveryone) {
       $groups = array();
@@ -179,7 +181,7 @@ class Event extends Model
         foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
           $user = $this->getDecision($userMemberOfGroup->user(), $anonymous);
           $usersMemberOfGroup[] = $user;
-          if(!in_array($user, $all)) {
+          if (!in_array($user, $all)) {
             $all[] = $user;
           }
         }
@@ -198,7 +200,7 @@ class Event extends Model
           foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
             $user = $this->getDecision($userMemberOfSubgroup->user(), $anonymous);
             $usersMemberOfSubgroup[] = $user;
-            if(!in_array($user, $all)) {
+            if (!in_array($user, $all)) {
               $all[] = $user;
             }
           }
@@ -232,14 +234,14 @@ class Event extends Model
         foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
           $user = $this->getDecision($userMemberOfSubgroup->user(), $anonymous);
           $usersMemberOfSubgroup[] = $user;
-          if(!in_array($user, $all)) {
+          if (!in_array($user, $all)) {
             $all[] = $user;
           }
         }
 
         $subgroupToSave->users = $usersMemberOfSubgroup;
 
-        if(!in_array($subgroupToSave, $allSubgroups)) {
+        if (!in_array($subgroupToSave, $allSubgroups)) {
           $subgroups[] = $subgroupToSave;
         }
       }
@@ -271,13 +273,19 @@ class Event extends Model
       $userToSave->surname = null;
     }
 
-    $decision = EventUserVotedForDecision::where('user_id', $user->id)->where('event_id', $this->id)->first();
+    $decision = EventUserVotedForDecision::where('user_id', $user->id)
+                                         ->where('event_id', $this->id)
+                                         ->first();
+    $userToSave->additional_information = null;
     if ($decision == null) {
       $userToSave->decisionId = null;
       $userToSave->decision = null;
     } else {
       $userToSave->decisionId = $decision->decision()->id;
       $userToSave->decision = $decision->decision()->decision;
+      if (!$anonymous) {
+        $userToSave->additional_information = $decision->additionalInformation;
+      }
     }
 
     return $userToSave;
