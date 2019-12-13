@@ -20,6 +20,7 @@ class ActivateUser extends Mailable
    * Create a new message instance.
    *
    * @param $name
+   * @param $username
    * @param $code
    */
   public function __construct($name, $username, $code)

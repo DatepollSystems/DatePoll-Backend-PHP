@@ -16,6 +16,8 @@ class CreateEventsUsersVotedForTable extends Migration
     Schema::create('events_users_voted_for', function (Blueprint $table) {
       $table->increments('id');
 
+      $table->string('additionalInformation', 128)->nullable(true);
+
       $table->integer('event_id')->unsigned();;
       $table->foreign('event_id')
         ->references('id')->on('events')
