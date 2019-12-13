@@ -22,14 +22,17 @@ class EventVoteController extends Controller
   public function vote(Request $request) {
     $this->validate($request, [
       'decision_id' => 'required|integer',
-      'event_id' => 'required|integer']);
+      'event_id' => 'required|integer',
+      'additional_information' => 'nullable|string|max:128|min:1']);
 
     $eventId = $request->input('event_id');
     if (Event::find($eventId) == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
-    $eventDecisions = EventDecision::where('event_id', $eventId)->where('id', $request->input('decision_id'))->first();
+    $eventDecisions = EventDecision::where('event_id', $eventId)
+                                   ->where('id', $request->input('decision_id'))
+                                   ->first();
     if ($eventDecisions == null) {
       return response()->json(['msg' => 'Decision not found for this event'], 404);
     }
@@ -49,11 +52,12 @@ class EventVoteController extends Controller
       }
     }
 
-    if(!$allowedToVote) {
+    if (!$allowedToVote) {
       return response()->json(['msg' => 'You are not allowed to vote for this event'], 400);
     }
 
     $eventUserVotedForDecision = new EventUserVotedForDecision([
+      'additionalInformation' => $request->input('additional_information'),
       'event_id' => $eventId,
       'decision_id' => $eventDecisions->id,
       'user_id' => $user->id]);
@@ -79,7 +83,9 @@ class EventVoteController extends Controller
 
     $user = $request->auth;
 
-    $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)->where('user_id', $user->id)->first();
+    $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
+                                                          ->where('user_id', $user->id)
+                                                          ->first();
 
     if ($eventUserVotedForDecision != null) {
       if (!$eventUserVotedForDecision->delete()) {
@@ -101,6 +107,7 @@ class EventVoteController extends Controller
   public function voteForUsers(Request $request, $id) {
     $this->validate($request, [
       'decision_id' => 'required|integer',
+      'additional_information' => 'nullable|string|max:128|min:1',
       'user_ids' => 'array']);
 
     $event = Event::find($id);
@@ -108,18 +115,24 @@ class EventVoteController extends Controller
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
-    $eventDecision = EventDecision::where('event_id', $id)->where('id', $request->input('decision_id'))->first();
+    $eventDecision = EventDecision::where('event_id', $id)
+                                  ->where('id', $request->input('decision_id'))
+                                  ->first();
     if ($eventDecision == null) {
       return response()->json(['msg' => 'Decision not found for this event'], 404);
     }
 
     $userIds = $request->input('user_ids');
-    foreach ((array) $userIds as $userId) {
+    foreach ((array)$userIds as $userId) {
       if (!User::exists($userId)) {
-        return response()->json(['msg' => 'User not found', 'user_id' => $userId], 404);
+        return response()->json([
+          'msg' => 'User not found',
+          'user_id' => $userId], 404);
       }
 
-      $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)->where('user_id', $userId)->first();
+      $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
+                                                            ->where('user_id', $userId)
+                                                            ->first();
       if ($eventUserVotedForDecision != null) {
         if (!$eventUserVotedForDecision->delete()) {
           return response()->json(['msg' => 'Could not delete old decisions'], 500);
@@ -127,11 +140,12 @@ class EventVoteController extends Controller
       }
 
       $eventUserVotedForDecision = new EventUserVotedForDecision([
+        'additionalInformation' => $request->input('additional_information'),
         'event_id' => $id,
         'decision_id' => $eventDecision->id,
         'user_id' => $userId]);
 
-      if(!$eventUserVotedForDecision->save()) {
+      if (!$eventUserVotedForDecision->save()) {
         return response()->json(['msg' => 'Could not save eventUserVotedForDecision'], 500);
       }
     }
@@ -154,12 +168,16 @@ class EventVoteController extends Controller
     }
 
     $userIds = $request->input('user_ids');
-    foreach ((array) $userIds as $userId) {
+    foreach ((array)$userIds as $userId) {
       if (!User::exists($userId)) {
-        return response()->json(['msg' => 'User not found', 'user_id' => $userId], 404);
+        return response()->json([
+          'msg' => 'User not found',
+          'user_id' => $userId], 404);
       }
 
-      $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)->where('user_id', $userId)->first();
+      $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
+                                                            ->where('user_id', $userId)
+                                                            ->first();
       if ($eventUserVotedForDecision != null) {
         if (!$eventUserVotedForDecision->delete()) {
           return response()->json(['msg' => 'Could not delete old decisions'], 500);

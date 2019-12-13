@@ -280,6 +280,9 @@ class User extends Model
 
           $eventToReturn = $event->getReturnable();
           $eventToReturn->already_voted = $alreadyVoted;
+          if ($alreadyVoted) {
+            $eventToReturn->additional_information = $eventUserVotedFor->additionalInformation;
+          }
           $events[] = $eventToReturn;
         }
       }
