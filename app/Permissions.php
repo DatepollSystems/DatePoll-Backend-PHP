@@ -9,6 +9,7 @@ class Permissions {
   public static $CINEMA_ADMINISTRATION = 'cinema.*';
 
   public static $EVENTS_ADMINISTRATION = 'events.*';
+  public static $EVENTS_VIEW_DETAILS = 'events.details';
 
   public static $FILES_ADMINISTRATION = 'files.*';
 

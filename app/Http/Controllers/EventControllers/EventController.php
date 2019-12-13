@@ -35,18 +35,21 @@ class EventController extends Controller
   }
 
   /**
+   * @param Request $request
    * @param $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(Request $request, $id) {
     $event = Event::find($id);
 
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
+    $user = $request->auth;
+
     $toReturnEvent = $event->getReturnable();
-    $toReturnEvent->resultGroups = $event->getResults();
+    $toReturnEvent->resultGroups = $event->getResults($user);
     $toReturnEvent->view_events = [
       'href' => 'api/v1/avent/administration/avent',
       'method' => 'GET'];
