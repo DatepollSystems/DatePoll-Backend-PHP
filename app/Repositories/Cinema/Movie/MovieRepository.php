@@ -78,7 +78,7 @@ class MovieRepository implements IMovieRepository
       }
 
       $returnable->view_movie = [
-        'href' => 'api/v1/cinema/movie/administration/' . $movie->id,
+        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
         'method' => 'GET'];
       $returnableMovies[] = $returnable;
     }

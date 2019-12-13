@@ -4,6 +4,7 @@ namespace App\Models\Events;
 
 use App\Models\Groups\Group;
 use App\Models\User\User;
+use App\Permissions;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use stdClass;
@@ -104,10 +105,15 @@ class Event extends Model
   }
 
   /**
+   * @param User $user
    * @return stdClass
    */
-  public function getResults() {
+  public function getResults($user) {
     $results = new stdClass();
+
+    $anonymous = $user->hasPermission(Permissions::$ROOT_ADMINISTRATION)
+              || $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION)
+              || $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS) ? false : true;
 
     if ($this->forEveryone) {
       $groups = array();
@@ -120,7 +126,7 @@ class Event extends Model
 
         $usersMemberOfGroup = array();
         foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
-          $usersMemberOfGroup[] = $this->getDecision($userMemberOfGroup->user());
+          $usersMemberOfGroup[] = $this->getDecision($userMemberOfGroup->user(), $anonymous);
         }
         $groupToSave->users = $usersMemberOfGroup;
 
@@ -133,7 +139,7 @@ class Event extends Model
 
           $usersMemberOfSubgroup = array();
           foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-            $usersMemberOfSubgroup[] = $this->getDecision($userMemberOfSubgroup->user());
+            $usersMemberOfSubgroup[] = $this->getDecision($userMemberOfSubgroup->user(), $anonymous);
           }
 
           $subgroupToSave->users = $usersMemberOfSubgroup;
@@ -148,7 +154,7 @@ class Event extends Model
 
       $all = array();
       foreach (User::all() as $user) {
-        $all[] = $this->getDecision($user);
+        $all[] = $this->getDecision($user, $anonymous);
       }
 
       $results->allUsers = $all;
@@ -171,7 +177,7 @@ class Event extends Model
 
         $usersMemberOfGroup = array();
         foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
-          $user = $this->getDecision($userMemberOfGroup->user());
+          $user = $this->getDecision($userMemberOfGroup->user(), $anonymous);
           $usersMemberOfGroup[] = $user;
           if(!in_array($user, $all)) {
             $all[] = $user;
@@ -190,7 +196,7 @@ class Event extends Model
 
           $usersMemberOfSubgroup = array();
           foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-            $user = $this->getDecision($userMemberOfSubgroup->user());
+            $user = $this->getDecision($userMemberOfSubgroup->user(), $anonymous);
             $usersMemberOfSubgroup[] = $user;
             if(!in_array($user, $all)) {
               $all[] = $user;
@@ -224,7 +230,7 @@ class Event extends Model
 
         $usersMemberOfSubgroup = array();
         foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-          $user = $this->getDecision($userMemberOfSubgroup->user());
+          $user = $this->getDecision($userMemberOfSubgroup->user(), $anonymous);
           $usersMemberOfSubgroup[] = $user;
           if(!in_array($user, $all)) {
             $all[] = $user;
@@ -244,18 +250,26 @@ class Event extends Model
 
       $results->allUsers = $all;
     }
+    $results->anonymous = $anonymous;
     return $results;
   }
 
   /**
    * @param $user
+   * @param bool $anonymous
    * @return stdClass
    */
-  private function getDecision($user) {
+  private function getDecision($user, bool $anonymous) {
     $userToSave = new stdClass();
-    $userToSave->id = $user->id;
-    $userToSave->firstname = $user->firstname;
-    $userToSave->surname = $user->surname;
+    if (!$anonymous) {
+      $userToSave->id = $user->id;
+      $userToSave->firstname = $user->firstname;
+      $userToSave->surname = $user->surname;
+    } else {
+      $userToSave->id = null;
+      $userToSave->firstname = null;
+      $userToSave->surname = null;
+    }
 
     $decision = EventUserVotedForDecision::where('user_id', $user->id)->where('event_id', $this->id)->first();
     if ($decision == null) {
