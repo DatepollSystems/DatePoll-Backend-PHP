@@ -1,5 +1,6 @@
 <?php /** @noinspection PhpUndefinedVariableInspection */
 
+use App\Http\Middleware\System\JobsPermissionMiddleware;
 use App\Http\Middleware\System\LogsPermissionMiddleware;
 
 $router->group(['prefix' => 'system'], function () use ($router) {
@@ -12,5 +13,12 @@ $router->group(['prefix' => 'system'], function () use ($router) {
     $router->get('', ['uses' => 'SystemControllers\LoggingController@getAllLogs']);
     $router->delete('all', ['uses' => 'SystemControllers\LoggingController@deleteAllLogs']);
     $router->delete('{id}', ['uses' => 'SystemControllers\LoggingController@deleteLog']);
+  });
+
+  $router->group([
+    'prefix' => 'jobs',
+    'middleware' => [JobsPermissionMiddleware::class]], function() use ($router) {
+
+    $router->get('', ['uses' => 'SystemControllers\JobController@getUndoneJobs']);
   });
 });

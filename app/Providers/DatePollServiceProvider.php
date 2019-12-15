@@ -12,6 +12,8 @@ use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
 use App\Repositories\Cinema\MovieYear\MovieYearRepository;
 use App\Repositories\Files\File\FileRepository;
 use App\Repositories\Files\File\IFileRepository;
+use App\Repositories\Job\IJobRepository;
+use App\Repositories\Job\JobRepository;
 use App\Repositories\Log\ILogRepository;
 use App\Repositories\Log\LogRepository;
 use App\Repositories\User\User\IUserRepository;
@@ -34,6 +36,7 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
 
     /** System repositories */
+    $this->app->bind(IJobRepository::class, JobRepository::class);
     $this->app->bind(ILogRepository::class, LogRepository::class);
   }
 }
