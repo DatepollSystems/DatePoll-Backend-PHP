@@ -114,7 +114,7 @@ class SubgroupController extends Controller
     $group_id = $request->input('group_id');
 
     if (Group::find($group_id) == null) {
-      return response()->json(['msg' => 'Group not found'], 404);
+      return response()->json(['msg' => 'Group not found', 'error_code' => 'group_id_incorrect'], 404);
     }
 
     $name = $request->input('name');

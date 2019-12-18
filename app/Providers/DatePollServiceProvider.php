@@ -16,6 +16,8 @@ use App\Repositories\Job\IJobRepository;
 use App\Repositories\Job\JobRepository;
 use App\Repositories\Log\ILogRepository;
 use App\Repositories\Log\LogRepository;
+use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\Setting\SettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\User\UserRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
@@ -36,6 +38,7 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
 
     /** System repositories */
+    $this->app->bind(ISettingRepository::class, SettingRepository::class);
     $this->app->bind(IJobRepository::class, JobRepository::class);
     $this->app->bind(ILogRepository::class, LogRepository::class);
   }
