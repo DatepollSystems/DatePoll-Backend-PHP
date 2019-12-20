@@ -119,7 +119,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCinemaOpenWeatherMapCityId(): string {
-    return $this->getStringValueByKey(SettingKey::OPENWEATHERMAP_KEY, env('APP_OPENWEATHERMAP_CINEMA_CITY_ID', '1'));
+    return $this->getStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, env('APP_OPENWEATHERMAP_CINEMA_CITY_ID', '1'));
   }
 
   /**
