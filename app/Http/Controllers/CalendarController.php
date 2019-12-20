@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
+use App\Repositories\Setting\ISettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use DateTime;
 use Exception;
@@ -23,9 +24,11 @@ class CalendarController extends Controller
 {
 
   protected $userTokenRepository = null;
+  protected $settingRepository = null;
 
-  public function __construct(IUserTokenRepository $userTokenRepository) {
+  public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository) {
     $this->userTokenRepository = $userTokenRepository;
+    $this->settingRepository = $settingRepository;
   }
 
   /**
@@ -48,57 +51,15 @@ class CalendarController extends Controller
 
     $calendarEventId = 1;
 
-    /* -------- Movie booking specific calendar -------------*/
-    $movies = array();
-    $movieBookings = MoviesBooking::where('user_id', $user->id)->get();
-    foreach ($movieBookings as $movieBooking) {
-      $movies[] = $movieBooking->movie();
-    }
-
-    foreach ($movies as $movie) {
-      $geo = new Geo();
-      $geo->setLatitude(48.643865);
-      $geo->setLongitude(15.814679);
-
-      $location = new Location();
-      $location->setLanguage('de');
-      $location->setName('Kanzlerturm Wiese Eggenburg');
-
-      $movieEvent = new CalendarEvent();
-      $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
-                 ->setEnd(new DateTime($movie->date . 'T23:59:59'))
-                 ->setSummary($movie->name)
-                 ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
-                 ->setUrl($movie->trailerLink)
-                 ->setGeo($geo)
-                 ->addLocation($location)
-                 ->setUid($calendarEventId);
-      $calendarEventId++;
-
-      $worker = $movie->worker();
-      if ($worker != null) {
-        $name = $worker->firstname . ' ' . $worker->surname;
-
-        $organizer = new Organizer(new Formatter());
-        $organizer->setValue($worker->email)->setName($name)->setLanguage('de');
-        $movieEvent->setOrganizer($organizer);
+    if ($this->settingRepository->getCinemaEnabled()) {
+      /* -------- Movie booking specific calendar -------------*/
+      $movies = array();
+      $movieBookings = MoviesBooking::where('user_id', $user->id)->get();
+      foreach ($movieBookings as $movieBooking) {
+        $movies[] = $movieBooking->movie();
       }
 
-      $calendar->addEvent($movieEvent);
-    }
-
-    /* -------- Movie worker specific calendar -------------*/
-    $moviesWorker = $user->workerMovies();
-    foreach ($moviesWorker as $movie) {
-      $movieAlreadyInCalendar = false;
-      foreach ($movies as $movieB) {
-        if ($movieB->id === $movie->id) {
-          $movieAlreadyInCalendar = true;
-          break;
-        }
-      }
-
-      if (!$movieAlreadyInCalendar) {
+      foreach ($movies as $movie) {
         $geo = new Geo();
         $geo->setLatitude(48.643865);
         $geo->setLongitude(15.814679);
@@ -109,12 +70,13 @@ class CalendarController extends Controller
 
         $movieEvent = new CalendarEvent();
         $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
-                   ->setEnd(new DateTime($movie->date . 'T23:59:59'))
-                   ->setSummary($movie->name)//->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
-                   ->setUrl($movie->trailerLink)
-                   ->setGeo($geo)
-                   ->addLocation($location)
-                   ->setUid($calendarEventId);
+          ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+          ->setSummary($movie->name)
+          ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+          ->setUrl($movie->trailerLink)
+          ->setGeo($geo)
+          ->addLocation($location)
+          ->setUid($calendarEventId);
         $calendarEventId++;
 
         $worker = $movie->worker();
@@ -128,42 +90,87 @@ class CalendarController extends Controller
 
         $calendar->addEvent($movieEvent);
       }
+
+      /* -------- Movie worker specific calendar -------------*/
+      $moviesWorker = $user->workerMovies();
+      foreach ($moviesWorker as $movie) {
+        $movieAlreadyInCalendar = false;
+        foreach ($movies as $movieB) {
+          if ($movieB->id === $movie->id) {
+            $movieAlreadyInCalendar = true;
+            break;
+          }
+        }
+
+        if (!$movieAlreadyInCalendar) {
+          $geo = new Geo();
+          $geo->setLatitude(48.643865);
+          $geo->setLongitude(15.814679);
+
+          $location = new Location();
+          $location->setLanguage('de');
+          $location->setName('Kanzlerturm Wiese Eggenburg');
+
+          $movieEvent = new CalendarEvent();
+          $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
+            ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+            ->setSummary($movie->name)//->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+            ->setUrl($movie->trailerLink)
+            ->setGeo($geo)
+            ->addLocation($location)
+            ->setUid($calendarEventId);
+          $calendarEventId++;
+
+          $worker = $movie->worker();
+          if ($worker != null) {
+            $name = $worker->firstname . ' ' . $worker->surname;
+
+            $organizer = new Organizer(new Formatter());
+            $organizer->setValue($worker->email)->setName($name)->setLanguage('de');
+            $movieEvent->setOrganizer($organizer);
+          }
+
+          $calendar->addEvent($movieEvent);
+        }
+      }
     }
 
-    // Find events where user answered a question with decision which also has showInCalendar on true
-    $eventIds = DB::table('events_users_voted_for')
-                  ->join('events_decisions', 'events_decisions.id', '=', 'events_users_voted_for.decision_id')
-                  ->join('events', 'events.id', '=', 'events_users_voted_for.event_id')
-                  ->where('events_decisions.showInCalendar', '=', 1)
-                  ->where('events_users_voted_for.user_id', '=', $user->id)
-                  ->addSelect('events.id')
-                  ->get();
+    if ($this->settingRepository->getEventsEnabled()) {
+      // Find events where user answered a question with decision which also has showInCalendar on true
+      $eventIds = DB::table('events_users_voted_for')
+                    ->join('events_decisions', 'events_decisions.id', '=', 'events_users_voted_for.decision_id')
+                    ->join('events', 'events.id', '=', 'events_users_voted_for.event_id')
+                    ->where('events_decisions.showInCalendar', '=', 1)
+                    ->where('events_users_voted_for.user_id', '=', $user->id)
+                    ->addSelect('events.id')
+                    ->get();
 
-    $events = array();
-    foreach ($eventIds as $eventId) {
-      $events[] = Event::find($eventId->id);
-    }
+      $events = array();
+      foreach ($eventIds as $eventId) {
+        $events[] = Event::find($eventId->id);
+      }
 
-    foreach ($events as $event) {
+      foreach ($events as $event) {
 //      $geo = new Geo();
 //      $geo->setLatitude(48.643865);
 //      $geo->setLongitude(15.814679);
 
-      $location = new Location();
-      $location->setLanguage('de');
-      $location->setName($event->location);
+        $location = new Location();
+        $location->setLanguage('de');
+        $location->setName($event->location);
 
-      $eventEvent = new CalendarEvent();
-      $eventEvent->setStart(new DateTime($event->startDate))
-                 ->setEnd(new DateTime($event->endDate))
-                 ->setSummary($event->name)
-                 ->setDescription($event->description)//       ->setUrl($movie->trailerLink)
+        $eventEvent = new CalendarEvent();
+        $eventEvent->setStart(new DateTime($event->startDate))
+                   ->setEnd(new DateTime($event->endDate))
+                   ->setSummary($event->name)
+                   ->setDescription($event->description)//       ->setUrl($movie->trailerLink)
 //        ->setGeo($geo)
-                 ->addLocation($location)
-                 ->setUid($calendarEventId);
-      $calendarEventId++;
+                   ->addLocation($location)
+                   ->setUid($calendarEventId);
+        $calendarEventId++;
 
-      $calendar->addEvent($eventEvent);
+        $calendar->addEvent($eventEvent);
+      }
     }
 
     $calendarExport->addCalendar($calendar);
