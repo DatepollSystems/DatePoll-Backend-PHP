@@ -4,6 +4,7 @@ namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User\User;
+use App\Repositories\Setting\ISettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -11,6 +12,13 @@ use stdClass;
 
 class UserController extends Controller
 {
+
+  protected $settingRepository = null;
+
+  public function __construct(ISettingRepository $settingRepository) {
+    $this->settingRepository = $settingRepository;
+  }
+
 
   /**
    * @param Request $request
@@ -84,7 +92,7 @@ class UserController extends Controller
     $user = $request->auth;
 
     $bookingsToShow = array();
-    if (env('APP_FEATURE_CINEMA_ENABLED', false)) {
+    if ($this->settingRepository->getCinemaEnabled()) {
       $bookings = $user->moviesBookings();
       foreach ($bookings as $booking) {
         $movie = $booking->movie();
@@ -118,7 +126,7 @@ class UserController extends Controller
     }
 
     $eventsToShow = array();
-    if (env('APP_FEATURE_EVENTS_ENABLED', false)) {
+    if ($this->settingRepository->getEventsEnabled()) {
       $eventsToShow = $user->getOpenEvents();
     }
 

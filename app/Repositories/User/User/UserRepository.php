@@ -3,6 +3,7 @@
 
 namespace App\Repositories\User\User;
 
+use App\Jobs\SendEmailQueue;
 use App\Logging;
 use App\Mail\ActivateUser;
 use App\Models\User\User;
@@ -10,6 +11,7 @@ use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\UserCode;
+use App\Repositories\Setting\ISettingRepository;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -17,6 +19,13 @@ use stdClass;
 
 class UserRepository implements IUserRepository
 {
+  protected $settingRepository = null;
+
+  public function __construct(ISettingRepository $settingRepository) {
+    $this->settingRepository = $settingRepository;
+  }
+
+
   public function getAllUsers() {
     return User::all();
   }
@@ -220,8 +229,7 @@ class UserRepository implements IUserRepository
     $user->force_password_change = true;
     $user->save();
 
-    Mail::bcc($user->getEmailAddresses())
-        ->send(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword));
+    dispatch(new SendEmailQueue(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user));
   }
 
   public function deleteUser(User $user) {
