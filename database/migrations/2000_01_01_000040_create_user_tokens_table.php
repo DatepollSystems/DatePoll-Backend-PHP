@@ -15,7 +15,7 @@ class CreateUserTokensTable extends Migration
   {
     Schema::create('user_tokens', function (Blueprint $table) {
       $table->increments('id');
-      $table->string('token')->nullable(false)->unique();
+      $table->string('token')->nullable(false);
 
       $table->string('purpose')->nullable(false);
       $table->longText('description')->nullable(true);

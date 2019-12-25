@@ -32,5 +32,11 @@ $router->group(['prefix' => 'user'], function () use ($router) {
     $router->get('session', ['uses' => 'UserControllers\UserTokenController@getAllSessions']);
     $router->post('session/logoutCurrentSession', ['uses' => 'UserControllers\UserTokenController@logoutCurrentSession']);
     $router->delete('session/{id}', ['uses' => 'UserControllers\UserTokenController@removeSession']);
+
+    /** Settings */
+    $router->group(['prefix' => 'settings'], function () use ($router) {
+      $router->get('shareBirthday', ['uses' => 'UserControllers\UserSettingsController@getShareBirthday']);
+      $router->post('shareBirthday', ['uses' => 'UserControllers\UserSettingsController@setShareBirthday']);
+    });
   });
 });

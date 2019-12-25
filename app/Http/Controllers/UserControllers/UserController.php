@@ -5,6 +5,7 @@ namespace App\Http\Controllers\UserControllers;
 use App\Http\Controllers\Controller;
 use App\Models\User\User;
 use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -14,9 +15,11 @@ class UserController extends Controller
 {
 
   protected $settingRepository = null;
+  protected $userSettingRepository = null;
 
-  public function __construct(ISettingRepository $settingRepository) {
+  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository) {
     $this->settingRepository = $settingRepository;
+    $this->userSettingRepository = $userSettingRepository;
   }
 
 
@@ -51,23 +54,14 @@ class UserController extends Controller
 
     $user = $request->auth;
 
-    $title = $request->input('title');
-    $firstname = $request->input('firstname');
-    $surname = $request->input('surname');
-    $streetname = $request->input('streetname');
-    $streetnumber = $request->input('streetnumber');
-    $zipcode = $request->input('zipcode');
-    $location = $request->input('location');
-    $birthday = $request->input('birthday');
-
-    $user->title = $title;
-    $user->firstname = $firstname;
-    $user->surname = $surname;
-    $user->streetname = $streetname;
-    $user->streetnumber = $streetnumber;
-    $user->zipcode = $zipcode;
-    $user->location = $location;
-    $user->birthday = $birthday;
+    $user->title = $request->input('title');
+    $user->firstname = $request->input('firstname');
+    $user->surname = $request->input('surname');
+    $user->streetname = $request->input('streetname');
+    $user->streetnumber = $request->input('streetnumber');
+    $user->zipcode = $request->input('zipcode');
+    $user->location = $request->input('location');
+    $user->birthday = $request->input('birthday');
 
     if ($user->save()) {
       $userToShow = $user->getReturnable();
@@ -81,7 +75,7 @@ class UserController extends Controller
 
     $response = ['msg' => 'An error occurred'];
 
-    return response()->json($response, 404);
+    return response()->json($response, 500);
   }
 
   /**
@@ -133,14 +127,16 @@ class UserController extends Controller
     $users = User::all();
     $birthdaysToShow = array();
     foreach ($users as $user) {
-      $d = date_parse_from_format("Y-m-d", $user->birthday);
-      if ($d["month"] == date('n')) {
-        $birthdayToShow = new stdClass();
+      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+        $d = date_parse_from_format("Y-m-d", $user->birthday);
+        if ($d["month"] == date('n')) {
+          $birthdayToShow = new stdClass();
 
-        $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
-        $birthdayToShow->date = $user->birthday;
+          $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
+          $birthdayToShow->date = $user->birthday;
 
-        $birthdaysToShow[] = $birthdayToShow;
+          $birthdaysToShow[] = $birthdayToShow;
+        }
       }
     }
 

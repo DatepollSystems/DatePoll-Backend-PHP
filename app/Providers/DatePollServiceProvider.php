@@ -20,6 +20,8 @@ use App\Repositories\Setting\ISettingRepository;
 use App\Repositories\Setting\SettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\User\UserRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Repositories\User\UserSetting\UserSettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use App\Repositories\User\UserToken\UserTokenRepository;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,7 @@ class DatePollServiceProvider extends ServiceProvider
     /** User repositories */
     $this->app->bind(IUserRepository::class, UserRepository::class);
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
+    $this->app->bind(IUserSettingRepository::class, UserSettingRepository::class);
 
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);
