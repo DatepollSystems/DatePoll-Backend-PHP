@@ -13,10 +13,7 @@ use stdClass;
  * @property int $id
  * @property string $name
  * @property string $description
- * @property string $startDate
- * @property string $endDate
  * @property boolean $forEveryone
- * @property string $location
  * @property string $created_at
  * @property string $updated_at
  * @property EventDecision[] $eventsDecisions
@@ -39,10 +36,7 @@ class Event extends Model
   protected $fillable = [
     'name',
     'description',
-    'startDate',
-    'endDate',
     'forEveryone',
-    'location',
     'created_at',
     'updated_at'];
 
@@ -67,7 +61,7 @@ class Event extends Model
    */
   public function eventsForSubgroups() {
     return $this->hasMany('App\Models\Events\EventForSubgroup')
-                ->get();;
+                ->get();
   }
 
   /**
@@ -75,7 +69,15 @@ class Event extends Model
    */
   public function usersVotedForDecision() {
     return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-                ->get();;
+                ->get();
+  }
+
+  /**
+   * @return Collection
+   */
+  public function getEventDates() {
+    return $this->hasMany('App\Models\Events\EventDate')
+                ->get();
   }
 
   /**

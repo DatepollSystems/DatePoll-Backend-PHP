@@ -18,9 +18,6 @@ class CreateEventsTable extends Migration
 
       $table->string('name')->nullable(false);
       $table->text('description')->nullable(true);
-      $table->string('location')->nullable(true);
-      $table->string('startDate')->nullable(false);
-      $table->string('endDate')->nullable(false);
 
       $table->boolean('forEveryone')->nullable(false);
 
