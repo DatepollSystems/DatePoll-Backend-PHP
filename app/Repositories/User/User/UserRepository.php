@@ -169,6 +169,7 @@ class UserRepository implements IUserRepository
       }
     }
 
+    Logging::info('createOrUpdateUser', 'Successfully created or updated user ' . $user->id);
     return $user;
   }
 
