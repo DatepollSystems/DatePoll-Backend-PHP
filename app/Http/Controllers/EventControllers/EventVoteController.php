@@ -7,12 +7,19 @@ use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Models\User\User;
+use App\Repositories\Event\Event\IEventRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class EventVoteController extends Controller
 {
+
+  protected $eventRepository = null;
+
+  public function __construct(IEventRepository $eventRepository) {
+    $this->eventRepository = $eventRepository;
+  }
 
   /**
    * @param Request $request
@@ -41,7 +48,7 @@ class EventVoteController extends Controller
 
     // Check if user is in a group for this event
     $allowedToVote = false;
-    foreach ($user->getOpenEvents() as $openEvent) {
+    foreach ($this->eventRepository->getOpenEventsForUser($user) as $openEvent) {
       if ($eventId === $openEvent->id) {
         if ($openEvent->already_voted) {
           return response()->json(['msg' => 'User already voted for event'], 400);

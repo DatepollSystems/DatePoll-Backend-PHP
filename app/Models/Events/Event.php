@@ -17,12 +17,14 @@ use stdClass;
  * @property string $created_at
  * @property string $updated_at
  * @property EventDecision[] $eventsDecisions
+ * @property EventDate[] $eventDates
  * @property EventForGroup[] $eventsForGroups
  * @property EventForSubgroup[] $eventsForSubgroups
  * @property EventUserVotedForDecision[] $eventsUsersVotedForDecision
  */
 class Event extends Model
 {
+
   /**
    * The table associated with the model.
    *
@@ -41,7 +43,7 @@ class Event extends Model
     'updated_at'];
 
   /**
-   * @return Collection
+   * @return Collection | EventDecision[]
    */
   public function eventsDecisions() {
     return $this->hasMany('App\Models\Events\EventDecision', 'event_id')
@@ -73,41 +75,11 @@ class Event extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | EventDate[]
    */
   public function getEventDates() {
-    return $this->hasMany('App\Models\Events\EventDate')
+    return $this->hasMany('App\Models\Events\EventDate', 'event_id')
                 ->get();
-  }
-
-  /**
-   * @return stdClass
-   */
-  public function getReturnable() {
-    $returnable = new stdClass();
-
-    $returnable->id = $this->id;
-    $returnable->name = $this->name;
-    $returnable->description = $this->description;
-    $returnable->start_date = $this->startDate;
-    $returnable->end_date = $this->endDate;
-    $returnable->for_everyone = $this->forEveryone;
-    $returnable->location = $this->location;
-
-    $decisions = array();
-    foreach ($this->eventsDecisions() as $eventsDecision) {
-      $decision = new stdClass();
-      $decision->id = $eventsDecision->id;
-      $decision->decision = $eventsDecision->decision;
-      $decision->event_id = $eventsDecision->event_id;
-      $decision->show_in_calendar = $eventsDecision->showInCalendar;
-
-      $decisions[] = $decision;
-    }
-
-    $returnable->decisions = $decisions;
-
-    return $returnable;
   }
 
   /**

@@ -3,8 +3,10 @@
 namespace App\Repositories\Event\Event;
 
 use App\Models\Events\Event;
+use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use stdClass;
 
 interface IEventRepository
 {
@@ -43,4 +45,16 @@ interface IEventRepository
    * @throws Exception
    */
   public function deleteEvent(Event $event);
+
+  /**
+   * @param Event $event
+   * @return stdClass
+   */
+  public function getReturnable($event);
+
+  /**
+   * @param User $user
+   * @return array
+   */
+  public function getOpenEventsForUser(User $user);
 }

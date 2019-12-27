@@ -4,6 +4,7 @@ namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User\User;
+use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;
@@ -16,10 +17,12 @@ class UserController extends Controller
 
   protected $settingRepository = null;
   protected $userSettingRepository = null;
+  protected $eventRepository = null;
 
-  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository) {
+  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository, IEventRepository $eventRepository) {
     $this->settingRepository = $settingRepository;
     $this->userSettingRepository = $userSettingRepository;
+    $this->eventRepository = $eventRepository;
   }
 
 
@@ -121,7 +124,7 @@ class UserController extends Controller
 
     $eventsToShow = array();
     if ($this->settingRepository->getEventsEnabled()) {
-      $eventsToShow = $user->getOpenEvents();
+      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
     }
 
     $users = User::all();

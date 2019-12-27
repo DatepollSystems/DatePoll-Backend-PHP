@@ -39,7 +39,7 @@ class EventDecisionRepository implements IEventDecisionRepository
       'decision' => $decision,
       'showInCalendar' => $showInCalendar]);
 
-    return !$eventDecision->save() ? null : $eventDecision;
+    return $eventDecision->save() ? $eventDecision : null;
   }
 
 }

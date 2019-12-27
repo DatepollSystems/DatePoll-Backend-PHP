@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\EventControllers;
 
+use App\Models\Events\Event;
 use App\Http\Controllers\Controller;
 use App\Repositories\Event\Event\IEventRepository;
+use App\Repositories\Event\EventDate\IEventDateRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,9 +15,11 @@ class EventController extends Controller
 {
 
   protected $eventRepository = null;
+  protected $eventDateRepository = null;
 
-  public function __construct(IEventRepository $eventRepository) {
+  public function __construct(IEventRepository $eventRepository, IEventDateRepository $eventDateRepository) {
     $this->eventRepository = $eventRepository;
+    $this->eventDateRepository = $eventDateRepository;
   }
 
   /**
@@ -26,7 +30,7 @@ class EventController extends Controller
 
     $toReturnEvents = array();
     foreach ($events as $event) {
-      $eventToReturn = $event->getReturnable();
+      $eventToReturn = $this->eventRepository->getReturnable($event);
 
       $eventToReturn->view_event = [
         'href' => 'api/v1/avent/administration/avent/' . $event->id,
@@ -54,7 +58,7 @@ class EventController extends Controller
 
     $user = $request->auth;
 
-    $toReturnEvent = $event->getReturnable();
+    $toReturnEvent = $this->eventRepository->getReturnable($event);
     $toReturnEvent->resultGroups = $event->getResults($user);
     $toReturnEvent->view_events = [
       'href' => 'api/v1/avent/administration/avent',
@@ -86,7 +90,7 @@ class EventController extends Controller
 
     $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates);
 
-    $returnable = $event->getReturnable();
+    $returnable = $this->eventRepository->getReturnable($event);
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
@@ -105,12 +109,10 @@ class EventController extends Controller
   public function update(Request $request, $id) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'startDate' => 'required|date',
-      'endDate' => 'required|date',
       'forEveryone' => 'required|boolean',
       'description' => 'string|nullable',
-      'location' => 'string|nullable|max:190',
-      'decisions' => 'array']);
+      'decisions' => 'array|required',
+      'dates' => 'array|required']);
 
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
@@ -125,7 +127,7 @@ class EventController extends Controller
 
     $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates, $event);
 
-    $returnable = $event->getReturnable();
+    $returnable = $this->eventRepository->getReturnable($event);
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
