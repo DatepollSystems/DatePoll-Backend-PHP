@@ -10,6 +10,12 @@ use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
 use App\Repositories\Cinema\MovieWorker\MovieWorkerRepository;
 use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
 use App\Repositories\Cinema\MovieYear\MovieYearRepository;
+use App\Repositories\Event\Event\EventRepository;
+use App\Repositories\Event\Event\IEventRepository;
+use App\Repositories\Event\EventDate\EventDateRepository;
+use App\Repositories\Event\EventDate\IEventDateRepository;
+use App\Repositories\Event\EventDecision\EventDecisionRepository;
+use App\Repositories\Event\EventDecision\IEventDecisionRepository;
 use App\Repositories\Files\File\FileRepository;
 use App\Repositories\Files\File\IFileRepository;
 use App\Repositories\Job\IJobRepository;
@@ -39,6 +45,11 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IUserRepository::class, UserRepository::class);
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
     $this->app->bind(IUserSettingRepository::class, UserSettingRepository::class);
+
+    /** Event repositories */
+    $this->app->bind(IEventRepository::class, EventRepository::class);
+    $this->app->bind(IEventDateRepository::class, EventDateRepository::class);
+    $this->app->bind(IEventDecisionRepository::class, EventDecisionRepository::class);
 
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);
