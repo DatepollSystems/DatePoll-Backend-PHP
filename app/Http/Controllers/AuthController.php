@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendEmailQueue;
+use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ForgotPassword;
 use App\Models\UserCode;
@@ -228,7 +228,7 @@ class AuthController extends Controller
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
 
-      dispatch(new SendEmailQueue(new ForgotPassword($name, $code), $user));
+      dispatch(new SendEmailJob(new ForgotPassword($name, $code), $user->getEmailAddresses()));
 
       Logging::info("sendForgotPasswordEmail", "User -" . $user->id . " | Email sent");
       return response()->json(['msg' => 'Sent'], 200);

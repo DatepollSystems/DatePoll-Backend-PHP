@@ -3,7 +3,7 @@
 
 namespace App\Repositories\User\User;
 
-use App\Jobs\SendEmailQueue;
+use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
 use App\Models\User\User;
@@ -228,9 +228,10 @@ class UserRepository implements IUserRepository
     $randomPassword = UserCode::generateCode();
     $user->password = app('hash')->make($randomPassword . $user->id);;
     $user->force_password_change = true;
+    $user->activated = true;
     $user->save();
 
-    dispatch(new SendEmailQueue(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user));
+    dispatch(new SendEmailJob(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user->getEmailAddresses()));
   }
 
   public function deleteUser(User $user) {
