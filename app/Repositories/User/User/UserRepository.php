@@ -11,34 +11,68 @@ use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\UserCode;
+use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use stdClass;
 
 class UserRepository implements IUserRepository
 {
   protected $settingRepository = null;
+  protected $userSettingRepository = null;
+  protected $eventRepository = null;
 
-  public function __construct(ISettingRepository $settingRepository) {
+  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository, IEventRepository $eventRepository) {
     $this->settingRepository = $settingRepository;
+    $this->userSettingRepository = $userSettingRepository;
+    $this->eventRepository = $eventRepository;
   }
 
-
+  /**
+   * @return User[]|Collection
+   */
   public function getAllUsers() {
     return User::all();
   }
 
+  /**
+   * @param int $id
+   * @return User|null
+   */
   public function getUserById(int $id) {
     return User::find($id);
   }
 
+  /**
+   * @param string $username
+   * @return User|null
+   */
   public function getUserByUsername(string $username) {
     return User::where('username', $username)
                ->first();
   }
 
+  /**
+   * @param string|null $title
+   * @param string $username
+   * @param string $firstname
+   * @param string $surname
+   * @param string $birthday
+   * @param string $joinDate
+   * @param string $streetname
+   * @param string $streetnumber
+   * @param int $zipcode
+   * @param string $location
+   * @param $activated
+   * @param $activity
+   * @param $phoneNumbers
+   * @param $emailAddresses
+   * @param User|null $user
+   * @return User|null
+   */
   public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, User $user = null) {
     if ($user == null) {
       $user = new User([
@@ -173,6 +207,11 @@ class UserRepository implements IUserRepository
     return $user;
   }
 
+  /**
+   * @param array $permissions
+   * @param User $user
+   * @return bool
+   */
   public function createOrUpdatePermissionsForUser($permissions, User $user) {
     $permissionsWhichHaveNotBeenDeleted = array();
 
@@ -224,6 +263,9 @@ class UserRepository implements IUserRepository
     return true;
   }
 
+  /**
+   * @param User $user
+   */
   public function activateUser(User $user) {
     $randomPassword = UserCode::generateCode();
     $user->password = app('hash')->make($randomPassword . $user->id);;
@@ -234,6 +276,10 @@ class UserRepository implements IUserRepository
     dispatch(new SendEmailJob(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user->getEmailAddresses()));
   }
 
+  /**
+   * @param User $user
+   * @return bool|null
+   */
   public function deleteUser(User $user) {
     try {
       return $user->delete();
@@ -243,6 +289,9 @@ class UserRepository implements IUserRepository
     }
   }
 
+  /**
+   * @return array
+   */
   public function exportAllUsers() {
     $toReturnUsers = array();
 
@@ -284,17 +333,18 @@ class UserRepository implements IUserRepository
 
       $subgroups = '';
       foreach ($user->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
-        $subgroups .= $usersMemberOfSubgroup->subgroup()->group()->name . ' - ' . $usersMemberOfSubgroup->subgroup()->name . ', ';
+        $subgroups .= $usersMemberOfSubgroup->subgroup()
+                                            ->group()->name . ' - ' . $usersMemberOfSubgroup->subgroup()->name . ', ';
       }
       $toReturnUser->Register = $subgroups;
 
       $performanceBadgeForUser = '';
-      foreach($user->performanceBadges() as $performanceBadge) {
+      foreach ($user->performanceBadges() as $performanceBadge) {
         $performanceBadgeForUser .= $performanceBadge->instrument()->name . ': ' . $performanceBadge->performanceBadge()->name;
-        if($performanceBadge->date != '1970-01-01') {
+        if ($performanceBadge->date != '1970-01-01') {
           $performanceBadgeForUser .= ' am ' . $performanceBadge->date;
         }
-        if($performanceBadge->grade != null) {
+        if ($performanceBadge->grade != null) {
           $performanceBadgeForUser .= ' mit ' . $performanceBadge->grade . ' Erfolg';
         }
         $performanceBadgeForUser .= '; ';
@@ -307,16 +357,101 @@ class UserRepository implements IUserRepository
     return $toReturnUsers;
   }
 
+  /**
+   * @return User[]|null
+   */
   public function getAllNotActivatedUsers() {
-    return User::where('activated', 0)->get();
+    return User::where('activated', 0)
+               ->get();
   }
 
+  /**
+   * @param User $user
+   * @param string $notHashedPassword
+   * @return bool
+   */
   public function changePasswordOfUser(User $user, string $notHashedPassword) {
     $user->password = app('hash')->make($notHashedPassword . $user->id);
     return $user->save();
   }
 
-  public function checkPasswordOfUser(User $user, string $password)  {
+  /**
+   * @param User $user
+   * @param string $password
+   * @return bool
+   */
+  public function checkPasswordOfUser(User $user, string $password) {
     return Hash::check($password . $user->id, $user->password);
+  }
+
+  /**
+   * @param User $user
+   * @return array
+   */
+  public function getHomepageDataForUser(User $user) {
+    $bookingsToShow = array();
+    if ($this->settingRepository->getCinemaEnabled()) {
+      $bookings = $user->moviesBookings();
+      foreach ($bookings as $booking) {
+        $movie = $booking->movie();
+
+        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
+          $bookingToShow = new stdClass();
+          $bookingToShow->movie_id = $movie->id;
+          $bookingToShow->movie_name = $movie->name;
+          $bookingToShow->movie_date = $movie->date;
+          $bookingToShow->amount = $booking->amount;
+
+          if ($movie->worker() == null) {
+            $bookingToShow->worker_id = null;
+            $bookingToShow->worker_name = null;
+          } else {
+            $bookingToShow->worker_id = $movie->worker()->id;
+            $bookingToShow->worker_name = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
+          }
+
+          if ($movie->emergencyWorker() == null) {
+            $bookingToShow->emergency_worker_id = null;
+            $bookingToShow->emergency_worker_name = null;
+          } else {
+            $bookingToShow->emergency_worker_id = $movie->emergencyWorker()->id;
+            $bookingToShow->emergency_worker_name = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
+          }
+
+          $bookingsToShow[] = $bookingToShow;
+        }
+      }
+    }
+
+    $eventsToShow = array();
+    if ($this->settingRepository->getEventsEnabled()) {
+      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
+    }
+
+    $users = User::all();
+    $birthdaysToShow = array();
+    foreach ($users as $user) {
+      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+        $d = date_parse_from_format("Y-m-d", $user->birthday);
+        if ($d["month"] == date('n')) {
+          $birthdayToShow = new stdClass();
+
+          $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
+          $birthdayToShow->date = $user->birthday;
+
+          $birthdaysToShow[] = $birthdayToShow;
+        }
+      }
+    }
+
+    usort($birthdaysToShow, function ($a, $b) {
+      return strcmp($a->date, $b->date);
+    });
+
+    return [
+      'msg' => 'List of your bookings, events and birthdays in the next month',
+      'events' => $eventsToShow,
+      'bookings' => $bookingsToShow,
+      'birthdays' => $birthdaysToShow];
   }
 }

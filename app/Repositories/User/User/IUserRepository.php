@@ -86,4 +86,10 @@ interface IUserRepository
    * @return bool
    */
   public function checkPasswordOfUser(User $user, string $password);
+
+  /**
+   * @param User $user
+   * @return array
+   */
+  public function getHomepageDataForUser(User $user);
 }

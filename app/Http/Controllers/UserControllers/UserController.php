@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User\User;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,17 +15,11 @@ use stdClass;
 
 class UserController extends Controller
 {
+  protected $userRepository = null;
 
-  protected $settingRepository = null;
-  protected $userSettingRepository = null;
-  protected $eventRepository = null;
-
-  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository, IEventRepository $eventRepository) {
-    $this->settingRepository = $settingRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->eventRepository = $eventRepository;
+  public function __construct(IUserRepository $userRepository) {
+    $this->userRepository = $userRepository;
   }
-
 
   /**
    * @param Request $request
@@ -35,7 +30,9 @@ class UserController extends Controller
 
     $toReturnUser = $user->getReturnable();
 
-    return response()->json(['msg' => 'Get yourself', 'user' => $toReturnUser], 200);
+    return response()->json([
+      'msg' => 'Get yourself',
+      'user' => $toReturnUser], 200);
   }
 
   /**
@@ -52,8 +49,7 @@ class UserController extends Controller
       'streetnumber' => 'required|max:190|min:1',
       'zipcode' => 'required|integer',
       'location' => 'required|max:190|min:1',
-      'birthday' => 'required|date'
-    ]);
+      'birthday' => 'required|date']);
 
     $user = $request->auth;
 
@@ -69,9 +65,13 @@ class UserController extends Controller
     if ($user->save()) {
       $userToShow = $user->getReturnable();
 
-      $userToShow->view_yourself = ['href' => 'api/v1/user/myself', 'method' => 'GET'];
+      $userToShow->view_yourself = [
+        'href' => 'api/v1/user/myself',
+        'method' => 'GET'];
 
-      $response = ['msg' => 'User updated', 'user' => $userToShow];
+      $response = [
+        'msg' => 'User updated',
+        'user' => $userToShow];
 
       return response()->json($response, 201);
     }
@@ -88,65 +88,8 @@ class UserController extends Controller
   public function homepage(Request $request) {
     $user = $request->auth;
 
-    $bookingsToShow = array();
-    if ($this->settingRepository->getCinemaEnabled()) {
-      $bookings = $user->moviesBookings();
-      foreach ($bookings as $booking) {
-        $movie = $booking->movie();
+    $response = $this->userRepository->getHomepageDataForUser($user);
 
-        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
-          $bookingToShow = new stdClass();
-          $bookingToShow->movie_id = $movie->id;
-          $bookingToShow->movie_name = $movie->name;
-          $bookingToShow->movie_date = $movie->date;
-          $bookingToShow->amount = $booking->amount;
-
-          if ($movie->worker() == null) {
-            $bookingToShow->worker_id = null;
-            $bookingToShow->worker_name = null;
-          } else {
-            $bookingToShow->worker_id = $movie->worker()->id;
-            $bookingToShow->worker_name = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
-          }
-
-          if ($movie->emergencyWorker() == null) {
-            $bookingToShow->emergency_worker_id = null;
-            $bookingToShow->emergency_worker_name = null;
-          } else {
-            $bookingToShow->emergency_worker_id = $movie->emergencyWorker()->id;
-            $bookingToShow->emergency_worker_name = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
-          }
-
-          $bookingsToShow[] = $bookingToShow;
-        }
-      }
-    }
-
-    $eventsToShow = array();
-    if ($this->settingRepository->getEventsEnabled()) {
-      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
-    }
-
-    $users = User::all();
-    $birthdaysToShow = array();
-    foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
-        $d = date_parse_from_format("Y-m-d", $user->birthday);
-        if ($d["month"] == date('n')) {
-          $birthdayToShow = new stdClass();
-
-          $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
-          $birthdayToShow->date = $user->birthday;
-
-          $birthdaysToShow[] = $birthdayToShow;
-        }
-      }
-    }
-
-    return response()->json([
-      'msg' => 'List of your bookings, events and birthdays in the next month',
-      'events' => $eventsToShow,
-      'bookings' => $bookingsToShow,
-      'birthdays' => $birthdaysToShow], 200);
+    return response()->json($response, 200);
   }
 }
