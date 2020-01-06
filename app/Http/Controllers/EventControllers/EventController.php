@@ -80,7 +80,14 @@ class EventController extends Controller
       'forEveryone' => 'required|boolean',
       'description' => 'string|nullable',
       'decisions' => 'array|required',
-      'dates' => 'array|required']);
+      'decisions.*.decision' => 'string|min:1|max:190',
+      'decisions.*.show_in_calendar' => 'required|boolean',
+      'dates' => 'array|required',
+      'dates.*.x' => 'digits_between:1,8',
+      'dates.*.y' => 'digits_between:1,8',
+      'dates.*.date' => 'date',
+      'dates.*.location' => 'string|nullable|max:190',
+      'dates.*.description' => 'string|nullable|max:255']);
 
     $name = $request->input('name');
     $forEveryone = $request->input('forEveryone');
@@ -112,7 +119,16 @@ class EventController extends Controller
       'forEveryone' => 'required|boolean',
       'description' => 'string|nullable',
       'decisions' => 'array|required',
-      'dates' => 'array|required']);
+      'decisions.*.id' => 'required|integer',
+      'decisions.*.decision' => 'string|min:1|max:190',
+      'decisions.*.show_in_calendar' => 'required|boolean',
+      'dates' => 'array|required',
+      'dates.*.id' => 'required|integer',
+      'dates.*.x' => 'digits_between:1,8',
+      'dates.*.y' => 'digits_between:1,8',
+      'dates.*.date' => 'date',
+      'dates.*.location' => 'string|nullable|max:190',
+      'dates.*.description' => 'string|nullable|max:255']);
 
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
