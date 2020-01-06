@@ -43,5 +43,11 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
       $router->get('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@getSingle']);
       $router->put('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@update']);
       $router->delete('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@delete']);
+
+      /** Standard locations routes */
+      $router->get('standardLocation', ['uses' => 'EventControllers\StandardLocationController@getAll']);
+      $router->post('standardLocation', ['uses' => 'EventControllers\StandardLocationController@create']);
+      $router->get('standardLocation/{id}', ['uses' => 'EventControllers\StandardLocationController@getSingle']);
+      $router->delete('standardLocation/{id}', ['uses' => 'EventControllers\StandardLocationController@delete']);
     });
 });
