@@ -83,9 +83,9 @@ class EventController extends Controller
       'decisions.*.decision' => 'string|min:1|max:190',
       'decisions.*.show_in_calendar' => 'required|boolean',
       'dates' => 'array|required',
-      'dates.*.x' => 'digits_between:1,8',
-      'dates.*.y' => 'digits_between:1,8',
-      'dates.*.date' => 'date',
+      'dates.*.x' => 'nullable|numeric',
+      'dates.*.y' => 'nullable|numeric',
+      'dates.*.date' => 'date|nullable',
       'dates.*.location' => 'string|nullable|max:190',
       'dates.*.description' => 'string|nullable|max:255']);
 
@@ -124,9 +124,9 @@ class EventController extends Controller
       'decisions.*.show_in_calendar' => 'required|boolean',
       'dates' => 'array|required',
       'dates.*.id' => 'required|integer',
-      'dates.*.x' => 'digits_between:1,8',
-      'dates.*.y' => 'digits_between:1,8',
-      'dates.*.date' => 'date',
+      'dates.*.x' => 'nullable|numeric',
+      'dates.*.y' => 'nullable|numeric',
+      'dates.*.date' => 'date|nullable',
       'dates.*.location' => 'string|nullable|max:190',
       'dates.*.description' => 'string|nullable|max:255']);
 
