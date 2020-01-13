@@ -322,9 +322,15 @@ class EventRepository implements IEventRepository
                                                         ->where('user_id', $user->id)
                                                         ->first();
           $alreadyVoted = ($eventUserVotedFor != null);
+          if ($eventUserVotedFor != null) {
+            $userDecision = $eventUserVotedFor->decision()->decision;
+          } else  {
+            $userDecision = null;
+          }
 
           $eventToReturn = $this->getReturnable($event);
           $eventToReturn->already_voted = $alreadyVoted;
+          $eventToReturn->user_decision = $userDecision;
           if ($alreadyVoted) {
             $eventToReturn->additional_information = $eventUserVotedFor->additionalInformation;
           }
