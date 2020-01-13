@@ -16,7 +16,7 @@ use App\Repositories\Event\EventDate\EventDateRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\EventDecisionRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
-use App\Repositories\Event\EventDecision\IEventStandardLocationRepository;
+use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepository;
 use App\Repositories\Event\EventStandardLocation\EventStandardLocationRepository;
 use App\Repositories\Files\File\FileRepository;
 use App\Repositories\Files\File\IFileRepository;

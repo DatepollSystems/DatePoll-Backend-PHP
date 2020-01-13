@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Events\EventStandardDecision;
-use App\Repositories\Event\EventDecision\IEventStandardLocationRepository;
+use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -35,7 +34,7 @@ class StandardLocationController extends Controller
 
     return response()->json([
       'msg' => 'List of all standard locations',
-      'standardLocation' => $toReturn]);
+      'standardLocations' => $toReturn]);
   }
 
   /**
@@ -68,8 +67,8 @@ class StandardLocationController extends Controller
   public function create(Request $request) {
     $this->validate($request, [
       'name' => 'required|min:1|max:190',
-      'x' => 'digits_between:1,8',
-      'y' => 'digits_between:1,8',
+      'x' => 'numeric|nullable',
+      'y' => 'numeric|nullable',
       'location' => 'string|nullable|max:190']);
 
     $name = $request->input('name');

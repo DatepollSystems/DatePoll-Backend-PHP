@@ -4,7 +4,6 @@
 namespace App\Repositories\Event\EventStandardLocation;
 
 use App\Models\Events\EventStandardLocation;
-use App\Repositories\Event\EventDecision\IEventStandardLocationRepository;
 
 class EventStandardLocationRepository implements IEventStandardLocationRepository
 {

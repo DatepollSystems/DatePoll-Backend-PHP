@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Event\EventDecision;
+namespace App\Repositories\Event\EventStandardLocation;
 
 use App\Models\Events\EventStandardLocation;
 
