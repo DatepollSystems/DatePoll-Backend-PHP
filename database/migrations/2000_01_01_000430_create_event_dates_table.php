@@ -20,8 +20,8 @@ class CreateEventDatesTable extends Migration
       $table->string('description')->nullable(true);
       $table->string('location')->nullable(true);
 
-      $table->double('x', 8, 6)->nullable(true);
-      $table->double('y', 8, 6)->nullable(true);
+      $table->double('x', 9, 6)->nullable(true);
+      $table->double('y', 9, 6)->nullable(true);
 
       $table->integer('event_id')->unsigned();;
       $table->foreign('event_id')
