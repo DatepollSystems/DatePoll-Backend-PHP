@@ -95,7 +95,7 @@ class EventRepository implements IEventRepository
    * @return Event|null
    * @throws Exception
    */
-  public function createOrUpdateEvent(string $name, bool $forEveryone, string $description, array $decisions, array $dates, Event $event = null) {
+  public function createOrUpdateEvent(string $name, bool $forEveryone, $description, array $decisions, array $dates, Event $event = null) {
     if ($event == null) {
       $event = new Event([
         'name' => $name,

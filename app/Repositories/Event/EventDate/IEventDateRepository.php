@@ -31,7 +31,7 @@ interface IEventDateRepository
    * @param string $description
    * @return null | EventDate
    */
-  public function createEventDate(Event $event, $x, $y, string $date, string $location, string $description);
+  public function createEventDate(Event $event, $x, $y, $date, $location, $description);
 
   /**
    * @param Event $event
