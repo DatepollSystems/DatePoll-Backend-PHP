@@ -110,52 +110,11 @@ class UserRepository implements IUserRepository
       $user->save();
     }
 
-    //----Email addresses manager only deletes changed email addresses---
-    $emailAddressesWhichHaveNotBeenDeleted = array();
-
-    $OldEmailAddresses = $user->emailAddresses();
-    foreach ($OldEmailAddresses as $oldEmailAddress) {
-      $toDelete = true;
-
-      foreach ((array)$emailAddresses as $emailAddress) {
-        if ($oldEmailAddress['email'] == $emailAddress) {
-          $toDelete = false;
-          $emailAddressesWhichHaveNotBeenDeleted[] = $emailAddress;
-          break;
-        }
-      }
-
-      if ($toDelete) {
-        $emailAddressToDeleteObject = UserEmailAddress::find($oldEmailAddress->id);
-        if (!$emailAddressToDeleteObject->delete()) {
-          Logging::error('createOrUpdateUser', 'Could not delete emailAddressToDeleteObject');
-          return null;
-        }
-      }
+    // Email addresses manager only deletes changed email addresses
+    if ($this->updateUserEmailAddresses($user, $emailAddresses) == null) {
+      return null;
     }
 
-    foreach ((array)$emailAddresses as $emailAddress) {
-      $toAdd = true;
-
-      foreach ($emailAddressesWhichHaveNotBeenDeleted as $EmailAddressWhichHasNotBeenDeleted) {
-        if ($emailAddress == $EmailAddressWhichHasNotBeenDeleted) {
-          $toAdd = false;
-          break;
-        }
-      }
-
-      if ($toAdd) {
-        $emailAddressToSave = new UserEmailAddress([
-          'email' => $emailAddress,
-          'user_id' => $user->id]);
-
-        if (!$emailAddressToSave->save()) {
-          Logging::error('createOrUpdateUser', 'Could not save $emailAddressToSave');
-          return null;
-        }
-      }
-    }
-    //---------------------------------------------------------------
     //----Phone numbers manager only deletes changed phone numbers---
     $phoneNumbersWhichHaveNotBeenDeleted = array();
 
@@ -205,6 +164,60 @@ class UserRepository implements IUserRepository
 
     Logging::info('createOrUpdateUser', 'Successfully created or updated user ' . $user->id);
     return $user;
+  }
+
+  /**
+   * @param User $user
+   * @param $emailAddresses
+   * @return bool|null
+   */
+  public function updateUserEmailAddresses(User $user, $emailAddresses) {
+    $emailAddressesWhichHaveNotBeenDeleted = array();
+
+    $OldEmailAddresses = $user->emailAddresses();
+    foreach ($OldEmailAddresses as $oldEmailAddress) {
+      $toDelete = true;
+
+      foreach ((array)$emailAddresses as $emailAddress) {
+        if ($oldEmailAddress['email'] == $emailAddress) {
+          $toDelete = false;
+          $emailAddressesWhichHaveNotBeenDeleted[] = $emailAddress;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $emailAddressToDeleteObject = UserEmailAddress::find($oldEmailAddress->id);
+        if (!$emailAddressToDeleteObject->delete()) {
+          Logging::error('updateUserEmailAddresses', 'Could not delete emailAddressToDeleteObject');
+          return null;
+        }
+      }
+    }
+
+    foreach ((array)$emailAddresses as $emailAddress) {
+      $toAdd = true;
+
+      foreach ($emailAddressesWhichHaveNotBeenDeleted as $EmailAddressWhichHasNotBeenDeleted) {
+        if ($emailAddress == $EmailAddressWhichHasNotBeenDeleted) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $emailAddressToSave = new UserEmailAddress([
+          'email' => $emailAddress,
+          'user_id' => $user->id]);
+
+        if (!$emailAddressToSave->save()) {
+          Logging::error('updateUserEmailAddresses', 'Could not save $emailAddressToSave');
+          return null;
+        }
+      }
+    }
+
+    return true;
   }
 
   /**

@@ -46,6 +46,13 @@ interface IUserRepository
   public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, User $user = null);
 
   /**
+   * @param User $user
+   * @param $emailAddresses
+   * @return bool|null
+   */
+  public function updateUserEmailAddresses(User $user, $emailAddresses);
+
+  /**
    * @param array $permissions
    * @param User $user
    * @return bool
