@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
+use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use DateTime;
 use Exception;
@@ -25,10 +28,16 @@ class CalendarController extends Controller
 
   protected $userTokenRepository = null;
   protected $settingRepository = null;
+  protected $userRepository = null;
+  protected $userSettingRepository = null;
+  protected $eventDateRepository = null;
 
-  public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository) {
+  public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository, IUserRepository $userRepository, IUserSettingRepository $userSettingRepository, IEventDateRepository $eventDateRepository) {
     $this->userTokenRepository = $userTokenRepository;
     $this->settingRepository = $settingRepository;
+    $this->userRepository = $userRepository;
+    $this->userSettingRepository = $userSettingRepository;
+    $this->eventDateRepository = $eventDateRepository;
   }
 
   /**
@@ -54,7 +63,8 @@ class CalendarController extends Controller
     if ($this->settingRepository->getCinemaEnabled()) {
       /* -------- Movie booking specific calendar -------------*/
       $movies = array();
-      $movieBookings = MoviesBooking::where('user_id', $user->id)->get();
+      $movieBookings = MoviesBooking::where('user_id', $user->id)
+                                    ->get();
       foreach ($movieBookings as $movieBooking) {
         $movies[] = $movieBooking->movie();
       }
@@ -70,13 +80,13 @@ class CalendarController extends Controller
 
         $movieEvent = new CalendarEvent();
         $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
-          ->setEnd(new DateTime($movie->date . 'T23:59:59'))
-          ->setSummary($movie->name)
-          ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
-          ->setUrl($movie->trailerLink)
-          ->setGeo($geo)
-          ->addLocation($location)
-          ->setUid($calendarEventId);
+                   ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+                   ->setSummary($movie->name)
+                   ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                   ->setUrl($movie->trailerLink)
+                   ->setGeo($geo)
+                   ->addLocation($location)
+                   ->setUid($calendarEventId);
         $calendarEventId++;
 
         $worker = $movie->worker();
@@ -84,7 +94,9 @@ class CalendarController extends Controller
           $name = $worker->firstname . ' ' . $worker->surname;
 
           $organizer = new Organizer(new Formatter());
-          $organizer->setValue($worker->email)->setName($name)->setLanguage('de');
+          $organizer->setValue($worker->email)
+                    ->setName($name)
+                    ->setLanguage('de');
           $movieEvent->setOrganizer($organizer);
         }
 
@@ -113,12 +125,12 @@ class CalendarController extends Controller
 
           $movieEvent = new CalendarEvent();
           $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
-            ->setEnd(new DateTime($movie->date . 'T23:59:59'))
-            ->setSummary($movie->name)//->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
-            ->setUrl($movie->trailerLink)
-            ->setGeo($geo)
-            ->addLocation($location)
-            ->setUid($calendarEventId);
+                     ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+                     ->setSummary($movie->name)//->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                     ->setUrl($movie->trailerLink)
+                     ->setGeo($geo)
+                     ->addLocation($location)
+                     ->setUid($calendarEventId);
           $calendarEventId++;
 
           $worker = $movie->worker();
@@ -126,7 +138,9 @@ class CalendarController extends Controller
             $name = $worker->firstname . ' ' . $worker->surname;
 
             $organizer = new Organizer(new Formatter());
-            $organizer->setValue($worker->email)->setName($name)->setLanguage('de');
+            $organizer->setValue($worker->email)
+                      ->setName($name)
+                      ->setLanguage('de');
             $movieEvent->setOrganizer($organizer);
           }
 
@@ -151,25 +165,46 @@ class CalendarController extends Controller
       }
 
       foreach ($events as $event) {
-//      $geo = new Geo();
-//      $geo->setLatitude(48.643865);
-//      $geo->setLongitude(15.814679);
+        $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
+
+        $geo = new Geo();
+        $geo->setLatitude($startDate->x);
+        $geo->setLongitude($startDate->y);
 
         $location = new Location();
         $location->setLanguage('de');
-        $location->setName($event->location);
+        $location->setName($startDate->location);
+
 
         $eventEvent = new CalendarEvent();
-        $eventEvent->setStart(new DateTime($event->startDate))
-                   ->setEnd(new DateTime($event->endDate))
+        $eventEvent->setStart(new DateTime($startDate->date))
+                   ->setEnd(new DateTime($this->eventDateRepository->getLastEventDateForEvent($event)->date))
                    ->setSummary($event->name)
-                   ->setDescription($event->description)//       ->setUrl($movie->trailerLink)
-//        ->setGeo($geo)
+                   ->setDescription($event->description)
+                   ->setGeo($geo)
                    ->addLocation($location)
                    ->setUid($calendarEventId);
         $calendarEventId++;
 
         $calendar->addEvent($eventEvent);
+      }
+    }
+
+    $users = $this->userRepository->getAllUsers();
+    foreach ($users as $user) {
+      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+        $d = date_parse_from_format("Y-m-d", $user->birthday);
+        if ($d["month"] == date('n')) {
+          $birthdayEvent = new CalendarEvent();
+          $birthdayEvent->setStart(new DateTime($user->birthday))
+                        ->setEnd(new DateTime($user->birthday))
+                        ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
+                        ->setUid($calendarEventId)
+                        ->setAllDay(true);
+          $calendarEventId++;
+
+          $calendar->addEvent($birthdayEvent);
+        }
       }
     }
 
