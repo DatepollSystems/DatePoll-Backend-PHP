@@ -5,6 +5,9 @@ namespace App\Repositories\User\UserSetting;
 abstract class UserSettingKey
 {
   const SHARE_BIRTHDAY = "share_birthday";
+  const SHOW_MOVIES_IN_CALENDAR = 'show_movies_in_calendar';
+  const SHOW_EVENTS_IN_CALENDAR = 'show_events_in_calendar';
+  const SHOW_BIRTHDAYS_IN_CALENDAR = 'show_birthdays_in_calendar';
 }
 
 use App\Repositories\User\UserToken\IUserTokenRepository;
@@ -23,6 +26,30 @@ class UserSettingRepository implements IUserSettingRepository
 
   public function setShareBirthdayForUser($user, bool $value): bool {
     return $this->setUserSetting($user, UserSettingKey::SHARE_BIRTHDAY, $value);
+  }
+
+  public function getShowMoviesInCalendarForUser($user): bool {
+    return $this->getUserSetting($user, UserSettingKey::SHOW_MOVIES_IN_CALENDAR, true);
+  }
+
+  public function setShowMoviesInCalendarForUser($user, bool $value): bool {
+    return $this->setUserSetting($user, UserSettingKey::SHOW_MOVIES_IN_CALENDAR, $value);
+  }
+
+  public function getShowEventsInCalendarForUser($user): bool {
+    return $this->getUserSetting($user, UserSettingKey::SHOW_EVENTS_IN_CALENDAR, true);
+  }
+
+  public function setShowEventsInCalendarForUser($user, bool $value): bool {
+    return $this->setUserSetting($user, UserSettingKey::SHOW_EVENTS_IN_CALENDAR, $value);
+  }
+
+  public function getShowBirthdaysInCalendarForUser($user): bool {
+    return $this->getUserSetting($user, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, true);
+  }
+
+  public function setShowBirthdaysInCalendarForUser($user, bool $value): bool {
+    return $this->setUserSetting($user, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, $value);
   }
 
   /**

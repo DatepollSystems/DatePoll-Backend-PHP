@@ -50,6 +50,90 @@ class UserSettingsController extends Controller
   }
 
   /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function getShowMoviesInCalendar(Request $request) {
+    $user = $this->userRepository->getUserById($request->auth->id);
+
+    $showMoviesInCalendar = $this->userSettingRepository->getShowMoviesInCalendarForUser($user);
+
+    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_MOVIES_IN_CALENDAR, $showMoviesInCalendar, true);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setShowMoviesInCalendar(Request $request) {
+    $this->validate($request, ['setting_value' => 'required|boolean']);
+
+    $user = $this->userRepository->getUserById($request->auth->id);
+    $value = $request->input('setting_value');
+
+    $showMoviesInCalendar = $this->userSettingRepository->setShowMoviesInCalendarForUser($user, $value);
+
+    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_MOVIES_IN_CALENDAR, $showMoviesInCalendar, false);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function getShowEventsInCalendar(Request $request) {
+    $user = $this->userRepository->getUserById($request->auth->id);
+
+    $showEventsInCalendar = $this->userSettingRepository->getShowEventsInCalendarForUser($user);
+
+    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_EVENTS_IN_CALENDAR, $showEventsInCalendar, true);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setShowEventsInCalendar(Request $request) {
+    $this->validate($request, ['setting_value' => 'required|boolean']);
+
+    $user = $this->userRepository->getUserById($request->auth->id);
+    $value = $request->input('setting_value');
+
+    $showEventsInCalendar = $this->userSettingRepository->setShowEventsInCalendarForUser($user, $value);
+
+    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_EVENTS_IN_CALENDAR, $showEventsInCalendar, false);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function getShowBirthdaysInCalendar(Request $request) {
+    $user = $this->userRepository->getUserById($request->auth->id);
+
+    $showBirthdaysInCalendar = $this->userSettingRepository->getShowBirthdaysInCalendarForUser($user);
+
+    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, $showBirthdaysInCalendar, true);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setShowBirthdaysInCalendar(Request $request) {
+    $this->validate($request, ['setting_value' => 'required|boolean']);
+
+    $user = $this->userRepository->getUserById($request->auth->id);
+    $value = $request->input('setting_value');
+
+    $showBirthdaysInCalendar = $this->userSettingRepository->setShowBirthdaysInCalendarForUser($user, $value);
+
+    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, $showBirthdaysInCalendar, false);
+  }
+
+  /**
    * @param string $userSettingKey
    * @param bool $value
    * @param bool $get

@@ -60,7 +60,7 @@ class CalendarController extends Controller
 
     $calendarEventId = 1;
 
-    if ($this->settingRepository->getCinemaEnabled()) {
+    if ($this->settingRepository->getCinemaEnabled() && $this->userSettingRepository->getShowMoviesInCalendarForUser($user)) {
       /* -------- Movie booking specific calendar -------------*/
       $movies = array();
       $movieBookings = MoviesBooking::where('user_id', $user->id)
@@ -149,7 +149,7 @@ class CalendarController extends Controller
       }
     }
 
-    if ($this->settingRepository->getEventsEnabled()) {
+    if ($this->settingRepository->getEventsEnabled() && $this->userSettingRepository->getShowEventsInCalendarForUser($user)) {
       // Find events where user answered a question with decision which also has showInCalendar on true
       $eventIds = DB::table('events_users_voted_for')
                     ->join('events_decisions', 'events_decisions.id', '=', 'events_users_voted_for.decision_id')
@@ -190,20 +190,22 @@ class CalendarController extends Controller
       }
     }
 
-    $users = $this->userRepository->getAllUsers();
-    foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
-        $d = date_parse_from_format("Y-m-d", $user->birthday);
-        if ($d["month"] == date('n')) {
-          $birthdayEvent = new CalendarEvent();
-          $birthdayEvent->setStart(new DateTime($user->birthday))
-                        ->setEnd(new DateTime($user->birthday))
-                        ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
-                        ->setUid($calendarEventId)
-                        ->setAllDay(true);
-          $calendarEventId++;
+    if ($this->userSettingRepository->getShowBirthdaysInCalendarForUser($user)) {
+      $users = $this->userRepository->getAllUsers();
+      foreach ($users as $user) {
+        if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+          $d = date_parse_from_format("Y-m-d", $user->birthday);
+          if ($d["month"] == date('n')) {
+            $birthdayEvent = new CalendarEvent();
+            $birthdayEvent->setStart(new DateTime($user->birthday))
+                          ->setEnd(new DateTime($user->birthday))
+                          ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
+                          ->setUid($calendarEventId)
+                          ->setAllDay(true);
+            $calendarEventId++;
 
-          $calendar->addEvent($birthdayEvent);
+            $calendar->addEvent($birthdayEvent);
+          }
         }
       }
     }

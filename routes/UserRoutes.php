@@ -37,6 +37,15 @@ $router->group(['prefix' => 'user'], function () use ($router) {
     $router->group(['prefix' => 'settings'], function () use ($router) {
       $router->get('shareBirthday', ['uses' => 'UserControllers\UserSettingsController@getShareBirthday']);
       $router->post('shareBirthday', ['uses' => 'UserControllers\UserSettingsController@setShareBirthday']);
+
+      $router->get('showMoviesInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowMoviesInCalendar']);
+      $router->post('showMoviesInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowMoviesInCalendar']);
+
+      $router->get('showEventsInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowEventsInCalendar']);
+      $router->post('showEventsInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowEventsInCalendar']);
+
+      $router->get('showBirthdaysInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowBirthdaysInCalendar']);
+      $router->post('showBirthdaysInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowBirthdaysInCalendar']);
     });
   });
 });
