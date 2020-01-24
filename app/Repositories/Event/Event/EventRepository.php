@@ -261,7 +261,7 @@ class EventRepository implements IEventRepository
     $returnable->decisions = $decisions;
 
     $dates = array();
-    foreach ($event->getEventDates() as $eventDate) {
+    foreach ($this->eventDateRepository->getEventDatesOrderedByDateForEvent($event) as $eventDate) {
       $date = new stdClass();
       $date->id = $eventDate->id;
       $date->date = $eventDate->date;
