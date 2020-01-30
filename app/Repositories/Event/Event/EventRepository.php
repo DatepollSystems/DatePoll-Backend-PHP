@@ -3,14 +3,17 @@
 
 namespace App\Repositories\Event\Event;
 
+use App\Jobs\SendEmailJob;
 use App\Logging;
+use App\Mail\NewEvent;
 use App\Models\Events\Event;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Models\Groups\Group;
 use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
-use App\Repositories\User\User\IUserRepository;
+use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
@@ -20,14 +23,17 @@ class EventRepository implements IEventRepository
 
   protected $eventDateRepository = null;
   protected $eventDecisionRepository = null;
-  protected $userRepository = null;
+  protected $userSettingRepository = null;
+  protected $settingRepository = null;
 
   public function __construct(IEventDateRepository $eventDateRepository,
                               IEventDecisionRepository $eventDecisionRepository,
-                              IUserRepository $userRepository) {
+                              IUserSettingRepository $userSettingRepository,
+                              ISettingRepository $settingRepository) {
     $this->eventDateRepository = $eventDateRepository;
     $this->eventDecisionRepository = $eventDecisionRepository;
-    $this->userRepository = $userRepository;
+    $this->userSettingRepository = $userSettingRepository;
+    $this->settingRepository = $settingRepository;
   }
 
   /**
@@ -102,7 +108,10 @@ class EventRepository implements IEventRepository
    * @throws Exception
    */
   public function createOrUpdateEvent(string $name, bool $forEveryone, $description, array $decisions, array $dates, Event $event = null) {
+    $creating = false;
     if ($event == null) {
+      $creating = true;
+
       $event = new Event([
         'name' => $name,
         'forEveryone' => $forEveryone,
@@ -212,6 +221,19 @@ class EventRepository implements IEventRepository
     // ----------------------------------------------------------------------------------------------------
 
     Logging::info('createOrUpdateEvent', 'Successfully created or updated event ' . $event->id);
+
+    if ($creating) {
+      foreach ($this->getPotentialVotersForEvent($event) as $eventUser) {
+        // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
+        // a circular dependency and RAM will explodes
+        $user = User::find($eventUser->id);
+
+        if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user)) {
+          dispatch(new SendEmailJob(new NewEvent($user->firstname . " " . $user->surname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()));
+        }
+      }
+    }
+
     return $event;
   }
 
@@ -303,7 +325,7 @@ class EventRepository implements IEventRepository
 
         $usersMemberOfGroup = array();
         foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
-          $usersMemberOfGroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup->user(), $anonymous);
+          $usersMemberOfGroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup->user(), $event, $anonymous);
         }
         $groupToSave->users = $usersMemberOfGroup;
 
@@ -316,7 +338,7 @@ class EventRepository implements IEventRepository
 
           $usersMemberOfSubgroup = array();
           foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-            $usersMemberOfSubgroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $anonymous);
+            $usersMemberOfSubgroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $event, $anonymous);
           }
 
           $subgroupToSave->users = $usersMemberOfSubgroup;
@@ -330,8 +352,8 @@ class EventRepository implements IEventRepository
       $results->groups = $groups;
 
       $all = array();
-      foreach ($this->userRepository->getAllUsers() as $user) {
-        $all[] = $this->eventDecisionRepository->getDecisionForUser($user, $anonymous);
+      foreach (User::all() as $user) {
+        $all[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
       }
 
       $results->allUsers = $all;
@@ -354,7 +376,7 @@ class EventRepository implements IEventRepository
 
         $usersMemberOfGroup = array();
         foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
-          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup->user(), $anonymous);
+          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup->user(), $event, $anonymous);
           $usersMemberOfGroup[] = $user;
           if (!in_array($user, $all)) {
             $all[] = $user;
@@ -373,7 +395,7 @@ class EventRepository implements IEventRepository
 
           $usersMemberOfSubgroup = array();
           foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-            $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $anonymous);
+            $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $event, $anonymous);
             $usersMemberOfSubgroup[] = $user;
             if (!in_array($user, $all)) {
               $all[] = $user;
@@ -407,7 +429,7 @@ class EventRepository implements IEventRepository
 
         $usersMemberOfSubgroup = array();
         foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $anonymous);
+          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $event, $anonymous);
           $usersMemberOfSubgroup[] = $user;
           if (!in_array($user, $all)) {
             $all[] = $user;
