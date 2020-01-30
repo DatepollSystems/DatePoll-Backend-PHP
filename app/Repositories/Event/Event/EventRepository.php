@@ -26,10 +26,7 @@ class EventRepository implements IEventRepository
   protected $userSettingRepository = null;
   protected $settingRepository = null;
 
-  public function __construct(IEventDateRepository $eventDateRepository,
-                              IEventDecisionRepository $eventDecisionRepository,
-                              IUserSettingRepository $userSettingRepository,
-                              ISettingRepository $settingRepository) {
+  public function __construct(IEventDateRepository $eventDateRepository, IEventDecisionRepository $eventDecisionRepository, IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository) {
     $this->eventDateRepository = $eventDateRepository;
     $this->eventDecisionRepository = $eventDecisionRepository;
     $this->userSettingRepository = $userSettingRepository;
@@ -501,7 +498,7 @@ class EventRepository implements IEventRepository
           $alreadyVoted = ($eventUserVotedFor != null);
           if ($eventUserVotedFor != null) {
             $userDecision = $eventUserVotedFor->decision()->decision;
-          } else  {
+          } else {
             $userDecision = null;
           }
 
