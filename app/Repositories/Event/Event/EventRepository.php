@@ -6,9 +6,11 @@ namespace App\Repositories\Event\Event;
 use App\Logging;
 use App\Models\Events\Event;
 use App\Models\Events\EventUserVotedForDecision;
+use App\Models\Groups\Group;
 use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
+use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
@@ -18,10 +20,14 @@ class EventRepository implements IEventRepository
 
   protected $eventDateRepository = null;
   protected $eventDecisionRepository = null;
+  protected $userRepository = null;
 
-  public function __construct(IEventDateRepository $eventDateRepository, IEventDecisionRepository $eventDecisionRepository) {
+  public function __construct(IEventDateRepository $eventDateRepository,
+                              IEventDecisionRepository $eventDecisionRepository,
+                              IUserRepository $userRepository) {
     $this->eventDateRepository = $eventDateRepository;
     $this->eventDecisionRepository = $eventDecisionRepository;
+    $this->userRepository = $userRepository;
   }
 
   /**
@@ -279,6 +285,153 @@ class EventRepository implements IEventRepository
   }
 
   /**
+   * @param Event $event
+   * @param bool $anonymous
+   * @return stdClass
+   */
+  public function getResultsForEvent(Event $event, bool $anonymous) {
+    $results = new stdClass();
+
+    if ($event->forEveryone) {
+      $groups = array();
+
+      foreach (Group::all() as $group) {
+        $groupToSave = new stdClass();
+
+        $groupToSave->id = $group->id;
+        $groupToSave->name = $group->name;
+
+        $usersMemberOfGroup = array();
+        foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
+          $usersMemberOfGroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup->user(), $anonymous);
+        }
+        $groupToSave->users = $usersMemberOfGroup;
+
+        $subgroups = array();
+        foreach ($group->subgroups() as $subgroup) {
+          $subgroupToSave = new stdClass();
+
+          $subgroupToSave->id = $subgroup->id;
+          $subgroupToSave->name = $subgroup->name;
+
+          $usersMemberOfSubgroup = array();
+          foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+            $usersMemberOfSubgroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $anonymous);
+          }
+
+          $subgroupToSave->users = $usersMemberOfSubgroup;
+
+          $subgroups[] = $subgroupToSave;
+        }
+        $groupToSave->subgroups = $subgroups;
+        $groups[] = $groupToSave;
+      }
+
+      $results->groups = $groups;
+
+      $all = array();
+      foreach ($this->userRepository->getAllUsers() as $user) {
+        $all[] = $this->eventDecisionRepository->getDecisionForUser($user, $anonymous);
+      }
+
+      $results->allUsers = $all;
+    } else {
+      $all = array();
+      $allSubgroups = array();
+
+      $groups = array();
+
+      $foreachGroups = array();
+      foreach ($event->eventsForGroups() as $eventForGroup) {
+        $foreachGroups[] = $eventForGroup->group();
+      }
+
+      foreach ($foreachGroups as $group) {
+        $groupToSave = new stdClass();
+
+        $groupToSave->id = $group->id;
+        $groupToSave->name = $group->name;
+
+        $usersMemberOfGroup = array();
+        foreach ($group->usersMemberOfGroups() as $userMemberOfGroup) {
+          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup->user(), $anonymous);
+          $usersMemberOfGroup[] = $user;
+          if (!in_array($user, $all)) {
+            $all[] = $user;
+          }
+        }
+        $groupToSave->users = $usersMemberOfGroup;
+
+        $subgroups = array();
+        foreach ($group->subgroups() as $subgroup) {
+          $subgroupToSave = new stdClass();
+
+          $subgroupToSave->id = $subgroup->id;
+          $subgroupToSave->name = $subgroup->name;
+          $subgroupToSave->parent_group_name = $subgroup->group()->name;
+          $subgroupToSave->parent_group_id = $subgroup->group_id;
+
+          $usersMemberOfSubgroup = array();
+          foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+            $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $anonymous);
+            $usersMemberOfSubgroup[] = $user;
+            if (!in_array($user, $all)) {
+              $all[] = $user;
+            }
+          }
+
+          $subgroupToSave->users = $usersMemberOfSubgroup;
+
+          $subgroups[] = $subgroupToSave;
+          $allSubgroups[] = $subgroupToSave;
+        }
+        $groupToSave->subgroups = $subgroups;
+        $groups[] = $groupToSave;
+      }
+
+      $unknownGroupToSave = new stdClass();
+
+      $unknownGroupToSave->id = -1;
+      $unknownGroupToSave->name = "unknown";
+      $unknownGroupToSave->users = array();
+
+      $subgroups = array();
+      foreach ($event->eventsForSubgroups() as $eventForSubgroup) {
+        $subgroupToSave = new stdClass();
+
+        $subgroup = $eventForSubgroup->subgroup();
+        $subgroupToSave->id = $subgroup->id;
+        $subgroupToSave->name = $subgroup->name;
+        $subgroupToSave->parent_group_name = $subgroup->group()->name;
+        $subgroupToSave->parent_group_id = $subgroup->group_id;
+
+        $usersMemberOfSubgroup = array();
+        foreach ($subgroup->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfSubgroup->user(), $anonymous);
+          $usersMemberOfSubgroup[] = $user;
+          if (!in_array($user, $all)) {
+            $all[] = $user;
+          }
+        }
+
+        $subgroupToSave->users = $usersMemberOfSubgroup;
+
+        if (!in_array($subgroupToSave, $allSubgroups)) {
+          $subgroups[] = $subgroupToSave;
+        }
+      }
+      $unknownGroupToSave->subgroups = $subgroups;
+      $groups[] = $unknownGroupToSave;
+
+      $results->groups = $groups;
+
+      $results->allUsers = $all;
+    }
+    $results->anonymous = $anonymous;
+    return $results;
+  }
+
+  /**
    * @param User $user
    * @return array
    */
@@ -340,5 +493,13 @@ class EventRepository implements IEventRepository
     }
 
     return $events;
+  }
+
+  /**
+   * @param Event $event
+   * @return array
+   */
+  public function getPotentialVotersForEvent(Event $event) {
+    return $this->getResultsForEvent($event, false)->allUsers;
   }
 }

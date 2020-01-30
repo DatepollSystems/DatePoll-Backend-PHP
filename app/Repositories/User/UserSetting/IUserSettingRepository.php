@@ -55,4 +55,17 @@ interface IUserSettingRepository
    * @return bool
    */
   public function setShowBirthdaysInCalendarForUser($user, bool $value): bool;
+
+  /**
+   * @param $user
+   * @return bool
+   */
+  public function getNotifyMeOfNewEventsForUser($user): bool;
+
+  /**
+   * @param $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setNotifyMeOfNewEventsForUser($user, bool $value): bool;
 }
