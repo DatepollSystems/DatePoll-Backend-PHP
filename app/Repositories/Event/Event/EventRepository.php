@@ -352,6 +352,8 @@ class EventRepository implements IEventRepository
       $results->groups = $groups;
 
       $all = array();
+      // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
+      // a circular dependency and RAM will explodes
       foreach (User::all() as $user) {
         $all[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
       }
