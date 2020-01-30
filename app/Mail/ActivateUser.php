@@ -45,7 +45,7 @@ class ActivateUser extends Mailable
   public function build()
   {
     return $this
-      ->subject('DatePoll Accountaktivierung')
+      ->subject('» DatePoll Accountaktivierung')
       ->view('emails.userActivation.activateUser')
       ->text('emails.userActivation.activateUser_plain');
   }

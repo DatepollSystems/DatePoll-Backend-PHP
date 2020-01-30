@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Repositories\User\UserSetting\UserSettingKey;
@@ -26,11 +27,7 @@ class UserSettingsController extends Controller
    * @return JsonResponse
    */
   public function getShareBirthday(Request $request) {
-    $user = $this->userRepository->getUserById($request->auth->id);
-
-    $shareBirthday = $this->userSettingRepository->getShareBirthdayForUser($user);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHARE_BIRTHDAY, $shareBirthday, true);
+    return $this->getValueRequest($request, UserSettingKey::SHARE_BIRTHDAY);
   }
 
   /**
@@ -39,14 +36,7 @@ class UserSettingsController extends Controller
    * @throws ValidationException
    */
   public function setShareBirthday(Request $request) {
-    $this->validate($request, ['setting_value' => 'required|boolean']);
-
-    $user = $this->userRepository->getUserById($request->auth->id);
-    $value = $request->input('setting_value');
-
-    $shareBirthday = $this->userSettingRepository->setShareBirthdayForUser($user, $value);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHARE_BIRTHDAY, $shareBirthday, false);
+    return $this->setValueRequest($request, UserSettingKey::SHARE_BIRTHDAY);
   }
 
   /**
@@ -54,11 +44,7 @@ class UserSettingsController extends Controller
    * @return JsonResponse
    */
   public function getShowMoviesInCalendar(Request $request) {
-    $user = $this->userRepository->getUserById($request->auth->id);
-
-    $showMoviesInCalendar = $this->userSettingRepository->getShowMoviesInCalendarForUser($user);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_MOVIES_IN_CALENDAR, $showMoviesInCalendar, true);
+    return $this->getValueRequest($request, UserSettingKey::SHOW_MOVIES_IN_CALENDAR);
   }
 
   /**
@@ -67,14 +53,7 @@ class UserSettingsController extends Controller
    * @throws ValidationException
    */
   public function setShowMoviesInCalendar(Request $request) {
-    $this->validate($request, ['setting_value' => 'required|boolean']);
-
-    $user = $this->userRepository->getUserById($request->auth->id);
-    $value = $request->input('setting_value');
-
-    $showMoviesInCalendar = $this->userSettingRepository->setShowMoviesInCalendarForUser($user, $value);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_MOVIES_IN_CALENDAR, $showMoviesInCalendar, false);
+    return $this->setValueRequest($request, UserSettingKey::SHOW_MOVIES_IN_CALENDAR);
   }
 
   /**
@@ -82,11 +61,7 @@ class UserSettingsController extends Controller
    * @return JsonResponse
    */
   public function getShowEventsInCalendar(Request $request) {
-    $user = $this->userRepository->getUserById($request->auth->id);
-
-    $showEventsInCalendar = $this->userSettingRepository->getShowEventsInCalendarForUser($user);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_EVENTS_IN_CALENDAR, $showEventsInCalendar, true);
+    return $this->getValueRequest($request, UserSettingKey::SHOW_EVENTS_IN_CALENDAR);
   }
 
   /**
@@ -95,14 +70,7 @@ class UserSettingsController extends Controller
    * @throws ValidationException
    */
   public function setShowEventsInCalendar(Request $request) {
-    $this->validate($request, ['setting_value' => 'required|boolean']);
-
-    $user = $this->userRepository->getUserById($request->auth->id);
-    $value = $request->input('setting_value');
-
-    $showEventsInCalendar = $this->userSettingRepository->setShowEventsInCalendarForUser($user, $value);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_EVENTS_IN_CALENDAR, $showEventsInCalendar, false);
+    return $this->setValueRequest($request, UserSettingKey::SHOW_EVENTS_IN_CALENDAR);
   }
 
   /**
@@ -110,11 +78,7 @@ class UserSettingsController extends Controller
    * @return JsonResponse
    */
   public function getShowBirthdaysInCalendar(Request $request) {
-    $user = $this->userRepository->getUserById($request->auth->id);
-
-    $showBirthdaysInCalendar = $this->userSettingRepository->getShowBirthdaysInCalendarForUser($user);
-
-    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, $showBirthdaysInCalendar, true);
+    return $this->getValueRequest($request, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR);
   }
 
   /**
@@ -123,27 +87,91 @@ class UserSettingsController extends Controller
    * @throws ValidationException
    */
   public function setShowBirthdaysInCalendar(Request $request) {
+    return $this->setValueRequest($request, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function getNotifyMeOfNewEvents(Request $request) {
+    return $this->getValueRequest($request, UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setNotifyMeOfNewEvents(Request $request) {
+    return $this->setValueRequest($request, UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS);
+  }
+
+  /**
+   * @param Request $request
+   * @param string $settingKey
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  private function setValueRequest(Request $request, string $settingKey) {
     $this->validate($request, ['setting_value' => 'required|boolean']);
 
     $user = $this->userRepository->getUserById($request->auth->id);
     $value = $request->input('setting_value');
 
-    $showBirthdaysInCalendar = $this->userSettingRepository->setShowBirthdaysInCalendarForUser($user, $value);
+    switch ($settingKey) {
+      case UserSettingKey::SHARE_BIRTHDAY:
+        $returnValue = $this->userSettingRepository->setShareBirthdayForUser($user, $value);
+        break;
+      case UserSettingKey::SHOW_MOVIES_IN_CALENDAR:
+        $returnValue = $this->userSettingRepository->setShowMoviesInCalendarForUser($user, $value);
+        break;
+      case UserSettingKey::SHOW_EVENTS_IN_CALENDAR:
+        $returnValue = $this->userSettingRepository->setShowEventsInCalendarForUser($user, $value);
+        break;
+      case UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR:
+        $returnValue = $this->userSettingRepository->setShowBirthdaysInCalendarForUser($user, $value);
+        break;
+      default:
+        Logging::error('setValueRequest UserSettingsRepository', 'Unknown setting_key');
+        return response()->json(['msg' => 'Could not find setting_key'], 500);
+    }
 
-    return $this->userSettingJsonWrapper(UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, $showBirthdaysInCalendar, false);
+    return response()->json([
+      'msg' => 'Set settings successful',
+      'setting_key' => $returnValue,
+      'setting_value' => $value]);
   }
 
   /**
-   * @param string $userSettingKey
-   * @param bool $value
-   * @param bool $get
+   * @param Request $request
+   * @param string $settingKey
    * @return JsonResponse
    */
-  private function userSettingJsonWrapper(string $userSettingKey, bool $value, bool $get) {
-    if ($get) {
-      return response()->json(['msg' => 'Get settings successful', 'setting_key' => $userSettingKey, 'setting_value' => $value]);
-    } else {
-      return response()->json(['msg' => 'Set settings successful', 'setting_key' => $userSettingKey, 'setting_value' => $value]);
+  private function getValueRequest(Request $request, string $settingKey) {
+    $user = $this->userRepository->getUserById($request->auth->id);
+
+    switch ($settingKey) {
+      case UserSettingKey::SHARE_BIRTHDAY:
+        $value = $this->userSettingRepository->getShareBirthdayForUser($user);
+        break;
+      case UserSettingKey::SHOW_MOVIES_IN_CALENDAR:
+        $value = $this->userSettingRepository->getShowMoviesInCalendarForUser($user);
+        break;
+      case UserSettingKey::SHOW_EVENTS_IN_CALENDAR:
+        $value = $this->userSettingRepository->getShowEventsInCalendarForUser($user);
+        break;
+      case UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR:
+        $value = $this->userSettingRepository->getShowBirthdaysInCalendarForUser($user);
+        break;
+      default:
+        Logging::error('getValueRequest UserSettingsRepository', 'Unknown setting_key');
+        return response()->json(['msg' => 'Could not find setting_key'], 500);
     }
+
+    return response()->json([
+      'msg' => 'Get settings successful',
+      'setting_key' => $settingKey,
+      'setting_value' => $value]);
   }
 }

@@ -53,8 +53,21 @@ interface IEventRepository
   public function getReturnable($event);
 
   /**
+   * @param Event $event
+   * @param bool $anonymous
+   * @return stdClass
+   */
+  public function getResultsForEvent(Event $event, bool $anonymous);
+
+  /**
    * @param User $user
    * @return array
    */
   public function getOpenEventsForUser(User $user);
+
+  /**
+   * @param Event $event
+   * @return array
+   */
+  public function getPotentialVotersForEvent(Event $event);
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\EventControllers;
 
 use App\Models\Events\Event;
 use App\Http\Controllers\Controller;
+use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use Exception;
@@ -59,7 +60,11 @@ class EventController extends Controller
     $user = $request->auth;
 
     $toReturnEvent = $this->eventRepository->getReturnable($event);
-    $toReturnEvent->resultGroups = $event->getResults($user);
+    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event,
+      !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+        $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
+        $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
+
     $toReturnEvent->view_events = [
       'href' => 'api/v1/avent/administration/avent',
       'method' => 'GET'];

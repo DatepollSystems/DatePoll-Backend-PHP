@@ -46,6 +46,9 @@ $router->group(['prefix' => 'user'], function () use ($router) {
 
       $router->get('showBirthdaysInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowBirthdaysInCalendar']);
       $router->post('showBirthdaysInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowBirthdaysInCalendar']);
+
+      $router->get('notifyMeOfNewEvents', ['uses' => 'UserControllers\UserSettingsController@getNotifyMeOfNewEvents']);
+      $router->post('notifyMeOfNewEvents', ['uses' => 'UserControllers\UserSettingsController@setNotifyMeOfNewEvents']);
     });
   });
 });
