@@ -17,10 +17,11 @@ class LogsPermissionMiddleware
    */
   public function handle($request, Closure $next) {
     $user = $request->auth;
-    if (!($user->hasPermission(Permissions::$SYSTEM_LOGS_ADMINISTRATION) OR $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
+    if (!($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) OR $user->hasPermission(Permissions::$SYSTEM_ADMINISTRATION) OR $user->hasPermission(Permissions::$SYSTEM_LOGS_ADMINISTRATION))) {
       return response()->json(['msg' => 'Permission denied',
                                'needed_permissions' => [
                                  Permissions::$ROOT_ADMINISTRATION,
+                                 Permissions::$SYSTEM_ADMINISTRATION,
                                  Permissions::$SYSTEM_LOGS_ADMINISTRATION]], 403);
     }
 

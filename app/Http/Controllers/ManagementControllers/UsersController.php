@@ -47,7 +47,7 @@ class UsersController extends Controller
    * Store a newly created resource in storage.
    *
    * @param Request $request
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function create(Request $request) {
@@ -141,7 +141,7 @@ class UsersController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function update(Request $request, $id) {

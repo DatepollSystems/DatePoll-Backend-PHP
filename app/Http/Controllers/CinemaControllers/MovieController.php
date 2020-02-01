@@ -102,7 +102,7 @@ class MovieController extends Controller
 
     $returnable->view_movies = ['href' => 'api/v1/cinema/administration/movie', 'method' => 'GET'];
 
-    $response = ['msg' => 'Movie information', 'movie' => $movie];
+    $response = ['msg' => 'Movie information', 'movie' => $returnable];
     return response()->json($response);
   }
 

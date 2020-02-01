@@ -16,9 +16,9 @@ use App\Models\User\User;
 $factory->define(User::class, function (Faker\Generator $faker) {
   return [
     'title' => $faker->jobTitle,
+    'username' => $faker->userName,
     'firstname'     => $faker->firstName,
     'surname' => $faker->lastName,
-    'email'    => $faker->unique()->email,
     'password' => app('hash')->make('12345'),
     'activated' => false,
     'streetname' => $faker->streetName,

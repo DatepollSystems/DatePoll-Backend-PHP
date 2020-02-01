@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
+ * @property string $additionalInformation
  * @property int $event_id
  * @property int $user_id
  * @property int $decision_id
@@ -30,6 +31,7 @@ class EventUserVotedForDecision extends Model
    * @var array
    */
   protected $fillable = [
+    'additionalInformation',
     'event_id',
     'user_id',
     'decision_id',

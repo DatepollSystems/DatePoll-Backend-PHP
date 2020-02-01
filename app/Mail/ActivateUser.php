@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Repositories\Setting\ISettingRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -16,15 +17,21 @@ class ActivateUser extends Mailable
   public $code;
   public $DatePollAddress;
 
+  protected $settingRepository = null;
+
   /**
    * Create a new message instance.
    *
    * @param $name
+   * @param $username
    * @param $code
+   * @param ISettingRepository $settingRepository
    */
-  public function __construct($name, $username, $code)
+  public function __construct($name, $username, $code, ISettingRepository $settingRepository)
   {
-    $this->DatePollAddress = env("APP_URL");
+    $this->settingRepository = $settingRepository;
+
+    $this->DatePollAddress = $this->settingRepository->getUrl();
     $this->username = $username;
     $this->name = $name;
     $this->code = $code;
@@ -38,7 +45,7 @@ class ActivateUser extends Mailable
   public function build()
   {
     return $this
-      ->subject('DatePoll Accountaktivierung')
+      ->subject('» DatePoll Accountaktivierung')
       ->view('emails.userActivation.activateUser')
       ->text('emails.userActivation.activateUser_plain');
   }

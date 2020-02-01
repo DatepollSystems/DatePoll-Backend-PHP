@@ -29,15 +29,15 @@ class MovieWorkerController extends Controller
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed'], 400);
+      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
     }
 
     if ($movie->worker() != null) {
-      return response()->json(['msg' => 'Worker already applied for this movie'], 400);
+      return response()->json(['msg' => 'There applied a worker already for this movie', 'error_code' => 'worker_already_applied'], 400);
     }
 
     $user = $request->auth;
@@ -58,21 +58,21 @@ class MovieWorkerController extends Controller
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed'], 400);
+      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
     }
 
     if ($movie->worker() == null) {
-      return response()->json(['msg' => 'No worker found for this movie'], 400);
+      return response()->json(['msg' => 'No worker found for this movie', 'error_code' => 'no_worker_found_for_movie'], 400);
     }
 
     $user = $request->auth;
 
     if ($movie->worker_id != $user->id) {
-      return response()->json(['msg' => 'You are not the worker for this movie'], 400);
+      return response()->json(['msg' => 'You are not the worker for this movie', 'error_code' => 'not_the_worker_for_movie'], 400);
     }
 
     if ($this->movieWorkerRepository->removeWorkerFromMovie($movie)) {
@@ -92,15 +92,15 @@ class MovieWorkerController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
 
     if ($movie == null) {
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed'], 400);
+      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
     }
 
     if ($movie->emergencyWorker() != null) {
-      return response()->json(['msg' => 'Emergency worker already applied for this movie'], 400);
+      return response()->json(['msg' => 'There applied a emergency worker already for this movie', 'error_code' => 'worker_already_applied'], 400);
     }
 
     $user = $request->auth;
@@ -121,21 +121,21 @@ class MovieWorkerController extends Controller
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed'], 400);
+      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
     }
 
     if ($movie->emergencyWorker() == null) {
-      return response()->json(['msg' => 'No emergency worker found for this movie'], 400);
+      return response()->json(['msg' => 'No emergency worker found for this movie', 'error_code' => 'no_worker_found_for_movie'], 400);
     }
 
     $user = $request->auth;
 
     if ($movie->emergencyWorker()->id != $user->id) {
-      return response()->json(['msg' => 'You are not the emergency worker for this movie'], 400);
+      return response()->json(['msg' => 'You are not the emergency worker for this movie' , 'error_code' => 'not_the_worker_for_movie'], 400);
     }
 
     if ($this->movieWorkerRepository->removeEmergencyWorkerFromMovie($movie)) {

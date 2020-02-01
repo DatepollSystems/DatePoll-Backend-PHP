@@ -32,5 +32,23 @@ $router->group(['prefix' => 'user'], function () use ($router) {
     $router->get('session', ['uses' => 'UserControllers\UserTokenController@getAllSessions']);
     $router->post('session/logoutCurrentSession', ['uses' => 'UserControllers\UserTokenController@logoutCurrentSession']);
     $router->delete('session/{id}', ['uses' => 'UserControllers\UserTokenController@removeSession']);
+
+    /** Settings */
+    $router->group(['prefix' => 'settings'], function () use ($router) {
+      $router->get('shareBirthday', ['uses' => 'UserControllers\UserSettingsController@getShareBirthday']);
+      $router->post('shareBirthday', ['uses' => 'UserControllers\UserSettingsController@setShareBirthday']);
+
+      $router->get('showMoviesInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowMoviesInCalendar']);
+      $router->post('showMoviesInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowMoviesInCalendar']);
+
+      $router->get('showEventsInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowEventsInCalendar']);
+      $router->post('showEventsInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowEventsInCalendar']);
+
+      $router->get('showBirthdaysInCalendar', ['uses' => 'UserControllers\UserSettingsController@getShowBirthdaysInCalendar']);
+      $router->post('showBirthdaysInCalendar', ['uses' => 'UserControllers\UserSettingsController@setShowBirthdaysInCalendar']);
+
+      $router->get('notifyMeOfNewEvents', ['uses' => 'UserControllers\UserSettingsController@getNotifyMeOfNewEvents']);
+      $router->post('notifyMeOfNewEvents', ['uses' => 'UserControllers\UserSettingsController@setNotifyMeOfNewEvents']);
+    });
   });
 });

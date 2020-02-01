@@ -34,7 +34,7 @@ class ForgotPassword extends Mailable
   public function build()
   {
     return $this
-      ->subject('DatePoll Passwort-Reset')
+      ->subject('» DatePoll Passwort-Reset')
       ->view('emails.forgotPassword.forgotPassword')
       ->text('emails.forgotPassword.forgotPassword_plain');
   }

@@ -40,7 +40,7 @@ class MovieBookingController extends Controller
     $movie = $this->movieRepository->getMovieById($request->input('movie_id'));
     if ($movie == null) {
       Logging::warning('bookTickets', 'User - ' . $user->id . ' | Movie id - ' . $request->input('movie_id') . ' | Movie not found');
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     $ticketAmount = $request->input('ticket_amount');
@@ -48,7 +48,7 @@ class MovieBookingController extends Controller
     /* Check if there are enough free tickets */
     if (($movie->bookedTickets + $ticketAmount) > 20) {
       $availableTickets = 20 - $movie->bookedTickets;
-      return response()->json(['msg' => 'The movie is sold out', 'available_tickets' => $availableTickets], 400);
+      return response()->json(['msg' => 'The movie is sold out', 'available_tickets' => $availableTickets, 'error_code' => 'not_enough_available_tickets'], 400);
     }
 
     $movieBooking = $this->movieBookingRepository->bookTickets($movie, $user, $ticketAmount);
@@ -62,7 +62,7 @@ class MovieBookingController extends Controller
       Logging::info("bookTickets", "Movie booking - " . $movieBooking->id . " | Created");
       return response()->json([
         'msg' => 'Reservation successful',
-        'movieBooking' => $movieBooking], 200);
+        'movie_booking' => $movieBooking], 200);
 
     } else {
       Logging::error("bookTickets", "User - " . $user->id . " | Could not save movie booking");
@@ -82,7 +82,7 @@ class MovieBookingController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('bookTickets', 'User - ' . $user->id . ' | Movie id - ' . $request->input('movie_id') . ' | Movie not found');
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     $movieBooking = $this->movieBookingRepository->cancelBooking($movie, $user);

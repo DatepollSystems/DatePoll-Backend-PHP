@@ -4,10 +4,17 @@ namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User\UserEmailAddress;
+use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\Request;
 
 class UserChangeEmailController extends Controller
 {
+
+  protected $userRepository = null;
+
+  public function __construct(IUserRepository $userRepository) {
+    $this->userRepository = $userRepository;
+  }
 
   public function changeEmailAddresses(Request $request) {
     $this->validate($request, ['email_addresses' => 'required|array']);
@@ -16,45 +23,8 @@ class UserChangeEmailController extends Controller
 
     $emailAddresses = $request->input('email_addresses');
 
-    $emailAddressesWhichHaveNotBeenDeleted = array();
-
-    $OldEmailAddresses = $user->emailAddresses();
-    foreach ($OldEmailAddresses as $oldEmailAddress) {
-      $toDelete = true;
-
-      foreach ((array)$emailAddresses as $emailAddress) {
-        if ($oldEmailAddress['email'] == $emailAddress) {
-          $toDelete = false;
-          $emailAddressesWhichHaveNotBeenDeleted[] = $emailAddress;
-          break;
-        }
-      }
-
-      if ($toDelete) {
-        $emailAddressToDeleteObject = UserEmailAddress::find($oldEmailAddress->id);
-        if (!$emailAddressToDeleteObject->delete()) {
-          return response()->json(['msg' => 'Failed during email address clearing...'], 500);
-        }
-      }
-    }
-
-    foreach ((array)$emailAddresses as $emailAddress) {
-      $toAdd = true;
-
-      foreach ($emailAddressesWhichHaveNotBeenDeleted as $EmailAddressWhichHasNotBeenDeleted) {
-        if ($emailAddress == $EmailAddressWhichHasNotBeenDeleted) {
-          $toAdd = false;
-          break;
-        }
-      }
-
-      if ($toAdd) {
-        $emailAddressToSave = new UserEmailAddress([
-          'email' => $emailAddress,
-          'user_id' => $user->id]);
-
-        $emailAddressToSave->save();
-      }
+    if($this->userRepository->updateUserEmailAddresses($user, $emailAddresses) == null) {
+      return response()->json(['msg' => 'Failed on email addresses updating...'], 500);
     }
 
     return response()->json([

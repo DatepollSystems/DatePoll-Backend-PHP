@@ -3,11 +3,18 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Event\Event\IEventRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EventListController extends Controller
 {
+
+  protected $eventRepository = null;
+
+  public function __construct(IEventRepository $eventRepository) {
+    $this->eventRepository = $eventRepository;
+  }
 
   /**
    * @param Request $request
@@ -16,7 +23,7 @@ class EventListController extends Controller
   public function getOpenEvents(Request $request) {
     $user = $request->auth;
 
-    $events = $user->getOpenEvents();
+    $events = $this->eventRepository->getOpenEventsForUser($user);
 
     return response()->json([
       'msg' => 'List of events',
