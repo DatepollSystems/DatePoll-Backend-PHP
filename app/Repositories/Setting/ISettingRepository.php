@@ -82,4 +82,15 @@ interface ISettingRepository
    * @return string
    */
   public function setCinemaOpenWeatherMapCityId(string $openWeatherMapCityId): string;
+
+  /**
+   * @return int
+   */
+  public function getCurrentDatabaseVersion(): int;
+
+  /**
+   * @param int $currentDatabaseVersion
+   * @return int
+   */
+  public function setCurrentDatabaseVersion(int $currentDatabaseVersion): int;
 }

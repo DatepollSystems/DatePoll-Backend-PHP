@@ -17,10 +17,13 @@ abstract class SettingKey
   const COMMUNITY_URL = "community_url";
 
   const OPENWEATHERMAP_KEY = "openweathermap_key";
+
+  const DATABASE_VERSION = "database_version";
 }
 
 use App\Models\System\Setting;
 use App\Models\System\SettingValueType;
+use App\Versions;
 
 //TODO Remove env file dependencies
 class SettingRepository implements ISettingRepository
@@ -130,6 +133,22 @@ class SettingRepository implements ISettingRepository
     return $this->setStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, $openWeatherMapCityId);
   }
 
+  /**
+   * @return int
+   */
+  public function getCurrentDatabaseVersion(): int {
+    //TODO: Change back to Versions::getCurrentDatabaseVersion()
+    return $this->getIntegerValueByKey(SettingKey::DATABASE_VERSION, 0);
+  }
+
+  /**
+   * @param int $currentDatabaseVersion
+   * @return int
+   */
+  public function setCurrentDatabaseVersion(int $currentDatabaseVersion): int {
+    return $this->setIntegerValueByKey(SettingKey::DATABASE_VERSION, $currentDatabaseVersion);
+  }
+
 
   /**
    * @param string $settingKey
@@ -229,6 +248,51 @@ class SettingRepository implements ISettingRepository
     } else {
       $setting->value = $value;
       $setting->save();
+      return $setting->value;
+    }
+  }
+
+  /**
+   * @param string $settingKey
+   * @param int $value
+   * @return int
+   */
+  private function setIntegerValueByKey(string $settingKey, int $value) {
+    $setting = $this->getSettingValueByKey($settingKey);
+    if ($setting == null) {
+      $newSetting = new Setting([
+        'type' => SettingValueType::INTEGER,
+        'key' => $settingKey,
+        'value' => $value]);
+
+      $newSetting->save();
+
+      return $newSetting->value;
+    } else {
+      $setting->value = $value;
+      $setting->save();
+      return $setting->value;
+    }
+  }
+
+  /**
+   * @param string $settingKey
+   * @param int $default
+   * @return int
+   */
+  private function getIntegerValueByKey(string $settingKey, int $default) {
+    $setting = $this->getSettingValueByKey($settingKey);
+
+    if ($setting == null) {
+      $newSetting = new Setting([
+        'type' => SettingValueType::INTEGER,
+        'key' => $settingKey,
+        'value' => $default]);
+
+      $newSetting->save();
+
+      return $newSetting->value;
+    } else {
       return $setting->value;
     }
   }

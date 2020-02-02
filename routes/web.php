@@ -6,15 +6,16 @@
 |--------------------------------------------------------------------------
 */
 
+use App\Versions;
+
 $router->get('/', function () use ($router) {
-  echo phpinfo();
   return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)';
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
   $router->get('/', function () use ($router) {
-    return response()->json(['version' => '0.5.2', 'version_number' => 10], 200);
+    return response()->json(['version' => Versions::getApplicationVersionString(), 'version_number' => Versions::getApplicationVersion()], 200);
   });
 
   /** Setting routes */
