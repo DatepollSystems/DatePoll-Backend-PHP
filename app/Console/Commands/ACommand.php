@@ -9,13 +9,22 @@ class ACommand extends Command
 
   /**
    * @param string $question
+   * @param string|null $default
    * @return string
    */
-  protected function askStringQuestion(string $question): string {
+  protected function askStringQuestion(string $question, string $default = null): string {
     $answer = null;
 
     while(true) {
-      $answer = $this->ask($question);
+      if ($default != null) {
+        $answer = $this->ask($question . ' [' . $default . ']');
+      } else {
+        $answer = $this->ask($question);
+      }
+
+      if ($answer == null) {
+        $answer = $default;
+      }
 
       $this->comment('Your answer was: [' . $answer . ']');
 

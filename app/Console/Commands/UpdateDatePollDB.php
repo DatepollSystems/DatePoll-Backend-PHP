@@ -86,6 +86,8 @@ class UpdateDatePollDB extends ACommand
     }
 
     $this->log('handle', 'Database update finished!', LogTypes::INFO);
+
+    return;
   }
 
   /**
