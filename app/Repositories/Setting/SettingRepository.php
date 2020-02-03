@@ -25,14 +25,13 @@ use App\Models\System\Setting;
 use App\Models\System\SettingValueType;
 use App\Versions;
 
-//TODO Remove env file dependencies
 class SettingRepository implements ISettingRepository
 {
   /**
    * @return bool
    */
   public function getCinemaEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::CINEMA_ENABLED, env('APP_FEATURE_CINEMA_ENABLED', true));
+    return $this->getBoolValueByKey(SettingKey::CINEMA_ENABLED, true);
   }
 
   /**
@@ -47,7 +46,7 @@ class SettingRepository implements ISettingRepository
    * @return bool
    */
   public function getEventsEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::EVENTS_ENABLED, env('APP_FEATURE_EVENTS_ENABLED', true));
+    return $this->getBoolValueByKey(SettingKey::EVENTS_ENABLED, true);
   }
 
   /**
@@ -62,7 +61,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCommunityName(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_NAME, env('APP_COMMUNITY_NAME', 'DatePoll'));
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_NAME, 'DatePoll');
   }
 
   /**
@@ -77,7 +76,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getUrl(): string {
-    return $this->getStringValueByKey(SettingKey::URL, env('APP_URL', 'https://test.at'));
+    return $this->getStringValueByKey(SettingKey::URL, 'https://test.at');
   }
 
   /**
@@ -92,7 +91,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCommunityUrl(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, env('APP_COMMUNITY_URL', 'https://datepoll.dafnik.me'));
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, 'https://datepoll.dafnik.me');
   }
 
   /**
@@ -107,7 +106,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getOpenWeatherMapKey(): string {
-    return $this->getStringValueByKey(SettingKey::OPENWEATHERMAP_KEY, env('APP_OPENWEATHERMAP_KEY', 'testkey'));
+    return $this->getStringValueByKey(SettingKey::OPENWEATHERMAP_KEY, 'testkey');
   }
 
   /**
@@ -122,7 +121,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCinemaOpenWeatherMapCityId(): string {
-    return $this->getStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, env('APP_OPENWEATHERMAP_CINEMA_CITY_ID', '1'));
+    return $this->getStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, '1');
   }
 
   /**
