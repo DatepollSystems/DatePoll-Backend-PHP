@@ -98,8 +98,8 @@ class UpdateDatePollDB extends ACommand
     $this->log('db-migrate-0To1', 'Running event startDate, endDate migrations...', LogTypes::INFO);
     foreach ($this->eventRepository->getAllEvents() as $event) {
       try {
-        $startDate = DB::selectOne('SELECT startDate From events WHERE id = ?', [$event->id]);
-        $endDate = DB::selectOne('SELECT endDate From events WHERE id = ?', [$event->id]);
+        $startDate = DB::selectOne('SELECT startDate From events WHERE id = ?', [$event->id])->startDate;
+        $endDate = DB::selectOne('SELECT endDate From events WHERE id = ?', [$event->id])->endDate;
       } catch (Exception $exception) {
         $this->log('db-migrate-0To1', 'Could not get startDate or endDate! Cancelling...', LogTypes::WARNING);
         return false;
@@ -137,8 +137,7 @@ class UpdateDatePollDB extends ACommand
     try {
       DB::statement($statement);
     } catch (Exception $exception) {
-      $this->log('db-migrate-' . $migration,
-         'Statement failed: "' . $statement . '" | Error message: ' . $exception->getMessage(), LogTypes::WARNING);
+      $this->log('db-migrate-' . $migration, 'Statement failed: "' . $statement . '" | Error message: ' . $exception->getMessage(), LogTypes::WARNING);
       throw new Exception('Migration error...');
     }
   }
