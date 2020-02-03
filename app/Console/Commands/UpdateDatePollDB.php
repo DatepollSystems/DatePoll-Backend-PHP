@@ -54,13 +54,13 @@ class UpdateDatePollDB extends ACommand
     $this->log('handle', 'Application database version: ' . Versions::getApplicationDatabaseVersion(), LogTypes::INFO);
     $this->log('handle', 'Current database version: ' . $this->settingRepository->getCurrentDatabaseVersion(), LogTypes::INFO);
 
-    if (!$this->askBooleanQuestion('Start with database migration?')) {
-      $this->log('handle', 'User aborting database migration...', LogTypes::INFO);
+    if (Versions::getApplicationDatabaseVersion() === $this->settingRepository->getCurrentDatabaseVersion()) {
+      $this->log('handle', 'Application and current database version match, nothing to do! Aborting...', LogTypes::INFO);
       return;
     }
 
-    if (Versions::getApplicationDatabaseVersion() === $this->settingRepository->getCurrentDatabaseVersion()) {
-      $this->log('handle', 'Application and current database version match, nothing to do! Aborting...', LogTypes::INFO);
+    if (!$this->askBooleanQuestion('Start with database migration?')) {
+      $this->log('handle', 'User aborting database migration...', LogTypes::INFO);
       return;
     }
 
