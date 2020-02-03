@@ -132,6 +132,9 @@ class UserSettingsController extends Controller
       case UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR:
         $returnValue = $this->userSettingRepository->setShowBirthdaysInCalendarForUser($user, $value);
         break;
+      case UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS:
+        $returnValue = $this->userSettingRepository->setNotifyMeOfNewEventsForUser($user, $value);
+        break;
       default:
         Logging::error('setValueRequest UserSettingsRepository', 'Unknown setting_key');
         return response()->json(['msg' => 'Could not find setting_key'], 500);
@@ -163,6 +166,9 @@ class UserSettingsController extends Controller
         break;
       case UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR:
         $value = $this->userSettingRepository->getShowBirthdaysInCalendarForUser($user);
+        break;
+      case UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS:
+        $value = $this->userSettingRepository->getNotifyMeOfNewEventsForUser($user);
         break;
       default:
         Logging::error('getValueRequest UserSettingsRepository', 'Unknown setting_key');

@@ -42,7 +42,7 @@
     <p>Start-Datum: {{$startDate}}</p>
     <p>End-Datum: {{$endDate}}</p>
     <p><a href="{{$DatePollAddress}}/home/events/{{$eventId}}">Klick mich um mehr zu erfahren.</a></p>
-    <p><i>Willst du diese Email-Erinnerungen deaktivieren? <a href="{{$DatePollAddress}}/home/settings/settings">Hier kannst du es!</a></i></p>
+    <p><i>Willst du diese Email-Erinnerungen deaktivieren? <a href="{{$DatePollAddress}}/home/settings/emailSettings">Hier kannst du es!</a></i></p>
     <i>Dies ist eine automatisierte Nachricht. Bitte antworten Sie nicht.</i>
 </div>
 </body>
