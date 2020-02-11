@@ -106,8 +106,8 @@ class UpdateDatePollDB extends ACommand
       }
 
       $this->log('db-migrate-0To1', 'Event - ' . $event->id . ' | startDate: ' . $startDate . ' | endDate: ' . $endDate, LogTypes::INFO);
-      $this->eventDateRepository->createEventDate($event, -190, -190, $startDate, null, null);
-      $this->eventDateRepository->createEventDate($event, -190, -190, $endDate, null, null);
+      $this->eventDateRepository->createEventDate($event, -199, -199, $startDate, null, null);
+      $this->eventDateRepository->createEventDate($event, -199, -199, $endDate, null, null);
     }
 
     $this->log('db-migrate-0To1', 'Running event startDate, endDate migrations finished!', LogTypes::INFO);
