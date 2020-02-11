@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\EventControllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Events\Event;
-use App\Models\Events\EventDecision;
+use App\Http\Controllers\Controller;
+use App\Permissions;
+use App\Repositories\Event\Event\IEventRepository;
+use App\Repositories\Event\EventDate\IEventDateRepository;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -12,15 +15,23 @@ use Illuminate\Validation\ValidationException;
 class EventController extends Controller
 {
 
+  protected $eventRepository = null;
+  protected $eventDateRepository = null;
+
+  public function __construct(IEventRepository $eventRepository, IEventDateRepository $eventDateRepository) {
+    $this->eventRepository = $eventRepository;
+    $this->eventDateRepository = $eventDateRepository;
+  }
+
   /**
    * @return JsonResponse
    */
   public function getAll() {
-    $events = Event::orderBy('startDate')->get();
+    $events = $this->eventRepository->getAllEventsOrderedByDate();
 
     $toReturnEvents = array();
     foreach ($events as $event) {
-      $eventToReturn = $event->getReturnable();
+      $eventToReturn = $this->eventRepository->getReturnable($event);
 
       $eventToReturn->view_event = [
         'href' => 'api/v1/avent/administration/avent/' . $event->id,
@@ -40,7 +51,7 @@ class EventController extends Controller
    * @return JsonResponse
    */
   public function getSingle(Request $request, $id) {
-    $event = Event::find($id);
+    $event = $this->eventRepository->getEventById($id);
 
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
@@ -48,8 +59,12 @@ class EventController extends Controller
 
     $user = $request->auth;
 
-    $toReturnEvent = $event->getReturnable();
-    $toReturnEvent->resultGroups = $event->getResults($user);
+    $toReturnEvent = $this->eventRepository->getReturnable($event);
+    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event,
+      !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+        $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
+        $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
+
     $toReturnEvent->view_events = [
       'href' => 'api/v1/avent/administration/avent',
       'method' => 'GET'];
@@ -67,56 +82,27 @@ class EventController extends Controller
   public function create(Request $request) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'startDate' => 'required|date',
-      'endDate' => 'required|date',
       'forEveryone' => 'required|boolean',
       'description' => 'string|nullable',
-      'location' => 'string|nullable|max:190',
-      'decisions' => 'array|required']);
+      'decisions' => 'array|required',
+      'decisions.*.decision' => 'string|min:1|max:190',
+      'decisions.*.show_in_calendar' => 'required|boolean',
+      'dates' => 'array|required',
+      'dates.*.x' => 'nullable|numeric',
+      'dates.*.y' => 'nullable|numeric',
+      'dates.*.date' => 'date|nullable',
+      'dates.*.location' => 'string|nullable|max:190',
+      'dates.*.description' => 'string|nullable|max:255']);
 
     $name = $request->input('name');
-    $startDate = $request->input('startDate');
-    $endDate = $request->input('endDate');
     $forEveryone = $request->input('forEveryone');
     $description = $request->input('description');
-    $location = $request->input('location');
-
-    $event = new Event([
-      'name' => $name,
-      'startDate' => $startDate,
-      'endDate' => $endDate,
-      'forEveryone' => $forEveryone,
-      'description' => $description,
-      'location' => $location]);
-
-    if (!$event->save()) {
-      return response()->json(['msg' => 'An error occurred during event saving...'], 500);
-    }
-
     $decisions = $request->input('decisions');
-    foreach ((array)$decisions as $decisionObject) {
-      $decisionObject = (object) $decisionObject;
+    $dates = $request->input('dates');
 
-      $decision = $decisionObject->decision;
-      $showInCalendar = $decisionObject->showInCalendar;
+    $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates);
 
-//      if (!is_string($decision) || !is_bool($showInCalendar)) {
-//      $event->delete();
-//        return response()->json(['msg' => 'Could not save event decisions... decision must be a string and showInCalendar must be a boolean'], 401);
-//      }
-
-      $eventDecision = new EventDecision([
-        'event_id' => $event->id,
-        'decision' => $decision,
-        'showInCalendar' => $showInCalendar]);
-
-      if (!$eventDecision->save()) {
-        $event->delete();
-        return response()->json(['msg' => 'Could not save event decisions'], 500);
-      }
-    }
-
-    $returnable = $event->getReturnable();
+    $returnable = $this->eventRepository->getReturnable($event);
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
@@ -135,83 +121,34 @@ class EventController extends Controller
   public function update(Request $request, $id) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'startDate' => 'required|date',
-      'endDate' => 'required|date',
       'forEveryone' => 'required|boolean',
       'description' => 'string|nullable',
-      'location' => 'string|nullable|max:190',
-      'decisions' => 'array']);
+      'decisions' => 'array|required',
+      'decisions.*.id' => 'required|integer',
+      'decisions.*.decision' => 'string|min:1|max:190',
+      'decisions.*.show_in_calendar' => 'required|boolean',
+      'dates' => 'array|required',
+      'dates.*.id' => 'required|integer',
+      'dates.*.x' => 'nullable|numeric',
+      'dates.*.y' => 'nullable|numeric',
+      'dates.*.date' => 'date|nullable',
+      'dates.*.location' => 'string|nullable|max:190',
+      'dates.*.description' => 'string|nullable|max:255']);
 
-    $event = Event::find($id);
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
-    $event->name = $request->input('name');
-    $event->startDate = $request->input('startDate');
-    $event->endDate = $request->input('endDate');
-    $event->forEveryone = $request->input('forEveryone');
-    $event->description = $request->input('description');
-    $event->location = $request->input('location');;
-
-    if (!$event->save()) {
-      return response()->json(['msg' => 'An error occurred during event saving...'], 500);
-    }
-
-    //-------------------------------- Only delete changed decisions --------------------------------------
+    $name = $request->input('name');
+    $forEveryone = $request->input('forEveryone');
+    $description = $request->input('description');
     $decisions = $request->input('decisions');
-    $decisionsWhichHaveNotBeenDeleted = array();
+    $dates = $request->input('dates');
 
-    $oldDecisions = $event->eventsDecisions();
-    foreach ($oldDecisions as $oldDecision) {
-      $toDelete = true;
+    $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates, $event);
 
-      foreach ((array)$decisions as $decision) {
-        $decisionObject = (object) $decision;
-        if ($oldDecision->id == $decisionObject->id) {
-          $toDelete = false;
-          $decisionsWhichHaveNotBeenDeleted[] = $oldDecision;
-          break;
-        }
-      }
-
-      if ($toDelete) {
-        $decisionToDeleteObject = EventDecision::find($oldDecision->id);
-        if (!$decisionToDeleteObject->delete()) {
-          return response()->json(['msg' => 'Failed during decision clearing...'], 500);
-        }
-      }
-    }
-
-    foreach ((array)$decisions as $decision) {
-      $decisionObject = (object) $decision;
-      $toAdd = true;
-
-      foreach ($decisionsWhichHaveNotBeenDeleted as $decisionWhichHaveNotBeenDeleted) {
-        if ($decisionObject->id == $decisionWhichHaveNotBeenDeleted->id) {
-          $toAdd = false;
-          break;
-        }
-      }
-
-      if ($toAdd) {
-        $decisionString = $decisionObject->decision;
-        $showInCalendar = $decisionObject->showInCalendar;
-
-        $eventDecision = new EventDecision([
-          'event_id' => $event->id,
-          'decision' => $decisionString,
-          'showInCalendar' => $showInCalendar]);
-
-        if (!$eventDecision->save()) {
-          $event->delete();
-          return response()->json(['msg' => 'Could not save event decisions'], 500);
-        }
-      }
-    }
-    // ----------------------------------------------------------------------------------------------------
-
-    $returnable = $event->getReturnable();
+    $returnable = $this->eventRepository->getReturnable($event);
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
@@ -224,17 +161,18 @@ class EventController extends Controller
   /**
    * @param $id
    * @return JsonResponse
+   * @throws Exception
    */
   public function delete($id) {
-    $event = Event::find($id);
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
-    if (!$event->delete()) {
-      return response()->json(['msg' => 'Deletion failed'], 500);
+    if (!$this->eventRepository->deleteEvent($event)) {
+      return response()->json(['msg' => 'Could not delete event'], 500);
     }
 
-    return response()->json(['msg' => 'Event deleted'], 200);
+    return response()->json(['msg' => 'Successfully deleted event'], 200);
   }
 }

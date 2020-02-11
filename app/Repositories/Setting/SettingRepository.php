@@ -17,19 +17,21 @@ abstract class SettingKey
   const COMMUNITY_URL = "community_url";
 
   const OPENWEATHERMAP_KEY = "openweathermap_key";
+
+  const DATABASE_VERSION = "database_version";
 }
 
 use App\Models\System\Setting;
 use App\Models\System\SettingValueType;
+use App\Versions;
 
-//TODO Remove env file dependencies
 class SettingRepository implements ISettingRepository
 {
   /**
    * @return bool
    */
   public function getCinemaEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::CINEMA_ENABLED, env('APP_FEATURE_CINEMA_ENABLED', true));
+    return $this->getBoolValueByKey(SettingKey::CINEMA_ENABLED, true);
   }
 
   /**
@@ -44,7 +46,7 @@ class SettingRepository implements ISettingRepository
    * @return bool
    */
   public function getEventsEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::EVENTS_ENABLED, env('APP_FEATURE_EVENTS_ENABLED', true));
+    return $this->getBoolValueByKey(SettingKey::EVENTS_ENABLED, true);
   }
 
   /**
@@ -59,7 +61,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCommunityName(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_NAME, env('APP_COMMUNITY_NAME', 'DatePoll'));
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_NAME, 'DatePoll');
   }
 
   /**
@@ -74,7 +76,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getUrl(): string {
-    return $this->getStringValueByKey(SettingKey::URL, env('APP_URL', 'https://test.at'));
+    return $this->getStringValueByKey(SettingKey::URL, 'https://test.at');
   }
 
   /**
@@ -89,7 +91,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCommunityUrl(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, env('APP_COMMUNITY_URL', 'https://datepoll.dafnik.me'));
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, 'https://datepoll.dafnik.me');
   }
 
   /**
@@ -104,7 +106,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getOpenWeatherMapKey(): string {
-    return $this->getStringValueByKey(SettingKey::OPENWEATHERMAP_KEY, env('APP_OPENWEATHERMAP_KEY', 'testkey'));
+    return $this->getStringValueByKey(SettingKey::OPENWEATHERMAP_KEY, 'testkey');
   }
 
   /**
@@ -119,7 +121,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCinemaOpenWeatherMapCityId(): string {
-    return $this->getStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, env('APP_OPENWEATHERMAP_CINEMA_CITY_ID', '1'));
+    return $this->getStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, '1');
   }
 
   /**
@@ -128,6 +130,22 @@ class SettingRepository implements ISettingRepository
    */
   public function setCinemaOpenWeatherMapCityId(string $openWeatherMapCityId): string {
     return $this->setStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, $openWeatherMapCityId);
+  }
+
+  /**
+   * @return int
+   */
+  public function getCurrentDatabaseVersion(): int {
+    //TODO: Change back to Versions::getCurrentDatabaseVersion()
+    return $this->getIntegerValueByKey(SettingKey::DATABASE_VERSION, 0);
+  }
+
+  /**
+   * @param int $currentDatabaseVersion
+   * @return int
+   */
+  public function setCurrentDatabaseVersion(int $currentDatabaseVersion): int {
+    return $this->setIntegerValueByKey(SettingKey::DATABASE_VERSION, $currentDatabaseVersion);
   }
 
 
@@ -229,6 +247,51 @@ class SettingRepository implements ISettingRepository
     } else {
       $setting->value = $value;
       $setting->save();
+      return $setting->value;
+    }
+  }
+
+  /**
+   * @param string $settingKey
+   * @param int $value
+   * @return int
+   */
+  private function setIntegerValueByKey(string $settingKey, int $value) {
+    $setting = $this->getSettingValueByKey($settingKey);
+    if ($setting == null) {
+      $newSetting = new Setting([
+        'type' => SettingValueType::INTEGER,
+        'key' => $settingKey,
+        'value' => $value]);
+
+      $newSetting->save();
+
+      return $newSetting->value;
+    } else {
+      $setting->value = $value;
+      $setting->save();
+      return $setting->value;
+    }
+  }
+
+  /**
+   * @param string $settingKey
+   * @param int $default
+   * @return int
+   */
+  private function getIntegerValueByKey(string $settingKey, int $default) {
+    $setting = $this->getSettingValueByKey($settingKey);
+
+    if ($setting == null) {
+      $newSetting = new Setting([
+        'type' => SettingValueType::INTEGER,
+        'key' => $settingKey,
+        'value' => $default]);
+
+      $newSetting->save();
+
+      return $newSetting->value;
+    } else {
       return $setting->value;
     }
   }

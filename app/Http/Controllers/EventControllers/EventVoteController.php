@@ -3,16 +3,22 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Models\User\User;
+use App\Repositories\Event\Event\IEventRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class EventVoteController extends Controller
 {
+
+  protected $eventRepository = null;
+
+  public function __construct(IEventRepository $eventRepository) {
+    $this->eventRepository = $eventRepository;
+  }
 
   /**
    * @param Request $request
@@ -26,25 +32,31 @@ class EventVoteController extends Controller
       'additional_information' => 'nullable|string|max:128|min:1']);
 
     $eventId = $request->input('event_id');
-    if (Event::find($eventId) == null) {
-      return response()->json(['msg' => 'Event not found'], 404);
+    if ($this->eventRepository->getEventById($eventId) == null) {
+      return response()->json([
+        'msg' => 'Event not found',
+        'error_code' => 'event_not_found'], 404);
     }
 
     $eventDecisions = EventDecision::where('event_id', $eventId)
                                    ->where('id', $request->input('decision_id'))
                                    ->first();
     if ($eventDecisions == null) {
-      return response()->json(['msg' => 'Decision not found for this event'], 404);
+      return response()->json([
+        'msg' => 'Decision not found for this event',
+        'error_code' => 'decision_not_found_for_event'], 404);
     }
 
     $user = $request->auth;
 
     // Check if user is in a group for this event
     $allowedToVote = false;
-    foreach ($user->getOpenEvents() as $openEvent) {
+    foreach ($this->eventRepository->getOpenEventsForUser($user) as $openEvent) {
       if ($eventId === $openEvent->id) {
         if ($openEvent->already_voted) {
-          return response()->json(['msg' => 'User already voted for event'], 400);
+          return response()->json([
+            'msg' => 'User already voted for event',
+            'error_code' => 'already_voted'], 400);
         }
 
         $allowedToVote = true;
@@ -53,7 +65,9 @@ class EventVoteController extends Controller
     }
 
     if (!$allowedToVote) {
-      return response()->json(['msg' => 'You are not allowed to vote for this event'], 400);
+      return response()->json([
+        'msg' => 'You are not allowed to vote for this event',
+        'error_code' => 'not_allowed'], 400);
     }
 
     $eventUserVotedForDecision = new EventUserVotedForDecision([
@@ -77,8 +91,10 @@ class EventVoteController extends Controller
    * @return JsonResponse
    */
   public function removeVoting(Request $request, $id) {
-    if (Event::find($id) == null) {
-      return response()->json(['msg' => 'Event not found'], 404);
+    if ($this->eventRepository->getEventById($id) == null) {
+      return response()->json([
+        'msg' => 'Event not found',
+        'error_code' => 'event_not_found'], 404);
     }
 
     $user = $request->auth;
@@ -95,7 +111,9 @@ class EventVoteController extends Controller
       return response()->json(['msg' => 'Decision for event removed successfully'], 200);
     }
 
-    return response()->json(['msg' => 'There is no decision for this event to remove'], 404);
+    return response()->json([
+      'msg' => 'There is no voting for this event to remove',
+      'error_code' => 'not_voted'], 404);
   }
 
   /**
@@ -110,7 +128,7 @@ class EventVoteController extends Controller
       'additional_information' => 'nullable|string|max:128|min:1',
       'user_ids' => 'array']);
 
-    $event = Event::find($id);
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
@@ -162,7 +180,7 @@ class EventVoteController extends Controller
   public function cancelVotingForUsers(Request $request, $id) {
     $this->validate($request, ['user_ids' => 'array']);
 
-    $event = Event::find($id);
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }

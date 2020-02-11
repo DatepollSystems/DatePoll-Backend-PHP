@@ -10,6 +10,14 @@ use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
 use App\Repositories\Cinema\MovieWorker\MovieWorkerRepository;
 use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
 use App\Repositories\Cinema\MovieYear\MovieYearRepository;
+use App\Repositories\Event\Event\EventRepository;
+use App\Repositories\Event\Event\IEventRepository;
+use App\Repositories\Event\EventDate\EventDateRepository;
+use App\Repositories\Event\EventDate\IEventDateRepository;
+use App\Repositories\Event\EventDecision\EventDecisionRepository;
+use App\Repositories\Event\EventDecision\IEventDecisionRepository;
+use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepository;
+use App\Repositories\Event\EventStandardLocation\EventStandardLocationRepository;
 use App\Repositories\Files\File\FileRepository;
 use App\Repositories\Files\File\IFileRepository;
 use App\Repositories\Job\IJobRepository;
@@ -20,6 +28,8 @@ use App\Repositories\Setting\ISettingRepository;
 use App\Repositories\Setting\SettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\User\UserRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Repositories\User\UserSetting\UserSettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use App\Repositories\User\UserToken\UserTokenRepository;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +46,13 @@ class DatePollServiceProvider extends ServiceProvider
     /** User repositories */
     $this->app->bind(IUserRepository::class, UserRepository::class);
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
+    $this->app->bind(IUserSettingRepository::class, UserSettingRepository::class);
+
+    /** Event repositories */
+    $this->app->bind(IEventRepository::class, EventRepository::class);
+    $this->app->bind(IEventDateRepository::class, EventDateRepository::class);
+    $this->app->bind(IEventDecisionRepository::class, EventDecisionRepository::class);
+    $this->app->bind(IEventStandardLocationRepository::class, EventStandardLocationRepository::class);
 
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);

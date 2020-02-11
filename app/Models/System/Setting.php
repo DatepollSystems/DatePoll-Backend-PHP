@@ -8,6 +8,7 @@ abstract class SettingValueType
 {
   const STRING = "string";
   const BOOLEAN = "boolean";
+  const INTEGER = "integer";
 }
 
 /**

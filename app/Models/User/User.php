@@ -4,8 +4,6 @@ namespace App\Models\User;
 
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
-use App\Models\Events\Event;
-use App\Models\Events\EventUserVotedForDecision;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
@@ -71,42 +69,52 @@ class User extends Model
    * @return Collection
    */
   public function emergencyWorkerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')->get();
+    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function workerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')->orderBy('date')->get();
+    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')
+                ->orderBy('date')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function moviesBookings() {
-    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')->orderBy('m.date')->select('movies_bookings.*')->where('user_id', $this->id)->get();
+    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
+                        ->orderBy('m.date')
+                        ->select('movies_bookings.*')
+                        ->where('user_id', $this->id)
+                        ->get();
   }
 
   /**
    * @return Collection
    */
   public function userCodes() {
-    return $this->hasMany('App\Models\User\UserCode')->get();
+    return $this->hasMany('App\Models\User\UserCode')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function telephoneNumbers() {
-    return $this->hasMany('App\Models\User\UserTelephoneNumber')->get();
+    return $this->hasMany('App\Models\User\UserTelephoneNumber')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function emailAddresses() {
-    return $this->hasMany('App\Models\User\UserEmailAddress')->get();
+    return $this->hasMany('App\Models\User\UserEmailAddress')
+                ->get();
   }
 
   /**
@@ -131,35 +139,40 @@ class User extends Model
    * @return Collection
    */
   public function usersMemberOfGroups() {
-    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();
+    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function usersMemberOfSubgroups() {
-    return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();
+    return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function performanceBadges() {
-    return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument')->get();
+    return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function votedForDecisions() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')->get();
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')
+                ->get();
   }
 
   /**
    * @return Collection
    */
   public function permissions() {
-    return $this->hasMany('App\Models\User\UserPermission')->get();
+    return $this->hasMany('App\Models\User\UserPermission')
+                ->get();
   }
 
   /**
@@ -167,11 +180,15 @@ class User extends Model
    * @return bool
    */
   public function hasPermission($permission) {
-    if ($this->permissions()->where('permission', '=', 'root.administration')->first() != null) {
+    if ($this->permissions()
+             ->where('permission', '=', 'root.administration')
+             ->first() != null) {
       return true;
     }
 
-    if ($this->permissions()->where("permission", "=", $permission)->first() != null) {
+    if ($this->permissions()
+             ->where("permission", "=", $permission)
+             ->first() != null) {
       return true;
     }
 
@@ -204,7 +221,7 @@ class User extends Model
     $returnableUser->email_addresses = $this->getEmailAddresses();
 
     $permissions = array();
-    if($this->permissions() != null) {
+    if ($this->permissions() != null) {
       foreach ($this->permissions() as $permission) {
         $permissions[] = $permission->permission;
       }
@@ -222,7 +239,7 @@ class User extends Model
       $performanceBadgeToReturn->instrument_id = $performanceBadgeWithInstrument->instrument_id;
       $performanceBadgeToReturn->grade = $performanceBadgeWithInstrument->grade;
       $performanceBadgeToReturn->note = $performanceBadgeWithInstrument->note;
-      if($performanceBadgeWithInstrument->date != '1970-01-01') {
+      if ($performanceBadgeWithInstrument->date != '1970-01-01') {
         $performanceBadgeToReturn->date = $performanceBadgeWithInstrument->date;
       } else {
         $performanceBadgeToReturn->date = null;
@@ -236,58 +253,5 @@ class User extends Model
     $returnableUser->performance_badges = $performanceBadgesToReturn;
 
     return $returnableUser;
-  }
-
-  /**
-   * @return array
-   */
-  public function getOpenEvents() {
-    $events = array();
-    $allEvents = Event::orderBy('startDate')->get();
-    foreach ($allEvents as $event) {
-      if ((time() - (60 * 60 * 24)) < strtotime($event->startDate)) {
-
-        $in = false;
-
-        if ($event->forEveryone) {
-          $in = true;
-        } else {
-
-          foreach ($event->eventsForGroups() as $eventForGroup) {
-            foreach ($eventForGroup->group()->usersMemberOfGroups() as $userMemberOfGroup) {
-              if ($userMemberOfGroup->user_id == $this->id) {
-                $in = true;
-                break;
-              }
-            }
-          }
-
-          if (!$in) {
-            foreach ($event->eventsForSubgroups() as $eventForSubgroup) {
-              foreach ($eventForSubgroup->subgroup()->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-                if ($userMemberOfSubgroup->user_id == $this->id) {
-                  $in = true;
-                  break;
-                }
-              }
-            }
-          }
-        }
-
-        if ($in) {
-          $eventUserVotedFor = EventUserVotedForDecision::where('event_id', $event->id)->where('user_id', $this->id)->first();
-          $alreadyVoted = ($eventUserVotedFor != null);
-
-          $eventToReturn = $event->getReturnable();
-          $eventToReturn->already_voted = $alreadyVoted;
-          if ($alreadyVoted) {
-            $eventToReturn->additional_information = $eventUserVotedFor->additionalInformation;
-          }
-          $events[] = $eventToReturn;
-        }
-      }
-    }
-
-    return $events;
   }
 }

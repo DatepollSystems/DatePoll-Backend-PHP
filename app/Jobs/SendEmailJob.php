@@ -7,25 +7,26 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * Class SendEmailQueue
+ * Class SendEmailJob
  * @package App\Jobs
  * @property Mailable $mailable
+ * @property string[] $emailAddresses
  */
-class SendEmailQueue extends Job
+class SendEmailJob extends Job
 {
   private $mailable;
-  private $user;
+  private $emailAddresses;
 
   /**
    * Create a new job instance.
    *
    * @param Mailable $mailable
-   * @param User $user
+   * @param string[] $emailAddresses
    */
-    public function __construct(Mailable $mailable, User $user)
+    public function __construct(Mailable $mailable, array $emailAddresses)
     {
         $this->mailable = $mailable;
-        $this->user = $user;
+        $this->emailAddresses = $emailAddresses;
     }
 
     /**
@@ -35,7 +36,7 @@ class SendEmailQueue extends Job
      */
     public function handle()
     {
-      Mail::bcc($this->user->getEmailAddresses())
+      Mail::bcc($this->emailAddresses)
           ->send($this->mailable);
     }
 }

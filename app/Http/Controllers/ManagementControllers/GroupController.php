@@ -182,7 +182,12 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Could not add user to this group'], 500);
     }
 
-    $response = ['msg' => 'Successfully added user to group', 'userMemberOfGroup' => $userMemberOfGroup, 'removeUser' => ['href' => 'api/v1/management/group/removeUser', 'method' => 'POST', 'params' => 'group_id, user_id']];
+    $response = ['msg' => 'Successfully added user to group',
+                 'userMemberOfGroup' => $userMemberOfGroup,
+                 'removeUser' => [
+                   'href' => 'api/v1/management/group/removeUser',
+                   'method' => 'POST',
+                   'params' => 'group_id, user_id']];
 
     return response()->json($response, 201);
   }

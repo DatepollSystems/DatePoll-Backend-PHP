@@ -14,13 +14,15 @@ class Kernel extends ConsoleKernel
    */
   protected $commands = [
     'App\Console\Commands\AddAdminUser',
-    'App\Console\Commands\DropTables'
+    'App\Console\Commands\DropTables',
+    'App\Console\Commands\SetupDatePoll',
+    'App\Console\Commands\UpdateDatePollDB'
   ];
 
   /**
    * Define the application's command schedule.
    *
-   * @param  \Illuminate\Console\Scheduling\Schedule $schedule
+   * @param Schedule $schedule
    * @return void
    */
   protected function schedule(Schedule $schedule)
