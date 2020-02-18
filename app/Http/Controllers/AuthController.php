@@ -164,23 +164,6 @@ class AuthController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function refresh(Request $request) {
-    $this->validate($request, ['token' => 'required']);
-
-    $payload = JWT::decode($request->input('token'), env('JWT_SECRET'), ['HS256']);
-
-    $payload_array = (array)$payload;
-    $userID = $payload_array['sub'];
-
-    Logging::info("refresh", "User - " . $userID . " | refreshed JWT");
-    return response()->json(['token' => $this->jwt($userID), 'msg' => 'Refresh successful'], 202);
-  }
-
-  /**
-   * @param Request $request
-   * @return JsonResponse
-   * @throws ValidationException
-   */
   public function IamLoggedIn(Request $request) {
     $this->validate($request, [
       'session_token' => 'required',
