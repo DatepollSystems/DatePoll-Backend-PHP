@@ -54,7 +54,7 @@ class AuthController extends Controller
   public function signin(Request $request) {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
-      'password' => 'required',
+      'password' => 'required|min:6',
       'session_information' => 'min:1|max:190',
       'stay_logged_in' => 'boolean']);
 
@@ -108,7 +108,7 @@ class AuthController extends Controller
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'old_password' => 'required',
-      'new_password' => 'required',
+      'new_password' => 'required|min:6',
       'session_information' => 'min:1|max:190',
       'stay_logged_in' => 'boolean']);
 
@@ -272,7 +272,7 @@ class AuthController extends Controller
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190',
-      'new_password' => 'required']);
+      'new_password' => 'required|min:6']);
 
     $username = $request->input('username');
 

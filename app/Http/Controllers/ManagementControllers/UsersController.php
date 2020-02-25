@@ -231,7 +231,7 @@ class UsersController extends Controller
    */
   public function changePassword(Request $request, $id) {
     $this->validate($request, [
-      'password' => 'required'
+      'password' => 'required|min:6'
     ]);
 
     $user = $this->userRepository->getUserById($id);
@@ -251,7 +251,7 @@ class UsersController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function delete(Request $request, $id) {
     $user = $this->userRepository->getUserById($id);
