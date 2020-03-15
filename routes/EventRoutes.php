@@ -41,7 +41,6 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
       $router->get('standardDecision', ['uses' => 'EventControllers\StandardDecisionController@getAll']);
       $router->post('standardDecision', ['uses' => 'EventControllers\StandardDecisionController@create']);
       $router->get('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@getSingle']);
-      $router->put('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@update']);
       $router->delete('standardDecision/{id}', ['uses' => 'EventControllers\StandardDecisionController@delete']);
 
       /** Standard locations routes */
