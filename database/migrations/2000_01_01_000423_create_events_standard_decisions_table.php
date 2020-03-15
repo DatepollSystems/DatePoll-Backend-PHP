@@ -17,6 +17,7 @@ class CreateEventsStandardDecisionsTable extends Migration
       $table->increments('id');
 
       $table->string('decision')->nullable(false);
+      $table->string('color', 7)->nullable(false);
       $table->boolean('showInCalendar')->nullable(false);
 
       $table->timestamps();
