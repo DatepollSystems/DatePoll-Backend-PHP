@@ -27,10 +27,11 @@ interface IEventDecisionRepository
    * @param Event $event
    * @param string $decision
    * @param bool $showInCalendar
+   * @param string $color ;
+   * @param EventDecision|null $eventDecision
    * @return EventDecision
-   * @throws Exception
    */
-  public function createEventDecision(Event $event, string $decision, bool $showInCalendar);
+  public function createOrUpdateEventDecision(Event $event, string $decision, bool $showInCalendar, string $color, EventDecision $eventDecision = null);
 
   /**
    * @param User $user

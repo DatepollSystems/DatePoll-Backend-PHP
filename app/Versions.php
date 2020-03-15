@@ -7,7 +7,7 @@ class Versions
   private static $application_version_string = '0.6.0';
   private static $application_version = 11;
 
-  private static $database_version = 1;
+  private static $database_version = 2;
 
   /**
    * @return string

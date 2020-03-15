@@ -155,21 +155,19 @@ class EventRepository implements IEventRepository
 
     foreach ((array)$decisions as $decision) {
       $decisionObject = (object)$decision;
-      $toAdd = true;
+      $decisionInDatabaseObject = null;
 
       foreach ($decisionsWhichHaveNotBeenDeleted as $decisionWhichHaveNotBeenDeleted) {
         if ($decisionObject->id == $decisionWhichHaveNotBeenDeleted->id) {
-          $toAdd = false;
+          $decisionInDatabaseObject = $decisionWhichHaveNotBeenDeleted;
           break;
         }
       }
 
-      if ($toAdd) {
-        if ($this->eventDecisionRepository->createEventDecision($event, $decisionObject->decision, $decisionObject->show_in_calendar) == null) {
-          $this->deleteEvent($event);
-          Logging::error('createOrUpdateEvent', 'Could not add new event decision');
-          return null;
-        }
+      if ($this->eventDecisionRepository->createOrUpdateEventDecision($event, $decisionObject->decision, $decisionObject->show_in_calendar, $decisionObject->color, $decisionInDatabaseObject) == null) {
+        $this->deleteEvent($event);
+        Logging::error('createOrUpdateEvent', 'Could not add or update event decision');
+        return null;
       }
     }
 
@@ -280,6 +278,7 @@ class EventRepository implements IEventRepository
       $decision->decision = $eventsDecision->decision;
       $decision->event_id = $eventsDecision->event_id;
       $decision->show_in_calendar = $eventsDecision->showInCalendar;
+      $decision->color = $eventsDecision->color;
 
       $decisions[] = $decision;
     }
@@ -497,7 +496,14 @@ class EventRepository implements IEventRepository
                                                         ->first();
           $alreadyVoted = ($eventUserVotedFor != null);
           if ($eventUserVotedFor != null) {
-            $userDecision = $eventUserVotedFor->decision()->decision;
+            $userDecision = new stdClass();
+            $userDecision->id = $eventUserVotedFor->decision()->id;
+            $userDecision->event_id = $eventUserVotedFor->decision()->event_id;
+            $userDecision->show_in_calendar = $eventUserVotedFor->decision()->showInCalendar;
+            $userDecision->color = $eventUserVotedFor->decision()->color;
+            $userDecision->created_at = $eventUserVotedFor->decision()->created_at;
+            $userDecision->updated_at = $eventUserVotedFor->decision()->updated_at;
+            $userDecision->additional_information = $eventUserVotedFor->additionalInformation;
           } else {
             $userDecision = null;
           }
@@ -505,9 +511,6 @@ class EventRepository implements IEventRepository
           $eventToReturn = $this->getReturnable($event);
           $eventToReturn->already_voted = $alreadyVoted;
           $eventToReturn->user_decision = $userDecision;
-          if ($alreadyVoted) {
-            $eventToReturn->additional_information = $eventUserVotedFor->additionalInformation;
-          }
           $events[] = $eventToReturn;
         }
       }
