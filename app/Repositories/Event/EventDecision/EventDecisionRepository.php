@@ -23,24 +23,33 @@ class EventDecisionRepository implements IEventDecisionRepository
 
   /**
    * @param EventDecision $decision
+   * @return bool|null
    * @throws Exception
    */
   public function deleteEventDecision(EventDecision $decision) {
-    $decision->delete();
+    return $decision->delete();
   }
 
   /**
    * @param Event $event
    * @param string $decision
    * @param bool $showInCalendar
+   * @param string $color
+   * @param EventDecision|null $eventDecision
    * @return EventDecision
-   * @throws Exception
    */
-  public function createEventDecision(Event $event, string $decision, bool $showInCalendar) {
-    $eventDecision = new EventDecision([
-      'event_id' => $event->id,
-      'decision' => $decision,
-      'showInCalendar' => $showInCalendar]);
+  public function createOrUpdateEventDecision(Event $event, string $decision, bool $showInCalendar, string $color, EventDecision $eventDecision = null) {
+    if ($eventDecision == null) {
+      $eventDecision = new EventDecision([
+        'event_id' => $event->id,
+        'decision' => $decision,
+        'showInCalendar' => $showInCalendar,
+        'color' => $color]);
+    } else {
+      $eventDecision->decision = $decision;
+      $eventDecision->showInCalendar = $showInCalendar;
+      $eventDecision->color = $color;
+    }
 
     return $eventDecision->save() ? $eventDecision : null;
   }
