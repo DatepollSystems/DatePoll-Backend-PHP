@@ -16,6 +16,8 @@ use App\Repositories\Event\EventDate\EventDateRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\EventDecisionRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
+use App\Repositories\Event\EventStandardDecision\EventStandardDecisionRepository;
+use App\Repositories\Event\EventStandardDecision\IEventStandardDecisionRepository;
 use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepository;
 use App\Repositories\Event\EventStandardLocation\EventStandardLocationRepository;
 use App\Repositories\Files\File\FileRepository;
@@ -53,6 +55,7 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IEventDateRepository::class, EventDateRepository::class);
     $this->app->bind(IEventDecisionRepository::class, EventDecisionRepository::class);
     $this->app->bind(IEventStandardLocationRepository::class, EventStandardLocationRepository::class);
+    $this->app->bind(IEventStandardDecisionRepository::class, EventStandardDecisionRepository::class);
 
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);
