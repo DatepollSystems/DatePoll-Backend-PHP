@@ -54,7 +54,7 @@ class AuthController extends Controller
   public function signin(Request $request) {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
-      'password' => 'required',
+      'password' => 'required|min:6',
       'session_information' => 'min:1|max:190',
       'stay_logged_in' => 'boolean']);
 
@@ -108,7 +108,7 @@ class AuthController extends Controller
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'old_password' => 'required',
-      'new_password' => 'required',
+      'new_password' => 'required|min:6',
       'session_information' => 'min:1|max:190',
       'stay_logged_in' => 'boolean']);
 
@@ -157,23 +157,6 @@ class AuthController extends Controller
     }
 
     return response()->json(['msg' => 'Username or password is wrong', 'error_code' => 'username_or_password_incorrect'], 400);
-  }
-
-  /**
-   * @param Request $request
-   * @return JsonResponse
-   * @throws ValidationException
-   */
-  public function refresh(Request $request) {
-    $this->validate($request, ['token' => 'required']);
-
-    $payload = JWT::decode($request->input('token'), env('JWT_SECRET'), ['HS256']);
-
-    $payload_array = (array)$payload;
-    $userID = $payload_array['sub'];
-
-    Logging::info("refresh", "User - " . $userID . " | refreshed JWT");
-    return response()->json(['token' => $this->jwt($userID), 'msg' => 'Refresh successful'], 202);
   }
 
   /**
@@ -289,7 +272,7 @@ class AuthController extends Controller
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190',
-      'new_password' => 'required']);
+      'new_password' => 'required|min:6']);
 
     $username = $request->input('username');
 

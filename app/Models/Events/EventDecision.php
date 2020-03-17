@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $event_id
  * @property string $decision
  * @property boolean $showInCalendar
+ * @property string $color
  * @property string $created_at
  * @property string $updated_at
  * @property Event $event
@@ -32,6 +33,7 @@ class EventDecision extends Model
     'event_id',
     'decision',
     'showInCalendar',
+    'color',
     'created_at',
     'updated_at'];
 

@@ -74,6 +74,12 @@ class UpdateDatePollDB extends ACommand
             return;
           }
           break;
+        case 2:
+          if (!$this->migrateDatabaseVersionFrom1To2()) {
+            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
+            return;
+          }
+          break;
       }
 
       $this->log('handle', 'Saving new database version', LogTypes::INFO);
@@ -125,6 +131,34 @@ class UpdateDatePollDB extends ACommand
     $this->log('db-migrate-0To1', 'Running database migrations finished!', LogTypes::INFO);
 
     $this->log('db-migrate-0To1', 'Running migration from 0 to 1 finished!', LogTypes::INFO);
+    return true;
+  }
+
+
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom1To2(): bool {
+    $this->log('db-migrate-0To1', 'Running migration from 1 to 2', LogTypes::INFO);
+
+    $this->log('db-migrate-0To1', 'Running events decisions color migrations...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('1To2', 'ALTER TABLE events_decisions ADD color varchar(7) NOT NULL DEFAULT \'#ffffff\';');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-1To2', 'Database migrations failed!', LogTypes::WARNING);
+      return false;
+    }
+
+    $this->log('db-migrate-0To1', 'Running event standard decisions color migrations...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('1To2', 'ALTER TABLE events_standard_decisions ADD color varchar(7) NOT NULL DEFAULT \'#ffffff\';');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-1To2', 'Database migrations failed!', LogTypes::WARNING);
+      return false;
+    }
+
+    $this->log('db-migrate-1To2', 'Running database migrations finished!', LogTypes::INFO);
+    $this->log('db-migrate-1To2', 'Running migration from 1 to 2 finished!', LogTypes::INFO);
     return true;
   }
 
