@@ -5,7 +5,6 @@ namespace App\Models\User;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
-use App\Models\UserCode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use stdClass;
