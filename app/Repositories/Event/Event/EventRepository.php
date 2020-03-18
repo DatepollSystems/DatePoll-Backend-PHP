@@ -498,6 +498,7 @@ class EventRepository implements IEventRepository
           if ($eventUserVotedFor != null) {
             $userDecision = new stdClass();
             $userDecision->id = $eventUserVotedFor->decision()->id;
+            $userDecision->decision = $eventUserVotedFor->decision()->decision;
             $userDecision->event_id = $eventUserVotedFor->decision()->event_id;
             $userDecision->show_in_calendar = $eventUserVotedFor->decision()->showInCalendar;
             $userDecision->color = $eventUserVotedFor->decision()->color;
