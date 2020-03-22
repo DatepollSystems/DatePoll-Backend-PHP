@@ -457,9 +457,9 @@ class EventRepository implements IEventRepository
    */
   public function getOpenEventsForUser(User $user) {
     $events = array();
-    $allEvents = $this->getAllEvents();
+    $allEvents = $this->getAllEventsOrderedByDate();
     foreach ($allEvents as $event) {
-      if ((time() - (60 * 60 * 24)) < strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+      if (time() <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
 
         $in = false;
 
