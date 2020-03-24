@@ -5,14 +5,13 @@ namespace App\Http\Controllers;
 use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ForgotPassword;
-use App\Models\UserCode;
+use App\Models\User\UserCode;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller

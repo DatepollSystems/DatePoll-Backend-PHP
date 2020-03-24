@@ -45,5 +45,5 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
   /** Calendar route */
   $router->get('user/calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
-  $router->get('calendar/complete', ['uses' => 'CalendarController@getCompleteCalendar']);
+  // $router->get('calendar/complete', ['uses' => 'CalendarController@getCompleteCalendar']);
 });
