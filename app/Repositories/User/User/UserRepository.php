@@ -10,7 +10,7 @@ use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
-use App\Models\UserCode;
+use App\Models\User\UserCode;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
