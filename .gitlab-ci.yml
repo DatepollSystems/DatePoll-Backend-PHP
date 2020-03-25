@@ -22,4 +22,4 @@ deploy:
   script:
     - rm ./composer.lock
     - php composer.phar install
-    - ./vendor/bin/phpstan analyse
+    - ./vendor/bin/phpstan analyse --memory-limit=1G
