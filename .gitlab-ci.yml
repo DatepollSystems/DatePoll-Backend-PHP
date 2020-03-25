@@ -4,8 +4,9 @@ cache:
   paths:
     - vendor/
 
-#before_script:
-#  - apt-get update -qq && apt-get install -y -qq zip
+
+before_script:
+  - bash ci/docker_install.sh > /dev/null
 
 deploy:
   stage: deploy
