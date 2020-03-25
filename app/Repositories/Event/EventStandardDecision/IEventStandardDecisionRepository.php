@@ -3,11 +3,12 @@
 namespace App\Repositories\Event\EventStandardDecision;
 
 use App\Models\Events\EventStandardDecision;
+use Illuminate\Database\Eloquent\Collection;
 
 interface IEventStandardDecisionRepository
 {
   /**
-   * @return EventStandardDecision[]
+   * @return Collection<EventStandardDecision>
    */
   public function getAllStandardDecisionsOrderedByName();
 

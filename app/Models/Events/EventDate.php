@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $location
  * @property string $description
  * @property string $date
- * @property double x
- * @property double y
+ * @property double $x
+ * @property double $y
  * @property string $created_at
  * @property string $updated_at
  * @property Event $event

@@ -34,14 +34,14 @@ class EventForSubgroup extends Model
     'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Event
    */
   public function event() {
     return $this->belongsTo('App\Models\Events\Event')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Subgroup
    */
   public function subgroup() {
     return $this->belongsTo('App\Models\Subgroups\Subgroup')->first();

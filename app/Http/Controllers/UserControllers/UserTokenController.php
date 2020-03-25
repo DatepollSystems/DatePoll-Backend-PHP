@@ -110,7 +110,7 @@ class UserTokenController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function removeSession(Request $request, $id) {

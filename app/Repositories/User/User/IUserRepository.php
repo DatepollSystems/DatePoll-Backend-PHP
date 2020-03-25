@@ -47,7 +47,7 @@ interface IUserRepository
 
   /**
    * @param User $user
-   * @param $emailAddresses
+   * @param string[] $emailAddresses
    * @return bool|null
    */
   public function updateUserEmailAddresses(User $user, $emailAddresses);
@@ -76,7 +76,7 @@ interface IUserRepository
   public function exportAllUsers();
 
   /**
-   * @return User[]|null
+   * @return Collection<User>|null
    */
   public function getAllNotActivatedUsers();
 

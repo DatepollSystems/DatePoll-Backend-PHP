@@ -87,7 +87,7 @@ class EventVoteController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function removeVoting(Request $request, $id) {
@@ -118,7 +118,7 @@ class EventVoteController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
@@ -173,7 +173,7 @@ class EventVoteController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */

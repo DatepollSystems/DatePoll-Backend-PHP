@@ -4,6 +4,7 @@ namespace App\Repositories\Cinema\MovieYear;
 
 use App\Models\Cinema\MovieYear;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 class MovieYearRepository implements IMovieYearRepository
 {
@@ -24,7 +25,7 @@ class MovieYearRepository implements IMovieYearRepository
   }
 
   /**
-   * @return array
+   * @return MovieYear[] | null | Collection
    */
   public function getMovieYearsOrderedByDate() {
     return MovieYear::orderBy('year')
@@ -33,7 +34,7 @@ class MovieYearRepository implements IMovieYearRepository
 
   /**
    * @param int $year
-   * @return MovieYear
+   * @return MovieYear | null
    */
   public function createMovieYear(int $year) {
     $movieYear = new MovieYear(['year' => $year]);
@@ -48,7 +49,7 @@ class MovieYearRepository implements IMovieYearRepository
   /**
    * @param MovieYear $movieYear
    * @param int $year
-   * @return MovieYear
+   * @return MovieYear | null
    */
   public function updateMovieYear(MovieYear $movieYear, int $year) {
     $movieYear->year = $year;

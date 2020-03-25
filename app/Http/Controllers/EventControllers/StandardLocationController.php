@@ -38,7 +38,7 @@ class StandardLocationController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function getSingle($id) {
@@ -92,7 +92,7 @@ class StandardLocationController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function delete($id) {

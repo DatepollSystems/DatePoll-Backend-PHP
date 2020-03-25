@@ -19,7 +19,7 @@ class GroupController extends Controller
   /**
    * Display a listing of the resource.
    *
-   * @return Response
+   * @return JsonResponse
    */
   public function getAll() {
     $groups = Group::all();
@@ -27,42 +27,46 @@ class GroupController extends Controller
       $group->subgroups = $group->subgroups();
     }
 
-    return response(['msg' => 'List of all groups', 'groups' => $groups], 200);
+    return response()->json([
+      'msg' => 'List of all groups',
+      'groups' => $groups], 200);
   }
 
   /**
    * Store a newly created resource in storage.
    *
    * @param Request $request
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function create(Request $request) {
-    $this->validate($request, ['name' => 'required|max:190|min:1', 'description' => 'max:65535']);
+    $this->validate($request, [
+      'name' => 'required|max:190|min:1',
+      'description' => 'max:65535']);
 
     $name = $request->input('name');
     $description = $request->input('description');
 
-    $group = new Group(['name' => $name, 'description' => $description]);
+    $group = new Group([
+      'name' => $name,
+      'description' => $description]);
 
     if ($group->save()) {
-      $group->view_group = ['href' => 'api/v1/management/groups/' . $group->id, 'method' => 'GET'];
-
-      $response = ['msg' => 'Group created', 'group' => $group];
+      $response = [
+        'msg' => 'Group created',
+        'group' => $group];
 
       return response()->json($response, 201);
     }
 
-    $response = ['msg' => 'An error occurred'];
-
-    return response()->json($response, 500);
+    return response()->json(['msg' => 'An error occurred'], 500);
   }
 
   /**
    * Display the specified resource.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function getSingle($id) {
     $group = Group::find($id);
@@ -86,11 +90,9 @@ class GroupController extends Controller
     }
 
     $group->users = $usersToShow;
-
-    $group->view_groups = ['href' => 'api/v1/management/groups', 'method' => 'GET'];
-
-    $response = ['msg' => 'Group information', 'group' => $group];
-    return response()->json($response);
+    return response()->json([
+      'msg' => 'Group information',
+      'group' => $group]);
   }
 
   /**
@@ -98,18 +100,19 @@ class GroupController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function update(Request $request, $id) {
-    $this->validate($request, ['name' => 'required|max:255|min:1', 'description' => 'max:65535']);
+    $this->validate($request, [
+      'name' => 'required|max:255|min:1',
+      'description' => 'max:65535']);
 
     $group = Group::find($id);
 
     if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
-
 
     $name = $request->input('name');
     $description = $request->input('description');
@@ -118,23 +121,21 @@ class GroupController extends Controller
     $group->description = $description;
 
     if ($group->save()) {
-      $group->view_group = ['href' => 'api/v1/management/group/' . $group->id, 'method' => 'GET'];
-
-      $response = ['msg' => 'Group updated', 'group' => $group];
+      $response = [
+        'msg' => 'Group updated',
+        'group' => $group];
 
       return response()->json($response, 201);
     }
 
-    $response = ['msg' => 'An error occurred'];
-
-    return response()->json($response, 500);
+    return response()->json(['msg' => 'An error occurred'], 500);
   }
 
   /**
    * Remove the specified resource from storage.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function delete($id) {
     $group = Group::find($id);
@@ -146,9 +147,7 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Group deletion failed'], 500);
     }
 
-    $response = ['msg' => 'Group deleted', 'create' => ['href' => 'api/v1/management/group', 'method' => 'POST', 'params' => 'name, description']];
-
-    return response()->json($response, 200);
+    return response()->json(['msg' => 'Group deleted successfully'], 200);
   }
 
   /**
@@ -157,7 +156,10 @@ class GroupController extends Controller
    * @throws ValidationException
    */
   public function addUser(Request $request) {
-    $this->validate($request, ['user_id' => 'required|integer', 'group_id' => 'required|integer', 'role' => 'max:190']);
+    $this->validate($request, [
+      'user_id' => 'required|integer',
+      'group_id' => 'required|integer',
+      'role' => 'max:190']);
 
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
@@ -171,25 +173,25 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
-    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)->where('user_id', $userID)->first();
+    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)
+                                            ->where('user_id', $userID)
+                                            ->first();
     if ($userMemberOfGroup != null) {
       return response()->json(['msg' => 'User is already member of this group'], 201);
     }
 
-    $userMemberOfGroup = new UsersMemberOfGroups(['user_id' => $userID, 'group_id' => $groupID, 'role' => $role]);
+    $userMemberOfGroup = new UsersMemberOfGroups([
+      'user_id' => $userID,
+      'group_id' => $groupID,
+      'role' => $role]);
 
     if (!$userMemberOfGroup->save()) {
       return response()->json(['msg' => 'Could not add user to this group'], 500);
     }
 
-    $response = ['msg' => 'Successfully added user to group',
-                 'userMemberOfGroup' => $userMemberOfGroup,
-                 'removeUser' => [
-                   'href' => 'api/v1/management/group/removeUser',
-                   'method' => 'POST',
-                   'params' => 'group_id, user_id']];
-
-    return response()->json($response, 201);
+    return response()->json([
+      'msg' => 'Successfully added user to group',
+      'userMemberOfGroup' => $userMemberOfGroup], 201);
   }
 
   /**
@@ -198,7 +200,9 @@ class GroupController extends Controller
    * @throws ValidationException
    */
   public function removeUser(Request $request) {
-    $this->validate($request, ['user_id' => 'required|integer', 'group_id' => 'required|integer']);
+    $this->validate($request, [
+      'user_id' => 'required|integer',
+      'group_id' => 'required|integer']);
 
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
@@ -211,7 +215,9 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
-    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)->where('user_id', $userID)->first();
+    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)
+                                            ->where('user_id', $userID)
+                                            ->first();
     if ($userMemberOfGroup == null) {
       return response()->json(['msg' => 'User is not a member of this group'], 201);
     }
@@ -222,7 +228,8 @@ class GroupController extends Controller
 
     /* Remove user from child subgroups */
     $userMemberOfSubgroupsToRemove = array();
-    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userID)->get();
+    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userID)
+                                                   ->get();
     foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
       if ($userMemberOfSubgroup->subgroup()->group_id = $groupID) {
         $userMemberOfSubgroupsToRemove[] = $userMemberOfSubgroup;
@@ -235,7 +242,13 @@ class GroupController extends Controller
       }
     }
 
-    $response = ['msg' => 'Successfully removed user from group', 'userMemberOfSubgroups' => $userMemberOfSubgroups, 'addUser' => ['href' => 'api/v1/management/group/addUser', 'method' => 'POST', 'params' => 'group_id, user_id, role']];
+    $response = [
+      'msg' => 'Successfully removed user from group',
+      'userMemberOfSubgroups' => $userMemberOfSubgroups,
+      'addUser' => [
+        'href' => 'api/v1/management/group/addUser',
+        'method' => 'POST',
+        'params' => 'group_id, user_id, role']];
 
     return response()->json($response, 200);
   }
@@ -246,7 +259,10 @@ class GroupController extends Controller
    * @throws ValidationException
    */
   public function updateUser(Request $request) {
-    $this->validate($request, ['user_id' => 'required|integer', 'group_id' => 'required|integer', 'role' => 'max:190']);
+    $this->validate($request, [
+      'user_id' => 'required|integer',
+      'group_id' => 'required|integer',
+      'role' => 'max:190']);
 
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
@@ -260,7 +276,9 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
-    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)->where('user_id', $userID)->first();
+    $userMemberOfGroup = UsersMemberOfGroups::where('group_id', $groupID)
+                                            ->where('user_id', $userID)
+                                            ->first();
     if ($userMemberOfGroup == null) {
       return response()->json(['msg' => 'User is not a member of this group'], 404);
     }
@@ -270,47 +288,58 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }
 
-    $response = ['msg' => 'Successfully updated user in group', 'userMemberOfGroup' => $userMemberOfGroup, 'addUser' => ['href' => 'api/v1/management/group/addUser', 'method' => 'POST', 'params' => 'group_id, user_id, role']];
+    $response = [
+      'msg' => 'Successfully updated user in group',
+      'userMemberOfGroup' => $userMemberOfGroup,
+      'addUser' => [
+        'href' => 'api/v1/management/group/addUser',
+        'method' => 'POST',
+        'params' => 'group_id, user_id, role']];
 
     return response()->json($response, 200);
   }
 
   /**
-   * @param $userID
+   * @param int $userID
    * @return JsonResponse
    */
   public function joined($userID) {
     $user = User::find($userID);
     if ($user == null) {
-      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+      return response()->json([
+        'msg' => 'User not found',
+        'error_code' => 'user_not_found'], 404);
     }
 
     $groupsToReturn = array();
-    $userMemberOfGroups = UsersMemberOfGroups::where('user_id', $userID)->get();
+    $userMemberOfGroups = UsersMemberOfGroups::where('user_id', $userID)
+                                             ->get();
     foreach ($userMemberOfGroups as $userMemberOfGroup) {
       $group = $userMemberOfGroup->group();
-
-      $group->view_group = ['href' => 'api/v1/management/groups/' . $group->id, 'method' => 'GET'];
-
       $groupsToReturn[] = $group;
     }
 
-    return response()->json(['msg' => 'List of joined groups', 'groups' => $groupsToReturn], 200);
+    return response()->json([
+      'msg' => 'List of joined groups',
+      'groups' => $groupsToReturn], 200);
   }
 
   /**
-   * @param $userID
+   * @param int $userID
    * @return JsonResponse
    */
   public function free($userID) {
     $user = User::find($userID);
     if ($user == null) {
-      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+      return response()->json([
+        'msg' => 'User not found',
+        'error_code' => 'user_not_found'], 404);
     }
 
     $allGroups = Group::all();
     $groupsToReturn = array();
-    $userMemberOfGroups = UsersMemberOfGroups::where('user_id', $userID)->get();
+    $userMemberOfGroups = UsersMemberOfGroups::where('user_id', $userID)
+                                             ->get();
     foreach ($allGroups as $group) {
       $isInGroup = false;
       foreach ($userMemberOfGroups as $userMemberOfGroup) {
@@ -321,12 +350,12 @@ class GroupController extends Controller
       }
 
       if (!$isInGroup) {
-        $group->view_group = ['href' => 'api/v1/management/groups/' . $group->id, 'method' => 'GET'];
-
         $groupsToReturn[] = $group;
       }
     }
 
-    return response()->json(['msg' => 'List of free groups', 'groups' => $groupsToReturn], 200);
+    return response()->json([
+      'msg' => 'List of free groups',
+      'groups' => $groupsToReturn], 200);
   }
 }

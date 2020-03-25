@@ -4,7 +4,10 @@ namespace App\Models\User;
 
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
+use App\Models\Events\EventUserVotedForDecision;
+use App\Models\Groups\UsersMemberOfGroups;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
+use App\Models\Subgroups\UsersMemberOfSubgroups;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use stdClass;
@@ -29,12 +32,6 @@ use stdClass;
  * @property string $activity
  * @property string $created_at
  * @property string $updated_at
- * @property Movie[] emergencyWorkerMovies
- * @property Movie[] $movies
- * @property MoviesBooking[] $moviesBookings
- * @property UserCode[] $userCodes
- * @property UserHavePerformanceBadgeWithInstrument[] $userHavePerformanceBadgeWithInstrument
- * @property UserPermission[] $userPermissions
  */
 class User extends Model
 {
@@ -65,7 +62,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | Movie[] | null
    */
   public function emergencyWorkerMovies() {
     return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')
@@ -73,7 +70,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | Movie[] | null
    */
   public function workerMovies() {
     return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')
@@ -82,7 +79,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | MoviesBooking[] | null
    */
   public function moviesBookings() {
     return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
@@ -93,7 +90,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UserCode[] | null
    */
   public function userCodes() {
     return $this->hasMany('App\Models\User\UserCode')
@@ -101,7 +98,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UserTelephoneNumber[] | null
    */
   public function telephoneNumbers() {
     return $this->hasMany('App\Models\User\UserTelephoneNumber')
@@ -109,7 +106,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UserEmailAddress[] | null
    */
   public function emailAddresses() {
     return $this->hasMany('App\Models\User\UserEmailAddress')
@@ -135,7 +132,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UsersMemberOfGroups[] | null
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
@@ -143,7 +140,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UsersMemberOfSubgroups[] | null
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
@@ -151,7 +148,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UserHavePerformanceBadgeWithInstrument[] | null
    */
   public function performanceBadges() {
     return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument')
@@ -159,7 +156,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | EventUserVotedForDecision[] | null
    */
   public function votedForDecisions() {
     return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')
@@ -167,7 +164,7 @@ class User extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | UserPermission[] | null
    */
   public function permissions() {
     return $this->hasMany('App\Models\User\UserPermission')
@@ -175,7 +172,7 @@ class User extends Model
   }
 
   /**
-   * @param $permission
+   * @param string $permission
    * @return bool
    */
   public function hasPermission($permission) {

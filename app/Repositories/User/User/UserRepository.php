@@ -66,10 +66,10 @@ class UserRepository implements IUserRepository
    * @param string $streetnumber
    * @param int $zipcode
    * @param string $location
-   * @param $activated
-   * @param $activity
-   * @param $phoneNumbers
-   * @param $emailAddresses
+   * @param bool $activated
+   * @param string $activity
+   * @param array $phoneNumbers
+   * @param string[] $emailAddresses
    * @param User|null $user
    * @return User|null
    */
@@ -168,7 +168,7 @@ class UserRepository implements IUserRepository
 
   /**
    * @param User $user
-   * @param $emailAddresses
+   * @param string[] $emailAddresses
    * @return bool|null
    */
   public function updateUserEmailAddresses(User $user, $emailAddresses) {
@@ -371,7 +371,7 @@ class UserRepository implements IUserRepository
   }
 
   /**
-   * @return User[]|null
+   * @return Collection<User>|null
    */
   public function getAllNotActivatedUsers() {
     return User::where('activated', 0)

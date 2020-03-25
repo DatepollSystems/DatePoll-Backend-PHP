@@ -36,7 +36,7 @@ class LoggingController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws Exception
    */

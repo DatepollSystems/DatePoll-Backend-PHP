@@ -22,7 +22,7 @@ class MovieWorkerController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function applyForWorker(Request $request, $id) {
@@ -51,7 +51,7 @@ class MovieWorkerController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function signOutForWorker(Request $request, $id) {
@@ -84,7 +84,7 @@ class MovieWorkerController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function applyForEmergencyWorker(Request $request, $id) {
@@ -114,7 +114,7 @@ class MovieWorkerController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function signOutForEmergencyWorker(Request $request, $id) {

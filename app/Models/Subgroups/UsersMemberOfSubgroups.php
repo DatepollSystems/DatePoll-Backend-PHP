@@ -24,14 +24,14 @@ class UsersMemberOfSubgroups extends Model
   protected $fillable = ['role', 'subgroup_id', 'user_id', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Subgroup
    */
   public function subgroup() {
     return $this->belongsTo('App\Models\Subgroups\Subgroup')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | User
    */
   public function user() {
     return $this->belongsTo('App\Models\User\User')->first();

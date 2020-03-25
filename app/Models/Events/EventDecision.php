@@ -38,7 +38,7 @@ class EventDecision extends Model
     'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Event | null
    */
   public function event() {
     return $this->belongsTo('App\Models\Events\Event')->first();

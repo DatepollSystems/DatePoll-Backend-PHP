@@ -47,7 +47,7 @@ class EventController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function getSingle(Request $request, $id) {
@@ -115,7 +115,7 @@ class EventController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
@@ -161,7 +161,7 @@ class EventController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws Exception
    */

@@ -28,7 +28,7 @@ class AuthController extends Controller
   /**
    * Create a new token.
    *
-   * @param $userID
+   * @param int $userID
    * @return string
    */
   protected function jwt($userID) {

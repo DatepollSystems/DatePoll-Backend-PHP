@@ -24,14 +24,14 @@ class MoviesBooking extends Model
   protected $fillable = ['user_id', 'movie_id', 'amount', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return Movie|Model|BelongsTo|object|null
    */
   public function movie() {
     return $this->belongsTo('App\Models\Cinema\Movie')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return User|Model|BelongsTo|object|null
    */
   public function user() {
     return $this->belongsTo('App\Models\User\User')->first();

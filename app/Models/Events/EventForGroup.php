@@ -34,14 +34,14 @@ class EventForGroup extends Model
     'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Event
    */
   public function event() {
     return $this->belongsTo('App\Models\Events\Event')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Group
    */
   public function group() {
     return $this->belongsTo('App\Models\Groups\Group')->first();

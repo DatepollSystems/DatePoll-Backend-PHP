@@ -5,6 +5,7 @@ namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
 use App\Models\User\User;
+use Illuminate\Database\Eloquent\Collection;
 
 class MovieRepository implements IMovieRepository
 {
@@ -13,6 +14,9 @@ class MovieRepository implements IMovieRepository
     return Movie::find($id);
   }
 
+  /**
+   * @return Movie[] | Collection
+   */
   public function getAllMoviesOrderedByDate() {
     return Movie::orderBy('date')
                 ->get();
@@ -74,7 +78,7 @@ class MovieRepository implements IMovieRepository
       if ($movieBookingForYourself == null) {
         $returnable->booked_tickets_for_yourself = 0;
       } else {
-        $returnable->booked_tickets_for_yourself = $movieBookingForYourself->amount;
+        $returnable->booked_tickets_for_yourself = $movieBookingForYourself['amount'];
       }
 
       $returnable->view_movie = [

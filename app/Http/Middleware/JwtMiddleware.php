@@ -8,11 +8,12 @@ use App\Models\User\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\ExpiredException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class JwtMiddleware
 {
   /**
-   * @param $request
+   * @param Request $request
    * @param Closure $next
    * @param null $guard
    * @return JsonResponse|mixed

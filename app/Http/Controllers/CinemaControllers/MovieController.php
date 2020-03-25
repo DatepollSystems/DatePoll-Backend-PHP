@@ -9,7 +9,6 @@ use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
 class MovieController extends Controller
@@ -26,7 +25,7 @@ class MovieController extends Controller
   /**
    * Display a listing of the resource.
    *
-   * @return Response
+   * @return JsonResponse
    */
   public function getAll() {
     $toReturnMovies = array();
@@ -48,7 +47,7 @@ class MovieController extends Controller
    * Store a newly created resource in storage.
    *
    * @param Request $request
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function create(Request $request) {
@@ -89,7 +88,7 @@ class MovieController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function getSingle(Request $request, $id) {
     $movie = $this->movieRepository->getMovieById($id);
@@ -111,7 +110,7 @@ class MovieController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function update(Request $request, $id) {
@@ -156,7 +155,7 @@ class MovieController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws Exception
    */
   public function delete(Request $request, $id) {

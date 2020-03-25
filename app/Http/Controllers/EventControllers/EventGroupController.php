@@ -154,7 +154,7 @@ class EventGroupController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function groupJoined($id) {
@@ -168,10 +168,6 @@ class EventGroupController extends Controller
     foreach ($eventForGroups as $eventForGroup) {
       $group = $eventForGroup->group();
 
-      $group->view_group = [
-        'href' => 'api/v1/management/groups/' . $group->id,
-        'method' => 'GET'];
-
       $groupsToReturn[] = $group;
     }
 
@@ -181,7 +177,7 @@ class EventGroupController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function groupFree($id) {
@@ -203,10 +199,6 @@ class EventGroupController extends Controller
       }
 
       if (!$isInGroup) {
-        $group->view_group = [
-          'href' => 'api/v1/management/groups/' . $group->id,
-          'method' => 'GET'];
-
         $groupsToReturn[] = $group;
       }
     }
@@ -217,7 +209,7 @@ class EventGroupController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function subgroupJoined($id) {
@@ -231,13 +223,7 @@ class EventGroupController extends Controller
     $eventForSubgroups = EventForSubgroup::where('event_id', $id)->get();
     foreach ($eventForSubgroups as $eventForSubgroup) {
       $subgroup = $eventForSubgroup->subgroup();
-
-      $subgroup->group_name = $subgroup->group()->name;
-
-      $subgroup->view_subgroup = [
-        'href' => 'api/v1/management/subgroups/' . $subgroup->id,
-        'method' => 'GET'];
-
+      $subgroup['group_name'] = $subgroup->group()->name;
       $subgroupsToReturn[] = $subgroup;
     }
 
@@ -247,7 +233,7 @@ class EventGroupController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function subgroupFree($id) {
@@ -269,12 +255,7 @@ class EventGroupController extends Controller
       }
 
       if (!$isInSubgroup) {
-        $subgroup->group_name = $subgroup->group()->name;
-
-        $subgroup->view_subgroup = [
-          'href' => 'api/v1/management/subgroups/' . $subgroup->id,
-          'method' => 'GET'];
-
+        $subgroup['group_name'] = $subgroup->group()->name;
         $subgroupsToReturn[] = $subgroup;
       }
     }

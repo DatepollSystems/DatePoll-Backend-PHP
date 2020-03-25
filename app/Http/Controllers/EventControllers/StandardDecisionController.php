@@ -28,22 +28,13 @@ class StandardDecisionController extends Controller
   public function getAll() {
     $standardDecisions = $this->eventStandardDecisionRepository->getAllStandardDecisionsOrderedByName();
 
-    $toReturn = array();
-    foreach ($standardDecisions as $standardDecision) {
-      $standardDecision->view_standard_decision = [
-        'href' => 'api/v1/avent/administration/standardDecision/' . $standardDecision->id,
-        'method' => 'GET'];
-
-      $toReturn[] = $standardDecision;
-    }
-
     return response()->json([
       'msg' => 'List of all standard decisions',
-      'standardDecisions' => $toReturn]);
+      'standardDecisions' => $standardDecisions]);
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function getSingle($id) {
@@ -89,7 +80,7 @@ class StandardDecisionController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function delete($id) {

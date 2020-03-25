@@ -39,21 +39,22 @@ class EventUserVotedForDecision extends Model
     'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | EventDecision
    */
+
   public function decision() {
     return $this->belongsTo('App\Models\Events\EventDecision', 'decision_id')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Event
    */
   public function event() {
     return $this->belongsTo('App\Models\Events\Event')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | User
    */
   public function user() {
     return $this->belongsTo('App\Models\User\User')->first();

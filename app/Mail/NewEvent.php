@@ -23,7 +23,7 @@ class NewEvent extends Mailable
   /**
    * Create a new message instance.
    *
-   * @param $name
+   * @param string $name
    * @param Event $event
    * @param IEventDateRepository $eventDateRepository
    * @param ISettingRepository $settingRepository
