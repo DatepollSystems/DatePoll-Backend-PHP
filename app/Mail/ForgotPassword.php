@@ -3,11 +3,9 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ForgotPassword extends Mailable
+class ForgotPassword extends ADatePollMailable
 {
   use Queueable, SerializesModels;
 
@@ -22,6 +20,8 @@ class ForgotPassword extends Mailable
    */
   public function __construct($name, $code)
   {
+    parent::__construct('forgotPassword');
+
     $this->name = $name;
     $this->code = $code;
   }
