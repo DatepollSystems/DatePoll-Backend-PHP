@@ -4,7 +4,7 @@ namespace App\Mail;
 
 use App\Models\Events\Event;
 use App\Repositories\Event\EventDate\IEventDateRepository;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;

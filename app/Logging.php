@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Repositories\Log\LogRepository;
+use App\Repositories\System\Log\LogRepository;
 
 abstract class LogTypes
 {

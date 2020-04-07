@@ -22,12 +22,14 @@ use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepositor
 use App\Repositories\Event\EventStandardLocation\EventStandardLocationRepository;
 use App\Repositories\Files\File\FileRepository;
 use App\Repositories\Files\File\IFileRepository;
-use App\Repositories\Job\IJobRepository;
-use App\Repositories\Job\JobRepository;
-use App\Repositories\Log\ILogRepository;
-use App\Repositories\Log\LogRepository;
-use App\Repositories\Setting\ISettingRepository;
-use App\Repositories\Setting\SettingRepository;
+use App\Repositories\System\DatePollServer\DatePollServerRepository;
+use App\Repositories\System\DatePollServer\IDatePollServerRepository;
+use App\Repositories\System\Job\IJobRepository;
+use App\Repositories\System\Job\JobRepository;
+use App\Repositories\System\Log\ILogRepository;
+use App\Repositories\System\Log\LogRepository;
+use App\Repositories\System\Setting\ISettingRepository;
+use App\Repositories\System\Setting\SettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\User\UserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
@@ -61,5 +63,6 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(ISettingRepository::class, SettingRepository::class);
     $this->app->bind(IJobRepository::class, JobRepository::class);
     $this->app->bind(ILogRepository::class, LogRepository::class);
+    $this->app->bind(IDatePollServerRepository::class, DatePollServerRepository::class);
   }
 }

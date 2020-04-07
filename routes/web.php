@@ -14,9 +14,7 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
-  $router->get('/', function () use ($router) {
-    return response()->json(['version' => Versions::getApplicationVersionString(), 'version_number' => Versions::getApplicationVersion()], 200);
-  });
+  $router->get('/', ['uses' => 'DatePollServerController@getServerInfo']);
 
   /** Setting routes */
   require_once(__DIR__ . '/SettingsRoutes.php');

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Logging;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;

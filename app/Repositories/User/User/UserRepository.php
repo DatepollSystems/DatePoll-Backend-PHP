@@ -12,7 +12,7 @@ use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\User\UserCode;
 use App\Repositories\Event\Event\IEventRepository;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
