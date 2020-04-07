@@ -5,6 +5,7 @@ namespace App\Repositories\Event\EventDecision;
 
 use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
+use App\Models\Events\EventUserVotedForDecision;
 use App\Models\User\User;
 use Exception;
 use stdClass;
@@ -40,4 +41,11 @@ interface IEventDecisionRepository
    * @return stdClass
    */
   public function getDecisionForUser(User $user, Event $event, $anonymous = true);
+
+  /**
+   * @param int $eventId
+   * @param int $userId
+   * @return null|EventUserVotedForDecision
+   */
+  public function getEventUserVotedForDecisionByEventIdAndUserId(int $eventId, int $userId);
 }

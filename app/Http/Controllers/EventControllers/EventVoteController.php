@@ -82,7 +82,7 @@ class EventVoteController extends Controller
 
     return response()->json([
       'msg' => 'Voting saved',
-      'eventUserVotedForDecision' => $eventUserVotedForDecision], 200);
+      'user_decision' => $this->eventRepository->getUserDecisionReturnable($eventUserVotedForDecision)], 200);
   }
 
   /**
