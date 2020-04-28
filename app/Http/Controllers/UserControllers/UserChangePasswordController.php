@@ -40,7 +40,7 @@ class UserChangePasswordController extends Controller
    * @throws ValidationException
    */
   public function changePassword(Request $request) {
-    $this->validate($request, ['old_password' => 'required', 'new_password|min:6' => 'required']);
+    $this->validate($request, ['old_password' => 'required', 'new_password' => 'required|min:6']);
 
     $user = $request->auth;
 

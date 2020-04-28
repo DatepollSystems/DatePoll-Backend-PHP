@@ -4,11 +4,12 @@
 namespace App\Repositories\Event\EventStandardLocation;
 
 use App\Models\Events\EventStandardLocation;
+use Illuminate\Database\Eloquent\Collection;
 
 class EventStandardLocationRepository implements IEventStandardLocationRepository
 {
   /**
-   * @return EventStandardLocation[]
+   * @return Collection<EventStandardLocation>
    */
   public function getAllStandardLocationsOrderedByName() {
     return EventStandardLocation::orderBy('name')

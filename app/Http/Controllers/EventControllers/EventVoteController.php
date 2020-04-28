@@ -82,12 +82,12 @@ class EventVoteController extends Controller
 
     return response()->json([
       'msg' => 'Voting saved',
-      'eventUserVotedForDecision' => $eventUserVotedForDecision], 200);
+      'user_decision' => $this->eventRepository->getUserDecisionReturnable($eventUserVotedForDecision)], 200);
   }
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function removeVoting(Request $request, $id) {
@@ -118,7 +118,7 @@ class EventVoteController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
@@ -173,7 +173,7 @@ class EventVoteController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */

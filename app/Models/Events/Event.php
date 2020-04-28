@@ -43,7 +43,7 @@ class Event extends Model
     'updated_at'];
 
   /**
-   * @return Collection | EventDecision[]
+   * @return Collection | EventDecision[] | null
    */
   public function eventsDecisions() {
     return $this->hasMany('App\Models\Events\EventDecision', 'event_id')
@@ -51,7 +51,7 @@ class Event extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | EventForGroup[] | null
    */
   public function eventsForGroups() {
     return $this->hasMany('App\Models\Events\EventForGroup')
@@ -59,7 +59,7 @@ class Event extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | EventForSubgroup[] | null
    */
   public function eventsForSubgroups() {
     return $this->hasMany('App\Models\Events\EventForSubgroup')
@@ -67,7 +67,7 @@ class Event extends Model
   }
 
   /**
-   * @return Collection
+   * @return Collection | EventUserVotedForDecision[] | null
    */
   public function usersVotedForDecision() {
     return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
@@ -75,7 +75,7 @@ class Event extends Model
   }
 
   /**
-   * @return Collection | EventDate[]
+   * @return Collection | EventDate[] | null
    */
   public function getEventDates() {
     return $this->hasMany('App\Models\Events\EventDate', 'event_id')

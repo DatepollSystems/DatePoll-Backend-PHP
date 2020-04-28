@@ -9,7 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class NewEvent extends Mailable
+class NewEvent extends ADatePollMailable
 {
   use Queueable, SerializesModels;
 
@@ -23,13 +23,15 @@ class NewEvent extends Mailable
   /**
    * Create a new message instance.
    *
-   * @param $name
+   * @param string $name
    * @param Event $event
    * @param IEventDateRepository $eventDateRepository
    * @param ISettingRepository $settingRepository
    */
   public function __construct($name, Event $event, IEventDateRepository $eventDateRepository, ISettingRepository $settingRepository)
   {
+    parent::__construct('newEvent');
+
     $this->DatePollAddress = $settingRepository->getUrl();
     $this->startDate = $eventDateRepository->getFirstEventDateForEvent($event)->date;
     $this->endDate = $eventDateRepository->getLastEventDateForEvent($event)->date;

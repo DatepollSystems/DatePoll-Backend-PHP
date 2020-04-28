@@ -2,6 +2,7 @@
 
 namespace App\Models\Subgroups;
 
+use App\Models\Groups\Group;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,14 +25,14 @@ class Subgroup extends Model
   protected $fillable = ['group_id', 'name', 'description', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Group
    */
   public function group() {
     return $this->belongsTo('App\Models\Groups\Group')->first();
   }
 
   /**
-   * @return Collection
+   * @return Collection | UsersMemberOfSubgroups[] | null
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();

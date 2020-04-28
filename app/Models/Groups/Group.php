@@ -23,14 +23,14 @@ class Group extends Model
   protected $fillable = ['name', 'description', 'created_at', 'updated_at'];
 
   /**
-   * @return Collection
+   * @return Collection | Subgroup | null
    */
   public function subgroups() {
     return $this->hasMany('App\Models\Subgroups\Subgroup')->get();
   }
 
   /**
-   * @return Collection
+   * @return Collection | UsersMemberOfGroups[] | null
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')->get();

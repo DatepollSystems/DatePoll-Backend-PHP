@@ -32,23 +32,23 @@ class UserHavePerformanceBadgeWithInstrument extends Model
   protected $fillable = ['grade', 'date', 'note', 'user_id', 'performance_badge_id', 'instrument_id', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Instrument
    */
   public function instrument() {
     return $this->belongsTo('App\Models\PerformanceBadge\Instrument')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | PerformanceBadge
    */
   public function performanceBadge() {
     return $this->belongsTo('App\Models\PerformanceBadge\PerformanceBadge')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | User
    */
   public function user() {
-    return $this->belongsTo('App\Models\User');
+    return $this->belongsTo('App\Models\User\User')->first();
   }
 }

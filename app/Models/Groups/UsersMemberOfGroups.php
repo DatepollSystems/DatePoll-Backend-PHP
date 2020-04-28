@@ -24,14 +24,14 @@ class UsersMemberOfGroups extends Model
   protected $fillable = ['role', 'group_id', 'user_id', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | Group
    */
   public function group() {
     return $this->belongsTo('App\Models\Groups\Group')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | User
    */
   public function user() {
     return $this->belongsTo('App\Models\User\User')->first();

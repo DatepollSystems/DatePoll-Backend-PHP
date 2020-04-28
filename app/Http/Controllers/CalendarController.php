@@ -41,7 +41,7 @@ class CalendarController extends Controller
   }
 
   /**
-   * @param $token
+   * @param string $token
    * @return string
    * @throws CalendarEventException
    * @throws Exception
@@ -86,7 +86,7 @@ class CalendarController extends Controller
                    ->setUrl($movie->trailerLink)
                    ->setGeo($geo)
                    ->addLocation($location)
-                   ->setUid($calendarEventId);
+                   ->setUid('' . '' . $calendarEventId);
         $calendarEventId++;
 
         $worker = $movie->worker();
@@ -130,7 +130,7 @@ class CalendarController extends Controller
                      ->setUrl($movie->trailerLink)
                      ->setGeo($geo)
                      ->addLocation($location)
-                     ->setUid($calendarEventId);
+                     ->setUid('' . $calendarEventId);
           $calendarEventId++;
 
           $worker = $movie->worker();
@@ -183,7 +183,7 @@ class CalendarController extends Controller
                    ->setDescription($event->description)
                    ->setGeo($geo)
                    ->addLocation($location)
-                   ->setUid($calendarEventId);
+                   ->setUid('' . $calendarEventId);
         $calendarEventId++;
 
         $calendar->addEvent($eventEvent);
@@ -200,7 +200,7 @@ class CalendarController extends Controller
             $birthdayEvent->setStart(new DateTime($user->birthday))
                           ->setEnd(new DateTime($user->birthday))
                           ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
-                          ->setUid($calendarEventId)
+                          ->setUid('' . $calendarEventId)
                           ->setAllDay(true);
             $calendarEventId++;
 

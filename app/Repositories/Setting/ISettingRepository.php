@@ -13,7 +13,7 @@ interface ISettingRepository
 
   /**
    * @param bool $isEnabled
-   * @return Setting
+   * @return bool
    */
   public function setCinemaEnabled(bool $isEnabled);
 

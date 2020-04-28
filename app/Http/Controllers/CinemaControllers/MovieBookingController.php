@@ -33,7 +33,7 @@ class MovieBookingController extends Controller
   public function bookTickets(Request $request) {
     $this->validate($request, [
       'movie_id' => 'required|numeric',
-      'ticket_amount' => 'required|numeric']);
+      'ticket_amount' => 'required|int']);
 
     $user = $request->auth;
 
@@ -43,7 +43,7 @@ class MovieBookingController extends Controller
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    $ticketAmount = $request->input('ticket_amount');
+    $ticketAmount = (int)$request->input('ticket_amount');
 
     /* Check if there are enough free tickets */
     if (($movie->bookedTickets + $ticketAmount) > 20) {
@@ -72,11 +72,11 @@ class MovieBookingController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function cancelBooking(Request $request, $id) {
+  public function cancelBooking(Request $request, int $id) {
     $user = $request->auth;
 
     $movie = $this->movieRepository->getMovieById($id);
@@ -100,11 +100,11 @@ class MovieBookingController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function bookForUsers(Request $request, $id) {
+  public function bookForUsers(Request $request, int $id) {
     $this->validate($request, ['bookings' => 'required|array']);
 
     $movie = $this->movieRepository->getMovieById($id);
@@ -139,11 +139,11 @@ class MovieBookingController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function cancelBookingForUsers(Request $request, $id) {
+  public function cancelBookingForUsers(Request $request, int $id) {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found'], 404);

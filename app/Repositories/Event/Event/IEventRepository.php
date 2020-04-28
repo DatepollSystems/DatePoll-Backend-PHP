@@ -3,6 +3,7 @@
 namespace App\Repositories\Event\Event;
 
 use App\Models\Events\Event;
+use App\Models\Events\EventUserVotedForDecision;
 use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -70,4 +71,10 @@ interface IEventRepository
    * @return array
    */
   public function getPotentialVotersForEvent(Event $event);
+
+  /**
+   * @param EventUserVotedForDecision $eventUserVotedForDecision
+   * @return stdClass|null
+   */
+  public function getUserDecisionReturnable($eventUserVotedForDecision);
 }

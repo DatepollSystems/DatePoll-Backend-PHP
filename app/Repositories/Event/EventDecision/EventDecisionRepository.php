@@ -90,4 +90,15 @@ class EventDecisionRepository implements IEventDecisionRepository
     return $userToSave;
   }
 
+  /**
+   * @param int $eventId
+   * @param int $userId
+   * @return null|EventUserVotedForDecision
+   */
+  public function getEventUserVotedForDecisionByEventIdAndUserId(int $eventId, int $userId) {
+    return EventUserVotedForDecision::where('event_id', $eventId)
+                                    ->where('user_id', $userId)
+                                    ->first();
+  }
+
 }

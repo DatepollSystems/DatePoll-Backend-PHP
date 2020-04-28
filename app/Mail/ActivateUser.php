@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ActivateUser extends Mailable
+class ActivateUser extends ADatePollMailable
 {
   use Queueable, SerializesModels;
 
@@ -22,13 +22,15 @@ class ActivateUser extends Mailable
   /**
    * Create a new message instance.
    *
-   * @param $name
-   * @param $username
-   * @param $code
+   * @param string $name
+   * @param string $username
+   * @param string $code
    * @param ISettingRepository $settingRepository
    */
   public function __construct($name, $username, $code, ISettingRepository $settingRepository)
   {
+    parent::__construct('activateUser');
+
     $this->settingRepository = $settingRepository;
 
     $this->DatePollAddress = $this->settingRepository->getUrl();

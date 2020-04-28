@@ -5,6 +5,7 @@ namespace App\Repositories\User\UserToken;
 use App\Models\User\User;
 use App\Models\User\UserToken;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 interface IUserTokenRepository
 {
@@ -63,7 +64,7 @@ interface IUserTokenRepository
   /**
    * @param User $user
    * @param string $purpose
-   * @return UserToken[]|null
+   * @return Collection<UserToken>|null
    */
   public function getUserTokensByUserAndPurposeOrderedByDate(User $user, string $purpose);
 }

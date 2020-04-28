@@ -7,7 +7,6 @@ use App\Logging;
 use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
 class MovieYearController extends Controller
@@ -63,7 +62,7 @@ class MovieYearController extends Controller
   /**
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function getSingle(Request $request, $id) {
     $year = $this->movieYearRepository->getMovieYearById($id);
@@ -84,7 +83,7 @@ class MovieYearController extends Controller
   /**
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function update(Request $request, $id) {
@@ -115,7 +114,7 @@ class MovieYearController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function delete(Request $request, $id) {

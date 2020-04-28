@@ -5,6 +5,7 @@ namespace App\Repositories\Cinema\Movie;
 use App\Models\Cinema\Movie;
 use App\Models\User\User;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 interface IMovieRepository
 {
@@ -15,7 +16,7 @@ interface IMovieRepository
   public function getMovieById(int $id);
 
   /**
-   * @return Movie[]
+   * @return Movie[] | Collection
    */
   public function getAllMoviesOrderedByDate();
 

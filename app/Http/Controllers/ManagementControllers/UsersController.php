@@ -23,7 +23,7 @@ class UsersController extends Controller
   /**
    * Display a listing of the resource.
    *
-   * @return Response
+   * @return JsonResponse
    */
   public function getAll() {
     $toReturnUsers = array();
@@ -120,7 +120,7 @@ class UsersController extends Controller
    * Display the specified resource.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function getSingle($id) {
     $user = $this->userRepository->getUserById($id);
@@ -225,7 +225,7 @@ class UsersController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */

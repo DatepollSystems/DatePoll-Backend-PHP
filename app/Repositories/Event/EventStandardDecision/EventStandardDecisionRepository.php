@@ -4,11 +4,12 @@
 namespace App\Repositories\Event\EventStandardDecision;
 
 use App\Models\Events\EventStandardDecision;
+use Illuminate\Support\Collection;
 
 class EventStandardDecisionRepository implements IEventStandardDecisionRepository
 {
   /**
-   * @return EventStandardDecision[]
+   * @return Collection<EventStandardDecision>
    */
   public function getAllStandardDecisionsOrderedByName() {
     return EventStandardDecision::orderBy('decision')

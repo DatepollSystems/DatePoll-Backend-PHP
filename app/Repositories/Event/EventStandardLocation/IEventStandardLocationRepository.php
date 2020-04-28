@@ -3,11 +3,12 @@
 namespace App\Repositories\Event\EventStandardLocation;
 
 use App\Models\Events\EventStandardLocation;
+use Illuminate\Database\Eloquent\Collection;
 
 interface IEventStandardLocationRepository
 {
   /**
-   * @return EventStandardLocation[]
+   * @return Collection<EventStandardLocation>
    */
   public function getAllStandardLocationsOrderedByName();
 

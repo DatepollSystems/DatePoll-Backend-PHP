@@ -34,7 +34,7 @@ class UserChangePhoneNumberController extends Controller
 
   /**
    * @param Request $request
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function removePhoneNumber(Request $request, $id) {

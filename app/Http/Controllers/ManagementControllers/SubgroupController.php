@@ -19,19 +19,19 @@ class SubgroupController extends Controller
   /**
    * Display a listing of the resource.
    *
-   * @return Response
+   * @return JsonResponse
    */
   public function getAll() {
     $subgroups = Subgroup::all();
 
-    return response(['msg' => 'List of all subgroups', 'subgroups' => $subgroups], 200);
+    return response()->json(['msg' => 'List of all subgroups', 'subgroups' => $subgroups], 200);
   }
 
   /**
    * Store a newly created resource in storage.
    *
    * @param Request $request
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function create(Request $request) {
@@ -49,11 +49,7 @@ class SubgroupController extends Controller
     $subgroup = new Subgroup(['name' => $name, 'description' => $description, 'group_id' => $group_id]);
 
     if ($subgroup->save()) {
-      $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroups/' . $subgroup->id, 'method' => 'GET'];
-
-      $response = ['msg' => 'Subgroup created', 'subgroup' => $subgroup];
-
-      return response()->json($response, 201);
+      return response()->json(['msg' => 'Subgroup created', 'subgroup' => $subgroup], 201);
     }
 
     $response = ['msg' => 'An error occurred'];
@@ -65,7 +61,7 @@ class SubgroupController extends Controller
    * Display the specified resource.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function getSingle($id) {
     $subgroup = Subgroup::find($id);
@@ -85,13 +81,9 @@ class SubgroupController extends Controller
 
       $usersToShow[] = $user;
     }
+    $subgroup['users'] = $usersToShow;
 
-    $subgroup->users = $usersToShow;
-
-    $subgroup->view_subgroups = ['href' => 'api/v1/management/subgroups', 'method' => 'GET'];
-
-    $response = ['msg' => 'Subgroup information', 'subgroup' => $subgroup];
-    return response()->json($response);
+    return response()->json(['msg' => 'Subgroup information', 'subgroup' => $subgroup]);
   }
 
   /**
@@ -99,7 +91,7 @@ class SubgroupController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function update(Request $request, $id) {
@@ -125,11 +117,7 @@ class SubgroupController extends Controller
     $subgroup->group_id = $group_id;
 
     if ($subgroup->save()) {
-      $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroup/' . $subgroup->id, 'method' => 'GET'];
-
-      $response = ['msg' => 'Subgroup updated', 'subgroup' => $subgroup];
-
-      return response()->json($response, 201);
+      return response()->json(['msg' => 'Subgroup updated', 'subgroup' => $subgroup], 201);
     }
 
     $response = ['msg' => 'An error occurred'];
@@ -141,7 +129,7 @@ class SubgroupController extends Controller
    * Remove the specified resource from storage.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
   public function delete($id) {
     $subgroup = Subgroup::find($id);
@@ -277,7 +265,7 @@ class SubgroupController extends Controller
   }
 
   /**
-   * @param $userID
+   * @param int $userID
    * @return JsonResponse
    */
   public function joined($userID) {
@@ -292,9 +280,7 @@ class SubgroupController extends Controller
     foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
       $subgroup = $userMemberOfSubgroup->subgroup();
 
-      $subgroup->group_name = $subgroup->group()->name;
-
-      $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroups/' . $subgroup->id, 'method' => 'GET'];
+      $subgroup['group_name'] = $subgroup->group()->name;
 
       $subgroupsToReturn[] = $subgroup;
     }
@@ -303,7 +289,7 @@ class SubgroupController extends Controller
   }
 
   /**
-   * @param $userID
+   * @param int $userID
    * @return JsonResponse
    */
   public function free($userID) {
@@ -325,10 +311,7 @@ class SubgroupController extends Controller
       }
 
       if (!$isInSubgroup) {
-        $subgroup->group_name = $subgroup->group()->name;
-
-        $subgroup->view_subgroup = ['href' => 'api/v1/management/subgroups/' . $subgroup->id, 'method' => 'GET'];
-
+        $subgroup['group_name'] = $subgroup->group()->name;
         $subgroupsToReturn[] = $subgroup;
       }
     }

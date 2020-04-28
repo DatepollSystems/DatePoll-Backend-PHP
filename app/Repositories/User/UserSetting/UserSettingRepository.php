@@ -11,6 +11,7 @@ abstract class UserSettingKey
   const NOTIFY_ME_OF_NEW_EVENTS = 'notify_me_of_new_events';
 }
 
+use App\Models\User\User;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 
 class UserSettingRepository implements IUserSettingRepository
@@ -62,7 +63,7 @@ class UserSettingRepository implements IUserSettingRepository
   }
 
   /**
-   * @param $user
+   * @param User $user
    * @param string $settingKey
    * @param bool $value
    * @return bool
@@ -79,7 +80,7 @@ class UserSettingRepository implements IUserSettingRepository
   }
 
   /**
-   * @param $user
+   * @param User $user
    * @param string $settingKey
    * @param bool $default
    * @return bool

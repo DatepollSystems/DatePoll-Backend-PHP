@@ -2,14 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Models\User\User;
-use Illuminate\Mail\Mailable;
+use App\Logging;
+use App\Mail\ADatePollMailable;
 use Illuminate\Support\Facades\Mail;
 
 /**
  * Class SendEmailJob
  * @package App\Jobs
- * @property Mailable $mailable
+ * @property ADatePollMailable $mailable
  * @property string[] $emailAddresses
  */
 class SendEmailJob extends Job
@@ -20,10 +20,10 @@ class SendEmailJob extends Job
   /**
    * Create a new job instance.
    *
-   * @param Mailable $mailable
+   * @param ADatePollMailable $mailable
    * @param string[] $emailAddresses
    */
-    public function __construct(Mailable $mailable, array $emailAddresses)
+    public function __construct(ADatePollMailable $mailable, array $emailAddresses)
     {
         $this->mailable = $mailable;
         $this->emailAddresses = $emailAddresses;
@@ -38,5 +38,10 @@ class SendEmailJob extends Job
     {
       Mail::bcc($this->emailAddresses)
           ->send($this->mailable);
+      $emailAddressString = '';
+      foreach ($this->emailAddresses as $emailAddress) {
+        $emailAddressString .= $emailAddress . ', ';
+      }
+      Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString);
     }
 }

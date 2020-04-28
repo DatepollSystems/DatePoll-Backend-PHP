@@ -491,27 +491,12 @@ class EventRepository implements IEventRepository
         }
 
         if ($in) {
-          $eventUserVotedFor = EventUserVotedForDecision::where('event_id', $event->id)
-                                                        ->where('user_id', $user->id)
-                                                        ->first();
+          $eventUserVotedFor = $this->eventDecisionRepository->getEventUserVotedForDecisionByEventIdAndUserId($event->id, $user->id);
           $alreadyVoted = ($eventUserVotedFor != null);
-          if ($eventUserVotedFor != null) {
-            $userDecision = new stdClass();
-            $userDecision->id = $eventUserVotedFor->decision()->id;
-            $userDecision->decision = $eventUserVotedFor->decision()->decision;
-            $userDecision->event_id = $eventUserVotedFor->decision()->event_id;
-            $userDecision->show_in_calendar = $eventUserVotedFor->decision()->showInCalendar;
-            $userDecision->color = $eventUserVotedFor->decision()->color;
-            $userDecision->created_at = $eventUserVotedFor->decision()->created_at;
-            $userDecision->updated_at = $eventUserVotedFor->decision()->updated_at;
-            $userDecision->additional_information = $eventUserVotedFor->additionalInformation;
-          } else {
-            $userDecision = null;
-          }
 
           $eventToReturn = $this->getReturnable($event);
           $eventToReturn->already_voted = $alreadyVoted;
-          $eventToReturn->user_decision = $userDecision;
+          $eventToReturn->user_decision = $this->getUserDecisionReturnable($eventUserVotedFor);
           $events[] = $eventToReturn;
         }
       }
@@ -526,5 +511,27 @@ class EventRepository implements IEventRepository
    */
   public function getPotentialVotersForEvent(Event $event) {
     return $this->getResultsForEvent($event, false)->allUsers;
+  }
+
+  /**
+   * @param EventUserVotedForDecision $eventUserVotedForDecision
+   * @return stdClass|null
+   */
+  public function getUserDecisionReturnable($eventUserVotedForDecision) {
+    $userDecision = null;
+
+    if ($eventUserVotedForDecision != null) {
+      $userDecision = new stdClass();
+      $userDecision->id = $eventUserVotedForDecision->decision()->id;
+      $userDecision->decision = $eventUserVotedForDecision->decision()->decision;
+      $userDecision->event_id = $eventUserVotedForDecision->decision()->event_id;
+      $userDecision->show_in_calendar = $eventUserVotedForDecision->decision()->showInCalendar;
+      $userDecision->color = $eventUserVotedForDecision->decision()->color;
+      $userDecision->created_at = $eventUserVotedForDecision->decision()->created_at;
+      $userDecision->updated_at = $eventUserVotedForDecision->decision()->updated_at;
+      $userDecision->additional_information = $eventUserVotedForDecision->additionalInformation;
+    }
+
+    return $userDecision;
   }
 }

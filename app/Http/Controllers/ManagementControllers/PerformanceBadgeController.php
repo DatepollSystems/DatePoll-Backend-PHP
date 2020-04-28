@@ -7,25 +7,28 @@ use App\Models\PerformanceBadge\Instrument;
 use App\Models\PerformanceBadge\PerformanceBadge;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\User\User;
+use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class PerformanceBadgeController extends Controller
 {
 
+  protected $userRepository = null;
+
+  public function __construct(IUserRepository $userRepository) {
+    $this->userRepository = $userRepository;
+  }
+
   /**
    * Display a listing of the resource.
    *
-   * @return Response
+   * @return JsonResponse
    */
   public function getAll() {
     $performanceBadges = PerformanceBadge::orderBy('name')->get();
-    foreach ($performanceBadges as $performanceBadge) {
-      $performanceBadge->view_performanceBadge = ['href' => 'api/v1/management/performanceBadges/' . $performanceBadge->id, 'method' => 'GET'];
-    }
 
     $response = ['msg' => 'List of all performance badges', 'performanceBadges' => $performanceBadges];
 
@@ -36,7 +39,7 @@ class PerformanceBadgeController extends Controller
    * Store a newly created resource in storage.
    *
    * @param Request $request
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
   public function create(Request $request) {
@@ -53,8 +56,6 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'An error occurred during performance badge saving..'], 500);
     }
 
-    $performanceBadge->view_performanceBadge = ['href' => 'api/v1/management/performanceBadge/' . $performanceBadge->id, 'method' => 'GET'];
-
     $response = ['msg' => 'Performance badge successful created', 'performanceBadge' => $performanceBadge];
 
     return response()->json($response, 201);
@@ -64,16 +65,14 @@ class PerformanceBadgeController extends Controller
    * Display the specified resource.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $performanceBadge = PerformanceBadge::find($id);
 
     if ($performanceBadge == null) {
       return response()->json(['msg' => 'Performance badge not found'], 404);
     }
-
-    $performanceBadge->view_instruments = ['href' => 'api/v1/management/performanceBadges', 'method' => 'GET'];
 
     $response = ['msg' => 'Performance badge information', 'performanceBadge' => $performanceBadge];
     return response()->json($response);
@@ -84,10 +83,10 @@ class PerformanceBadgeController extends Controller
    *
    * @param Request $request
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, ['name' => 'required|max:190|min:1',]);
 
     $performanceBadge = PerformanceBadge::find($id);
@@ -103,8 +102,6 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'An error occurred during performance badge saving..'], 500);
     }
 
-    $performanceBadge->view_performanceBadge = ['href' => 'api/v1/management/performanceBadges/' . $performanceBadge->id, 'method' => 'GET'];
-
     $response = ['msg' => 'Performance badge updated', 'performanceBadge' => $performanceBadge];
 
     return response()->json($response, 200);
@@ -114,9 +111,9 @@ class PerformanceBadgeController extends Controller
    * Remove the specified resource from storage.
    *
    * @param int $id
-   * @return Response
+   * @return JsonResponse
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $performanceBadge = PerformanceBadge::find($id);
     if ($performanceBadge == null) {
       return response()->json(['msg' => 'Performance badge not found'], 404);
@@ -126,9 +123,7 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
-    $response = ['msg' => 'Performance badge deleted', 'create' => ['href' => 'api/v1/management/performanceBadges', 'method' => 'POST', 'params' => 'name']];
-
-    return response()->json($response);
+    return response()->json(['msg' => 'Performance badge deleted'], 201);
   }
 
   /**
@@ -176,10 +171,10 @@ class PerformanceBadgeController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
-  public function removePerformanceBadgeForUserWithInstrument($id) {
+  public function removePerformanceBadgeForUserWithInstrument(int $id) {
     $userHasPerformanceBadgeWithInstrument = UserHavePerformanceBadgeWithInstrument::find($id);
     if($userHasPerformanceBadgeWithInstrument == null) {
       return response()->json(['msg' => 'User performance badge with instrument not found'], 202);
@@ -192,8 +187,12 @@ class PerformanceBadgeController extends Controller
     return response()->json(['msg' => 'Successfully deleted user performance badge with instrument'], 200);
   }
 
-  public function performanceBadgesForUser($id) {
-    $user = User::find($id);
+  /**
+   * @param int $id
+   * @return JsonResponse
+   */
+  public function performanceBadgesForUser(int $id) {
+    $user = $this->userRepository->getUserById($id);
     if($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
