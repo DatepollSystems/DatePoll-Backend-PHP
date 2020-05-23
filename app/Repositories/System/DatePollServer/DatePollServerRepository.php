@@ -42,6 +42,8 @@ class DatePollServerRepository implements IDatePollServerRepository
     $dto->cinema_enabled = $this->settingRepository->getCinemaEnabled();
     $dto->movies_count = DB::table('movies')->count();
     $dto->movies_tickets_count = DB::table('movies_bookings')->count();
+    $movies_workers_count = DB::table('movies')->where('worker_id', '!=', null)->count();
+    $dto->movies_workers_count = $movies_workers_count + DB::table('movies')->where('emergency_worker_id', '!=', null)->count();
 
     $dto->users_count = DB::table('users')->count();
     $dto->user_email_addresses_count = DB::table('user_email_addresses')->count();

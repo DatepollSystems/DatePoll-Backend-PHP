@@ -4,12 +4,6 @@ use App\Http\Middleware\JwtMiddleware;
 use App\Http\Middleware\SettingsPermissionMiddleware;
 
 $router->group(['prefix' => 'settings'], function () use ($router) {
-  $router->get('cinema', ['uses' => 'SettingsController@getCinemaFeatureIsEnabled']);
-  $router->get('events', ['uses' => 'SettingsController@getEventsFeatureIsEnabled']);
-  $router->get('name', ['uses' => 'SettingsController@getCommunityName']);
-  $router->get('communityUrl', ['uses' => 'SettingsController@getCommunityUrl']);
-  $router->get('url', ['uses' => 'SettingsController@getUrl']);
-
   // Secure this routes so not everyone can get the keys an the tokens
   $router->group(['prefix' => '', 'middleware' => [JwtMiddleware::class]], function () use ($router) {
     $router->get('openweathermap/key', ['uses' => 'SettingsController@getOpenWeatherMapKey']);
@@ -22,6 +16,9 @@ $router->group(['prefix' => 'settings/administration', 'middleware' => [JwtMiddl
   $router->post('events', ['uses' => 'SettingsController@setEventsFeatureIsEnabled']);
   $router->post('name', ['uses' => 'SettingsController@setCommunityName']);
   $router->post('communityUrl', ['uses' => 'SettingsController@setCommunityUrl']);
+  $router->post('description', ['uses' => 'SettingsController@setCommunityDescription']);
+  $router->post('imprint', ['uses' => 'SettingsController@setCommunityImprint']);
+  $router->post('privacyPolicy', ['uses' => 'SettingsController@setCommunityPrivacyPolicy']);
   $router->post('openweathermap/key', ['uses' => 'SettingsController@setOpenWeatherMapKey']);
   $router->post('openweathermap/cinemaCityId', ['uses' => 'SettingsController@setOpenWeatherMapCinemaCityId']);
   $router->post('url', ['uses' => 'SettingsController@setUrl']);
