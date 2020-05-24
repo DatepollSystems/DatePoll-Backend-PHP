@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Job;
+namespace App\Repositories\System\Job;
 
 use Illuminate\Support\Facades\DB;
 

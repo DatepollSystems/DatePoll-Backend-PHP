@@ -5,7 +5,7 @@ use App\LogTypes;
 use App\Models\Events\Event;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use App\Versions;
 use Exception;
 use Illuminate\Support\Facades\DB;

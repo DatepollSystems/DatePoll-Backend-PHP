@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Job;
+namespace App\Repositories\System\Job;
 
 use App\Models\System\Log;
 use Exception;
