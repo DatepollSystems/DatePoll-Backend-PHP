@@ -64,7 +64,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getUrl(): string {
-    return $this->getStringValueByKey(SettingKey::URL, 'https://test.at');
+    return $this->getStringValueByKey(SettingKey::URL, 'https://datepoll.org');
   }
 
   /**
@@ -94,7 +94,7 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCommunityUrl(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, 'https://datepoll.dafnik.me');
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, 'https://datepoll.org');
   }
 
   /**
