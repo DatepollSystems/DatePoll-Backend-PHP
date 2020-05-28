@@ -170,6 +170,7 @@ class UserRepository implements IUserRepository
    * @param User $user
    * @param string[] $emailAddresses
    * @return bool|null
+   * @throws Exception
    */
   public function updateUserEmailAddresses(User $user, $emailAddresses) {
     $emailAddressesWhichHaveNotBeenDeleted = array();
@@ -187,8 +188,7 @@ class UserRepository implements IUserRepository
       }
 
       if ($toDelete) {
-        $emailAddressToDeleteObject = UserEmailAddress::find($oldEmailAddress->id);
-        if (!$emailAddressToDeleteObject->delete()) {
+        if (!$oldEmailAddress->delete()) {
           Logging::error('updateUserEmailAddresses', 'Could not delete emailAddressToDeleteObject');
           return null;
         }
