@@ -4,7 +4,7 @@ namespace App\Http\Controllers\SystemControllers;
 
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Repositories\Job\IJobRepository;
+use App\Repositories\System\Job\IJobRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

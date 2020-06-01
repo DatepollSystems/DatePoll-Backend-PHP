@@ -5,7 +5,7 @@ namespace App\Http\Controllers\UserControllers;
 use App\Http\Controllers\Controller;
 use App\Models\User\User;
 use App\Repositories\Event\Event\IEventRepository;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;

@@ -6,7 +6,7 @@ use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
 use App\Repositories\Event\EventDate\IEventDateRepository;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;

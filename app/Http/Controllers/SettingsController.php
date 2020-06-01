@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Logging;
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -14,15 +14,6 @@ class SettingsController extends Controller
 
   public function __construct(ISettingRepository $settingRepository) {
     $this->settingRepository = $settingRepository;
-  }
-
-  /**
-   * @return JsonResponse
-   */
-  public function getCinemaFeatureIsEnabled() {
-    return response()->json([
-      'msg' => 'Is cinema service enabled',
-      'enabled' => $this->settingRepository->getCinemaEnabled()], 200);
   }
 
   /**
@@ -44,15 +35,6 @@ class SettingsController extends Controller
   }
 
   /**
-   * @return JsonResponse
-   */
-  public function getEventsFeatureIsEnabled() {
-    return response()->json([
-      'msg' => 'Is events service enabled',
-      'enabled' => $this->settingRepository->getEventsEnabled()], 200);
-  }
-
-  /**
    * @param Request $request
    * @return JsonResponse
    * @throws ValidationException
@@ -68,15 +50,6 @@ class SettingsController extends Controller
     return response()->json([
       'msg' => 'Set events service enabled',
       'isEnabled' => $isEnabled]);
-  }
-
-  /**
-   * @return JsonResponse
-   */
-  public function getCommunityName() {
-    return response()->json([
-      'msg' => 'Community name',
-      'community_name' => $this->settingRepository->getCommunityName()], 200);
   }
 
   /**
@@ -98,15 +71,6 @@ class SettingsController extends Controller
   }
 
   /**
-   * @return JsonResponse
-   */
-  public function getCommunityUrl() {
-    return response()->json([
-      'msg' => 'Community url',
-      'community_url' => $this->settingRepository->getCommunityUrl()], 200);
-  }
-
-  /**
    * @param Request $request
    * @return JsonResponse
    * @throws ValidationException
@@ -125,12 +89,57 @@ class SettingsController extends Controller
   }
 
   /**
+   * @param Request $request
    * @return JsonResponse
+   * @throws ValidationException
    */
-  public function getUrl() {
+  public function setCommunityDescription(Request $request) {
+    $this->validate($request, ['community_description' => 'required|min:1']);
+
+    $communityDescription = $request->input('community_description');
+
+    $this->settingRepository->setCommunityDescription($communityDescription);
+
+    Logging::info("setCommunityDescription", "User - " . $request->auth->id . " | Changed");
     return response()->json([
-      'msg' => 'Community url',
-      'url' => $this->settingRepository->getUrl()], 200);
+      'msg' => 'Set community description',
+      'community_description' => $communityDescription]);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setCommunityImprint(Request $request) {
+    $this->validate($request, ['community_imprint' => 'required|min:1']);
+
+    $communityImprint = $request->input('community_imprint');
+
+    $this->settingRepository->setCommunityImprint($communityImprint);
+
+    Logging::info("setCommunityImprint", "User - " . $request->auth->id . " | Changed");
+    return response()->json([
+      'msg' => 'Set community imprint',
+      'community_url' => $communityImprint]);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setCommunityPrivacyPolicy(Request $request) {
+    $this->validate($request, ['community_privacy_policy' => 'required|min:1']);
+
+    $communityPrivacyPolicy = $request->input('community_privacy_policy');
+
+    $this->settingRepository->setCommunityPrivacyPolicy($communityPrivacyPolicy);
+
+    Logging::info("setCommunityPrivacyPolicy", "User - " . $request->auth->id . " | Changed");
+    return response()->json([
+      'msg' => 'Set community privacy policy',
+      'community_url' => $communityPrivacyPolicy]);
   }
 
   /**

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\SystemControllers;
 
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Repositories\Log\ILogRepository;
+use App\Repositories\System\Log\ILogRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

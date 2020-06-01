@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Setting;
+namespace App\Repositories\System\Setting;
 
 use App\Models\System\Setting;
 
@@ -31,17 +31,6 @@ interface ISettingRepository
   /**
    * @return string
    */
-  public function getCommunityName(): string;
-
-  /**
-   * @param string $communityName
-   * @return string
-   */
-  public function setCommunityName(string $communityName): string;
-
-  /**
-   * @return string
-   */
   public function getUrl(): string;
 
   /**
@@ -53,6 +42,17 @@ interface ISettingRepository
   /**
    * @return string
    */
+  public function getCommunityName(): string;
+
+  /**
+   * @param string $communityName
+   * @return string
+   */
+  public function setCommunityName(string $communityName): string;
+
+  /**
+   * @return string
+   */
   public function getCommunityUrl(): string;
 
   /**
@@ -60,6 +60,39 @@ interface ISettingRepository
    * @return string
    */
   public function setCommunityUrl(string $communityUrl): string;
+
+  /**
+   * @return string
+   */
+  public function getCommunityDescription(): string;
+
+  /**
+   * @param string $communityDescription
+   * @return string
+   */
+  public function setCommunityDescription(string $communityDescription): string;
+
+  /**
+   * @return string
+   */
+  public function getCommunityImprint(): string;
+
+  /**
+   * @param string $communityImprint
+   * @return string
+   */
+  public function setCommunityImprint(string $communityImprint): string;
+
+  /**
+   * @return string
+   */
+  public function getCommunityPrivacyPolicy(): string;
+
+  /**
+   * @param string $communityPrivacyPolicy
+   * @return string
+   */
+  public function setCommunityPrivacyPolicy(string $communityPrivacyPolicy): string;
 
   /**
    * @return string

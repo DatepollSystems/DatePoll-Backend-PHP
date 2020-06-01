@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Setting;
+namespace App\Repositories\System\Setting;
 
 abstract class SettingKey
 {
@@ -15,6 +15,9 @@ abstract class SettingKey
 
   const COMMUNITY_NAME = "community_name";
   const COMMUNITY_URL = "community_url";
+  const COMMUNITY_DESCRIPTION = "community_description";
+  const COMMUNITY_IMPRINT = "community_imprint";
+  const COMMUNITY_PRIVACY_POLICY = 'community_privacy_policy';
 
   const OPENWEATHERMAP_KEY = "openweathermap_key";
 
@@ -60,6 +63,21 @@ class SettingRepository implements ISettingRepository
   /**
    * @return string
    */
+  public function getUrl(): string {
+    return $this->getStringValueByKey(SettingKey::URL, 'https://datepoll.org');
+  }
+
+  /**
+   * @param string $url
+   * @return string
+   */
+  public function setUrl(string $url): string {
+    return $this->setStringValueByKey(SettingKey::URL, $url);
+  }
+
+  /**
+   * @return string
+   */
   public function getCommunityName(): string {
     return $this->getStringValueByKey(SettingKey::COMMUNITY_NAME, 'DatePoll');
   }
@@ -75,23 +93,8 @@ class SettingRepository implements ISettingRepository
   /**
    * @return string
    */
-  public function getUrl(): string {
-    return $this->getStringValueByKey(SettingKey::URL, 'https://test.at');
-  }
-
-  /**
-   * @param string $url
-   * @return string
-   */
-  public function setUrl(string $url): string {
-    return $this->setStringValueByKey(SettingKey::URL, $url);
-  }
-
-  /**
-   * @return string
-   */
   public function getCommunityUrl(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, 'https://datepoll.dafnik.me');
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_URL, 'https://datepoll.org');
   }
 
   /**
@@ -100,6 +103,51 @@ class SettingRepository implements ISettingRepository
    */
   public function setCommunityUrl(string $communityUrl): string {
     return $this->setStringValueByKey(SettingKey::COMMUNITY_URL, $communityUrl);
+  }
+
+  /**
+   * @return string
+   */
+  public function getCommunityDescription(): string {
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_DESCRIPTION, 'Vereine sind schön! :)');
+  }
+
+  /**
+   * @param string $communityDescription
+   * @return string
+   */
+  public function setCommunityDescription(string $communityDescription): string {
+    return $this->setStringValueByKey(SettingKey::COMMUNITY_DESCRIPTION, $communityDescription);
+  }
+
+  /**
+   * @return string
+   */
+  public function getCommunityImprint(): string {
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_IMPRINT, 'You should provide your website imprint here.');
+  }
+
+  /**
+   * @param string $communityImprint
+   * @return string
+   */
+  public function setCommunityImprint(string $communityImprint): string {
+    return $this->setStringValueByKey(SettingKey::COMMUNITY_IMPRINT, $communityImprint);
+  }
+
+  /**
+   * @return string
+   */
+  public function getCommunityPrivacyPolicy(): string {
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_PRIVACY_POLICY, 'You should provide your website privacy policy here.');
+  }
+
+  /**
+   * @param string $communityPrivacyPolicy
+   * @return string
+   */
+  public function setCommunityPrivacyPolicy(string $communityPrivacyPolicy): string {
+    return $this->setStringValueByKey(SettingKey::COMMUNITY_PRIVACY_POLICY, $communityPrivacyPolicy);
   }
 
   /**
@@ -136,8 +184,7 @@ class SettingRepository implements ISettingRepository
    * @return int
    */
   public function getCurrentDatabaseVersion(): int {
-    //TODO: Change back to Versions::getCurrentDatabaseVersion()
-    return $this->getIntegerValueByKey(SettingKey::DATABASE_VERSION, 0);
+    return $this->getIntegerValueByKey(SettingKey::DATABASE_VERSION, Versions::getApplicationDatabaseVersion());
   }
 
   /**

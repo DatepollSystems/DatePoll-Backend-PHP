@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware\Cinema;
 
-use App\Repositories\Setting\ISettingRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use Closure;
 use Illuminate\Http\Request;
 

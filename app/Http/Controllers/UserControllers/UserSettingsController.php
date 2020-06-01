@@ -141,9 +141,9 @@ class UserSettingsController extends Controller
     }
 
     return response()->json([
-      'msg' => 'Set settings successful',
-      'setting_key' => $returnValue,
-      'setting_value' => $value]);
+      'msg' => 'Set setting successful',
+      'setting_key' => $settingKey,
+      'setting_value' => $returnValue]);
   }
 
   /**
@@ -176,7 +176,7 @@ class UserSettingsController extends Controller
     }
 
     return response()->json([
-      'msg' => 'Get settings successful',
+      'msg' => 'Get setting successful',
       'setting_key' => $settingKey,
       'setting_value' => $value]);
   }
