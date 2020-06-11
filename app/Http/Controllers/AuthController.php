@@ -64,11 +64,11 @@ class AuthController extends Controller
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('password'))) {
       if (!$user->activated) {
-        return response()->json(['msg' => 'Account is not activated', 'error_code' => 'notActivated'], 201);
+        return response()->json(['msg' => 'Account is not activated', 'error_code' => 'not_activated'], 400);
       }
 
       if ($user->force_password_change) {
-        return response()->json(['msg' => 'You have to change your password', 'error_code' => 'changePassword'], 201);
+        return response()->json(['msg' => 'You have to change your password', 'error_code' => 'change_password'], 400);
       }
 
       $sessionInformation = $request->input('session_information');
@@ -118,7 +118,7 @@ class AuthController extends Controller
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {
       if (!$user->activated) {
-        return response()->json(['msg' => 'Account is not activated', 'error_code' => 'notActivated'], 201);
+        return response()->json(['msg' => 'Account is not activated', 'error_code' => 'not_activated'], 400);
       }
 
       if (!$user->force_password_change) {
