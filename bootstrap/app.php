@@ -1,7 +1,6 @@
 <?php
 
 use App\Providers\AppServiceProvider;
-use Barryvdh\Cors\HandleCors;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -54,17 +53,14 @@ $app->singleton(
 
 /*
 |--------------------------------------------------------------------------
-| Register Middleware
+| CORS fix
 |--------------------------------------------------------------------------
-|
-| Next, we will register the middleware with the application. These can
-| be global middleware that run before and after each request into a
-| route or middleware that'll be assigned to some specific routes.
-|
 */
-/* Enable all CORS */
+
+$app->register(Fruitcake\Cors\CorsServiceProvider::class);
+$app->configure('cors');
 $app->middleware([
-  HandleCors::class,
+  Fruitcake\Cors\HandleCors::class,
 ]);
 
 $app->routeMiddleware([
@@ -87,14 +83,15 @@ $app->register(AppServiceProvider::class);
 /* IDE Helper*/
 $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
-/* Enable CORS on every route */
-$app->register(Barryvdh\Cors\ServiceProvider::class);
-
 /* Make php artisan:make command as powerful as in laravel */
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 
 /* Register DatePoll Service providers to implement the Repository Pattern */
 $app->register('App\Providers\DatePollServiceProvider');
+
+/* Redis and Horizon */
+$app->register(Illuminate\Redis\RedisServiceProvider::class);
+$app->register(Laravel\Horizon\HorizonServiceProvider::class);
 
 /* Mail configuration */
 $app->register(Illuminate\Mail\MailServiceProvider::class);
