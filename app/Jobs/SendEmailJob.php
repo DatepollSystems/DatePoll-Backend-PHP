@@ -42,6 +42,6 @@ class SendEmailJob extends Job
       foreach ($this->emailAddresses as $emailAddress) {
         $emailAddressString .= $emailAddress . ', ';
       }
-      Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString);
+      Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString . ' using queue: ' . $this->queue);
     }
 }

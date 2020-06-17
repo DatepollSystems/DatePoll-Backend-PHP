@@ -169,20 +169,27 @@ return [
       'supervisor-1' => [
         'connection' => 'redis',
         'queue' => ['default'],
-        'balance' => 'simple',
-        'processes' => 10,
-        'tries' => 1,
+        'balance' => 'auto',
+        'minProcesses' => 1,
+        'maxProcesses' => 10,
+        'tries' => 2,
       ],
-    ],
-
-    'local' => [
-      'supervisor-1' => [
+      'supervisor-2' => [
         'connection' => 'redis',
-        'queue' => ['default'],
-        'balance' => 'simple',
-        'processes' => 3,
-        'tries' => 1,
+        'queue' => ['high'],
+        'balance' => 'auto',
+        'minProcesses' => 1,
+        'maxProcesses' => 10,
+        'tries' => 2,
       ],
-    ],
+      'supervisor-3' => [
+        'connection' => 'redis',
+        'queue' => ['low'],
+        'balance' => 'auto',
+        'minProcesses' => 1,
+        'maxProcesses' => 5,
+        'tries' => 2,
+      ],
+    ]
   ],
 ];

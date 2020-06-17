@@ -224,7 +224,7 @@ class EventRepository implements IEventRepository
         $user = User::find($eventUser->id);
 
         if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user)) {
-          dispatch(new SendEmailJob(new NewEvent($user->firstname . " " . $user->surname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()));
+          dispatch(new SendEmailJob(new NewEvent($user->firstname . " " . $user->surname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()))->onQueue('low');;
         }
       }
     }
