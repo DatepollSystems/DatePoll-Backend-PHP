@@ -9,6 +9,8 @@ abstract class SettingKey
 
   const EVENTS_ENABLED = "events_enabled";
 
+  const BROADCASTS_ENABLED = "broadcasts_enabled";
+
   const FILES_ENABLED = "files_enabled";
 
   const URL = "url";
@@ -58,6 +60,21 @@ class SettingRepository implements ISettingRepository
    */
   public function setEventsEnabled(bool $isEnabled): bool {
     return $this->setBoolValueByKey(SettingKey::EVENTS_ENABLED, $isEnabled);
+  }
+
+  /**
+   * @return bool
+   */
+  public function getBroadcastsEnabled(): bool {
+    return $this->getBoolValueByKey(SettingKey::BROADCASTS_ENABLED, true);
+  }
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsEnabled(bool $isEnabled): bool {
+    return $this->setBoolValueByKey(SettingKey::BROADCASTS_ENABLED, $isEnabled);
   }
 
   /**
