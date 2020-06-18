@@ -16,12 +16,12 @@ class CreateEventsForGroupsTable extends Migration
     Schema::create('events_for_groups', function (Blueprint $table) {
       $table->increments('id');
 
-      $table->integer('event_id')->unsigned();;
+      $table->integer('event_id')->unsigned();
       $table->foreign('event_id')
         ->references('id')->on('events')
         ->onDelete('cascade');
 
-      $table->integer('group_id')->unsigned();;
+      $table->integer('group_id')->unsigned();
       $table->foreign('group_id')
         ->references('id')->on('groups')
         ->onDelete('cascade');
