@@ -210,7 +210,7 @@ class AuthController extends Controller
     if ($userCode->save()) {
       $name = $user->firstname . ' ' . $user->surname;
 
-      dispatch(new SendEmailJob(new ForgotPassword($name, $code), $user->getEmailAddresses()));
+      dispatch(new SendEmailJob(new ForgotPassword($name, $code), $user->getEmailAddresses()))->onQueue('high');
 
       Logging::info("sendForgotPasswordEmail", "User -" . $user->id . " | Email sent");
       return response()->json(['msg' => 'Sent'], 200);

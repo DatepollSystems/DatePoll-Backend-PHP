@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateEventsForGroupsTable extends Migration
+class CreateBroadcastsForGroupsTable extends Migration
 {
   /**
    * Run the migrations.
@@ -13,15 +13,15 @@ class CreateEventsForGroupsTable extends Migration
    */
   public function up()
   {
-    Schema::create('events_for_groups', function (Blueprint $table) {
+    Schema::create('broadcasts_for_groups', function (Blueprint $table) {
       $table->increments('id');
 
-      $table->integer('event_id')->unsigned();
-      $table->foreign('event_id')
-        ->references('id')->on('events')
+      $table->integer('broadcast_id')->unsigned();
+      $table->foreign('broadcast_id')
+        ->references('id')->on('broadcasts')
         ->onDelete('cascade');
 
-      $table->integer('group_id')->unsigned();
+      $table->integer('group_id')->unsigned();;
       $table->foreign('group_id')
         ->references('id')->on('groups')
         ->onDelete('cascade');
@@ -37,6 +37,6 @@ class CreateEventsForGroupsTable extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('events_for_groups');
+    Schema::dropIfExists('broadcasts_for_groups');
   }
 }

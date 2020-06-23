@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Broadcast\Broadcast\BroadcastRepository;
+use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Cinema\Movie\IMovieRepository;
 use App\Repositories\Cinema\Movie\MovieRepository;
 use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
@@ -58,6 +60,9 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IEventDecisionRepository::class, EventDecisionRepository::class);
     $this->app->bind(IEventStandardLocationRepository::class, EventStandardLocationRepository::class);
     $this->app->bind(IEventStandardDecisionRepository::class, EventStandardDecisionRepository::class);
+
+    /** Broadcast repositories */
+    $this->app->bind(IBroadcastRepository::class, BroadcastRepository::class);
 
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);

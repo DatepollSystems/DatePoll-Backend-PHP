@@ -80,6 +80,12 @@ class UpdateDatePollDB extends ACommand
             return;
           }
           break;
+//        case 3:
+//          if (!$this->migrateDatabaseVersionFrom2To3()) {
+//            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
+//            return;
+//          }
+//          break;
       }
 
       $this->log('handle', 'Saving new database version', LogTypes::INFO);
@@ -139,9 +145,9 @@ class UpdateDatePollDB extends ACommand
    * @return bool
    */
   private function migrateDatabaseVersionFrom1To2(): bool {
-    $this->log('db-migrate-0To1', 'Running migration from 1 to 2', LogTypes::INFO);
+    $this->log('db-migrate-1To2', 'Running migration from 1 to 2', LogTypes::INFO);
 
-    $this->log('db-migrate-0To1', 'Running events decisions color migrations...', LogTypes::INFO);
+    $this->log('db-migrate-1To2', 'Running events decisions color migrations...', LogTypes::INFO);
     try {
       $this->runDbStatement('1To2', 'ALTER TABLE events_decisions ADD color varchar(7) NOT NULL DEFAULT \'#ffffff\';');
     } catch (Exception $exception) {
@@ -159,6 +165,25 @@ class UpdateDatePollDB extends ACommand
 
     $this->log('db-migrate-1To2', 'Running database migrations finished!', LogTypes::INFO);
     $this->log('db-migrate-1To2', 'Running migration from 1 to 2 finished!', LogTypes::INFO);
+    return true;
+  }
+
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom2To3(): bool {
+    $this->log('db-migrate-2To3', 'Running migration from 2 to 3', LogTypes::INFO);
+
+    $this->log('db-migrate-2To3', 'Deleting jobs table...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('2To3', 'DROP TABLE JOBS;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-2To3', 'Running database migrations finished!', LogTypes::INFO);
+    $this->log('db-migrate-2To3', 'Running migration from 2 to 3 finished!', LogTypes::INFO);
     return true;
   }
 

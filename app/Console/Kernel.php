@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
+use Laravelista\LumenVendorPublish\VendorPublishCommand;
 
 class Kernel extends ConsoleKernel
 {
@@ -16,7 +17,8 @@ class Kernel extends ConsoleKernel
     'App\Console\Commands\AddAdminUser',
     'App\Console\Commands\DropTables',
     'App\Console\Commands\SetupDatePoll',
-    'App\Console\Commands\UpdateDatePollDB'
+    'App\Console\Commands\UpdateDatePollDB',
+    VendorPublishCommand::class
   ];
 
   /**

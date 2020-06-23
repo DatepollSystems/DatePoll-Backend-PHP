@@ -43,8 +43,6 @@ class UserController extends Controller
   public function updateMyself(Request $request) {
     $this->validate($request, [
       'title' => 'max:190',
-      'firstname' => 'required|max:190|min:1',
-      'surname' => 'required|max:190|min:1',
       'streetname' => 'required|max:190|min:1',
       'streetnumber' => 'required|max:190|min:1',
       'zipcode' => 'required|integer',
@@ -54,8 +52,6 @@ class UserController extends Controller
     $user = $request->auth;
 
     $user->title = $request->input('title');
-    $user->firstname = $request->input('firstname');
-    $user->surname = $request->input('surname');
     $user->streetname = $request->input('streetname');
     $user->streetnumber = $request->input('streetnumber');
     $user->zipcode = $request->input('zipcode');

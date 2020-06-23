@@ -39,6 +39,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     /** Events */
     require_once (__DIR__ . '/EventRoutes.php');
 
+    /** Broadcasts */
+    require_once (__DIR__ . '/BroadcastRoutes.php');
+
   });
 
   /** Calendar route */
