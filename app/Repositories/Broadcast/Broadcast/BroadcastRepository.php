@@ -210,6 +210,10 @@ class BroadcastRepository implements IBroadcastRepository
     }
 
     $writer = $this->userRepository->getUserById($writerId);
+    $writerEmailAddress = null;
+    if ($writer->hasEmailAddresses()) {
+      $writerEmailAddress = $writer->getEmailAddresses()[0];
+    }
 
     foreach ($users as $user) {
       if ($user->hasEmailAddresses() && $user->activated) {
@@ -223,7 +227,7 @@ class BroadcastRepository implements IBroadcastRepository
           return null;
         }
 
-        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname, $this->settingRepository);
+        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname, $writerEmailAddress, $this->settingRepository);
         $sendEmailJob = new SendEmailJob($broadcastMail, $user->getEmailAddresses());
         $sendEmailJob->broadcastId = $broadcast->id;
         $sendEmailJob->userId = $user->id;

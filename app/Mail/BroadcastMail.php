@@ -14,6 +14,7 @@ class BroadcastMail extends ADatePollMailable
   public $body;
   public $bodyHTML;
   public $writerName;
+  public $emailAddress;
   public $DatePollAddress;
 
   protected $settingRepository = null;
@@ -25,9 +26,10 @@ class BroadcastMail extends ADatePollMailable
    * @param string $body
    * @param string $bodyHTML
    * @param string $writerName
+   * @param string $emailAddress
    * @param ISettingRepository $settingRepository
    */
-  public function __construct($subject, $body, $bodyHTML, $writerName, ISettingRepository $settingRepository) {
+  public function __construct($subject, $body, $bodyHTML, $writerName, $emailAddress, ISettingRepository $settingRepository) {
     parent::__construct('broadcast');
 
     $this->settingRepository = $settingRepository;
@@ -37,6 +39,10 @@ class BroadcastMail extends ADatePollMailable
     $this->body = $body;
     $this->bodyHTML = $bodyHTML;
     $this->writerName = $writerName;
+    if ($emailAddress == null) {
+      $emailAddress = env('MAIL_FROM_ADDRESS');
+    }
+    $this->emailAddress = $emailAddress;
   }
 
   /**
@@ -47,6 +53,7 @@ class BroadcastMail extends ADatePollMailable
   public function build() {
     return $this->subject('» ' . $this->subject)
                 ->from(env('MAIL_FROM_ADDRESS'), $this->writerName)
+                ->replyTo($this->emailAddress, $this->writerName)
                 ->view('emails.broadcast.broadcast')
                 ->text('emails.broadcast.broadcast_plain');
   }
