@@ -29,12 +29,19 @@ class UserHasBadge extends Model
   /**
    * @var array
    */
-  protected $fillable = ['description', 'getDate', 'reason', 'user_id', 'created_at', 'updated_at'];
+  protected $fillable = [
+    'description',
+    'getDate',
+    'reason',
+    'user_id',
+    'created_at',
+    'updated_at'];
 
   /**
    * @return BelongsTo | User
    */
   public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+    return $this->belongsTo('App\Models\User\User')
+                ->first();
   }
 }

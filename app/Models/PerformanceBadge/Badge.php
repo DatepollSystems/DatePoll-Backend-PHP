@@ -25,5 +25,9 @@ class Badge extends Model
   /**
    * @var array
    */
-  protected $fillable = ['description', 'afterYears', 'created_at', 'updated_at'];
+  protected $fillable = [
+    'description',
+    'afterYears',
+    'created_at',
+    'updated_at'];
 }

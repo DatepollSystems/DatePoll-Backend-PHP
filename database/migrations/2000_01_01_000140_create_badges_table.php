@@ -11,13 +11,12 @@ class CreateBadgesTable extends Migration
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('badges', function (Blueprint $table) {
       $table->increments('id');
 
-      $table->string('description');
-      $table->integer('afterYears');
+      $table->string('description')->nullable(false);
+      $table->integer('afterYears')->nullable(false);
 
       $table->timestamps();
     });
@@ -28,8 +27,7 @@ class CreateBadgesTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('badges');
   }
 }
