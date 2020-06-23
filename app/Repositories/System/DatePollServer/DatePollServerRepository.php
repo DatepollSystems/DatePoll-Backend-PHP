@@ -46,6 +46,8 @@ class DatePollServerRepository implements IDatePollServerRepository
     $dto->movies_workers_count = $movies_workers_count + DB::table('movies')->where('emergency_worker_id', '!=', null)->count();
 
     $dto->broadcasts_enabled = $this->settingRepository->getBroadcastsEnabled();
+    $dto->broadcasts_count = DB::table('broadcasts')->count();
+    $dto->broadcasts_sent_count = DB::table('broadcasts_users_info')->count();
 
     $dto->users_count = DB::table('users')->count();
     $dto->user_email_addresses_count = DB::table('user_email_addresses')->count();
