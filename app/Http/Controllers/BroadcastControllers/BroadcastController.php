@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BroadcastControllers;
 
+use App\Logging;
 use App\Models\Events\Event;
 use App\Http\Controllers\Controller;
 use App\Permissions;
@@ -115,20 +116,23 @@ class BroadcastController extends Controller
   }
 
   /**
+   * @param Request $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete($id) {
-    $event = $this->eventRepository->getEventById($id);
-    if ($event == null) {
-      return response()->json(['msg' => 'Event not found'], 404);
+  public function delete(Request $request, $id) {
+    $broadcast = $this->broadcastRepository->getBroadcastById($id);
+    if ($broadcast == null) {
+      return response()->json(['msg' => 'Broadcast not found'], 404);
     }
 
-    if (!$this->eventRepository->deleteEvent($event)) {
-      return response()->json(['msg' => 'Could not delete event'], 500);
+    if (!$this->broadcastRepository->delete($broadcast)) {
+      Logging::error('deleteBroadcast', 'Could not delete broadcast! User id - ' . $request->auth->id);
+      return response()->json(['msg' => 'Could not delete broadcast'], 500);
     }
 
-    return response()->json(['msg' => 'Successfully deleted event'], 200);
+    Logging::info('deleteBroadcast', 'Deleted broadcast! User id - ' . $request->auth->id);
+    return response()->json(['msg' => 'Successfully deleted broadcast'], 200);
   }
 }

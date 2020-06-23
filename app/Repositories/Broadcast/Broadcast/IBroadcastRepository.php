@@ -45,4 +45,12 @@ interface IBroadcastRepository
    * @throws Exception
    */
   public function create(string $subject, string $bodyHTML, string $body, int $writerId, $groups, $subgroups, bool $forEveryone);
+
+  /**
+   * @param Broadcast $broadcast
+   * @return bool|null
+   * @throws Exception
+   */
+  public function delete(Broadcast $broadcast);
+
 }

@@ -235,4 +235,12 @@ class BroadcastRepository implements IBroadcastRepository
   }
 
 
+  /**
+   * @param Broadcast $broadcast
+   * @return bool|null
+   * @throws Exception
+   */
+  public function delete(Broadcast $broadcast) {
+    return $broadcast->delete();
+  }
 }
