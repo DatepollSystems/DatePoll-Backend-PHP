@@ -3,18 +3,13 @@
 namespace App\Http\Controllers\BroadcastControllers;
 
 use App\Logging;
-use App\Models\Events\Event;
 use App\Http\Controllers\Controller;
 use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
-use App\Repositories\Event\Event\IEventRepository;
-use App\Repositories\Event\EventDate\IEventDateRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use stdClass;
-
 class BroadcastController extends Controller
 {
 
