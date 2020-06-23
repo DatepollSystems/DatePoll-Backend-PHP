@@ -9,6 +9,7 @@ use App\Mail\BroadcastMail;
 use App\Models\Broadcasts\Broadcast;
 use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Broadcasts\BroadcastForSubgroup;
+use App\Models\Broadcasts\BroadcastUserInfo;
 use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
 use App\Repositories\System\Setting\ISettingRepository;
@@ -31,15 +32,17 @@ class BroadcastRepository implements IBroadcastRepository
   /**
    * @return Broadcast[]|Collection
    */
-  public function getAllBroadcasts() {
-    return Broadcast::all();
+  public function getAllBroadcastsOrderedByDate() {
+    return Broadcast::orderBy('created_at', 'DESC')
+                    ->get();
   }
 
   /**
-   * @return Broadcast[]|Collection
+   * @param int $id
+   * @return Broadcast | null
    */
-  public function getAllBroadcastsOrderedByDate() {
-    return Broadcast::orderBy('created_at', 'DESC')->get();
+  public function getBroadcastById(int $id) {
+    return Broadcast::find($id);
   }
 
   /**
@@ -86,9 +89,37 @@ class BroadcastRepository implements IBroadcastRepository
     $toReturnBroadcast->body = $broadcast->body;
     $toReturnBroadcast->writer_name = $broadcast->writer()->firstname . ' ' . $broadcast->writer()->surname;
     $toReturnBroadcast->writer_user_id = $broadcast->writer_user_id;
-    $toReturnBroadcast->forEveryone = $broadcast->forEveryone;
+    $toReturnBroadcast->for_everyone = $broadcast->forEveryone;
     $toReturnBroadcast->created_at = $broadcast->created_at;
     $toReturnBroadcast->updated_at = $broadcast->updated_at;
+
+    return $toReturnBroadcast;
+  }
+
+  /**
+   * @param Broadcast $broadcast
+   * @return Broadcast|stdClass
+   */
+  public function getBroadcastSentReceiptReturnable(Broadcast $broadcast) {
+    $toReturnBroadcast = $this->getBroadcastAdminReturnable($broadcast);
+
+    $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
+
+    $userInfos = [];
+    foreach (BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)->orderBy('sent')->get() as $userInfo) {
+      $userInfoDTO = new stdClass();
+      $userInfoDTO->id = $userInfo->id;
+      $userInfoDTO->broadcast_id = $userInfo->broadcast_id;
+      $userInfoDTO->user_id = $userInfo->user_id;
+      $userInfoDTO->user_name = $userInfo->user()->firstname . ' ' . $userInfo->user()->surname;
+      $userInfoDTO->sent = $userInfo->sent;
+      $userInfoDTO->created_at = $userInfo->created_at;
+      $userInfoDTO->updated_at = $userInfo->updated_at;
+
+      $userInfos[] = $userInfoDTO;
+    }
+
+    $toReturnBroadcast->users_info = $userInfos;
 
     return $toReturnBroadcast;
   }
@@ -110,10 +141,9 @@ class BroadcastRepository implements IBroadcastRepository
       'bodyHTML' => $bodyHTML,
       'body' => $body,
       'writer_user_id' => $writerId,
-      'forEveryone' => $forEveryone
-    ]);
+      'forEveryone' => $forEveryone]);
 
-    if(!$broadcast->save()) {
+    if (!$broadcast->save()) {
       Logging::error('createBroadcast', 'Broadcast failed to create! User id - ' . $writerId);
       return null;
     }
@@ -129,13 +159,14 @@ class BroadcastRepository implements IBroadcastRepository
         $group = Group::find($groupId);
 
         if ($group == null) {
-          Logging::error('createBroadcast', 'Broadcast failed to create! Unknown group_id - ' .
-            $groupId . ' User id - ' . $writerId);
+          Logging::error('createBroadcast', 'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
           $broadcast->delete();
           return null;
         }
 
-        $broadcastForGroup = new BroadcastForGroup(['broadcast_id' => $broadcast->id, 'group_id' => $groupId]);
+        $broadcastForGroup = new BroadcastForGroup([
+          'broadcast_id' => $broadcast->id,
+          'group_id' => $groupId]);
         if (!$broadcastForGroup->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastForGroup');
           $broadcast->delete();
@@ -153,13 +184,14 @@ class BroadcastRepository implements IBroadcastRepository
         $subgroup = Subgroup::find($subgroupId);
 
         if ($subgroup == null) {
-          Logging::error('createBroadcast', 'Broadcast failed to create! Unknown subgroup_id - ' .
-            $subgroupId . ' User id - ' . $writerId);
+          Logging::error('createBroadcast', 'Broadcast failed to create! Unknown subgroup_id - ' . $subgroupId . ' User id - ' . $writerId);
           $broadcast->delete();
           return null;
         }
 
-        $broadcastForSubgroup = new BroadcastForSubgroup(['broadcast_id' => $broadcast->id, 'subgroup_id' => $subgroupId]);
+        $broadcastForSubgroup = new BroadcastForSubgroup([
+          'broadcast_id' => $broadcast->id,
+          'subgroup_id' => $subgroupId]);
         if (!$broadcastForSubgroup->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastForSubgroup');
           $broadcast->delete();
@@ -181,8 +213,21 @@ class BroadcastRepository implements IBroadcastRepository
 
     foreach ($users as $user) {
       if ($user->hasEmailAddresses() && $user->activated) {
-        dispatch(new SendEmailJob(new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname,
-          $this->settingRepository), $user->getEmailAddresses()))->onQueue('default');
+        $broadcastUserInfo = new BroadcastUserInfo([
+          'broadcast_id' => $broadcast->id,
+          'user_id' => $user->id,
+          'sent' => false]);
+        if (!$broadcastUserInfo->save()) {
+          Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastUserInfo | User id - ' . $user->id);
+          $broadcast->delete();
+          return null;
+        }
+
+        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname, $this->settingRepository);
+        $sendEmailJob = new SendEmailJob($broadcastMail, $user->getEmailAddresses());
+        $sendEmailJob->broadcastId = $broadcast->id;
+        $sendEmailJob->userId = $user->id;
+        dispatch($sendEmailJob)->onQueue('default');
       }
     }
 

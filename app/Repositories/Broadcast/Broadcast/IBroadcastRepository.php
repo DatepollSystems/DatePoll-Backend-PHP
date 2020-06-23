@@ -13,18 +13,25 @@ interface IBroadcastRepository
   /**
    * @return Broadcast[]|Collection
    */
-  public function getAllBroadcasts();
+  public function getAllBroadcastsOrderedByDate();
 
   /**
-   * @return Broadcast[]|Collection
+   * @param int $id
+   * @return Broadcast | null
    */
-  public function getAllBroadcastsOrderedByDate();
+  public function getBroadcastById(int $id);
 
   /**
    * @param Broadcast $broadcast
    * @return Broadcast|stdClass
    */
   public function getBroadcastAdminReturnable(Broadcast $broadcast);
+
+  /**
+   * @param Broadcast $broadcast
+   * @return Broadcast|stdClass
+   */
+  public function getBroadcastSentReceiptReturnable(Broadcast $broadcast);
 
   /**
    * @param string $subject

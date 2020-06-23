@@ -4,6 +4,8 @@ namespace App\Jobs;
 
 use App\Logging;
 use App\Mail\ADatePollMailable;
+use App\Mail\BroadcastMail;
+use App\Models\Broadcasts\BroadcastUserInfo;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -16,6 +18,9 @@ class SendEmailJob extends Job
 {
   private $mailable;
   private $emailAddresses;
+
+  public $userId;
+  public $broadcastId;
 
   /**
    * Create a new job instance.
@@ -42,6 +47,13 @@ class SendEmailJob extends Job
       foreach ($this->emailAddresses as $emailAddress) {
         $emailAddressString .= $emailAddress . ', ';
       }
+
+      if ($this->mailable instanceof BroadcastMail) {
+        $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $this->userId)->where('broadcast_id', '=', $this->broadcastId)->first();
+        $broadcastUserInfo->sent = true;
+        $broadcastUserInfo->save();
+      }
+
       Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString . ' using queue: ' . $this->queue);
     }
 }

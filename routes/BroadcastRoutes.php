@@ -15,6 +15,7 @@ $router->group(['prefix' => 'broadcast', 'middleware' => [BroadcastsFeatureMiddl
     function () use ($router) {
       $router->get('broadcast', ['uses' => 'BroadcastControllers\BroadcastController@getAll']);
       $router->post('broadcast', ['uses' => 'BroadcastControllers\BroadcastController@create']);
+      $router->get('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@getSentReceiptReturnable']);
       $router->delete('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@delete']);
     });
 });

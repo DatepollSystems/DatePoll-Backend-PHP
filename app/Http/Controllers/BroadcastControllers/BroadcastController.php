@@ -39,6 +39,21 @@ class BroadcastController extends Controller
   }
 
   /**
+   * @param $id
+   * @return JsonResponse
+   */
+  public function getSentReceiptReturnable($id) {
+    $broadcast = $this->broadcastRepository->getBroadcastById($id);
+    if ($broadcast == null) {
+      return response()->json(['msg' => 'Broadcast not found'], 404);
+    }
+
+    return response()->json([
+      'msg' => 'Get broadcast with send receipts',
+      'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast)]);
+  }
+
+  /**
    * @param Request $request
    * @param int $id
    * @return JsonResponse
@@ -53,10 +68,7 @@ class BroadcastController extends Controller
     $user = $request->auth;
 
     $toReturnEvent = $this->eventRepository->getReturnable($event);
-    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event,
-      !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
-        $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
-        $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
+    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event, !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) || $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
 
     $toReturnEvent->view_events = [
       'href' => 'api/v1/avent/administration/avent',
@@ -74,23 +86,22 @@ class BroadcastController extends Controller
    */
   public function create(Request $request) {
     $this->validate($request, [
-      'forEveryone' => 'required|boolean',
+      'for_everyone' => 'required|boolean',
       'subject' => 'required|max:190|min:1',
       'bodyHTML' => 'required|string',
       'body' => 'required|string',
       'groups' => 'array',
       'groups.*' => 'required|integer',
       'subgroups' => 'array',
-      'subgroups.*' => 'required|integer',
-    ]);
+      'subgroups.*' => 'required|integer',]);
 
-    $forEveryone = $request->input('forEveryone');
+    $forEveryone = $request->input('for_everyone');
     $subject = $request->input('subject');
     $bodyHTML = $request->input('bodyHTML');
     $body = $request->input('body');
 
-    $groups = (array) $request->input('groups');
-    $subgroups = (array) $request->input('subgroups');
+    $groups = (array)$request->input('groups');
+    $subgroups = (array)$request->input('subgroups');
 
     $broadcast = $this->broadcastRepository->create($subject, $bodyHTML, $body, $request->auth->id, $groups, $subgroups, $forEveryone);
 
