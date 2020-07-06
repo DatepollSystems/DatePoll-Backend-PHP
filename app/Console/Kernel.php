@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
     'App\Console\Commands\AddAdminUser',
     'App\Console\Commands\DropTables',
     'App\Console\Commands\SetupDatePoll',
-    'App\Console\Commands\UpdateDatePollDB'
+    'App\Console\Commands\UpdateDatePollDB',
+    'App\Console\Commands\MigrateMembers'
   ];
 
   /**
