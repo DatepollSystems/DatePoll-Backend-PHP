@@ -29,7 +29,7 @@ class MigrateMembers extends Command
   /**
    * Create a new command instance.
    *
-   * @return void
+   * @param IUserRepository $userRepository
    */
   public function __construct(IUserRepository $userRepository)
   {
@@ -58,17 +58,23 @@ class MigrateMembers extends Command
       $user->username  = strtolower(substr($row[2], 0, 1) . '.' . $row[3]);
       $user->firstname = $row[2];
       $user->surname = $row[3];
-      $user->birthday = '2020-01-01';
-      $user->join_date = '2020-01-01';
+      $user->join_date = $row[11] . '-01-01';
       $user->streetname = $row[4];
       $user->streetnumber = '100000';
       $user->zipcode = '1111';
       $user->location = $row[5];
       $user->activated = false;
-      $user->activity = 'aktiv';
+      $user->activity = $row[12];
       $user->password = 'Null';
       $user->email_address = $row[6];
       $user->telephone_number = $row[9];
+
+      if (strpos(substr($row[10], 6, 1), "0") !== false || strpos(substr($row[10], 6, 1), "1") !== false) {
+        $birthday = '20' . substr($row[10], 6, 2) . '-' . substr($row[10], 3, 2) . '-' . substr($row[10], 0, 2);
+      } else {
+        $birthday = '19' . substr($row[10], 6, 2) . '-' . substr($row[10], 3, 2) . '-' . substr($row[10], 0, 2);
+      }
+      $user->birthday = $birthday;
 
       foreach ($this->userRepository->getAllUsers() as $existingUser) {
         if (strpos($existingUser->firstname, $user->firstname) !== false && strpos($existingUser->surname, $user->surname) !== false) {
@@ -117,6 +123,7 @@ class MigrateMembers extends Command
         $emailAddressToSave->save();
 
       } catch (\Exception $exception) {
+        $this->comment($exception->getMessage());
       }
 
     }
