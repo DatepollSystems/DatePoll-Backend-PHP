@@ -24,7 +24,9 @@ class EventsFeatureMiddleware
    */
   public function handle($request, Closure $next) {
     if (!$this->settingRepository->getEventsEnabled()) {
-      return response()->json(['msg' => 'The events feature is disabled on this DatePoll server'], 503);
+      return response()->json([
+        'msg' => 'The events feature is disabled on this DatePoll server',
+        'error_code' => 'feature_disabled_events'], 503);
     }
 
     return $next($request);

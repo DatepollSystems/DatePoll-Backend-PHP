@@ -24,7 +24,9 @@ class BroadcastsFeatureMiddleware
    */
   public function handle($request, Closure $next) {
     if (!$this->settingRepository->getBroadcastsEnabled()) {
-      return response()->json(['msg' => 'The broadcast feature is disabled on this DatePoll server'], 503);
+      return response()->json([
+        'msg' => 'The broadcast feature is disabled on this DatePoll server',
+        'error_code' => 'feature_disabled_broadcasts'], 503);
     }
 
     return $next($request);
