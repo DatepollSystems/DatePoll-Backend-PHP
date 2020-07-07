@@ -23,7 +23,9 @@ class CinemaFeatureMiddleware
    */
   public function handle($request, Closure $next) {
     if (!$this->settingRepository->getCinemaEnabled()) {
-      return response()->json(['msg' => 'The cinema feature is disabled on this DatePoll server'], 503);
+      return response()->json([
+        'msg' => 'The cinema feature is disabled on this DatePoll server',
+        'error_code' => 'feature_disabled_cinema'], 503);
     }
 
     return $next($request);

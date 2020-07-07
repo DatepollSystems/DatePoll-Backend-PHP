@@ -286,7 +286,7 @@ class UserRepository implements IUserRepository
     $user->activated = true;
     $user->save();
 
-    dispatch(new SendEmailJob(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user->getEmailAddresses()));
+    dispatch(new SendEmailJob(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user->getEmailAddresses()))->onQueue('default');
   }
 
   /**

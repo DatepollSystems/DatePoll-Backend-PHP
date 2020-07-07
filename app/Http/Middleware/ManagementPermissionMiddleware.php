@@ -19,6 +19,7 @@ class ManagementPermissionMiddleware
     $user = $request->auth;
     if (!($user->hasPermission(Permissions::$MANAGEMENT_ADMINISTRATION) OR $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
       return response()->json(['msg' => 'Permission denied',
+                               'error_code' => 'permissions_denied',
                                'needed_permissions' => [
                                  Permissions::$ROOT_ADMINISTRATION,
                                  Permissions::$MANAGEMENT_ADMINISTRATION]], 403);

@@ -11,6 +11,8 @@ class Permissions {
   public static $EVENTS_ADMINISTRATION = 'events.*';
   public static $EVENTS_VIEW_DETAILS = 'events.details';
 
+  public static $BROADCASTS_ADMINISTRATION = 'broadcasts.*';
+
   public static $FILES_ADMINISTRATION = 'files.*';
 
   public static $MANAGEMENT_ADMINISTRATION = 'management.*';

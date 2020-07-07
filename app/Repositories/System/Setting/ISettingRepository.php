@@ -29,6 +29,17 @@ interface ISettingRepository
   public function setEventsEnabled(bool $isEnabled): bool;
 
   /**
+   * @return bool
+   */
+  public function getBroadcastsEnabled(): bool;
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsEnabled(bool $isEnabled): bool;
+
+  /**
    * @return string
    */
   public function getUrl(): string;

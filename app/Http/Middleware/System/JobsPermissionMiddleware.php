@@ -20,6 +20,7 @@ class JobsPermissionMiddleware
     if (!($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) OR $user->hasPermission(Permissions::$SYSTEM_ADMINISTRATION) OR $user->hasPermission(Permissions::$SYSTEM_JOBS_ADMINISTRATION))) {
       return response()->json([
         'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
         'needed_permissions' => [
           Permissions::$ROOT_ADMINISTRATION,
           Permissions::$SYSTEM_ADMINISTRATION,

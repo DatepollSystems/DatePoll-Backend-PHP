@@ -55,6 +55,13 @@ $router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionM
 
   $router->post('performanceBadgeWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@addPerformanceBadgeForUserWithInstrument']);
   $router->delete('performanceBadgeWithInstrument/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']);
-
   $router->get('performanceBadgesForUser/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@performanceBadgesForUser']);
+
+  /** Badge routes */
+  $router->get('badges', ['uses' => 'ManagementControllers\BadgeController@getAll']);
+  $router->post('badges', ['uses' => 'ManagementControllers\BadgeController@create']);
+  $router->delete('badges/{id}', ['uses' => 'ManagementControllers\BadgeController@delete']);
+  $router->post('badgeForUser', ['uses' => 'ManagementControllers\BadgeController@addUserBadge']);
+  $router->delete('badgeForUser/{id}', ['uses' => 'ManagementControllers\BadgeController@removeUserBadge']);
+  $router->get('badgesForUser/{id}', ['uses' => 'ManagementControllers\BadgeController@userBadgesForUser']);
 });
