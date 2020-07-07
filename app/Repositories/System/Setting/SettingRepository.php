@@ -66,7 +66,7 @@ class SettingRepository implements ISettingRepository
    * @return bool
    */
   public function getBroadcastsEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::BROADCASTS_ENABLED, true);
+    return $this->getBoolValueByKey(SettingKey::BROADCASTS_ENABLED, false);
   }
 
   /**
