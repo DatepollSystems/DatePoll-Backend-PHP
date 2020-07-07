@@ -16,9 +16,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
   $router->get('/', ['uses' => 'DatePollServerController@getServerInfo']);
 
-  /** Setting routes */
-  require_once(__DIR__ . '/SettingsRoutes.php');
-
   /** Auth routes */
   require_once(__DIR__ . '/AuthRoutes.php');
 
