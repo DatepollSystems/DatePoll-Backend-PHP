@@ -57,6 +57,24 @@ class SettingsController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
+  public function setBroadcastFeatureIsEnabled(Request $request) {
+    $this->validate($request, ['isEnabled' => 'required|boolean']);
+
+    $isEnabled = $request->input('isEnabled');
+
+    $this->settingRepository->setBroadcastsEnabled($isEnabled);
+
+    Logging::info("setBroadcastFeatureIsEnabled", "User - " . $request->auth->id . " | Changed to " . $isEnabled);
+    return response()->json([
+      'msg' => 'Set broadcast service enabled',
+      'isEnabled' => $isEnabled]);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
   public function setCommunityName(Request $request) {
     $this->validate($request, ['community_name' => 'required|min:1|max:50']);
 
