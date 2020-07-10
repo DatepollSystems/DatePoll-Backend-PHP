@@ -17,5 +17,12 @@ $router->group(['prefix' => 'broadcast', 'middleware' => [BroadcastsFeatureMiddl
       $router->post('broadcast', ['uses' => 'BroadcastControllers\BroadcastController@create']);
       $router->get('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@getSentReceiptReturnable']);
       $router->delete('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@delete']);
+
+      /** Drafts */
+      $router->get('draft', ['uses' => 'BroadcastControllers\BroadcastDraftController@getAll']);
+      $router->post('draft', ['uses' => 'BroadcastControllers\BroadcastDraftController@create']);
+      $router->put('draft/{id}', ['uses' => 'BroadcastControllers\BroadcastDraftController@update']);
+      $router->get('draft/{id}', ['uses' => 'BroadcastControllers\BroadcastDraftController@getSingle']);
+      $router->delete('draft/{id}', ['uses' => 'BroadcastControllers\BroadcastDraftController@delete']);
     });
 });
