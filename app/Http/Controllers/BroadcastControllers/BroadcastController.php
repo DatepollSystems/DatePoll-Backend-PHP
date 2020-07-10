@@ -4,12 +4,12 @@ namespace App\Http\Controllers\BroadcastControllers;
 
 use App\Logging;
 use App\Http\Controllers\Controller;
-use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+
 class BroadcastController extends Controller
 {
 
@@ -47,32 +47,6 @@ class BroadcastController extends Controller
     return response()->json([
       'msg' => 'Get broadcast with send receipts',
       'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast)]);
-  }
-
-  /**
-   * @param Request $request
-   * @param int $id
-   * @return JsonResponse
-   */
-  public function getSingle(Request $request, $id) {
-    $event = $this->eventRepository->getEventById($id);
-
-    if ($event == null) {
-      return response()->json(['msg' => 'Event not found'], 404);
-    }
-
-    $user = $request->auth;
-
-    $toReturnEvent = $this->eventRepository->getReturnable($event);
-    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event, !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) || $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
-
-    $toReturnEvent->view_events = [
-      'href' => 'api/v1/avent/administration/avent',
-      'method' => 'GET'];
-
-    return response()->json([
-      'msg' => 'Event information',
-      'event' => $toReturnEvent]);
   }
 
   /**

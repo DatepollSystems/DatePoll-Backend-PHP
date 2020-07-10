@@ -458,6 +458,10 @@ class UserRepository implements IUserRepository
     }
 
     usort($birthdaysToShow, function ($a, $b) {
+      return strcmp($b->date ,$a->date);
+    });
+
+    usort($birthdaysToShow, function ($a, $b) {
       return strcmp($a->date, $b->date);
     });
 
