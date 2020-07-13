@@ -176,7 +176,7 @@ class UpdateDatePollDB extends ACommand
 
     $this->log('db-migrate-2To3', 'Deleting jobs table...', LogTypes::INFO);
     try {
-      $this->runDbStatement('2To3', 'DROP TABLE JOBS;');
+      $this->runDbStatement('2To3', 'DROP TABLE jobs;');
     } catch (Exception $exception) {
       $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
       return false;

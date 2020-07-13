@@ -1,6 +1,6 @@
 USE homestead;
 
-DROP TABLE JOBS;
+DROP TABLE jobs;
 
 ALTER TABLE users ADD internal_comment TEXT NULL;
 ALTER TABLE users ADD information_denied TINYINT DEFAULT 0 NOT NULL;
