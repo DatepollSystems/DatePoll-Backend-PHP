@@ -1,41 +1,19 @@
-<div align="center">
-  <a href="" rel="noopener">
- <img width=200px height=200px src="https://i.imgur.com/4xJBwve.png" alt="Project logo"></a>
-</div>
+#DatePoll-Backend-PHP
+## Information
+*  Project website (https://datepoll.org)
+*  API / backend documentation (https://doc.datepoll.org)
+*  Other projects
+    * [DatePoll-Home / DatePoll website](https://gitlab.com/DatePoll/datepoll-home)
+    * [DatePoll-Frontend](https://gitlab.com/DatePoll/datepoll-frontend)
+    * [DatePoll-Android](https://gitlab.com/DatePoll/datepoll-android)
+    * [DatePoll-Dockerized](https://gitlab.com/DatePoll/datepoll-dockerized)
+* created with [Lumen](https://lumen.laravel.com) [used libaries](https://gitlab.com/DatePoll/datepoll-backend-php/-/blob/master/composer.json)
 
-<div align="center"><h3>DatePoll (Backend)</h3></div>
+## Releases
+Releases are managed over git branches.
 
----
-
-<div align="center">
-  <p>DatePoll ist eine Vereinsmanagement Applikation welche versucht
-  Vereinsstrukturen und das generelle Vereinsleben zu digitalisieren.</p>
-</div>
-
-## 📝 Table of Contents
-- [Getting Started](#getting_started)
-- [Documentation](#docs)
-- [Built Using](#built_using)
-- [Authors](#authors)
-
-## 🏁 Getting Started <a name = "getting_started"></a>
-If you want to deploy the DatePoll-Backend service please visit following
-[page](https://datepoll.dafnik.me/installation/) .
-
-## 🏁 API documentation <a name = "getting_started"></a>
-If you want to learn more about the REST Api visit this
-[page](https://datepoll.dafnik.me/API/) .
-
-## ⛏️ Built Using <a name = "built_using"></a>
-- [MariaDB](https://mariadb.org/) - Database
-- [Laravel Lumen](https://lumen.laravel.com/) - Server Framework
-- [Angular](https://angular.io/) - Web Framework
-- [PHP](https://php.net) - Server Environment
-- [Docker](https://docker.io) - Deployment system
-
-## ✍️ Authors <a name = "authors"></a>
-- [@Dafnik](https://gitlab.com/Dafnik)
-
-See also the list of 
-[contributors](https://gitlab.com/groups/BuergerkorpsEggenburg/-/group_members)
-who participated in this project.
+There are 2 different types:
+1. Latest release version: [master](https://gitlab.com/DatePoll/datepoll-backend-php/-/tree/master)
+1. Latest dev version: [dev](https://gitlab.com/DatePoll/datepoll-backend-php/-/tree/development)
+## Installation
+Please head to [this page](https://docs.datepoll.org/installation/) to get the latest install instructions! Deployment and development are managed over Docker
