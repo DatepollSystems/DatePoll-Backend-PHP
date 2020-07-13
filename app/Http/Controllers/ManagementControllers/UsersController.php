@@ -28,17 +28,21 @@ class UsersController extends Controller
   public function getAll() {
     $toReturnUsers = array();
 
-    $users = $this->userRepository->getAllUsers();
+    $users = $this->userRepository->getAllUsersOrderedBySurname();
     foreach ($users as $user) {
 
       $toReturnUser = $user->getReturnable();
 
-      $toReturnUser->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
+      $toReturnUser->view_user = [
+        'href' => 'api/v1/management/users/' . $user->id,
+        'method' => 'GET'];
 
       $toReturnUsers[] = $toReturnUser;
     }
 
-    $response = ['msg' => 'List of all users', 'users' => $toReturnUsers];
+    $response = [
+      'msg' => 'List of all users',
+      'users' => $toReturnUsers];
 
     return response()->json($response);
   }
@@ -64,6 +68,10 @@ class UsersController extends Controller
       'location' => 'required|max:190|min:1',
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
+      'internal_comment' => 'string|nullable',
+      'information_denied' => 'boolean|nullable',
+      'bv_member' => 'boolean|nullable',
+      'member_number' => 'nullable|integer',
       'phone_numbers' => 'array',
       'permissions' => 'array',
       'email_addresses' => 'array']);
@@ -80,6 +88,10 @@ class UsersController extends Controller
     $location = $request->input('location');
     $activated = $request->input('activated');
     $activity = $request->input('activity');
+    $memberNumber = $request->input('member_number');
+    $internalComment = $request->input('internal_comment');
+    $informationDenied = $request->input('information_denied');
+    $bvMember = $request->input('bv_member');
     $emailAddresses = $request->input('email_addresses');
     $phoneNumbers = $request->input('phone_numbers');
     $permissions = $request->input('permissions');
@@ -90,28 +102,31 @@ class UsersController extends Controller
         'error_code' => 'username_already_used'], 400);
     }
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
-      $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
+    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
 
       if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
         return response()->json(['msg' => 'Failed during permission clearing...'], 500);
       }
     }
 
-    if ($activated AND $user->hasEmailAddresses()) {
+    if ($activated and $user->hasEmailAddresses()) {
       $this->userRepository->activateUser($user);
     }
 
     $userToShow = $user->getReturnable();
-    $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
+    $userToShow->view_user = [
+      'href' => 'api/v1/management/users/' . $user->id,
+      'method' => 'GET'];
 
-    $response = ['msg' => 'User successful created', 'user' => $userToShow];
+    $response = [
+      'msg' => 'User successful created',
+      'user' => $userToShow];
 
     return response()->json($response, 201);
   }
@@ -130,9 +145,13 @@ class UsersController extends Controller
 
     $userToShow = $user->getReturnable();
 
-    $userToShow->view_users = ['href' => 'api/v1/management/users', 'method' => 'GET'];
+    $userToShow->view_users = [
+      'href' => 'api/v1/management/users',
+      'method' => 'GET'];
 
-    $response = ['msg' => 'User information', 'user' => $userToShow];
+    $response = [
+      'msg' => 'User information',
+      'user' => $userToShow];
     return response()->json($response);
   }
 
@@ -158,13 +177,19 @@ class UsersController extends Controller
       'location' => 'required|max:190|min:1',
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
+      'member_number' => 'nullable|integer',
+      'information_denied' => 'boolean|nullable',
+      'bv_member' => 'boolean|nullable',
+      'internal_comment' => 'string|nullable',
       'email_addresses' => 'array',
       'phone_numbers' => 'array',
       'permissions' => 'array']);
 
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
-      return response()->json(['msg' => 'User not found', 'error_code' => 'user_not_found'], 404);
+      return response()->json([
+        'msg' => 'User not found',
+        'error_code' => 'user_not_found'], 404);
     }
 
     $username = $request->input('username');
@@ -189,11 +214,15 @@ class UsersController extends Controller
     $oldActivatedStatus = $user->activated;
     $activated = $request->input('activated');
     $activity = $request->input('activity');
+    $memberNumber = $request->input('member_number');
+    $internalComment = $request->input('internal_comment');
+    $informationDenied = $request->input('information_denied');
+    $bvMember = $request->input('bv_member');
     $emailAddresses = (array)$request->input('email_addresses');
     $phoneNumbers = (array)$request->input('phone_numbers');
     $permissions = (array)$request->input('permissions');
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $user);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember, $user);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
@@ -201,8 +230,7 @@ class UsersController extends Controller
 
     //---------------------------------------------------------------
     //---- Permissions manager only deletes changed permissions -----
-    if($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
-      $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
+    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
 
       if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
         return response()->json(['msg' => 'Failed during permission clearing...'], 500);
@@ -211,14 +239,18 @@ class UsersController extends Controller
     //---------------------------------------------------------------
 
 
-    if ($activated AND !$oldActivatedStatus AND $user->hasEmailAddresses()) {
+    if ($activated and !$oldActivatedStatus and $user->hasEmailAddresses()) {
       $this->userRepository->activateUser($user);
     }
 
     $userToShow = $user->getReturnable();
-    $userToShow->view_user = ['href' => 'api/v1/management/users/' . $user->id, 'method' => 'GET'];
+    $userToShow->view_user = [
+      'href' => 'api/v1/management/users/' . $user->id,
+      'method' => 'GET'];
 
-    $response = ['msg' => 'User updated', 'user' => $userToShow];
+    $response = [
+      'msg' => 'User updated',
+      'user' => $userToShow];
 
     return response()->json($response, 200);
   }
@@ -231,8 +263,7 @@ class UsersController extends Controller
    */
   public function changePassword(Request $request, $id) {
     $this->validate($request, [
-      'password' => 'required|min:6'
-    ]);
+      'password' => 'required|min:6']);
 
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
@@ -243,7 +274,9 @@ class UsersController extends Controller
       return response()->json(['msg' => 'Could not save user'], 500);
     }
 
-    return response()->json(['msg' => 'Saved password from user successfully', 'user' => $user->getReturnable()], 200);
+    return response()->json([
+      'msg' => 'Saved password from user successfully',
+      'user' => $user->getReturnable()], 200);
   }
 
   /**
@@ -285,7 +318,9 @@ class UsersController extends Controller
   public function export() {
     $toReturnUsers = $this->userRepository->exportAllUsers();
 
-    return response()->json(['msg' => 'List of users to export', 'users' => $toReturnUsers], 200);
+    return response()->json([
+      'msg' => 'List of users to export',
+      'users' => $toReturnUsers], 200);
   }
 
   /**

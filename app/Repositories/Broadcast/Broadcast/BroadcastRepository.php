@@ -216,7 +216,7 @@ class BroadcastRepository implements IBroadcastRepository
     }
 
     foreach ($users as $user) {
-      if ($user->hasEmailAddresses() && $user->activated) {
+      if ($user->hasEmailAddresses() && $user->activated && !$user->information_denied) {
         $broadcastUserInfo = new BroadcastUserInfo([
           'broadcast_id' => $broadcast->id,
           'user_id' => $user->id,

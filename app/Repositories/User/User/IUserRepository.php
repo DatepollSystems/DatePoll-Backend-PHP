@@ -3,6 +3,7 @@
 namespace App\Repositories\User\User;
 
 use App\Models\User\User;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 interface IUserRepository
@@ -12,6 +13,11 @@ interface IUserRepository
    * @return User[]|Collection
    */
   public function getAllUsers();
+
+  /**
+   * @return User[]|Collection
+   */
+  public function getAllUsersOrderedBySurname();
 
   /**
    * @param int $id
@@ -40,10 +46,18 @@ interface IUserRepository
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
+   * @param int|null $memberNumber
+   * @param string|null $internalComment
+   * @param bool $informationDenied
+   * @param bool $bvMember
    * @param User|null $user
    * @return User|null
+   * @throws Exception
    */
-  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, User $user = null);
+  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname,
+                                     $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
+                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied = null,
+                                     $bvMember = null, User $user = null);
 
   /**
    * @param User $user

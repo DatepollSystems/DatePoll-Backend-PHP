@@ -80,12 +80,12 @@ class UpdateDatePollDB extends ACommand
             return;
           }
           break;
-//        case 3:
-//          if (!$this->migrateDatabaseVersionFrom2To3()) {
-//            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
-//            return;
-//          }
-//          break;
+        case 3:
+          if (!$this->migrateDatabaseVersionFrom2To3()) {
+            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
+            return;
+          }
+          break;
       }
 
       $this->log('handle', 'Saving new database version', LogTypes::INFO);
@@ -176,7 +176,39 @@ class UpdateDatePollDB extends ACommand
 
     $this->log('db-migrate-2To3', 'Deleting jobs table...', LogTypes::INFO);
     try {
-      $this->runDbStatement('2To3', 'DROP TABLE JOBS;');
+      $this->runDbStatement('2To3', 'DROP TABLE jobs;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-2To3', 'Altering table user add internal_comment', LogTypes::INFO);
+    try {
+      $this->runDbStatement('2To3', 'ALTER TABLE users ADD internal_comment TEXT NULL;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-2To3', 'Altering table user add information_denied', LogTypes::INFO);
+    try {
+      $this->runDbStatement('2To3', 'ALTER TABLE users ADD information_denied TINYINT DEFAULT 0 NOT NULL;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-2To3', 'Altering table user add member_number', LogTypes::INFO);
+    try {
+      $this->runDbStatement('2To3', 'ALTER TABLE users ADD member_number INTEGER DEFAULT NULL;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-2To3', 'Altering table user add bv_member', LogTypes::INFO);
+    try {
+      $this->runDbStatement('2To3', 'ALTER TABLE users ADD bv_member TINYINT DEFAULT 0 NOT NULL;');
     } catch (Exception $exception) {
       $this->log('db-migrate-2To3', 'Database migrations failed!', LogTypes::ERROR);
       return false;

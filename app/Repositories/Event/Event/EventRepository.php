@@ -26,7 +26,9 @@ class EventRepository implements IEventRepository
   protected $userSettingRepository = null;
   protected $settingRepository = null;
 
-  public function __construct(IEventDateRepository $eventDateRepository, IEventDecisionRepository $eventDecisionRepository, IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository) {
+  public function __construct(IEventDateRepository $eventDateRepository,
+                              IEventDecisionRepository $eventDecisionRepository,
+                              IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository) {
     $this->eventDateRepository = $eventDateRepository;
     $this->eventDecisionRepository = $eventDecisionRepository;
     $this->userSettingRepository = $userSettingRepository;
@@ -104,7 +106,8 @@ class EventRepository implements IEventRepository
    * @return Event|null
    * @throws Exception
    */
-  public function createOrUpdateEvent(string $name, bool $forEveryone, $description, array $decisions, array $dates, Event $event = null) {
+  public function createOrUpdateEvent(string $name, bool $forEveryone, $description, array $decisions, array $dates,
+                                      Event $event = null) {
     $creating = false;
     if ($event == null) {
       $creating = true;
@@ -220,10 +223,10 @@ class EventRepository implements IEventRepository
     if ($creating) {
       foreach ($this->getPotentialVotersForEvent($event) as $eventUser) {
         // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
-        // a circular dependency and RAM will explodes
+        // a circular dependency and RAM will explode
+        // Also check if user is not information denied
         $user = User::find($eventUser->id);
-
-        if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user)) {
+        if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && !$user->information_denied) {
           dispatch(new SendEmailJob(new NewEvent($user->firstname . " " . $user->surname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()))->onQueue('low');;
         }
       }
