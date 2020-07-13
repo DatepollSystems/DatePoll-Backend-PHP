@@ -28,7 +28,7 @@ class BadgeController extends Controller
    * @return JsonResponse
    */
   public function getAll(Request $request) {
-    $badges = Badge::orderBy('afterYears')
+    $badges = Badge::orderBy('description')
                    ->get();
 
     Logging::info('getAllBadges', 'Get all badges! User id - ' . $request->auth->id);
