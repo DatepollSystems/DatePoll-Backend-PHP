@@ -26,7 +26,7 @@ use stdClass;
  * @property string $join_date
  * @property string $streetname
  * @property string $streetnumber
- * @property int $member_number
+ * @property string $member_number
  * @property string $zipcode
  * @property string $location
  * @property boolean $activated

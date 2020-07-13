@@ -20,7 +20,7 @@ class CreateUsersTable extends Migration
       $table->string('password', '512')->nullable(false);
       $table->boolean('activated')->nullable(false);
 
-      $table->integer('member_number')->default(null);
+      $table->string('member_number')->nullable(true)->default(null);
 
       $table->string('title')->nullable(true);
       $table->string('firstname')->nullable(false);

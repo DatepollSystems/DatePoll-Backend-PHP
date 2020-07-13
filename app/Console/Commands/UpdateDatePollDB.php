@@ -86,6 +86,12 @@ class UpdateDatePollDB extends ACommand
             return;
           }
           break;
+        case 4:
+          if (!$this->migrateDatabaseVersionFrom3To4()) {
+            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
+            return;
+          }
+          break;
       }
 
       $this->log('handle', 'Saving new database version', LogTypes::INFO);
@@ -216,6 +222,33 @@ class UpdateDatePollDB extends ACommand
 
     $this->log('db-migrate-2To3', 'Running database migrations finished!', LogTypes::INFO);
     $this->log('db-migrate-2To3', 'Running migration from 2 to 3 finished!', LogTypes::INFO);
+    return true;
+  }
+
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom3To4(): bool {
+    $this->log('db-migrate-3To4', 'Running migration from 3 to 4', LogTypes::INFO);
+
+    $this->log('db-migrate-3To4', 'Altering table user drop member_number', LogTypes::INFO);
+    try {
+      $this->runDbStatement('3To4', 'ALTER TABLE users DROP member_number;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-3To4', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-3To4', 'Altering table user add member_number', LogTypes::INFO);
+    try {
+      $this->runDbStatement('3To4', 'ALTER TABLE users ADD member_number VARCHAR(191) DEFAULT null;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-3To4', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-3To4', 'Running database migrations finished!', LogTypes::INFO);
+    $this->log('db-migrate-3To4', 'Running migration from 3 to 4 finished!', LogTypes::INFO);
     return true;
   }
 
