@@ -78,7 +78,7 @@ class UserRepository implements IUserRepository
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
-   * @param int|null $memberNumber
+   * @param string|null $memberNumber
    * @param string|null $internalComment
    * @param bool $informationDenied
    * @param bool $bvMember
@@ -119,9 +119,7 @@ class UserRepository implements IUserRepository
       $user->activated = $activated;
       $user->activity = $activity;
     }
-    if ($memberNumber != null) {
-      $user->member_number = $memberNumber;
-    }
+    $user->member_number = $memberNumber;
     if ($internalComment != null) {
       $user->internal_comment = $internalComment;
     }
