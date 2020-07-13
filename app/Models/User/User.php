@@ -26,10 +26,14 @@ use stdClass;
  * @property string $join_date
  * @property string $streetname
  * @property string $streetnumber
+ * @property int $member_number
  * @property string $zipcode
  * @property string $location
  * @property boolean $activated
+ * @property string $internal_comment
+ * @property boolean $information_denied
  * @property string $activity
+ * @property boolean $bv_member
  * @property string $created_at
  * @property string $updated_at
  */
@@ -51,6 +55,10 @@ class User extends Model
     'streetnumber',
     'zipcode',
     'location',
+    'member_number',
+    'internal_comment',
+    'information_denied',
+    'bv_member',
     'created_at',
     'updated_at',
     'activated',
@@ -212,6 +220,10 @@ class User extends Model
     $returnableUser->location = $this->location;
     $returnableUser->activated = $this->activated;
     $returnableUser->activity = $this->activity;
+    $returnableUser->member_number = $this->member_number;
+    $returnableUser->internal_comment = $this->internal_comment;
+    $returnableUser->information_denied = $this->information_denied;
+    $returnableUser->bv_member = $this->bv_member;
     $returnableUser->force_password_change = $this->force_password_change;
     $returnableUser->phone_numbers = $this->telephoneNumbers();
     $returnableUser->email_addresses = $this->getEmailAddresses();

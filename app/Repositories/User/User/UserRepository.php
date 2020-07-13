@@ -39,6 +39,14 @@ class UserRepository implements IUserRepository
   }
 
   /**
+   * @return User[]|Collection
+   */
+  public function getAllUsersOrderedBySurname() {
+    return User::orderBy('surname')
+               ->get();
+  }
+
+  /**
    * @param int $id
    * @return User|null
    */
@@ -70,10 +78,18 @@ class UserRepository implements IUserRepository
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
+   * @param int|null $memberNumber
+   * @param string|null $internalComment
+   * @param bool $informationDenied
+   * @param bool $bvMember
    * @param User|null $user
    * @return User|null
+   * @throws Exception
    */
-  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, User $user = null) {
+  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname,
+                                     $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
+                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied = null,
+                                     $bvMember = null, User $user = null) {
     if ($user == null) {
       $user = new User([
         'title' => $title,
@@ -89,11 +105,6 @@ class UserRepository implements IUserRepository
         'activated' => $activated,
         'activity' => $activity,
         'password' => 'Null']);
-
-      if (!$user->save()) {
-        Logging::error('createUser', 'Could not save user into database!');
-        return null;
-      }
     } else {
       $user->username = $username;
       $user->title = $title;
@@ -107,8 +118,29 @@ class UserRepository implements IUserRepository
       $user->location = $location;
       $user->activated = $activated;
       $user->activity = $activity;
-      $user->save();
     }
+    if ($memberNumber != null) {
+      $user->member_number = $memberNumber;
+    }
+    if ($internalComment != null) {
+      $user->internal_comment = $internalComment;
+    }
+    if ($informationDenied == null) {
+      $user->information_denied = false;
+    } else {
+      $user->information_denied = $informationDenied;
+    }
+    if ($bvMember == null) {
+      $user->bv_member = false;
+    } else {
+      $user->bv_member = $bvMember;
+    }
+
+    if (!$user->save()) {
+      Logging::error('createUser', 'Could not save user into database!');
+      return null;
+    }
+
 
     // Email addresses manager only deletes changed email addresses
     if ($this->updateUserEmailAddresses($user, $emailAddresses) == null) {
@@ -123,7 +155,7 @@ class UserRepository implements IUserRepository
       $toDelete = true;
 
       foreach ((array)$phoneNumbers as $phoneNumber) {
-        if ($oldPhoneNumber['label'] == $phoneNumber['label'] AND $oldPhoneNumber['number'] == $phoneNumber['number']) {
+        if ($oldPhoneNumber['label'] == $phoneNumber['label'] and $oldPhoneNumber['number'] == $phoneNumber['number']) {
           $toDelete = false;
           $phoneNumbersWhichHaveNotBeenDeleted[] = $phoneNumber;
           break;
@@ -143,7 +175,7 @@ class UserRepository implements IUserRepository
       $toAdd = true;
 
       foreach ($phoneNumbersWhichHaveNotBeenDeleted as $phoneNumberWhichHasNotBeenDeleted) {
-        if ($phoneNumber['label'] == $phoneNumberWhichHasNotBeenDeleted['label'] AND $phoneNumber['number'] == $phoneNumberWhichHasNotBeenDeleted['number']) {
+        if ($phoneNumber['label'] == $phoneNumberWhichHasNotBeenDeleted['label'] and $phoneNumber['number'] == $phoneNumberWhichHasNotBeenDeleted['number']) {
           $toAdd = false;
           break;
         }
@@ -330,6 +362,7 @@ class UserRepository implements IUserRepository
       $toReturnUser->Postleitzahl = $user->zipcode;
       $toReturnUser->Ortsname = $user->location;
       $toReturnUser->Aktivitaet = $user->activity;
+      $toReturnUser->MitgliedsNummer = $user->member_number;
 
       $telephoneNumbers = '';
       foreach ($user->telephoneNumbers() as $telephoneNumber) {
@@ -458,7 +491,7 @@ class UserRepository implements IUserRepository
     }
 
     usort($birthdaysToShow, function ($a, $b) {
-      return strcmp($b->date ,$a->date);
+      return strcmp($b->date, $a->date);
     });
 
     usort($birthdaysToShow, function ($a, $b) {
