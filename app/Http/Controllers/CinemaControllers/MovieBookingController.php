@@ -48,7 +48,7 @@ class MovieBookingController extends Controller
     /* Check if there are enough free tickets */
     if (($movie->bookedTickets + $ticketAmount) > 20) {
       $availableTickets = 20 - $movie->bookedTickets;
-      return response()->json(['msg' => 'The movie is sold out', 'available_tickets' => $availableTickets, 'error_code' => 'not_enough_available_tickets'], 400);
+      return response()->json(['msg' => 'The movie is sold out', 'error_code' => 'not_enough_available_tickets'], 400);
     }
 
     $movieBooking = $this->movieBookingRepository->bookTickets($movie, $user, $ticketAmount);
@@ -110,7 +110,7 @@ class MovieBookingController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('bookTickets', 'User - ' . $request->auth->id . ' | Movie id - ' . $request->input('movie_id') . ' | Movie not found');
-      return response()->json(['msg' => 'Movie not found'], 404);
+      return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
     $bookings = (array)$request->input('bookings');
@@ -121,7 +121,7 @@ class MovieBookingController extends Controller
       $user = $this->userRepository->getUserById($booking['user_id']);
       if ($user == null) {
         Logging::error("bookForUsers", "User - " . $user->id . " | Movie - " . $id . " | User not found");
-        return response()->json(['msg' => 'User ' . $user->id . ' not found!'], 404);
+        return response()->json(['msg' => 'User ' . $user->id . ' not found!', 'error_code' => 'user_not_found'], 404);
       }
 
       $movieBooking = $this->movieBookingRepository->bookTickets($movie, $user, $ticketAmount);
