@@ -338,7 +338,7 @@ class UserRepository implements IUserRepository
   public function exportAllUsers() {
     $toReturnUsers = array();
 
-    $users = $this->getAllUsers();
+    $users = $this->getAllUsersOrderedBySurname();
     foreach ($users as $user) {
 
       $toReturnUser = new stdClass();
@@ -371,14 +371,28 @@ class UserRepository implements IUserRepository
 
       $groups = '';
       foreach ($user->usersMemberOfGroups() as $usersMemberOfGroup) {
-        $groups .= $usersMemberOfGroup->group()->name . ', ';
+        $role = '';
+        if ($usersMemberOfGroup->role != null) {
+          if (strlen($usersMemberOfGroup->role) != 0) {
+            $role .= ' - ' . $usersMemberOfGroup->role;
+          }
+        }
+
+        $groups .= $usersMemberOfGroup->group()->name . $role . ', ';
       }
       $toReturnUser->Gruppen = $groups;
 
       $subgroups = '';
       foreach ($user->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
-        $subgroups .= $usersMemberOfSubgroup->subgroup()
-                                            ->group()->name . ' - ' . $usersMemberOfSubgroup->subgroup()->name . ', ';
+        $role = '';
+        if ($usersMemberOfSubgroup->role != null) {
+          if (strlen($usersMemberOfSubgroup->role) != 0) {
+            $role .= ' - ' . $usersMemberOfSubgroup->role;
+          }
+        }
+
+        $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
+                                            ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 
