@@ -208,11 +208,7 @@ class AuthController extends Controller
     $userCode = new UserCode(["code" => $code, "purpose" => "forgotPassword", 'user_id' => $user->id]);
 
     if ($userCode->save()) {
-      $name = $user->firstname . ' ' . $user->surname;
-
-      dispatch(new SendEmailJob(new ForgotPassword($name, $code), $user->getEmailAddresses()))->onQueue('high');
-
-      Logging::info("sendForgotPasswordEmail", "User -" . $user->id . " | Email sent");
+      dispatch(new SendEmailJob(new ForgotPassword($user->firstname, $code), $user->getEmailAddresses()))->onQueue('default');
       return response()->json(['msg' => 'Sent'], 200);
     }
 

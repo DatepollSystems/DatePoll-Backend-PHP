@@ -15,23 +15,20 @@
             padding-right: 3vh;
             padding-top: 1vh;
             font-size: 11px;
-            color: white;
-            background-color: #212121;
         }
         blockquote {
             border-radius: 25px;
             padding: 20px;
-            background-color: #757575;
+            color: black;
             text-align: center;
+            background-color: #E0E0E0;
         }
         .content {
             border-radius: 25px;
             padding: 20px;
             margin-bottom: 3vh;
-            background-color: #424242;
             box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 7px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -1px rgba(0, 0, 0, 0.2);
         }
-
     </style>
 </head>
 <body>
