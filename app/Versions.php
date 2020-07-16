@@ -4,8 +4,8 @@ namespace App;
 
 class Versions
 {
-  private static $application_version_string = '0.8.2-a';
-  private static $application_version = 18;
+  private static $application_version_string = '0.8.2-b';
+  private static $application_version = 19;
 
   private static $database_version = 4;
 
