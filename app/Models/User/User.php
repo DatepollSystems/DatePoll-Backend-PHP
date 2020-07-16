@@ -5,6 +5,7 @@ namespace App\Models\User;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\EventUserVotedForDecision;
+use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\Subgroups\UsersMemberOfSubgroups;

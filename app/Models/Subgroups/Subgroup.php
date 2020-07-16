@@ -3,6 +3,7 @@
 namespace App\Models\Subgroups;
 
 use App\Models\Groups\Group;
+use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,5 +37,20 @@ class Subgroup extends Model
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')->get();
+  }
+
+  /**
+   * @return User[] | null
+   */
+  public function getUsersOrderedBySurname() {
+    $usersMemberOfSubgroups = $this->usersMemberOfSubgroups();
+    $users = array();
+    foreach ($usersMemberOfSubgroups as $usersMemberOfSubgroup) {
+      $users[] = $usersMemberOfSubgroup->user();
+    }
+    usort($users, function ($a, $b) {
+      return strcmp($a->surname, $b->surname);
+    });
+    return $users;
   }
 }

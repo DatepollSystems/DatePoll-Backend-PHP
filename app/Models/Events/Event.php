@@ -3,6 +3,7 @@
 namespace App\Models\Events;
 
 use App\Models\Groups\Group;
+use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use App\Permissions;
 use Illuminate\Database\Eloquent\Collection;
@@ -59,11 +60,41 @@ class Event extends Model
   }
 
   /**
+   * @return Subgroup[] | null
+   */
+  public function getGroupsOrderedByName() {
+    $eventForGroups = $this->eventsForGroups();
+    $groups = array();
+    foreach ($eventForGroups as $eventForGroup) {
+      $groups[] = $eventForGroup->group();
+    }
+    usort($groups, function ($a, $b) {
+      return strcmp($a->name, $b->name);
+    });
+    return $groups;
+  }
+
+  /**
    * @return Collection | EventForSubgroup[] | null
    */
   public function eventsForSubgroups() {
     return $this->hasMany('App\Models\Events\EventForSubgroup')
                 ->get();
+  }
+
+  /**
+   * @return Subgroup[] | null
+   */
+  public function getSubgroupsOrderedByName() {
+    $eventForSubgroups = $this->eventsForSubgroups();
+    $subgroups = array();
+    foreach ($eventForSubgroups as $eventForSubgroup) {
+      $subgroups[] = $eventForSubgroup->subgroup();
+    }
+    usort($subgroups, function ($a, $b) {
+      return strcmp($a->name, $b->name);
+    });
+    return $subgroups;
   }
 
   /**
