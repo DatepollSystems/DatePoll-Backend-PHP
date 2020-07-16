@@ -227,7 +227,7 @@ class EventRepository implements IEventRepository
         // Also check if user is not information denied
         $user = User::find($eventUser->id);
         if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && !$user->information_denied) {
-          dispatch(new SendEmailJob(new NewEvent($user->firstname . " " . $user->surname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()))->onQueue('low');;
+          dispatch(new SendEmailJob(new NewEvent($user->firstname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()))->onQueue('default');
         }
       }
     }
