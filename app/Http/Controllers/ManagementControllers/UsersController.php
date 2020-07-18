@@ -71,7 +71,7 @@ class UsersController extends Controller
       'internal_comment' => 'string|nullable',
       'information_denied' => 'boolean|nullable',
       'bv_member' => 'boolean|nullable',
-      'member_number' => 'nullable|string|min:1|max:190',
+      'member_number' => 'max:190',
       'phone_numbers' => 'array',
       'permissions' => 'array',
       'email_addresses' => 'array']);
@@ -177,7 +177,7 @@ class UsersController extends Controller
       'location' => 'required|max:190|min:1',
       'activated' => 'required|boolean',
       'activity' => 'required|max:190|min:1',
-      'member_number' => 'nullable|string|min:1|max:190',
+      'member_number' => 'max:190',
       'information_denied' => 'boolean|nullable',
       'bv_member' => 'boolean|nullable',
       'internal_comment' => 'string|nullable',

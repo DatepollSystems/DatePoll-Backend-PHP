@@ -59,7 +59,7 @@ class AuthController extends Controller
 
     $user = $this->userRepository->getUserByUsername($request->input('username'));
     if ($user == null) {
-      return response()->json(['error' => 'Username or password is wrong'], 400);
+      return response()->json(['msg' => 'Username or password is wrong', 'error_code' => 'username_or_password_incorrect'], 400);
     }
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('password'))) {
@@ -113,7 +113,7 @@ class AuthController extends Controller
 
     $user = $this->userRepository->getUserByUsername($request->input('username'));
     if ($user == null) {
-      return response()->json(['msg' => 'Username or password is wrong'], 400);
+      return response()->json(['msg' => 'Username or password is wrong', 'error_code' => 'username_or_password_incorrect'], 400);
     }
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {

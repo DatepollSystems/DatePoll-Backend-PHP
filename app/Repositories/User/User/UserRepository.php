@@ -104,7 +104,14 @@ class UserRepository implements IUserRepository
         'location' => $location,
         'activated' => $activated,
         'activity' => $activity,
+        'member_number' => $memberNumber,
+        'internal_comment' => $internalComment,
         'password' => 'Null']);
+
+      if (!$user->save()) {
+        Logging::error('createOrUpdateUser', 'Could not save user into database!');
+        return null;
+      }
     } else {
       $user->username = $username;
       $user->title = $title;
@@ -118,9 +125,7 @@ class UserRepository implements IUserRepository
       $user->location = $location;
       $user->activated = $activated;
       $user->activity = $activity;
-    }
-    $user->member_number = $memberNumber;
-    if ($internalComment != null) {
+      $user->member_number = $memberNumber;
       $user->internal_comment = $internalComment;
     }
     if ($informationDenied == null) {
