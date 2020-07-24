@@ -25,7 +25,8 @@ class UserRepository implements IUserRepository
   protected $userSettingRepository = null;
   protected $eventRepository = null;
 
-  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository, IEventRepository $eventRepository) {
+  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository,
+                              IEventRepository $eventRepository) {
     $this->settingRepository = $settingRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->eventRepository = $eventRepository;
@@ -397,7 +398,7 @@ class UserRepository implements IUserRepository
         }
 
         $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
-                                            ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
+                                                  ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 

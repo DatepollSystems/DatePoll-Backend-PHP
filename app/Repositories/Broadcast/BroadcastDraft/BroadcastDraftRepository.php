@@ -3,17 +3,8 @@
 
 namespace App\Repositories\Broadcast\BroadcastDraft;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
-use App\Mail\BroadcastMail;
-use App\Models\Broadcasts\Broadcast;
 use App\Models\Broadcasts\BroadcastDraft;
-use App\Models\Broadcasts\BroadcastForGroup;
-use App\Models\Broadcasts\BroadcastForSubgroup;
-use App\Models\Broadcasts\BroadcastUserInfo;
-use App\Models\Groups\Group;
-use App\Models\Subgroups\Subgroup;
-use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -70,7 +61,8 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository
    * @param BroadcastDraft|null $draft
    * @return BroadcastDraft | null
    */
-  public function createOrUpdate(string $subject, string $bodyHTML, string $body, int $writerId, BroadcastDraft $draft = null) {
+  public function createOrUpdate(string $subject, string $bodyHTML, string $body, int $writerId,
+                                 BroadcastDraft $draft = null) {
     if ($draft == null) {
       $draft = new BroadcastDraft([
         'subject' => $subject,
@@ -94,6 +86,7 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository
   /**
    * @param BroadcastDraft $draft
    * @return bool|null
+   * @throws Exception
    */
   public function delete(BroadcastDraft $draft) {
     return $draft->delete();

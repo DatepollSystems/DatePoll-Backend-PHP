@@ -34,11 +34,15 @@ class MovieController extends Controller
     foreach ($movies as $movie) {
       $returnable = $movie->getReturnable();
 
-      $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
+      $returnable->view_movie = [
+        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
+        'method' => 'GET'];
       $toReturnMovies[] = $returnable;
     }
 
-    $response = ['msg' => 'List of all movies', 'movies' => $toReturnMovies];
+    $response = [
+      'msg' => 'List of all movies',
+      'movies' => $toReturnMovies];
 
     return response()->json($response);
   }
@@ -72,9 +76,13 @@ class MovieController extends Controller
       Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
 
       $returnable = $movie->getReturnable();
-      $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
+      $returnable->view_movie = [
+        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
+        'method' => 'GET'];
 
-      $response = ['msg' => 'Movie created', 'movie' => $returnable];
+      $response = [
+        'msg' => 'Movie created',
+        'movie' => $returnable];
 
       return response()->json($response, 201);
     }
@@ -99,9 +107,13 @@ class MovieController extends Controller
 
     $returnable = $movie->getAdminReturnable();
 
-    $returnable->view_movies = ['href' => 'api/v1/cinema/administration/movie', 'method' => 'GET'];
+    $returnable->view_movies = [
+      'href' => 'api/v1/cinema/administration/movie',
+      'method' => 'GET'];
 
-    $response = ['msg' => 'Movie information', 'movie' => $returnable];
+    $response = [
+      'msg' => 'Movie information',
+      'movie' => $returnable];
     return response()->json($response);
   }
 
@@ -139,7 +151,9 @@ class MovieController extends Controller
 
     if ($movie != null) {
       $returnable = $movie->getReturnable();
-      $returnable->view_movie = ['href' => 'api/v1/cinema/administration/movie/' . $movie->id, 'method' => 'GET'];
+      $returnable->view_movie = [
+        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
+        'method' => 'GET'];
 
       return response()->json([
         'msg' => 'Movie updated',
@@ -187,7 +201,9 @@ class MovieController extends Controller
 
     $returnableMovies = $this->movieRepository->getNotShownMoviesForUser($user);
 
-    $response = ['msg' => 'List of not shown movies', 'movies' => $returnableMovies];
+    $response = [
+      'msg' => 'List of not shown movies',
+      'movies' => $returnableMovies];
 
     return response()->json($response);
   }
