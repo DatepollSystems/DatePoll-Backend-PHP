@@ -4,11 +4,8 @@ namespace App\Models\Events;
 
 use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
-use App\Models\User\User;
-use App\Permissions;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use stdClass;
 
 /**
  * @property int $id
@@ -60,16 +57,16 @@ class Event extends Model
   }
 
   /**
-   * @return Subgroup[] | null
+   * @return Group[] | null
    */
-  public function getGroupsOrderedByName() {
+  public function getGroupsOrdered() {
     $eventForGroups = $this->eventsForGroups();
     $groups = array();
     foreach ($eventForGroups as $eventForGroup) {
       $groups[] = $eventForGroup->group();
     }
     usort($groups, function ($a, $b) {
-      return strcmp($a->name, $b->name);
+      return strcmp($a->orderN, $b->orderN);
     });
     return $groups;
   }
@@ -85,14 +82,14 @@ class Event extends Model
   /**
    * @return Subgroup[] | null
    */
-  public function getSubgroupsOrderedByName() {
+  public function getSubgroupsOrdered() {
     $eventForSubgroups = $this->eventsForSubgroups();
     $subgroups = array();
     foreach ($eventForSubgroups as $eventForSubgroup) {
       $subgroups[] = $eventForSubgroup->subgroup();
     }
     usort($subgroups, function ($a, $b) {
-      return strcmp($a->name, $b->name);
+      return strcmp($a->orderN, $b->orderN);
     });
     return $subgroups;
   }

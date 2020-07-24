@@ -8,10 +8,10 @@ use App\Logging;
 use App\Mail\NewEvent;
 use App\Models\Events\Event;
 use App\Models\Events\EventUserVotedForDecision;
-use App\Models\Groups\Group;
 use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
+use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Exception;
@@ -25,14 +25,17 @@ class EventRepository implements IEventRepository
   protected $eventDecisionRepository = null;
   protected $userSettingRepository = null;
   protected $settingRepository = null;
+  protected $groupRepository = null;
 
   public function __construct(IEventDateRepository $eventDateRepository,
                               IEventDecisionRepository $eventDecisionRepository,
-                              IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository) {
+                              IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository,
+                              IGroupRepository $groupRepository) {
     $this->eventDateRepository = $eventDateRepository;
     $this->eventDecisionRepository = $eventDecisionRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->settingRepository = $settingRepository;
+    $this->groupRepository = $groupRepository;
   }
 
   /**
@@ -316,7 +319,7 @@ class EventRepository implements IEventRepository
     if ($event->forEveryone) {
       $groups = array();
 
-      foreach (Group::orderBy('name')->get() as $group) {
+      foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
         $groupToSave = new stdClass();
 
         $groupToSave->id = $group->id;
@@ -329,7 +332,7 @@ class EventRepository implements IEventRepository
         $groupToSave->users = $usersMemberOfGroup;
 
         $subgroups = array();
-        foreach ($group->getSubgroupsOrderedByName() as $subgroup) {
+        foreach ($group->getSubgroupsOrdered() as $subgroup) {
           $subgroupToSave = new stdClass();
 
           $subgroupToSave->id = $subgroup->id;
@@ -364,7 +367,7 @@ class EventRepository implements IEventRepository
 
       $groups = array();
 
-      foreach ($event->getGroupsOrderedByName() as $group) {
+      foreach ($event->getGroupsOrdered() as $group) {
         $groupToSave = new stdClass();
 
         $groupToSave->id = $group->id;
@@ -381,7 +384,7 @@ class EventRepository implements IEventRepository
         $groupToSave->users = $usersMemberOfGroup;
 
         $subgroups = array();
-        foreach ($group->getSubgroupsOrderedByName() as $subgroup) {
+        foreach ($group->getSubgroupsOrdered() as $subgroup) {
           $subgroupToSave = new stdClass();
 
           $subgroupToSave->id = $subgroup->id;
@@ -414,7 +417,7 @@ class EventRepository implements IEventRepository
       $unknownGroupToSave->users = array();
 
       $subgroups = array();
-      foreach ($event->getSubgroupsOrderedByName() as $subgroup) {
+      foreach ($event->getSubgroupsOrdered() as $subgroup) {
         $subgroupToSave = new stdClass();
 
         $subgroupToSave->id = $subgroup->id;

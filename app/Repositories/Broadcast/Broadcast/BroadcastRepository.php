@@ -10,8 +10,8 @@ use App\Models\Broadcasts\Broadcast;
 use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Broadcasts\BroadcastForSubgroup;
 use App\Models\Broadcasts\BroadcastUserInfo;
-use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
+use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use Exception;
@@ -23,10 +23,12 @@ class BroadcastRepository implements IBroadcastRepository
 
   protected $userRepository = null;
   protected $settingRepository = null;
+  protected $groupRepository = null;
 
-  public function __construct(IUserRepository $userRepository, ISettingRepository $settingRepository) {
+  public function __construct(IUserRepository $userRepository, ISettingRepository $settingRepository, IGroupRepository $groupRepository) {
     $this->userRepository = $userRepository;
     $this->settingRepository = $settingRepository;
+    $this->groupRepository = $groupRepository;
   }
 
   /**
@@ -156,7 +158,7 @@ class BroadcastRepository implements IBroadcastRepository
       $userIds = array();
 
       foreach ($groups as $groupId) {
-        $group = Group::find($groupId);
+        $group = $this->groupRepository->getGroupById($groupId);
 
         if ($group == null) {
           Logging::error('createBroadcast', 'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
