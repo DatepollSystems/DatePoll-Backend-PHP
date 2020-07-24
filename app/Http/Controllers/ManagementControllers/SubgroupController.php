@@ -268,7 +268,7 @@ class SubgroupController extends Controller
    * @return JsonResponse
    */
   public function joined($userID) {
-    if ($this->userRepository->getUserById($userID)) {
+    if ($this->userRepository->getUserById($userID) == null) {
       return response()->json([
         'msg' => 'User not found',
         'error_code' => 'user_not_found'], 404);
@@ -283,7 +283,7 @@ class SubgroupController extends Controller
    * @return JsonResponse
    */
   public function free($userID) {
-    if ($this->userRepository->getUserById($userID)) {
+    if ($this->userRepository->getUserById($userID) == null) {
       return response()->json([
         'msg' => 'User not found',
         'error_code' => 'user_not_found'], 404);

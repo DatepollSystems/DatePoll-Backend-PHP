@@ -158,7 +158,7 @@ class GroupController extends Controller
       return response()->json(['msg' => 'User is already member of this group'], 201);
     }
 
-    $userMemberOfGroup = $this->groupRepository->createUserMemberOfGroup($groupID, $userID, $role);
+    $userMemberOfGroup = $this->groupRepository->createOrUpdateUserMemberOfGroup($groupID, $userID, $role);
 
     if ($userMemberOfGroup == null) {
       return response()->json(['msg' => 'Could not add user to this group'], 500);
@@ -183,7 +183,7 @@ class GroupController extends Controller
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
 
-    if ($this->userRepository->getUserById($userID)) {
+    if ($this->userRepository->getUserById($userID) == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
