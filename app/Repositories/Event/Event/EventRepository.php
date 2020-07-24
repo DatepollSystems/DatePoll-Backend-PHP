@@ -3,9 +3,8 @@
 
 namespace App\Repositories\Event\Event;
 
-use App\Jobs\SendEmailJob;
+use App\Jobs\CreateNewEventEmailsJob;
 use App\Logging;
-use App\Mail\NewEvent;
 use App\Models\Events\Event;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Models\User\User;
@@ -14,8 +13,11 @@ use App\Repositories\Event\EventDecision\IEventDecisionRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use DateInterval;
+use DateTime;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Queue;
 use stdClass;
 
 class EventRepository implements IEventRepository
@@ -224,15 +226,9 @@ class EventRepository implements IEventRepository
     Logging::info('createOrUpdateEvent', 'Successfully created or updated event ' . $event->id);
 
     if ($creating) {
-      foreach ($this->getPotentialVotersForEvent($event) as $eventUser) {
-        // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
-        // a circular dependency and RAM will explode
-        // Also check if user is not information denied
-        $user = User::find($eventUser->id);
-        if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && !$user->information_denied) {
-          dispatch(new SendEmailJob(new NewEvent($user->firstname, $event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()))->onQueue('default');
-        }
-      }
+      $time = new DateTime();
+      $time->add(new DateInterval('PT' . 1 . 'M'));
+      Queue::later($time, new CreateNewEventEmailsJob($event, $this, $this->eventDateRepository, $this->userSettingRepository, $this->settingRepository), null, "default");
     }
 
     return $event;
@@ -356,7 +352,8 @@ class EventRepository implements IEventRepository
       $all = array();
       // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
       // a circular dependency and RAM will explodes
-      foreach (User::orderBy('surname')->get() as $user) {
+      foreach (User::orderBy('surname')
+                   ->get() as $user) {
         $all[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
       }
 
