@@ -11,7 +11,8 @@ $router->get('/', function () use ($router) {
 });
 
 /** Calendar route */
-$router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);
+$router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);  /** Calendar route */
+$router->get('calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
@@ -44,6 +45,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     require_once(__DIR__ . '/BroadcastRoutes.php');
   });
 
-  /** Calendar route */
+  /** Calendar route (deprecated) */
   $router->get('user/calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 });
