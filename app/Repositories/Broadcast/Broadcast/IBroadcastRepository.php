@@ -29,6 +29,18 @@ interface IBroadcastRepository
 
   /**
    * @param Broadcast $broadcast
+   * @return stdClass | Broadcast
+   */
+  public function getBroadcastUserReturnable(Broadcast $broadcast);
+
+  /**
+   * @param Broadcast $broadcast
+   * @return stdClass | Broadcast
+   */
+  public function getBroadcastCutReturnable(Broadcast $broadcast);
+
+  /**
+   * @param Broadcast $broadcast
    * @return Broadcast|stdClass
    */
   public function getBroadcastSentReceiptReturnable(Broadcast $broadcast);
@@ -52,5 +64,19 @@ interface IBroadcastRepository
    * @throws Exception
    */
   public function delete(Broadcast $broadcast);
+
+  /**
+   * @param int $userId
+   * @param int $limit
+   * @return Broadcast[]
+   */
+  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1);
+
+  /**
+   * @param int $userId
+   * @param int $broadcastId
+   * @return bool
+   */
+  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId);
 
 }

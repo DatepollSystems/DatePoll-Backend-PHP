@@ -1,16 +1,17 @@
 <?php
 
-
 namespace App\Repositories\User\User;
 
 use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
+use App\Models\Broadcasts\Broadcast;
 use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\User\UserCode;
+use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
@@ -24,12 +25,14 @@ class UserRepository implements IUserRepository
   protected $settingRepository = null;
   protected $userSettingRepository = null;
   protected $eventRepository = null;
+  protected $broadcastRepository = null;
 
   public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository,
-                              IEventRepository $eventRepository) {
+                              IEventRepository $eventRepository, IBroadcastRepository $broadcastRepository) {
     $this->settingRepository = $settingRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->eventRepository = $eventRepository;
+    $this->broadcastRepository = $broadcastRepository;
   }
 
   /**
@@ -492,7 +495,15 @@ class UserRepository implements IUserRepository
       $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
     }
 
-    $users = User::all();
+    $broadcastsToShow = array();
+    if ($this->settingRepository->getBroadcastsEnabled()) {
+      $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
+      foreach ($broadcasts as $broadcast) {
+        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastCutReturnable($broadcast);
+      }
+    }
+
+    $users = $this->getAllUsers();
     $birthdaysToShow = array();
     foreach ($users as $user) {
       if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
@@ -517,9 +528,10 @@ class UserRepository implements IUserRepository
     });
 
     return [
-      'msg' => 'List of your bookings, events and birthdays in the next month',
+      'msg' => 'List of your bookings, events, broadcasts and birthdays in the next month',
       'events' => $eventsToShow,
       'bookings' => $bookingsToShow,
+      'broadcasts' => $broadcastsToShow,
       'birthdays' => $birthdaysToShow];
   }
 }

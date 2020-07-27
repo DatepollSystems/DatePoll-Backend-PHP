@@ -4,8 +4,6 @@ namespace App\Http\Controllers\BroadcastControllers;
 
 use App\Logging;
 use App\Http\Controllers\Controller;
-use App\Permissions;
-use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastDraft\IBroadcastDraftRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;

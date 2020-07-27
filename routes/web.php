@@ -45,6 +45,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     require_once(__DIR__ . '/BroadcastRoutes.php');
   });
 
-  /** Calendar route (deprecated) */
+  /** Calendar route (deprecated)
+   * To remove date: 27.7.2025
+   */
   $router->get('user/calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 });
