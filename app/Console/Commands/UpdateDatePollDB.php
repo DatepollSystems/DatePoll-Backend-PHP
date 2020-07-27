@@ -282,6 +282,15 @@ class UpdateDatePollDB extends ACommand
       return false;
     }
 
+    $this->log('db-migrate-4To5', 'Altering table broadcasts changing writer foreign key...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE broadcasts DROP FOREIGN KEY broadcasts_writer_user_id_foreign;');
+      $this->runDbStatement('4To5', 'ALTER TABLE broadcasts ADD FOREIGN KEY (writer_user_id) REFERENCES `users` (`id`);');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
     $this->log('db-migrate-4To5', 'Altering table groups and subgroups adding oderN INT NOT NULL DEFAULT 0', LogTypes::INFO);
     try {
       $this->runDbStatement('4To5', 'ALTER TABLE groups ADD orderN INT NOT NULL DEFAULT 0;');
