@@ -94,6 +94,11 @@ class UserRepository implements IUserRepository
                                      $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
                                      $emailAddresses, $memberNumber, $internalComment, $informationDenied = null,
                                      $bvMember = null, User $user = null) {
+
+    if ($bvMember == null) {
+      $bvMember = '';
+    }
+
     if ($user == null) {
       $user = new User([
         'title' => $title,
@@ -110,6 +115,7 @@ class UserRepository implements IUserRepository
         'activity' => $activity,
         'member_number' => $memberNumber,
         'internal_comment' => $internalComment,
+        'bv_member' => $bvMember,
         'password' => 'Null']);
 
       if (!$user->save()) {
@@ -131,16 +137,12 @@ class UserRepository implements IUserRepository
       $user->activity = $activity;
       $user->member_number = $memberNumber;
       $user->internal_comment = $internalComment;
+      $user->bv_member = $bvMember;
     }
     if ($informationDenied == null) {
       $user->information_denied = false;
     } else {
       $user->information_denied = $informationDenied;
-    }
-    if ($bvMember == null) {
-      $user->bv_member = '';
-    } else {
-      $user->bv_member = $bvMember;
     }
 
     if (!$user->save()) {
