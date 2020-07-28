@@ -6,13 +6,20 @@
 |--------------------------------------------------------------------------
 */
 
+use App\Http\Middleware\System\LogsPermissionMiddleware;
+
 $router->get('/', function () use ($router) {
   return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)';
 });
 
 /** Calendar route */
-$router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);  /** Calendar route */
+$router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);
 $router->get('calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
+
+/** Log viewer */
+$router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer', 'middleware' => ['jwt.auth', LogsPermissionMiddleware::class]], function() use ($router) {
+  $router->get('logs', 'LogViewerController@index');
+});
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 

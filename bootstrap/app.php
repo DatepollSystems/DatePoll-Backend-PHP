@@ -1,6 +1,8 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use App\Providers\DatePollServiceProvider;
+use Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -51,20 +53,15 @@ $app->singleton(
   App\Console\Kernel::class
 );
 
-/*
-|--------------------------------------------------------------------------
-| CORS fix
-|--------------------------------------------------------------------------
-*/
-
+/** Cors fix */
 $app->register(Fruitcake\Cors\CorsServiceProvider::class);
 $app->configure('cors');
 $app->middleware([
   Fruitcake\Cors\HandleCors::class,
 ]);
 
+/** Enable JWT-Auth */
 $app->routeMiddleware([
-  /* Enable JWT-Auth */
   'jwt.auth' => App\Http\Middleware\JwtMiddleware::class
 ]);
 
@@ -80,20 +77,23 @@ $app->routeMiddleware([
 */
 $app->register(AppServiceProvider::class);
 
-/* IDE Helper*/
+/** IDE Helper*/
 $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
-/* Make php artisan:make command as powerful as in laravel */
+/** Make php artisan:make command as powerful as in laravel */
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 
-/* Register DatePoll Service providers to implement the Repository Pattern */
-$app->register('App\Providers\DatePollServiceProvider');
+/** Register DatePoll Service providers to implement the Repository Pattern */
+$app->register(DatePollServiceProvider::class);
 
-/* Redis and Horizon */
+/** Redis and Horizon */
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(Laravel\Horizon\HorizonServiceProvider::class);
 
-/* Mail configuration */
+/** Log reader */
+$app->register(LaravelLogViewerServiceProvider::class);
+
+/** Mail configuration */
 $app->register(Illuminate\Mail\MailServiceProvider::class);
 $app->configure('mail');
 $app->alias('mailer', Illuminate\Mail\Mailer::class);
