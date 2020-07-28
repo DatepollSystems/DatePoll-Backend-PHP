@@ -22,7 +22,8 @@ class MovieRepository implements IMovieRepository
                 ->get();
   }
 
-  public function createMovie(string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId) {
+  public function createMovie(string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets,
+                              int $movieYearId) {
     $movie = new Movie([
       'name' => $name,
       'date' => $date,
@@ -38,7 +39,8 @@ class MovieRepository implements IMovieRepository
     }
   }
 
-  public function updateMovie(Movie $movie, string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId) {
+  public function updateMovie(Movie $movie, string $name, string $date, string $trailerLink, string $posterLink,
+                              int $bookedTickets, int $movieYearId) {
     $movie->name = $name;
     $movie->date = $date;
     $movie->trailerLink = $trailerLink;

@@ -35,7 +35,7 @@ class CreateUsersTable extends Migration
       $table->string('location')->nullable(false);
 
       $table->string('activity')->nullable(false);
-      $table->boolean('bv_member')->default(false);
+      $table->string('bv_member')->nullable(false);
 
       $table->text('internal_comment')->nullable(true);
       $table->boolean('information_denied')->default(false);

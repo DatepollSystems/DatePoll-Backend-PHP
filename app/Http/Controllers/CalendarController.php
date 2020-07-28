@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
+use App\Repositories\Cinema\Movie\IMovieRepository;
+use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
@@ -31,13 +33,20 @@ class CalendarController extends Controller
   protected $userRepository = null;
   protected $userSettingRepository = null;
   protected $eventDateRepository = null;
+  protected $movieRepository = null;
+  protected $eventRepository = null;
 
-  public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository, IUserRepository $userRepository, IUserSettingRepository $userSettingRepository, IEventDateRepository $eventDateRepository) {
+  public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository,
+                              IUserRepository $userRepository, IUserSettingRepository $userSettingRepository,
+                              IEventDateRepository $eventDateRepository, IMovieRepository $movieRepository,
+                              IEventRepository $eventRepository) {
     $this->userTokenRepository = $userTokenRepository;
     $this->settingRepository = $settingRepository;
     $this->userRepository = $userRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->eventDateRepository = $eventDateRepository;
+    $this->movieRepository = $movieRepository;
+    $this->eventRepository = $eventRepository;
   }
 
   /**
@@ -66,7 +75,9 @@ class CalendarController extends Controller
       $movieBookings = MoviesBooking::where('user_id', $user->id)
                                     ->get();
       foreach ($movieBookings as $movieBooking) {
-        $movies[] = $movieBooking->movie();
+        $movie = $movieBooking->movie();
+        $movie->booked_tickets_for_yourself = $movieBooking->amount;
+        $movies[] = $movie;
       }
 
       foreach ($movies as $movie) {
@@ -82,7 +93,7 @@ class CalendarController extends Controller
         $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
                    ->setEnd(new DateTime($movie->date . 'T23:59:59'))
                    ->setSummary($movie->name)
-                   ->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                   ->setDescription('Reservierte Karten: ' . $movie->booked_tickets_for_yourself)
                    ->setUrl($movie->trailerLink)
                    ->setGeo($geo)
                    ->addLocation($location)
@@ -197,11 +208,10 @@ class CalendarController extends Controller
           $d = date_parse_from_format("Y-m-d", $user->birthday);
           if ($d["month"] == date('n')) {
             $birthdayEvent = new CalendarEvent();
-            $birthdayEvent->setStart(new DateTime($user->birthday))
-                          ->setEnd(new DateTime($user->birthday))
+            $birthdayEvent->setStart(new DateTime($user->birthday . 'T00:00:01'))
+                          ->setEnd(new DateTime($user->birthday . 'T00:00:02'))
                           ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
-                          ->setUid('' . $calendarEventId)
-                          ->setAllDay(true);
+                          ->setUid('' . $calendarEventId);
             $calendarEventId++;
 
             $calendar->addEvent($birthdayEvent);
@@ -218,8 +228,71 @@ class CalendarController extends Controller
 
   /**
    * @return string
+   * @throws CalendarEventException
+   * @throws Exception
    */
   public function getCompleteCalendar() {
-    return "Coming soon";
+    $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
+    $calendar = new Calendar();
+    $calendar->setProdId('datepoll-complete-calendar');
+
+    $calendarEventId = 1;
+
+    if ($this->settingRepository->getCinemaEnabled()) {
+      foreach ($this->movieRepository->getAllMoviesOrderedByDate() as $movie) {
+        $geo = new Geo();
+        $geo->setLatitude(48.643865);
+        $geo->setLongitude(15.814679);
+
+        $location = new Location();
+        $location->setLanguage('de');
+        $location->setName('Kanzlerturm Wiese Eggenburg');
+
+        $movieEvent = new CalendarEvent();
+        $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
+                   ->setEnd(new DateTime($movie->date . 'T23:59:59'))
+                   ->setSummary($movie->name)
+                   ->setDescription('Insgesamt reservierte Karten: ' . $movie->bookedTickets)
+                   ->setUrl($movie->trailerLink)
+                   ->setGeo($geo)
+                   ->addLocation($location)
+                   ->setUid('' . '' . $calendarEventId);
+        $calendarEventId++;
+
+        $calendar->addEvent($movieEvent);
+      }
+    }
+
+    if ($this->settingRepository->getEventsEnabled()) {
+      foreach ($this->eventRepository->getAllEventsOrderedByDate() as $event) {
+        $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
+
+        $geo = new Geo();
+        $geo->setLatitude($startDate->x);
+        $geo->setLongitude($startDate->y);
+
+        $location = new Location();
+        $location->setLanguage('de');
+        $location->setName($startDate->location);
+
+
+        $eventEvent = new CalendarEvent();
+        $eventEvent->setStart(new DateTime($startDate->date))
+                   ->setEnd(new DateTime($this->eventDateRepository->getLastEventDateForEvent($event)->date))
+                   ->setSummary($event->name)
+                   ->setDescription($event->description)
+                   ->setGeo($geo)
+                   ->addLocation($location)
+                   ->setUid('' . $calendarEventId);
+        $calendarEventId++;
+
+        $calendar->addEvent($eventEvent);
+      }
+    }
+
+    $calendarExport->addCalendar($calendar);
+
+    Logging::info("getCompleteCalendar", "ICS complete calendar request");
+    return $calendarExport->getStream();
   }
 }

@@ -33,7 +33,7 @@ use stdClass;
  * @property string $internal_comment
  * @property boolean $information_denied
  * @property string $activity
- * @property boolean $bv_member
+ * @property string $bv_member
  * @property string $created_at
  * @property string $updated_at
  */
@@ -63,11 +63,6 @@ class User extends Model
     'updated_at',
     'activated',
     'activity'];
-
-  public static function exists($userID) {
-    $user = User::find($userID);
-    return $user != null;
-  }
 
   /**
    * @return Collection | Movie[] | null

@@ -17,6 +17,7 @@ class CreateSubgroupsTable extends Migration
       $table->increments('id');
 
       $table->string('name');
+      $table->integer('orderN')->nullable(false)->default(0);
       $table->text('description')->nullable(true);
 
       $table->integer('group_id')->unsigned();;

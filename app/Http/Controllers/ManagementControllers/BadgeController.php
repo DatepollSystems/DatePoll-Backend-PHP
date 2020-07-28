@@ -176,7 +176,7 @@ class BadgeController extends Controller
    * @param UserHasBadge $userHasBadge
    * @return stdClass
    */
-  public function getUserBadgeReturnable(UserHasBadge $userHasBadge) {
+  private function getUserBadgeReturnable(UserHasBadge $userHasBadge) {
     $returnable = new stdClass();
 
     $returnable->id = $userHasBadge->id;
@@ -188,5 +188,40 @@ class BadgeController extends Controller
     $returnable->user_id = $userHasBadge->user_id;
 
     return $returnable;
+  }
+
+  /**
+   * @param int $id
+   * @return JsonResponse
+   */
+  public function getCurrentYearBadgesForUser(): JsonResponse {
+    $currentYearBadgesForUser = array();
+
+    foreach ($this->userRepository->getAllUsersOrderedBySurname() as $user) {
+      $userT = new stdClass();
+      $userT->id = $user->id;
+      $userT->firstname = $user->firstname;
+      $userT->surname = $user->surname;
+      $userT->join_date = $user->join_date;
+
+      $badges = array();
+      foreach (Badge::all() as $badge) {
+        $joinDate = strtotime($user->join_date);
+        $dateWithAfterBadgeYears = strtotime('+' . $badge->afterYears . ' years', $joinDate);
+
+        if (date('Y') == date('Y', $dateWithAfterBadgeYears)) {
+          if (UserHasBadge::where('user_id', '=', $user->id)->where('description', '=', $badge->description)->first() == null) {
+            $badges[] = $badge;
+          }
+        }
+      }
+
+      if (sizeof($badges) > 0) {
+        $userT->current_year_badges = $badges;
+        $currentYearBadgesForUser[] = $userT;
+      }
+    }
+
+    return response()->json(['msg' => 'Current year badges', 'users' => $currentYearBadgesForUser]);
   }
 }

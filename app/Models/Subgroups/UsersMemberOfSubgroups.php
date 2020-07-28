@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
- * @property int $subgroup_role_id
+ * @property string $role
  * @property int $subgroup_id
  * @property int $user_id
  * @property string $created_at

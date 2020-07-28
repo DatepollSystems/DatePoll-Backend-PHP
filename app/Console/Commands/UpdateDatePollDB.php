@@ -92,6 +92,12 @@ class UpdateDatePollDB extends ACommand
             return;
           }
           break;
+        case 5:
+          if (!$this->migrateDatabaseVersionFrom4To5()) {
+            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
+            return;
+          }
+          break;
       }
 
       $this->log('handle', 'Saving new database version', LogTypes::INFO);
@@ -249,6 +255,63 @@ class UpdateDatePollDB extends ACommand
 
     $this->log('db-migrate-3To4', 'Running database migrations finished!', LogTypes::INFO);
     $this->log('db-migrate-3To4', 'Running migration from 3 to 4 finished!', LogTypes::INFO);
+    return true;
+  }
+
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom4To5(): bool {
+    $this->log('db-migrate-4To5', 'Running migration from 4 to 5', LogTypes::INFO);
+
+    $this->log('db-migrate-4To5', 'Altering table movies drop worker foreign keys...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE movies DROP FOREIGN KEY movies_emergency_worker_id_foreign;');
+      $this->runDbStatement('4To5', 'ALTER TABLE movies DROP FOREIGN KEY movies_worker_id_foreign;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-4To5', 'Altering table movies add new foreign keys...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE movies ADD FOREIGN KEY (emergency_worker_id) REFERENCES `users` (`id`);');
+      $this->runDbStatement('4To5', 'ALTER TABLE movies ADD FOREIGN KEY (worker_id) REFERENCES `users` (`id`);');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-4To5', 'Altering table broadcasts changing writer foreign key...', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE broadcasts DROP FOREIGN KEY broadcasts_writer_user_id_foreign;');
+      $this->runDbStatement('4To5', 'ALTER TABLE broadcasts ADD FOREIGN KEY (writer_user_id) REFERENCES `users` (`id`);');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-4To5', 'Altering table groups and subgroups adding oderN INT NOT NULL DEFAULT 0', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE groups ADD orderN INT NOT NULL DEFAULT 0;');
+      $this->runDbStatement('4To5', 'ALTER TABLE subgroups ADD orderN INT NOT NULL DEFAULT 0;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-4To5', 'Changing bv_member to varchar(191) and altering data', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE users MODIFY bv_member VARCHAR (191) NOT NULL;');
+      $this->runDbStatement('4To5', 'UPDATE users SET bv_member = \'gemeldet\' where bv_member = \'1\';');
+      $this->runDbStatement('4To5', 'UPDATE users SET bv_member = \'\' where bv_member = \'0\';');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-4To5', 'Running database migrations finished!', LogTypes::INFO);
+    $this->log('db-migrate-4To5', 'Running migration from 4 to 5 finished!', LogTypes::INFO);
     return true;
   }
 

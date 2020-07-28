@@ -10,10 +10,10 @@ use App\Models\Broadcasts\Broadcast;
 use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Broadcasts\BroadcastForSubgroup;
 use App\Models\Broadcasts\BroadcastUserInfo;
-use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
+use App\Models\User\User;
+use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
-use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
@@ -21,16 +21,16 @@ use stdClass;
 class BroadcastRepository implements IBroadcastRepository
 {
 
-  protected $userRepository = null;
   protected $settingRepository = null;
+  protected $groupRepository = null;
 
-  public function __construct(IUserRepository $userRepository, ISettingRepository $settingRepository) {
-    $this->userRepository = $userRepository;
+  public function __construct(ISettingRepository $settingRepository, IGroupRepository $groupRepository) {
     $this->settingRepository = $settingRepository;
+    $this->groupRepository = $groupRepository;
   }
 
   /**
-   * @return Broadcast[]|Collection
+   * @return Broadcast[]|Collection<Broadcast[]>
    */
   public function getAllBroadcastsOrderedByDate() {
     return Broadcast::orderBy('created_at', 'DESC')
@@ -82,7 +82,18 @@ class BroadcastRepository implements IBroadcastRepository
    * @param Broadcast $broadcast
    * @return stdClass | Broadcast
    */
-  private function getBroadcastCutReturnable(Broadcast $broadcast) {
+  public function getBroadcastUserReturnable(Broadcast $broadcast) {
+    $toReturnBroadcast = $this->getBroadcastCutReturnable($broadcast);
+    $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
+
+    return $toReturnBroadcast;
+  }
+
+  /**
+   * @param Broadcast $broadcast
+   * @return stdClass | Broadcast
+   */
+  public function getBroadcastCutReturnable(Broadcast $broadcast) {
     $toReturnBroadcast = new stdClass();
     $toReturnBroadcast->id = $broadcast->id;
     $toReturnBroadcast->subject = $broadcast->subject;
@@ -106,7 +117,9 @@ class BroadcastRepository implements IBroadcastRepository
     $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
 
     $userInfos = [];
-    foreach (BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)->orderBy('sent')->get() as $userInfo) {
+    foreach (BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)
+                              ->orderBy('sent')
+                              ->get() as $userInfo) {
       $userInfoDTO = new stdClass();
       $userInfoDTO->id = $userInfo->id;
       $userInfoDTO->broadcast_id = $userInfo->broadcast_id;
@@ -135,7 +148,8 @@ class BroadcastRepository implements IBroadcastRepository
    * @return Broadcast | null
    * @throws Exception
    */
-  public function create(string $subject, string $bodyHTML, string $body, int $writerId, $groups, $subgroups, bool $forEveryone) {
+  public function create(string $subject, string $bodyHTML, string $body, int $writerId, $groups, $subgroups,
+                         bool $forEveryone) {
     $broadcast = new Broadcast([
       'subject' => $subject,
       'bodyHTML' => $bodyHTML,
@@ -151,12 +165,12 @@ class BroadcastRepository implements IBroadcastRepository
     $users = array();
 
     if ($forEveryone) {
-      $users = $this->userRepository->getAllUsers();
+      $users = User::all();
     } else {
       $userIds = array();
 
       foreach ($groups as $groupId) {
-        $group = Group::find($groupId);
+        $group = $this->groupRepository->getGroupById($groupId);
 
         if ($group == null) {
           Logging::error('createBroadcast', 'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
@@ -209,7 +223,7 @@ class BroadcastRepository implements IBroadcastRepository
       }
     }
 
-    $writer = $this->userRepository->getUserById($writerId);
+    $writer = User::find($writerId);
     $writerEmailAddress = null;
     if ($writer->hasEmailAddresses()) {
       $writerEmailAddress = $writer->getEmailAddresses()[0];
@@ -246,5 +260,43 @@ class BroadcastRepository implements IBroadcastRepository
    */
   public function delete(Broadcast $broadcast) {
     return $broadcast->delete();
+  }
+
+  /**
+   * @param int $userId
+   * @param int $limit
+   * @return Broadcast[]
+   */
+  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1) {
+    if ($limit != -1) {
+      $broadcastUserInfos = BroadcastUserInfo::where('user_id', '=', $userId)
+                                             ->orderBy('created_at', 'DESC')
+                                             ->limit($limit)
+                                             ->get();
+    } else {
+      $broadcastUserInfos = BroadcastUserInfo::where('user_id', '=', $userId)
+                                             ->orderBy('created_at', 'DESC')
+                                             ->get();
+    }
+
+    $broadcasts = array();
+    foreach ($broadcastUserInfos as $broadcastUserInfo) {
+      $broadcasts[] = $broadcastUserInfo->broadcast();
+    }
+
+    return $broadcasts;
+  }
+
+  /**
+   * @param int $userId
+   * @param int $broadcastId
+   * @return bool
+   */
+  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId) {
+    $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $userId)
+                                           ->where('broadcast_id', '=', $broadcastId)
+                                           ->orderBy('created_at', 'DESC')
+                                           ->first();
+    return $broadcastUserInfo != null;
   }
 }

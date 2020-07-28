@@ -1,16 +1,17 @@
 <?php
 
-
 namespace App\Repositories\User\User;
 
 use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
+use App\Models\Broadcasts\Broadcast;
 use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Models\User\UserCode;
+use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
@@ -24,11 +25,14 @@ class UserRepository implements IUserRepository
   protected $settingRepository = null;
   protected $userSettingRepository = null;
   protected $eventRepository = null;
+  protected $broadcastRepository = null;
 
-  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository, IEventRepository $eventRepository) {
+  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository,
+                              IEventRepository $eventRepository, IBroadcastRepository $broadcastRepository) {
     $this->settingRepository = $settingRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->eventRepository = $eventRepository;
+    $this->broadcastRepository = $broadcastRepository;
   }
 
   /**
@@ -81,7 +85,7 @@ class UserRepository implements IUserRepository
    * @param string|null $memberNumber
    * @param string|null $internalComment
    * @param bool $informationDenied
-   * @param bool $bvMember
+   * @param string $bvMember
    * @param User|null $user
    * @return User|null
    * @throws Exception
@@ -104,7 +108,14 @@ class UserRepository implements IUserRepository
         'location' => $location,
         'activated' => $activated,
         'activity' => $activity,
+        'member_number' => $memberNumber,
+        'internal_comment' => $internalComment,
         'password' => 'Null']);
+
+      if (!$user->save()) {
+        Logging::error('createOrUpdateUser', 'Could not save user into database!');
+        return null;
+      }
     } else {
       $user->username = $username;
       $user->title = $title;
@@ -118,9 +129,7 @@ class UserRepository implements IUserRepository
       $user->location = $location;
       $user->activated = $activated;
       $user->activity = $activity;
-    }
-    $user->member_number = $memberNumber;
-    if ($internalComment != null) {
+      $user->member_number = $memberNumber;
       $user->internal_comment = $internalComment;
     }
     if ($informationDenied == null) {
@@ -129,7 +138,7 @@ class UserRepository implements IUserRepository
       $user->information_denied = $informationDenied;
     }
     if ($bvMember == null) {
-      $user->bv_member = false;
+      $user->bv_member = '';
     } else {
       $user->bv_member = $bvMember;
     }
@@ -338,7 +347,7 @@ class UserRepository implements IUserRepository
   public function exportAllUsers() {
     $toReturnUsers = array();
 
-    $users = $this->getAllUsers();
+    $users = $this->getAllUsersOrderedBySurname();
     foreach ($users as $user) {
 
       $toReturnUser = new stdClass();
@@ -371,14 +380,28 @@ class UserRepository implements IUserRepository
 
       $groups = '';
       foreach ($user->usersMemberOfGroups() as $usersMemberOfGroup) {
-        $groups .= $usersMemberOfGroup->group()->name . ', ';
+        $role = '';
+        if ($usersMemberOfGroup->role != null) {
+          if (strlen($usersMemberOfGroup->role) != 0) {
+            $role .= ' - ' . $usersMemberOfGroup->role;
+          }
+        }
+
+        $groups .= $usersMemberOfGroup->group()->name . $role . ', ';
       }
       $toReturnUser->Gruppen = $groups;
 
       $subgroups = '';
       foreach ($user->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
-        $subgroups .= $usersMemberOfSubgroup->subgroup()
-                                            ->group()->name . ' - ' . $usersMemberOfSubgroup->subgroup()->name . ', ';
+        $role = '';
+        if ($usersMemberOfSubgroup->role != null) {
+          if (strlen($usersMemberOfSubgroup->role) != 0) {
+            $role .= ' - ' . $usersMemberOfSubgroup->role;
+          }
+        }
+
+        $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
+                                                  ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 
@@ -472,7 +495,15 @@ class UserRepository implements IUserRepository
       $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
     }
 
-    $users = User::all();
+    $broadcastsToShow = array();
+    if ($this->settingRepository->getBroadcastsEnabled()) {
+      $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
+      foreach ($broadcasts as $broadcast) {
+        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastCutReturnable($broadcast);
+      }
+    }
+
+    $users = $this->getAllUsers();
     $birthdaysToShow = array();
     foreach ($users as $user) {
       if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
@@ -497,9 +528,10 @@ class UserRepository implements IUserRepository
     });
 
     return [
-      'msg' => 'List of your bookings, events and birthdays in the next month',
+      'msg' => 'List of your bookings, events, broadcasts and birthdays in the next month',
       'events' => $eventsToShow,
       'bookings' => $bookingsToShow,
+      'broadcasts' => $broadcastsToShow,
       'birthdays' => $birthdaysToShow];
   }
 }

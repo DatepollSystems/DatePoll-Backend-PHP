@@ -31,12 +31,10 @@ class CreateMoviesTable extends Migration
         ->onDelete('cascade');
 
       $table->foreign('worker_id')
-        ->references('id')->on('users')
-        ->onDelete('cascade');
+        ->references('id')->on('users');
 
       $table->foreign('emergency_worker_id')
-        ->references('id')->on('users')
-        ->onDelete('cascade');
+        ->references('id')->on('users');
 
       $table->timestamps();
     });

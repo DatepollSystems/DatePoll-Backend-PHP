@@ -5,8 +5,8 @@ use App\Http\Middleware\Broadcasts\BroadcastsFeatureMiddleware;
 
 $router->group(['prefix' => 'broadcast', 'middleware' => [BroadcastsFeatureMiddleware::class]], function () use($router) {
 
-  //$router->get('', ['uses' => 'BroadcastControllers\BroadcastController@getRecentBroadcasts']);
-  //$router->get('{id}', ['uses' => 'BroadcastControllers\BroadcastController@getSingle']);
+  $router->get('', ['uses' => 'BroadcastControllers\BroadcastUserController@getAll']);
+  $router->get('{id}', ['uses' => 'BroadcastControllers\BroadcastUserController@getSingle']);
 
   /** Broadcast administration routes */
   $router->group([

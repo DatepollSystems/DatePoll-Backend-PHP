@@ -26,6 +26,10 @@ use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepositor
 use App\Repositories\Event\EventStandardLocation\EventStandardLocationRepository;
 use App\Repositories\Files\File\FileRepository;
 use App\Repositories\Files\File\IFileRepository;
+use App\Repositories\Group\Group\GroupRepository;
+use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\Group\Subgroup\ISubgroupRepository;
+use App\Repositories\Group\Subgroup\SubgroupRepository;
 use App\Repositories\System\DatePollServer\DatePollServerRepository;
 use App\Repositories\System\DatePollServer\IDatePollServerRepository;
 use App\Repositories\System\Job\IJobRepository;
@@ -55,6 +59,10 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IUserRepository::class, UserRepository::class);
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
     $this->app->bind(IUserSettingRepository::class, UserSettingRepository::class);
+
+    /** Group repositories */
+    $this->app->bind(IGroupRepository::class, GroupRepository::class);
+    $this->app->bind(ISubgroupRepository::class, SubgroupRepository::class);
 
     /** Event repositories */
     $this->app->bind(IEventRepository::class, EventRepository::class);

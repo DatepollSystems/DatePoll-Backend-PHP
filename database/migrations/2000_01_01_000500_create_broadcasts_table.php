@@ -26,8 +26,7 @@ class CreateBroadcastsTable extends Migration
       $table->timestamps();
 
       $table->foreign('writer_user_id')
-            ->references('id')->on('users')
-            ->onDelete('cascade');
+            ->references('id')->on('users');
     });
   }
 
