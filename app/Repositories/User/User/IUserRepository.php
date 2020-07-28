@@ -49,7 +49,7 @@ interface IUserRepository
    * @param string|null $memberNumber
    * @param string|null $internalComment
    * @param bool $informationDenied
-   * @param bool $bvMember
+   * @param string $bvMember
    * @param User|null $user
    * @return User|null
    * @throws Exception

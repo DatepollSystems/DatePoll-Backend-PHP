@@ -300,6 +300,16 @@ class UpdateDatePollDB extends ACommand
       return false;
     }
 
+    $this->log('db-migrate-4To5', 'Changing bv_member to varchar(191) and altering data', LogTypes::INFO);
+    try {
+      $this->runDbStatement('4To5', 'ALTER TABLE users MODIFY bv_member VARCHAR (191) NOT NULL;');
+      $this->runDbStatement('4To5', 'UPDATE users SET bv_member = \'gemeldet\' where bv_member = \'1\';');
+      $this->runDbStatement('4To5', 'UPDATE users SET bv_member = \'\' where bv_member = \'0\';');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-4To5', 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
     $this->log('db-migrate-4To5', 'Running database migrations finished!', LogTypes::INFO);
     $this->log('db-migrate-4To5', 'Running migration from 4 to 5 finished!', LogTypes::INFO);
     return true;

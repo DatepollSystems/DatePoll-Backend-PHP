@@ -33,7 +33,7 @@ use stdClass;
  * @property string $internal_comment
  * @property boolean $information_denied
  * @property string $activity
- * @property boolean $bv_member
+ * @property string $bv_member
  * @property string $created_at
  * @property string $updated_at
  */

@@ -85,7 +85,7 @@ class UserRepository implements IUserRepository
    * @param string|null $memberNumber
    * @param string|null $internalComment
    * @param bool $informationDenied
-   * @param bool $bvMember
+   * @param string $bvMember
    * @param User|null $user
    * @return User|null
    * @throws Exception
@@ -138,7 +138,7 @@ class UserRepository implements IUserRepository
       $user->information_denied = $informationDenied;
     }
     if ($bvMember == null) {
-      $user->bv_member = false;
+      $user->bv_member = '';
     } else {
       $user->bv_member = $bvMember;
     }
