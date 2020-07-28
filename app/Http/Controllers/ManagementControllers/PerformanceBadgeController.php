@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\PerformanceBadge\Instrument;
 use App\Models\PerformanceBadge\PerformanceBadge;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
-use App\Models\User\User;
 use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -141,7 +140,7 @@ class PerformanceBadgeController extends Controller
       'note' => 'max:190']);
 
     $userId = $request->input('user_id');
-    if(!User::exists($userId)) {
+    if($this->userRepository->getUserById($userId) == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 

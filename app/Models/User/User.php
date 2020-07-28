@@ -64,11 +64,6 @@ class User extends Model
     'activated',
     'activity'];
 
-  public static function exists($userID) {
-    $user = User::find($userID);
-    return $user != null;
-  }
-
   /**
    * @return Collection | Movie[] | null
    */

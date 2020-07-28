@@ -5,8 +5,8 @@ namespace App\Http\Controllers\EventControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
-use App\Models\User\User;
 use App\Repositories\Event\Event\IEventRepository;
+use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -15,9 +15,11 @@ class EventVoteController extends Controller
 {
 
   protected $eventRepository = null;
+  protected $userRepository = null;
 
-  public function __construct(IEventRepository $eventRepository) {
+  public function __construct(IEventRepository $eventRepository, IUserRepository $userRepository) {
     $this->eventRepository = $eventRepository;
+    $this->userRepository = $userRepository;
   }
 
   /**
@@ -142,7 +144,7 @@ class EventVoteController extends Controller
 
     $userIds = $request->input('user_ids');
     foreach ((array)$userIds as $userId) {
-      if (!User::exists($userId)) {
+      if ($this->userRepository->getUserById($userId) == null) {
         return response()->json([
           'msg' => 'User not found',
           'user_id' => $userId], 404);
@@ -187,7 +189,7 @@ class EventVoteController extends Controller
 
     $userIds = $request->input('user_ids');
     foreach ((array)$userIds as $userId) {
-      if (!User::exists($userId)) {
+      if ($this->userRepository->getUserById($userId) == null) {
         return response()->json([
           'msg' => 'User not found',
           'user_id' => $userId], 404);
