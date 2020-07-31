@@ -75,4 +75,10 @@ interface IGroupRepository
    * @return Group[]
    */
   public function getGroupsWhereUserIsNotIn($user);
+
+  /**
+   * @param Group $group
+   * @return Group
+   */
+  public function getGroupStatisticsByGroup(Group $group);
 }

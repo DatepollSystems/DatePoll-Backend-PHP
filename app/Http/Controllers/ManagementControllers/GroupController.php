@@ -72,6 +72,7 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
+    $group = $this->groupRepository->getGroupStatisticsByGroup($group);
     $group->subgroups = $group->getSubgroupsOrdered();
     $group->users = $group->getUsersWithRolesOrderedBySurname();
 
