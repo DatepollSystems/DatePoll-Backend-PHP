@@ -208,8 +208,9 @@ class CalendarController extends Controller
           $d = date_parse_from_format("Y-m-d", $user->birthday);
           if ($d["month"] == date('n')) {
             $birthdayEvent = new CalendarEvent();
-            $birthdayEvent->setStart(new DateTime($user->birthday . 'T00:00:01'))
-                          ->setEnd(new DateTime($user->birthday . 'T00:00:02'))
+            $birthdayEvent->setStart($this->updateDate($user->birthday))
+                          ->setEnd($this->updateDate($user->birthday))
+                          ->setAllDay(true)
                           ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
                           ->setUid('' . $calendarEventId);
             $calendarEventId++;
@@ -224,6 +225,17 @@ class CalendarController extends Controller
 
     Logging::info("getCalendarOf", "User | " . $user->id . " | ICS personal calendar request");
     return $calendarExport->getStream();
+  }
+
+  /**
+   * @param String $dateString
+   * @return DateTime
+   * @throws Exception
+   */
+  private function updateDate($dateString){
+    $suppliedDate = new DateTime($dateString);
+    $currentYear = (int)(new DateTime())->format('Y');
+    return (new DateTime())->setDate($currentYear, (int)$suppliedDate->format('m'), (int)$suppliedDate->format('d'));
   }
 
   /**
