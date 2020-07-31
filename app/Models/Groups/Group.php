@@ -63,7 +63,7 @@ class Group extends Model
     $users = $this->usersMemberOfGroups();
     foreach ($users as $userS) {
       $user = new stdClass();
-      $user->id = $userS->id;
+      $user->id = $userS->user_id;
       $user->firstname = $userS->user()->firstname;
       $user->surname = $userS->user()->surname;
       $user->role = $userS->role;

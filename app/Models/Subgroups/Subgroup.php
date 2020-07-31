@@ -57,7 +57,7 @@ class Subgroup extends Model
     $users = $this->usersMemberOfSubgroups();
     foreach ($users as $userS) {
       $user = new stdClass();
-      $user->id = $userS->id;
+      $user->id = $userS->user_id;
       $user->firstname = $userS->user()->firstname;
       $user->surname = $userS->user()->surname;
       $user->role = $userS->role;

@@ -201,7 +201,7 @@ class GroupController extends Controller
     }
 
     /* Remove user from child subgroups */
-    $userMemberOfSubgroupsToRemove = $this->subgroupRepository->getUserMemberOfSubgroupsAndInGroups($groupID, $userID);
+    $userMemberOfSubgroupsToRemove = $this->subgroupRepository->getUserMemberOfSubgroupsAndInGroups($userID, $groupID);
 
     foreach ($userMemberOfSubgroupsToRemove as $userMemberOfSubgroupToRemove) {
       if (!$this->subgroupRepository->removeSubgroupForUser($userMemberOfSubgroupToRemove)) {
