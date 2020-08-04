@@ -509,8 +509,9 @@ class UserRepository implements IUserRepository
     $birthdaysToShow = array();
     foreach ($users as $user) {
       if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
-        $d = date_parse_from_format("Y-m-d", $user->birthday);
-        if ($d["month"] == date('n')) {
+        $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date("Y-m-d"))));
+        $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date("Y-m-d"))));
+        if ($remTimeDate < date("m-d", strtotime($user->birthday)) && date("m-d", strtotime($user->birthday)) < $addTimeDate) {
           $birthdayToShow = new stdClass();
 
           $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
@@ -520,10 +521,6 @@ class UserRepository implements IUserRepository
         }
       }
     }
-
-    usort($birthdaysToShow, function ($a, $b) {
-      return strcmp($b->date, $a->date);
-    });
 
     usort($birthdaysToShow, function ($a, $b) {
       return strcmp($a->date, $b->date);
