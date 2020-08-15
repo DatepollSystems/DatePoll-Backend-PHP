@@ -65,7 +65,14 @@ class CalendarController extends Controller
 
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
-    $calendar->setProdId('datepoll-calendar');
+    //$calendar->setTimezone(new DateTimeZone('Europe\Vienna'));
+    $calendar->setProdId('datepoll-personal-calendar');
+
+
+    $appOrganizer = new Organizer(new Formatter());
+    $appOrganizer->setValue(env('MAIL_FROM_ADDRESS'))
+                 ->setName($this->settingRepository->getCommunityName())
+                 ->setLanguage('de');
 
     $calendarEventId = 1;
 
@@ -96,6 +103,8 @@ class CalendarController extends Controller
                    ->setDescription('Reservierte Karten: ' . $movie->booked_tickets_for_yourself)
                    ->setUrl($movie->trailerLink)
                    ->setGeo($geo)
+                   ->setStatus('CONFIRMED')
+                   ->setCreated(new DateTime($movie->created_at))
                    ->addLocation($location)
                    ->setUid('' . '' . $calendarEventId);
         $calendarEventId++;
@@ -109,6 +118,8 @@ class CalendarController extends Controller
                     ->setName($name)
                     ->setLanguage('de');
           $movieEvent->setOrganizer($organizer);
+        } else {
+          $movieEvent->setOrganizer($appOrganizer);
         }
 
         $calendar->addEvent($movieEvent);
@@ -137,9 +148,11 @@ class CalendarController extends Controller
           $movieEvent = new CalendarEvent();
           $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
                      ->setEnd(new DateTime($movie->date . 'T23:59:59'))
-                     ->setSummary($movie->name)//->setDescription('Reservierte Karten: ' . $movie->bookedTickets)
+                     ->setSummary($movie->name)
                      ->setUrl($movie->trailerLink)
+                     ->setCreated(new DateTime($movie->created_at))
                      ->setGeo($geo)
+                     ->setStatus('CONFIRMED')
                      ->addLocation($location)
                      ->setUid('' . $calendarEventId);
           $calendarEventId++;
@@ -153,6 +166,8 @@ class CalendarController extends Controller
                       ->setName($name)
                       ->setLanguage('de');
             $movieEvent->setOrganizer($organizer);
+          } else {
+            $movieEvent->setOrganizer($appOrganizer);
           }
 
           $calendar->addEvent($movieEvent);
@@ -178,24 +193,38 @@ class CalendarController extends Controller
       foreach ($events as $event) {
         $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
 
-        $geo = new Geo();
-        $geo->setLatitude($startDate->x);
-        $geo->setLongitude($startDate->y);
-
-        $location = new Location();
-        $location->setLanguage('de');
-        $location->setName($startDate->location);
-
-
         $eventEvent = new CalendarEvent();
         $eventEvent->setStart(new DateTime($startDate->date))
                    ->setEnd(new DateTime($this->eventDateRepository->getLastEventDateForEvent($event)->date))
                    ->setSummary($event->name)
-                   ->setDescription($event->description)
-                   ->setGeo($geo)
-                   ->addLocation($location)
+                   ->setStatus('CONFIRMED')
+                   ->setCreated(new DateTime($event->created_at))
+                   ->setOrganizer($appOrganizer)
                    ->setUid('' . $calendarEventId);
         $calendarEventId++;
+
+        if ($startDate->x != -199 && $startDate->y != -199) {
+          $geo = new Geo();
+          $geo->setLatitude($startDate->x);
+          $geo->setLongitude($startDate->y);
+
+          $eventEvent->setGeo($geo);
+        }
+
+        if ($event->description != null) {
+          if (strlen($event->description) > 2) {
+            $eventEvent->setDescription($event->description);
+          }
+        }
+
+        if ($startDate->location != null) {
+          if (strlen($startDate->location) > 0) {
+            $location = new Location();
+            $location->setLanguage('de');
+            $location->setName($startDate->location);
+            $eventEvent->addLocation($location);
+          }
+        }
 
         $calendar->addEvent($eventEvent);
       }
@@ -211,6 +240,9 @@ class CalendarController extends Controller
             $birthdayEvent->setStart($this->updateDate($user->birthday))
                           ->setEnd($this->updateDate($user->birthday))
                           ->setAllDay(true)
+                          ->setStatus('CONFIRMED')
+                          ->setCreated(new DateTime($user->created_at))
+                          ->setOrganizer($appOrganizer)
                           ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
                           ->setUid('' . $calendarEventId);
             $calendarEventId++;
@@ -224,7 +256,11 @@ class CalendarController extends Controller
     $calendarExport->addCalendar($calendar);
 
     Logging::info("getCalendarOf", "User | " . $user->id . " | ICS personal calendar request");
-    return $calendarExport->getStream();
+
+    header('Content-type: text/calendar; charset=utf-8');
+    header('Content-Disposition: attachment; filename="cal.ics"');
+
+    echo $calendarExport->getStream();
   }
 
   /**
