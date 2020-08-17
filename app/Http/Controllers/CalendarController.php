@@ -67,7 +67,7 @@ class CalendarController extends Controller
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
     $calendar->setTimezone(new DateTimeZone('Europe/Vienna'));
-    $calendar->setProdId('datepoll-personal-calendar');
+    $calendar->setProdId('-//DatePoll//PersonalCalendar//DE');
 
 
     $appOrganizer = new Organizer(new Formatter());
@@ -287,7 +287,7 @@ class CalendarController extends Controller
   public function getCompleteCalendar() {
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
-    $calendar->setProdId('datepoll-complete-calendar');
+    $calendar->setProdId('-//DatePoll//CompleteCalendar//DE');
 
     $appOrganizer = new Organizer(new Formatter());
     $appOrganizer->setValue(env('MAIL_FROM_ADDRESS'))
