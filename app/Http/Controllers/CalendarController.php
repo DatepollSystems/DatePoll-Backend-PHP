@@ -296,7 +296,7 @@ class CalendarController extends Controller
 
     if ($this->settingRepository->getCinemaEnabled()) {
       foreach ($this->movieRepository->getAllMoviesOrderedByDate() as $movie) {
-        $uid = app('hash')->make($movie->name . $movie->created_at . $event->updated_at);
+        $uid = app('hash')->make($movie->name . $movie->created_at . $movie->updated_at);
 
         $geo = new Geo();
         $geo->setLatitude(48.643865);
