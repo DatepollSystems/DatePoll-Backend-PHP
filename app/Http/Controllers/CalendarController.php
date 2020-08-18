@@ -66,8 +66,15 @@ class CalendarController extends Controller
 
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
-    $calendar->setTimezone(new DateTimeZone('Europe/Vienna'));
+    $timezone = new DateTimeZone('Europe/Vienna');
+    $calendar->setTimezone($timezone);
     $calendar->setProdId('-//DatePoll//PersonalCalendar//DE');
+
+    $calendar->setCustomHeaders([
+      'X-WR-TIMEZONE' => $timezone, // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
+      'X-WR-CALNAME' => 'Personal calendar', // https://en.wikipedia.org/wiki/ICalendar
+      'X-PUBLISHED-TTL' => 'PT15M' // update calendar every 15 minutes
+    ]);
 
 
     $appOrganizer = new Organizer(new Formatter());
@@ -264,7 +271,6 @@ class CalendarController extends Controller
 
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="cal.ics"');
-
     echo $calendarExport->getStream();
   }
 
@@ -287,7 +293,15 @@ class CalendarController extends Controller
   public function getCompleteCalendar() {
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
+    $timezone = new DateTimeZone('Europe/Vienna');
+    $calendar->setTimezone($timezone);
     $calendar->setProdId('-//DatePoll//CompleteCalendar//DE');
+
+    $calendar->setCustomHeaders([
+      'X-WR-TIMEZONE' => $timezone, // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
+      'X-WR-CALNAME' => 'Calendar Name', // https://en.wikipedia.org/wiki/ICalendar
+      'X-PUBLISHED-TTL' => 'PT15M' // update calendar every 15 minutes
+    ]);
 
     $appOrganizer = new Organizer(new Formatter());
     $appOrganizer->setValue(env('MAIL_FROM_ADDRESS'))
@@ -378,6 +392,8 @@ class CalendarController extends Controller
     $calendarExport->addCalendar($calendar);
 
     Logging::info("getCompleteCalendar", "ICS complete calendar request");
-    return $calendarExport->getStream();
+    header('Content-type: text/calendar; charset=utf-8');
+    header('Content-Disposition: attachment; filename="cal.ics"');
+    echo $calendarExport->getStream();
   }
 }
