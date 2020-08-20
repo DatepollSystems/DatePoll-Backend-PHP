@@ -66,14 +66,17 @@ class CalendarController extends Controller
 
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
-    $timezone = new DateTimeZone('Europe/Vienna');
-    $calendar->setTimezone($timezone);
+    $timezone = 'Europe/Vienna';
+    $calendar->setTimezone(new DateTimeZone($timezone));
     $calendar->setProdId('-//DatePoll//PersonalCalendar//DE');
 
     $calendar->setCustomHeaders([
-      'X-WR-TIMEZONE' => $timezone, // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
-      'X-WR-CALNAME' => 'Personal calendar', // https://en.wikipedia.org/wiki/ICalendar
-      'X-PUBLISHED-TTL' => 'PT15M' // update calendar every 15 minutes
+      'X-WR-TIMEZONE' => $timezone,
+      // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
+      'X-WR-CALNAME' => 'Personal calendar',
+      // https://en.wikipedia.org/wiki/ICalendar
+      'X-PUBLISHED-TTL' => 'PT15M'
+      // update calendar every 15 minutes
     ]);
 
 
@@ -94,8 +97,6 @@ class CalendarController extends Controller
       }
 
       foreach ($movies as $movie) {
-        $uid = app('hash')->make($movie->name . $movie->created_at);
-
         $geo = new Geo();
         $geo->setLatitude(48.643865);
         $geo->setLongitude(15.814679);
@@ -115,7 +116,7 @@ class CalendarController extends Controller
                    ->setStatus('CONFIRMED')
                    ->setCreated(new DateTime($movie->created_at))
                    ->addLocation($location)
-                   ->setUid($uid);
+                   ->setUid('movie' . $movie->id);
 
         $worker = $movie->worker();
         if ($worker != null) {
@@ -145,8 +146,6 @@ class CalendarController extends Controller
         }
 
         if (!$movieAlreadyInCalendar) {
-          $uid = app('hash')->make($movie->name . $movie->created_at);
-
           $geo = new Geo();
           $geo->setLatitude(48.643865);
           $geo->setLongitude(15.814679);
@@ -165,7 +164,7 @@ class CalendarController extends Controller
                      ->setGeo($geo)
                      ->setStatus('CONFIRMED')
                      ->addLocation($location)
-                     ->setUid($uid);
+                     ->setUid('movie' . $movie->id);
 
           $worker = $movie->worker();
           if ($worker != null) {
@@ -201,7 +200,6 @@ class CalendarController extends Controller
       }
 
       foreach ($events as $event) {
-        $uid = app('hash')->make($event->name . $event->created_at);
         $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
 
         $eventEvent = new CalendarEvent();
@@ -212,7 +210,7 @@ class CalendarController extends Controller
                    ->setStatus('CONFIRMED')
                    ->setCreated(new DateTime($event->created_at))
                    ->setOrganizer($appOrganizer)
-                   ->setUid($uid);
+                   ->setUid('event' . $event->id);
 
         if ($startDate->x != -199 && $startDate->y != -199) {
           $geo = new Geo();
@@ -247,7 +245,6 @@ class CalendarController extends Controller
         if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
           $d = date_parse_from_format("Y-m-d", $user->birthday);
           if ($d["month"] == date('n')) {
-            $uid = app('hash')->make($user->id . $user->created_at);
             $birthdayEvent = new CalendarEvent();
             $birthdayEvent->setStart($this->updateDate($user->birthday))
                           ->setEnd($this->updateDate($user->birthday))
@@ -257,7 +254,7 @@ class CalendarController extends Controller
                           ->setCreated(new DateTime($user->created_at))
                           ->setOrganizer($appOrganizer)
                           ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
-                          ->setUid($uid);
+                          ->setUid('userBirthday' . $user->id);
 
             $calendar->addEvent($birthdayEvent);
           }
@@ -279,7 +276,7 @@ class CalendarController extends Controller
    * @return DateTime
    * @throws Exception
    */
-  private function updateDate($dateString){
+  private function updateDate($dateString) {
     $suppliedDate = new DateTime($dateString);
     $currentYear = (int)(new DateTime())->format('Y');
     return (new DateTime())->setDate($currentYear, (int)$suppliedDate->format('m'), (int)$suppliedDate->format('d'));
@@ -293,14 +290,17 @@ class CalendarController extends Controller
   public function getCompleteCalendar() {
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
-    $timezone = new DateTimeZone('Europe/Vienna');
-    $calendar->setTimezone($timezone);
+    $timezone = 'Europe/Vienna';
+    $calendar->setTimezone(new DateTimeZone($timezone));
     $calendar->setProdId('-//DatePoll//CompleteCalendar//DE');
 
     $calendar->setCustomHeaders([
-      'X-WR-TIMEZONE' => $timezone, // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
-      'X-WR-CALNAME' => 'Calendar Name', // https://en.wikipedia.org/wiki/ICalendar
-      'X-PUBLISHED-TTL' => 'PT15M' // update calendar every 15 minutes
+      'X-WR-TIMEZONE' => $timezone,
+      // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
+      'X-WR-CALNAME' => 'Calendar Name',
+      // https://en.wikipedia.org/wiki/ICalendar
+      'X-PUBLISHED-TTL' => 'PT15M'
+      // update calendar every 15 minutes
     ]);
 
     $appOrganizer = new Organizer(new Formatter());
@@ -310,8 +310,6 @@ class CalendarController extends Controller
 
     if ($this->settingRepository->getCinemaEnabled()) {
       foreach ($this->movieRepository->getAllMoviesOrderedByDate() as $movie) {
-        $uid = app('hash')->make($movie->name . $movie->created_at . $movie->updated_at);
-
         $geo = new Geo();
         $geo->setLatitude(48.643865);
         $geo->setLongitude(15.814679);
@@ -332,7 +330,7 @@ class CalendarController extends Controller
                    ->setCreated(new DateTime($movie->created_at))
                    ->addLocation($location)
                    ->setOrganizer($appOrganizer)
-                   ->setUid($uid);
+                   ->setUid('allMovie' . $movie->id);
 
         $calendar->addEvent($movieEvent);
       }
@@ -340,7 +338,6 @@ class CalendarController extends Controller
 
     if ($this->settingRepository->getEventsEnabled()) {
       foreach ($this->eventRepository->getAllEventsOrderedByDate() as $event) {
-        $uid = app('hash')->make($event->name . $event->created_at . $event->updated_at);
         $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
 
         $geo = new Geo();
@@ -360,7 +357,7 @@ class CalendarController extends Controller
                    ->setStatus('CONFIRMED')
                    ->setCreated(new DateTime($event->created_at))
                    ->setOrganizer($appOrganizer)
-                   ->setUid($uid);
+                   ->setUid('allEvent' . $event->id);
 
         if ($startDate->x != -199 && $startDate->y != -199) {
           $geo = new Geo();
