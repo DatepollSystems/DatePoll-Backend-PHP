@@ -84,8 +84,8 @@ class UserRepository implements IUserRepository
    * @param string[] $emailAddresses
    * @param string|null $memberNumber
    * @param string|null $internalComment
-   * @param bool $informationDenied
-   * @param string $bvMember
+   * @param bool|null $informationDenied
+   * @param string|null $bvMember
    * @param User|null $user
    * @return User|null
    * @throws Exception
