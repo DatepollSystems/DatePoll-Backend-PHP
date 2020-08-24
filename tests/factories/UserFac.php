@@ -4,12 +4,14 @@ namespace Tests\Factories;
 
 use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
+use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
+use Firebase\JWT\JWT;
 
 class UserFactory
 {
 
-  public static function createUser($username) {
+  public static function createUser($username, $administrator = true) {
     $user = new User([
       'title' => 'Dr.',
       'username' => $username,
@@ -23,6 +25,7 @@ class UserFactory
       'location' => 'Zauberstadt',
       'activated' => 1,
       'activity' => 'active',
+      'bv_member' => 'not',
       'password' => 'Null']);
     $user->save();
 
@@ -42,20 +45,29 @@ class UserFactory
       $emailAddressToSave->save();
     }
 
+    if ($administrator) {
+      $permission = new UserPermission(['user_id' => $user->id, 'permission' => 'root.administration']);
+      $permission->save();
+    }
+
     return $user;
   }
 
-  public static function findUserByUsername($username) {
-    return User::where('username', '=', $username)
-               ->first();
-  }
+  /**
+   * Create a new token.
+   *
+   * @param int $userID
+   * @return string
+   */
+  public static function getJWTTokenForUserId($userID) {
+    $payload = ['iss' => "lumen-jwt",// Issuer of the token
+                'sub' => $userID,// Subject of the token
+                'iat' => time(),// Time when JWT was issued.
+                'exp' => time() + 60 * 60// Expiration time
+    ];
 
-  public static function findAndDeleteUser($username) {
-    $user = User::where('username', '=', $username)
-                ->first();
-    if ($user != null) {
-      $user->delete();
-    }
+    // As you can see we are passing `JWT_SECRET` as the second parameter that will
+    // be used to decode the token in the future.
+    return JWT::encode($payload, env('JWT_SECRET'));
   }
-
 }
