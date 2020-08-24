@@ -27,29 +27,29 @@ $router->group(['prefix' => 'api'], function () use ($router) {
   $router->get('/', ['uses' => 'DatePollServerController@getServerInfo']);
 
   /** Auth routes */
-  require_once(__DIR__ . '/AuthRoutes.php');
+  require(__DIR__ . '/AuthRoutes.php');
 
   $router->group([
     'prefix' => 'v1',
     'middleware' => 'jwt.auth'], function () use ($router) {
 
     /** System */
-    require_once(__DIR__ . '/SystemRoutes.php');
+    require(__DIR__ . '/SystemRoutes.php');
 
     /** User routes */
-    require_once(__DIR__ . '/UserRoutes.php');
+    require(__DIR__ . '/UserRoutes.php');
 
     /** Management routes */
-    require_once(__DIR__ . '/ManagementRoutes.php');
+    require(__DIR__ . '/ManagementRoutes.php');
 
     /** Cinema routes */
-    require_once(__DIR__ . '/CinemaRoutes.php');
+    require(__DIR__ . '/CinemaRoutes.php');
 
     /** Events */
-    require_once(__DIR__ . '/EventRoutes.php');
+    require(__DIR__ . '/EventRoutes.php');
 
     /** Broadcasts */
-    require_once(__DIR__ . '/BroadcastRoutes.php');
+    require(__DIR__ . '/BroadcastRoutes.php');
   });
 
   /** Calendar route (deprecated)

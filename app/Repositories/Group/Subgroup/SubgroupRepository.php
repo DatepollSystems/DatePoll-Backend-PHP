@@ -113,9 +113,9 @@ class SubgroupRepository implements ISubgroupRepository
     $userMemberOfSubgroups = array();
     $userMemberOfSubgroupsS = UsersMemberOfSubgroups::where('user_id', $userId)
                                                     ->get();
-    foreach ($userMemberOfSubgroupsS as $userMemberOfSubgroupS) {
-      if ($userMemberOfSubgroupS->subgroup()->group_id = $groupId) {
-        $userMemberOfSubgroups[] = $userMemberOfSubgroupS;
+    foreach ($userMemberOfSubgroupsS as $userMemberOfSubgroupI) {
+      if ($userMemberOfSubgroupI->subgroup()->group_id = $groupId) {
+        $userMemberOfSubgroups[] = $userMemberOfSubgroupI;
       }
     }
     return $userMemberOfSubgroups;

@@ -1,10 +1,13 @@
 <?php
-/** @noinspection ALL */
+/** @noinspection PhpUndefinedVariableInspection */
+
 /** @noinspection PhpUndefinedMethodInspection */
 
 use App\Http\Middleware\ManagementPermissionMiddleware;
 
-$router->group(['prefix' => 'management', 'middleware' => [ManagementPermissionMiddleware::class]], function () use ($router) {
+$router->group([
+  'prefix' => 'management',
+  'middleware' => [ManagementPermissionMiddleware::class]], function () use ($router) {
   /** Users routes */
   $router->get('users', ['uses' => 'ManagementControllers\UsersController@getAll']);
   $router->post('users', ['uses' => 'ManagementControllers\UsersController@create']);

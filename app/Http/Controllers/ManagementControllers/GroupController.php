@@ -72,6 +72,7 @@ class GroupController extends Controller
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
+    $group = $this->groupRepository->getGroupStatisticsByGroup($group);
     $group->subgroups = $group->getSubgroupsOrdered();
     $group->users = $group->getUsersWithRolesOrderedBySurname();
 
@@ -201,7 +202,7 @@ class GroupController extends Controller
     }
 
     /* Remove user from child subgroups */
-    $userMemberOfSubgroupsToRemove = $this->subgroupRepository->getUserMemberOfSubgroupsAndInGroups($groupID, $userID);
+    $userMemberOfSubgroupsToRemove = $this->subgroupRepository->getUserMemberOfSubgroupsAndInGroups($userID, $groupID);
 
     foreach ($userMemberOfSubgroupsToRemove as $userMemberOfSubgroupToRemove) {
       if (!$this->subgroupRepository->removeSubgroupForUser($userMemberOfSubgroupToRemove)) {

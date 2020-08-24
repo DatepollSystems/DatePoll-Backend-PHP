@@ -14,8 +14,11 @@ use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use DateInterval;
+use DateTime;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Queue;
 use stdClass;
 
 class BroadcastRepository implements IBroadcastRepository
@@ -229,6 +232,8 @@ class BroadcastRepository implements IBroadcastRepository
       $writerEmailAddress = $writer->getEmailAddresses()[0];
     }
 
+
+    $time = new DateTime();
     foreach ($users as $user) {
       if ($user->hasEmailAddresses() && $user->activated && !$user->information_denied) {
         $broadcastUserInfo = new BroadcastUserInfo([
@@ -241,11 +246,13 @@ class BroadcastRepository implements IBroadcastRepository
           return null;
         }
 
+        $time->add(new DateInterval('PT' . 1 . 'M'));
         $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname, $writerEmailAddress, $this->settingRepository);
         $sendEmailJob = new SendEmailJob($broadcastMail, $user->getEmailAddresses());
         $sendEmailJob->broadcastId = $broadcast->id;
         $sendEmailJob->userId = $user->id;
-        dispatch($sendEmailJob)->onQueue('default');
+
+        Queue::later($time, $sendEmailJob, null, "default");
       }
     }
 

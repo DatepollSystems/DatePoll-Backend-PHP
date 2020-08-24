@@ -9,6 +9,10 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use DateInterval;
+use DateTime;
+use Exception;
+use Illuminate\Support\Facades\Queue;
 
 /**
  * Class SendEmailJob
@@ -50,8 +54,10 @@ class CreateNewEventEmailsJob extends Job
    * Execute the job.
    *
    * @return void
+   * @throws Exception
    */
   public function handle() {
+    $time = new DateTime();
     foreach ($this->eventRepository->getPotentialVotersForEvent($this->event) as $eventUser) {
       // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
       // a circular dependency and RAM will explode
@@ -59,7 +65,8 @@ class CreateNewEventEmailsJob extends Job
       $user = User::find($eventUser->id);
 
       if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && !$user->information_denied && $user->activated) {
-        dispatch(new SendEmailJob(new NewEvent($user->firstname, $this->event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()))->onQueue('default');
+        $time->add(new DateInterval('PT' . 1 . 'M'));
+        Queue::later($time, new SendEmailJob(new NewEvent($user->firstname, $this->event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()), null, "default");
       }
     }
   }

@@ -16,4 +16,11 @@ There are 2 different types:
 1. Latest release version: [master](https://gitlab.com/DatePoll/datepoll-backend-php/-/tree/master)
 1. Latest dev version: [dev](https://gitlab.com/DatePoll/datepoll-backend-php/-/tree/development)
 ## Installation
-Please head to [this page](https://docs.datepoll.org/installation/) to get the latest install instructions! Deployment and development are managed over Docker
+Please head to [this page](https://docs.datepoll.org/installation/) to get the latest install instructions! Deployment and development are managed over Docker.
+
+## DatePoll Dockerized commands cheat sheet
+### Accessing composer in docker container
+`docker-compose exec datepoll-php php /usr/local/bin/composer`
+
+### Accessing artisan in docker container
+`docker-compose exec datepoll-php php artisan`

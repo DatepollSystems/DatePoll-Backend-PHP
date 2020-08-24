@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Repositories\Group\Group;
-
 
 use App\Logging;
 use App\Models\Groups\Group;
@@ -10,6 +8,8 @@ use App\Models\Groups\UsersMemberOfGroups;
 use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class GroupRepository implements IGroupRepository
 {
@@ -155,5 +155,60 @@ class GroupRepository implements IGroupRepository
       }
     }
     return $groupsToReturn;
+  }
+
+  /**
+   * @param Group $group
+   * @return Group
+   */
+  public function getGroupStatisticsByGroup(Group $group) {
+    $usersInGroups = $group->usersMemberOfGroups();
+
+    $joinYears = array();
+
+    $users_only_in_this_group = array();
+    foreach ($usersInGroups as $user) {
+      if (DB::table('users_member_of_groups')
+            ->where('user_id', '=', $user->user_id)
+            ->count() < 2) {
+        $userD = $user->user();
+        $userR = new stdClass();
+        $userR->firstname = $userD->firstname;
+        $userR->surname = $userD->surname;
+        $userR->created_at = $user->created_at;
+
+        $users_only_in_this_group[] = $userR;
+      }
+
+      $joinYear = date_format($user->created_at, 'Y');
+      if (!in_array($joinYear, $joinYears)) {
+        $joinYears[] = $joinYear;
+      }
+    }
+    $group->users_only_in_this_group = $users_only_in_this_group;
+
+    $users_grouped_by_join_year = array();
+    foreach ($joinYears as $joinYear) {
+      $year = new stdClass();
+      $year->year = $joinYear;
+      $userToAdd = array();
+      foreach ($usersInGroups as $user) {
+        $userJoinYear = date_format($user->created_at, 'Y');
+        if (str_contains($joinYear, $userJoinYear)) {
+          $userD = $user->user();
+          $userR = new stdClass();
+          $userR->firstname = $userD->firstname;
+          $userR->surname = $userD->surname;
+          $userR->created_at = $user->created_at;
+
+          $userToAdd[] = $userR;
+        }
+      }
+      $year->users = $userToAdd;
+      $users_grouped_by_join_year[] = $year;
+    }
+    $group->users_grouped_by_join_year = $users_grouped_by_join_year;
+
+    return $group;
   }
 }
