@@ -65,10 +65,6 @@ class EventController extends Controller
         $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
         $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
 
-    $toReturnEvent->view_events = [
-      'href' => 'api/v1/avent/administration/avent',
-      'method' => 'GET'];
-
     return response()->json([
       'msg' => 'Event information',
       'event' => $toReturnEvent]);
