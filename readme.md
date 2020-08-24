@@ -23,4 +23,4 @@ Please head to [this page](https://docs.datepoll.org/installation/) to get the l
 `docker-compose exec datepoll-php php /usr/local/bin/composer`
 
 ### Accessing artisan in docker container
-`docker-compose exec datepoll-php php artisanW`
+`docker-compose exec datepoll-php php artisan`

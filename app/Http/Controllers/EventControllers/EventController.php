@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\EventControllers;
 
-use App\Models\Events\Event;
 use App\Http\Controllers\Controller;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
@@ -31,13 +30,7 @@ class EventController extends Controller
 
     $toReturnEvents = array();
     foreach ($events as $event) {
-      $eventToReturn = $this->eventRepository->getReturnable($event);
-
-      $eventToReturn->view_event = [
-        'href' => 'api/v1/avent/administration/avent/' . $event->id,
-        'method' => 'GET'];
-
-      $toReturnEvents[] = $eventToReturn;
+      $toReturnEvents[] = $this->eventRepository->getReturnable($event);
     }
 
     return response()->json([
