@@ -162,7 +162,7 @@ class User extends Model
    * @return Collection | EventUserVotedForDecision[] | null
    */
   public function votedForDecisions() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
                 ->get();
   }
 

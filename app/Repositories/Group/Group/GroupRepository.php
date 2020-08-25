@@ -42,7 +42,7 @@ class GroupRepository implements IGroupRepository
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return Group|null
    */
   public function getGroupById($id) {
@@ -89,8 +89,8 @@ class GroupRepository implements IGroupRepository
   }
 
   /**
-   * @param $groupId
-   * @param $userId
+   * @param int $groupId
+   * @param int $userId
    * @return UsersMemberOfGroups | null
    */
   public function getUserMemberOfGroupByGroupIdAndUserId($groupId, $userId) {

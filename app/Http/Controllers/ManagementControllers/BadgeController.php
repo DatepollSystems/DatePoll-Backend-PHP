@@ -191,7 +191,6 @@ class BadgeController extends Controller
   }
 
   /**
-   * @param int $id
    * @return JsonResponse
    */
   public function getCurrentYearBadgesForUser(): JsonResponse {

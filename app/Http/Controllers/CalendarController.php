@@ -52,7 +52,6 @@ class CalendarController extends Controller
 
   /**
    * @param string $token
-   * @return string
    * @throws CalendarEventException
    * @throws Exception
    */
@@ -283,7 +282,6 @@ class CalendarController extends Controller
   }
 
   /**
-   * @return string
    * @throws CalendarEventException
    * @throws Exception
    */

@@ -44,8 +44,8 @@ interface IBroadcastRepository
    * @param string $bodyHTML
    * @param string $body
    * @param int $writerId
-   * @param $groups
-   * @param $subgroups
+   * @param int[] $groups
+   * @param int[] $subgroups
    * @param bool $forEveryone
    * @return Broadcast | null
    * @throws Exception

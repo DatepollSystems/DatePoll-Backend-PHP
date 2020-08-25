@@ -35,7 +35,7 @@ class BroadcastController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function getSentReceiptReturnable($id) {

@@ -7,12 +7,13 @@ use App\Logging;
 use App\Models\Subgroups\Subgroup;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
 class SubgroupRepository implements ISubgroupRepository
 {
   /**
-   * @return Subgroup[]
+   * @return Subgroup[] | Collection<Subgroup>
    */
   public function getAllSubgroupsOrdered() {
     return Subgroup::orderBy('orderN')
@@ -32,7 +33,7 @@ class SubgroupRepository implements ISubgroupRepository
    * @param string $description
    * @param int $groupId
    * @param int $orderN
-   * @param Subgroup $subgroup
+   * @param Subgroup|null $subgroup
    * @return Subgroup|null
    */
   public function createOrUpdateSubgroup($name, $description, $groupId, $orderN, $subgroup = null) {
@@ -83,8 +84,8 @@ class SubgroupRepository implements ISubgroupRepository
    * @param int $subgroupId
    * @param int $userId
    * @param string $role
-   * @param UsersMemberOfSubgroups $userMemberOfSubgroup
-   * @return UsersMemberOfSubgroups
+   * @param UsersMemberOfSubgroups|null $userMemberOfSubgroup
+   * @return UsersMemberOfSubgroups|null
    */
   public function createOrUpdateUserMemberOfSubgroup($subgroupId, $userId, $role, $userMemberOfSubgroup = null) {
     if ($userMemberOfSubgroup == null) {
@@ -132,7 +133,7 @@ class SubgroupRepository implements ISubgroupRepository
 
   /**
    * @param int $userId
-   * @return stdClass[]
+   * @return stdClass[]|Subgroup[]
    */
   public function getJoinedSubgroupsReturnableByUserId($userId) {
     $subgroupsToReturn = array();
@@ -152,7 +153,7 @@ class SubgroupRepository implements ISubgroupRepository
 
   /**
    * @param int $userId
-   * @return stdClass[]
+   * @return stdClass[]|Subgroup[]
    */
   public function getFreeSubgroupsReturnableByUserId($userId) {
     $allSubgroups = $this->getAllSubgroupsOrdered();
