@@ -501,7 +501,7 @@ class UserRepository implements IUserRepository
     if ($this->settingRepository->getBroadcastsEnabled()) {
       $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
       foreach ($broadcasts as $broadcast) {
-        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastCutReturnable($broadcast);
+        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
       }
     }
 

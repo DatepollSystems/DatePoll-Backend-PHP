@@ -24,7 +24,7 @@ class BroadcastUserController extends Controller
     $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($request->auth->id);
     $toReturnBroadcasts = array();
     foreach ($broadcasts as $broadcast) {
-      $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastCutReturnable($broadcast);
+      $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
     }
 
     return response()->json([

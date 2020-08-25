@@ -23,12 +23,6 @@ interface IBroadcastRepository
 
   /**
    * @param Broadcast $broadcast
-   * @return Broadcast|stdClass
-   */
-  public function getBroadcastAdminReturnable(Broadcast $broadcast);
-
-  /**
-   * @param Broadcast $broadcast
    * @return stdClass | Broadcast
    */
   public function getBroadcastUserReturnable(Broadcast $broadcast);
@@ -37,7 +31,7 @@ interface IBroadcastRepository
    * @param Broadcast $broadcast
    * @return stdClass | Broadcast
    */
-  public function getBroadcastCutReturnable(Broadcast $broadcast);
+  public function getBroadcastReturnable(Broadcast $broadcast);
 
   /**
    * @param Broadcast $broadcast

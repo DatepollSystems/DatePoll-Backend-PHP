@@ -26,7 +26,7 @@ class BroadcastController extends Controller
     $broadcasts = $this->broadcastRepository->getAllBroadcastsOrderedByDate();
     $toReturnBroadcasts = array();
     foreach ($broadcasts as $broadcast) {
-      $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastAdminReturnable($broadcast);
+      $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
     }
 
     return response()->json([

@@ -50,10 +50,30 @@ class BroadcastRepository implements IBroadcastRepository
 
   /**
    * @param Broadcast $broadcast
-   * @return Broadcast|stdClass
+   * @return stdClass | Broadcast
    */
-  public function getBroadcastAdminReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = $this->getBroadcastCutReturnable($broadcast);
+  public function getBroadcastUserReturnable(Broadcast $broadcast) {
+    $toReturnBroadcast = $this->getBroadcastReturnable($broadcast);
+    $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
+
+    return $toReturnBroadcast;
+  }
+
+  /**
+   * @param Broadcast $broadcast
+   * @return stdClass | Broadcast
+   */
+  public function getBroadcastReturnable(Broadcast $broadcast) {
+    $toReturnBroadcast = new stdClass();
+    $toReturnBroadcast->id = $broadcast->id;
+    $toReturnBroadcast->subject = $broadcast->subject;
+    $toReturnBroadcast->body = $broadcast->body;
+    $toReturnBroadcast->writer_name = $broadcast->writer()->firstname . ' ' . $broadcast->writer()->surname;
+    $toReturnBroadcast->writer_user_id = $broadcast->writer_user_id;
+    $toReturnBroadcast->for_everyone = $broadcast->forEveryone;
+    $toReturnBroadcast->created_at = $broadcast->created_at;
+    $toReturnBroadcast->updated_at = $broadcast->updated_at;
+
     $toReturnGroups = array();
     $groups = $broadcast->broadcastsForGroups();
     foreach ($groups as $group) {
@@ -83,39 +103,10 @@ class BroadcastRepository implements IBroadcastRepository
 
   /**
    * @param Broadcast $broadcast
-   * @return stdClass | Broadcast
-   */
-  public function getBroadcastUserReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = $this->getBroadcastCutReturnable($broadcast);
-    $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
-
-    return $toReturnBroadcast;
-  }
-
-  /**
-   * @param Broadcast $broadcast
-   * @return stdClass | Broadcast
-   */
-  public function getBroadcastCutReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = new stdClass();
-    $toReturnBroadcast->id = $broadcast->id;
-    $toReturnBroadcast->subject = $broadcast->subject;
-    $toReturnBroadcast->body = $broadcast->body;
-    $toReturnBroadcast->writer_name = $broadcast->writer()->firstname . ' ' . $broadcast->writer()->surname;
-    $toReturnBroadcast->writer_user_id = $broadcast->writer_user_id;
-    $toReturnBroadcast->for_everyone = $broadcast->forEveryone;
-    $toReturnBroadcast->created_at = $broadcast->created_at;
-    $toReturnBroadcast->updated_at = $broadcast->updated_at;
-
-    return $toReturnBroadcast;
-  }
-
-  /**
-   * @param Broadcast $broadcast
    * @return Broadcast|stdClass
    */
   public function getBroadcastSentReceiptReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = $this->getBroadcastAdminReturnable($broadcast);
+    $toReturnBroadcast = $this->getBroadcastReturnable($broadcast);
 
     $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
 
