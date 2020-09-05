@@ -51,7 +51,8 @@ class AddAdminUser extends Command
       'streetnumber' => '6-7',
       'zipcode' => '3500',
       'location' => 'Krems an der Donau',
-      'activity' => 'active'
+      'activity' => 'active',
+      'bv_member' => 'bv_member'
     ]);
     if($user->save()) {
       $this->comment(PHP_EOL."Add Admin User | Created".PHP_EOL);
