@@ -2,6 +2,7 @@
 
 namespace App\Repositories\User\User;
 
+use App\Models\User\DeletedUser;
 use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,6 +14,11 @@ interface IUserRepository
    * @return User[]|Collection
    */
   public function getAllUsers();
+
+  /**
+   * @return DeletedUser[]|Collection
+   */
+  public function getDeletedUsers();
 
   /**
    * @return User[]|Collection
@@ -83,6 +89,8 @@ interface IUserRepository
    * @return bool|null
    */
   public function deleteUser(User $user);
+
+  public function deleteAllDeletedUsers();
 
   /**
    * @return array

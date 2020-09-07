@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Models\User\UserPermission;
 use App\Permissions;
 use App\Repositories\User\User\IUserRepository;
@@ -43,6 +44,19 @@ class UsersController extends Controller
     $response = [
       'msg' => 'List of all users',
       'users' => $toReturnUsers];
+
+    return response()->json($response);
+  }
+
+  /**
+   * Display a listing of the resource.
+   *
+   * @return JsonResponse
+   */
+  public function getDeletedUsers() {
+    $response = [
+      'msg' => 'List of deleted users',
+      'users' => $this->userRepository->getDeletedUsers()];
 
     return response()->json($response);
   }
@@ -108,8 +122,7 @@ class UsersController extends Controller
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
-
+    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_PERMISSIONS)) {
       if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
         return response()->json(['msg' => 'Failed during permission clearing...'], 500);
       }
@@ -230,7 +243,7 @@ class UsersController extends Controller
 
     //---------------------------------------------------------------
     //---- Permissions manager only deletes changed permissions -----
-    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
+    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_PERMISSIONS)) {
 
       if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
         return response()->json(['msg' => 'Failed during permission clearing...'], 500);
@@ -287,6 +300,15 @@ class UsersController extends Controller
    * @return JsonResponse
    */
   public function delete(Request $request, $id) {
+    if (!($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
+      return response()->json([
+        'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
+        'needed_permissions' => [
+          Permissions::$ROOT_ADMINISTRATION,
+          Permissions::$MANAGEMENT_EXTRA_USER_DELETE]], 403);
+    }
+
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
@@ -300,14 +322,25 @@ class UsersController extends Controller
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
-    $response = [
-      'msg' => 'User deleted',
-      'create' => [
-        'href' => 'api/v1/management/users',
-        'method' => 'POST',
-        'params' => 'title, email, firstname, surname, birthday, join_date, streetname, streetnumber, zipcode, location, activated, activity, phoneNumbers']];
+    return response()->json(['msg' => 'User deleted'], 200);
+  }
 
-    return response()->json($response);
+  public function deleteAllDeletedUsers(Request $request) {
+    if (!($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
+      return response()->json([
+        'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
+        'needed_permissions' => [
+          Permissions::$ROOT_ADMINISTRATION,
+          Permissions::$MANAGEMENT_EXTRA_USER_DELETE]], 403);
+    }
+
+
+    Logging::info('deleteDeletedUsers', 'Deleting all deleted users... User id - ' . $request->auth->id);
+    $this->userRepository->deleteAllDeletedUsers();
+    Logging::info('deleteDeletedUsers', 'Deleted all deleted users! User id - ' . $request->auth->id);
+
+    return response()->json(['msg' => 'Deleted users successfully deleted'], 200);
   }
 
   /**
