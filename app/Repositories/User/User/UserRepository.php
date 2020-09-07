@@ -5,7 +5,7 @@ namespace App\Repositories\User\User;
 use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
-use App\Models\Broadcasts\Broadcast;
+use App\Models\User\DeletedUser;
 use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
@@ -17,6 +17,7 @@ use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
 
@@ -40,6 +41,13 @@ class UserRepository implements IUserRepository
    */
   public function getAllUsers() {
     return User::all();
+  }
+
+  /**
+   * @return DeletedUser[]|Collection
+   */
+  public function getDeletedUsers() {
+    return DeletedUser::all();
   }
 
   /**
@@ -335,12 +343,28 @@ class UserRepository implements IUserRepository
    * @return bool|null
    */
   public function deleteUser(User $user) {
-    try {
-      return $user->delete();
-    } catch (Exception $e) {
-      Logging::error('deleteUser', 'Exception: ' . $e->getMessage());
+    $deletedUser = new DeletedUser([
+      'firstname' => $user->firstname,
+      'surname' => $user->surname,
+      'join_date' => $user->join_date,
+      'internal_comment' => $user->internal_comment]);
+
+    if ($deletedUser->save()) {
+      try {
+        return $user->delete();
+      } catch (Exception $e) {
+        Logging::error('deleteUser', 'Exception: ' . $e->getMessage());
+        return false;
+      }
+    } else {
+      Logging::error('deleteUser', 'Could not create deleted user - : ' . $user->id);
       return false;
     }
+  }
+
+  public function deleteAllDeletedUsers() {
+    DB::table('users_deleted')
+      ->delete();
   }
 
   /**
