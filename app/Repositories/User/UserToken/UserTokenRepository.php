@@ -34,10 +34,14 @@ class UserTokenRepository implements IUserTokenRepository
     return null;
   }
 
-  public function generateUniqueRandomToken(int $length) {
+  public function generateUniqueRandomToken(int $length, bool $includeNumbers = true) {
     $randomToken = '';
     while (true) {
-      $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      if ($includeNumbers) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      } else {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      }
       $charactersLength = strlen($characters);
       $randomToken = '';
       for ($i = 0; $i < $length; $i++) {

@@ -28,7 +28,7 @@ class UserTokenController extends Controller
 
     $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
     if ($tokenObject == null) {
-      $randomToken = $this->userTokenRepository->generateUniqueRandomToken(10);
+      $randomToken = $this->userTokenRepository->generateUniqueRandomToken(10, false);
 
       $tokenObject = $this->userTokenRepository->createUserToken($user, $randomToken, 'calendar');
       if ($tokenObject == null) {
