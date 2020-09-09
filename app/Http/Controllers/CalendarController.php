@@ -15,6 +15,7 @@ use App\Repositories\User\UserToken\IUserTokenRepository;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Jsvrcek\ICS\CalendarExport;
 use Jsvrcek\ICS\CalendarStream;
@@ -52,13 +53,14 @@ class CalendarController extends Controller
 
   /**
    * @param string $token
-   * @throws CalendarEventException
+   * @return JsonResponse|void
    * @throws Exception
+   * @throws CalendarEventException
    */
   public function getCalendarOf($token) {
     $tokenObject = $this->userTokenRepository->getUserTokenByTokenAndPurpose($token, 'calendar');
     if ($tokenObject == null) {
-      return response()->json(['msg' => 'Provided token is incorrect'], 401);
+      return response()->json(['msg' => 'Provided token is incorrect', 'error_code' => 'token_incorrect'], 401);
     }
 
     $user = $tokenObject->user();
@@ -72,7 +74,7 @@ class CalendarController extends Controller
     $calendar->setCustomHeaders([
       'X-WR-TIMEZONE' => $timezone,
       // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
-      'X-WR-CALNAME' => 'Personal calendar',
+      'X-WR-CALNAME' => 'Personal DatePoll calendar',
       // https://en.wikipedia.org/wiki/ICalendar
       'X-PUBLISHED-TTL' => 'PT15M'
       // update calendar every 15 minutes
@@ -266,7 +268,7 @@ class CalendarController extends Controller
     Logging::info("getCalendarOf", "User | " . $user->id . " | ICS personal calendar request");
 
     header('Content-type: text/calendar; charset=utf-8');
-    header('Content-Disposition: attachment; filename="cal.ics"');
+    header('Content-Disposition: attachment; filename="'. $token . '.ics"');
     echo $calendarExport->getStream();
   }
 
@@ -295,7 +297,7 @@ class CalendarController extends Controller
     $calendar->setCustomHeaders([
       'X-WR-TIMEZONE' => $timezone,
       // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
-      'X-WR-CALNAME' => 'Calendar Name',
+      'X-WR-CALNAME' => 'Complete DatePoll calendar',
       // https://en.wikipedia.org/wiki/ICalendar
       'X-PUBLISHED-TTL' => 'PT15M'
       // update calendar every 15 minutes
@@ -388,7 +390,7 @@ class CalendarController extends Controller
 
     Logging::info("getCompleteCalendar", "ICS complete calendar request");
     header('Content-type: text/calendar; charset=utf-8');
-    header('Content-Disposition: attachment; filename="cal.ics"');
+    header('Content-Disposition: attachment; filename="calendar.ics"');
     echo $calendarExport->getStream();
   }
 }
