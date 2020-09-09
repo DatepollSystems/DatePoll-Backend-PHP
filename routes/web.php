@@ -13,8 +13,8 @@ $router->get('/', function () use ($router) {
 });
 
 /** Calendar route */
-$router->get('calendar.ics', ['uses' => 'CalendarController@getCompleteCalendar']);
-$router->get('calendar/{token}.ics', ['uses' => 'CalendarController@getCalendarOf']);
+$router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);
+$router->get('calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 
 /** Log viewer */
 $router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer', 'middleware' => ['jwt.auth', LogsPermissionMiddleware::class]], function() use ($router) {
