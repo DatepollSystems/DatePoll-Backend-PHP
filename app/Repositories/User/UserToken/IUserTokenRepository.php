@@ -27,9 +27,10 @@ interface IUserTokenRepository
 
   /**
    * @param int $length
+   * @param bool $includeNumbers
    * @return string
    */
-  public function generateUniqueRandomToken(int $length);
+  public function generateUniqueRandomToken(int $length, bool $includeNumbers = true);
 
   /**
    * @param int $id
