@@ -54,6 +54,12 @@ interface IBroadcastRepository
 
   /**
    * @param Broadcast $broadcast
+   * @throws Exception
+   */
+  public function reQueueNotSentBroadcastsForBroadcast(Broadcast $broadcast);
+
+  /**
+   * @param Broadcast $broadcast
    * @return bool|null
    * @throws Exception
    */

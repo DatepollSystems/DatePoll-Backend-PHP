@@ -167,7 +167,8 @@ class BroadcastRepository implements IBroadcastRepository
         $group = $this->groupRepository->getGroupById($groupId);
 
         if ($group == null) {
-          Logging::error('createBroadcast', 'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
+          Logging::error('createBroadcast',
+            'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
           $broadcast->delete();
           return null;
         }
@@ -192,7 +193,8 @@ class BroadcastRepository implements IBroadcastRepository
         $subgroup = Subgroup::find($subgroupId);
 
         if ($subgroup == null) {
-          Logging::error('createBroadcast', 'Broadcast failed to create! Unknown subgroup_id - ' . $subgroupId . ' User id - ' . $writerId);
+          Logging::error('createBroadcast',
+            'Broadcast failed to create! Unknown subgroup_id - ' . $subgroupId . ' User id - ' . $writerId);
           $broadcast->delete();
           return null;
         }
@@ -238,7 +240,8 @@ class BroadcastRepository implements IBroadcastRepository
         }
 
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname, $writerEmailAddress, $this->settingRepository);
+        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname,
+          $writerEmailAddress, $this->settingRepository);
         $sendEmailJob = new SendEmailJob($broadcastMail, $user->getEmailAddresses());
         $sendEmailJob->broadcastId = $broadcast->id;
         $sendEmailJob->userId = $user->id;
@@ -248,6 +251,36 @@ class BroadcastRepository implements IBroadcastRepository
     }
 
     return $broadcast;
+  }
+
+
+  /**
+   * @param Broadcast $broadcast
+   * @throws Exception
+   */
+  public function reQueueNotSentBroadcastsForBroadcast(Broadcast $broadcast) {
+    $broadcastUserInfos = BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)
+                                           ->where('sent', '=', false)
+                                           ->get();
+
+    $time = new DateTime();
+
+    $writerEmailAddress = null;
+    if ($broadcast->writer()->hasEmailAddresses()) {
+      $writerEmailAddress = $broadcast->writer()->getEmailAddresses()[0];
+    }
+    $writerName = $broadcast->writer()->firstname . " " . $broadcast->writer()->surname;
+
+    foreach ($broadcastUserInfos as $broadcastUserInfo) {
+      $time->add(new DateInterval('PT' . 1 . 'M'));
+      $broadcastMail = new BroadcastMail($broadcast->subject, $broadcast->body, $broadcast->bodyHTML,
+        $writerName, $writerEmailAddress, $this->settingRepository);
+      $sendEmailJob = new SendEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses());
+      $sendEmailJob->broadcastId = $broadcast->id;
+      $sendEmailJob->userId = $broadcastUserInfo->user()->id;
+
+      Queue::later($time, $sendEmailJob, null, "default");
+    }
   }
 
 
@@ -292,9 +325,9 @@ class BroadcastRepository implements IBroadcastRepository
    */
   public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId) {
     $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $userId)
-                                           ->where('broadcast_id', '=', $broadcastId)
-                                           ->orderBy('created_at', 'DESC')
-                                           ->first();
+                                          ->where('broadcast_id', '=', $broadcastId)
+                                          ->orderBy('created_at', 'DESC')
+                                          ->first();
     return $broadcastUserInfo != null;
   }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\ReQueueNotSentBroadcasts;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 use Laravelista\LumenVendorPublish\VendorPublishCommand;
@@ -18,6 +19,7 @@ class Kernel extends ConsoleKernel
     'App\Console\Commands\DropTables',
     'App\Console\Commands\SetupDatePoll',
     'App\Console\Commands\UpdateDatePollDB',
+    ReQueueNotSentBroadcasts::class,
     VendorPublishCommand::class
   ];
 
