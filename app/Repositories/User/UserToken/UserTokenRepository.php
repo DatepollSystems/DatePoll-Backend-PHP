@@ -81,7 +81,7 @@ class UserTokenRepository implements IUserTokenRepository
   public function getUserTokensByUserAndPurposeOrderedByDate(User $user, string $purpose) {
     return UserToken::where('user_id', $user->id)
                     ->where('purpose', $purpose)
-                    ->orderBy('updated_at')
+                    ->orderBy('updated_at', 'ASC')
                     ->get();
   }
 }
