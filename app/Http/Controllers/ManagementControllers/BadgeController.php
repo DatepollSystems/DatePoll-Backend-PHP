@@ -7,6 +7,7 @@ use App\Logging;
 use App\Models\PerformanceBadge\Badge;
 use App\Models\PerformanceBadge\UserHasBadge;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -16,9 +17,11 @@ class BadgeController extends Controller
 {
 
   protected $userRepository = null;
+  protected $userChangeRepository = null;
 
-  public function __construct(IUserRepository $userRepository) {
+  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -119,6 +122,9 @@ class BadgeController extends Controller
       return response()->json(['msg' => 'An error occurred during user badge saving..'], 500);
     }
 
+    $this->userChangeRepository->createUserChange('Badge', $userId, $request->auth->id,
+      'Description: ' . $description . '; Date: ' . $getDate . '; Reason: ' . $reason, null);
+
     Logging::info('createUserBadge', 'UserBadge created id -' . $userHasBadge->id . ' User id - ' . $request->auth->id);
     return response()->json([
       'msg' => 'UserBadge successful created',
@@ -135,6 +141,9 @@ class BadgeController extends Controller
     if ($badge == null) {
       return response()->json(['msg' => 'UserBadge not found'], 404);
     }
+
+    $this->userChangeRepository->createUserChange('Badge', $badge->user_id, $request->auth->id, null,
+      'Description: ' . $badge->description . '; Date: ' . $badge->getDate . '; Reason: ' . $badge->reason);
 
     if (!$badge->delete()) {
       Logging::error('deleteUserBadge', 'Could not delete user badge! User id - ' . $request->auth->id);
@@ -209,7 +218,9 @@ class BadgeController extends Controller
         $dateWithAfterBadgeYears = strtotime('+' . $badge->afterYears . ' years', $joinDate);
 
         if (date('Y') == date('Y', $dateWithAfterBadgeYears)) {
-          if (UserHasBadge::where('user_id', '=', $user->id)->where('description', '=', $badge->description)->first() == null) {
+          if (UserHasBadge::where('user_id', '=', $user->id)
+                          ->where('description', '=', $badge->description)
+                          ->first() == null) {
             $badges[] = $badge;
           }
         }
@@ -221,6 +232,8 @@ class BadgeController extends Controller
       }
     }
 
-    return response()->json(['msg' => 'Current year badges', 'users' => $currentYearBadgesForUser]);
+    return response()->json([
+      'msg' => 'Current year badges',
+      'users' => $currentYearBadgesForUser]);
   }
 }

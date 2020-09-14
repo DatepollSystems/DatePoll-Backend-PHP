@@ -4,12 +4,19 @@ namespace App\Http\Controllers\UserControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User\UserTelephoneNumber;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserChangePhoneNumberController extends Controller
 {
+
+  protected $userChangeRepository = null;
+
+  public function __construct(IUserChangeRepository $userChangeRepository) {
+    $this->userChangeRepository = $userChangeRepository;
+  }
 
   /**
    * @param Request $request
@@ -23,13 +30,14 @@ class UserChangePhoneNumberController extends Controller
 
     $phoneNumber = new UserTelephoneNumber(['label' => $request->input('label'), 'number' => $request->input('number'), 'user_id' => $user->id]);
 
-    if ($phoneNumber->save()) {
-      return response()->json([
-        'msg' => 'Added phone number',
-        'phone_number' => $phoneNumber], 200);
+    if (!$phoneNumber->save()) {
+      return response()->json(['msg' => 'An error occurred'], 500);
     }
 
-    return response()->json(['msg' => 'An error occurred'], 500);
+    $this->userChangeRepository->createUserChange('phone number', $user->id, $user->id, $request->input('number'), null);
+    return response()->json([
+      'msg' => 'Added phone number',
+      'phone_number' => $phoneNumber], 200);
   }
 
   /**
@@ -49,6 +57,7 @@ class UserChangePhoneNumberController extends Controller
         'error_code' => 'phone_number_does_not_belong_to_you'], 400);
     }
 
+    $this->userChangeRepository->createUserChange('phone number', $request->auth->id,  $request->auth->id, null, $phoneNumber->number);
     if (!$phoneNumber->delete()) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
