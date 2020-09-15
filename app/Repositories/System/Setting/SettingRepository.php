@@ -20,6 +20,7 @@ abstract class SettingKey
   const COMMUNITY_DESCRIPTION = "community_description";
   const COMMUNITY_IMPRINT = "community_imprint";
   const COMMUNITY_PRIVACY_POLICY = 'community_privacy_policy';
+  const COMMUNITY_HAPPY_ALERT = 'community_happy_alert';
 
   const OPENWEATHERMAP_KEY = "openweathermap_key";
 
@@ -195,6 +196,21 @@ class SettingRepository implements ISettingRepository
    */
   public function setCinemaOpenWeatherMapCityId(string $openWeatherMapCityId): string {
     return $this->setStringValueByKey(SettingKey::CINEMA_OPENWEATHERMAP_CITY_ID, $openWeatherMapCityId);
+  }
+
+  /**
+   * @return string
+   */
+  public function getHappyAlert(): string {
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_HAPPY_ALERT, '');
+  }
+
+  /**
+   * @param string $happyAlert
+   * @return string
+   */
+  public function setHappyAlert(string $happyAlert): string {
+    return $this->setStringValueByKey(SettingKey::COMMUNITY_HAPPY_ALERT, $happyAlert);
   }
 
   /**
