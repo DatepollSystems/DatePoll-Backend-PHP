@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller
 {
-  protected ISettingRepository $settingRepository;
+  protected $settingRepository = null;
 
   public function __construct(ISettingRepository $settingRepository) {
     $this->settingRepository = $settingRepository;

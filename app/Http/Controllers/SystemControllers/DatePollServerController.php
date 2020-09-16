@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 class DatePollServerController extends Controller
 {
 
-  protected IDatePollServerRepository $datePollServerRepository;
+  protected $datePollServerRepository = null;
 
   public function __construct(IDatePollServerRepository $datePollServerRepository) {
     $this->datePollServerRepository = $datePollServerRepository;
