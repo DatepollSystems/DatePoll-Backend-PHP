@@ -43,27 +43,12 @@ $app->withEloquent();
 |
 */
 
-$app->singleton(
-  Illuminate\Contracts\Debug\ExceptionHandler::class,
-  App\Exceptions\Handler::class
-);
+$app->singleton(Illuminate\Contracts\Debug\ExceptionHandler::class, App\Exceptions\Handler::class);
 
-$app->singleton(
-  Illuminate\Contracts\Console\Kernel::class,
-  App\Console\Kernel::class
-);
+$app->singleton(Illuminate\Contracts\Console\Kernel::class, App\Console\Kernel::class);
 
-/** Cors fix */
-$app->register(Fruitcake\Cors\CorsServiceProvider::class);
-$app->configure('cors');
-$app->middleware([
-  Fruitcake\Cors\HandleCors::class,
-]);
-
-/** Enable JWT-Auth */
-$app->routeMiddleware([
-  'jwt.auth' => App\Http\Middleware\JwtMiddleware::class
-]);
+/** Register JWT-Auth middleware */
+$app->routeMiddleware(['jwt.auth' => App\Http\Middleware\JwtMiddleware::class]);
 
 /*
 |--------------------------------------------------------------------------
@@ -76,6 +61,11 @@ $app->routeMiddleware([
 |
 */
 $app->register(AppServiceProvider::class);
+
+/** Cors fix */
+$app->register(Fruitcake\Cors\CorsServiceProvider::class);
+$app->configure('cors');
+$app->middleware([Fruitcake\Cors\HandleCors::class]);
 
 /** IDE Helper*/
 $app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
