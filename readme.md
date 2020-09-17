@@ -1,5 +1,12 @@
 # DatePoll-Backend-PHP
 ## Information
+<h4>
+    Get notified about updates and join us at
+    <a href="https://discord.gg/vBb7D9a">
+        <img src="https://img.shields.io/discord/697139052717146123?logo=discord&style=for-the-badge" alt="chat on Discord">
+    </a>
+</h4>
+
 *  Project website (https://datepoll.org)
 *  API / backend documentation (https://doc.datepoll.org)
 *  Other projects
