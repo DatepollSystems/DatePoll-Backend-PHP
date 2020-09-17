@@ -7,6 +7,7 @@ use App\Logging;
 use App\Models\User\UserPermission;
 use App\Permissions;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,10 +16,12 @@ use Illuminate\Validation\ValidationException;
 class UsersController extends Controller
 {
 
-  protected $userRepository;
+  protected IUserRepository $userRepository;
+  protected IUserChangeRepository $userChangeRepository;
 
-  public function __construct(IUserRepository $userRepository) {
+  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -329,6 +332,10 @@ class UsersController extends Controller
     return response()->json(['msg' => 'User deleted'], 200);
   }
 
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
   public function deleteAllDeletedUsers(Request $request) {
     if (!($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
       return response()->json([
@@ -375,5 +382,19 @@ class UsersController extends Controller
     }
 
     return response()->json(['msg' => 'All users have been activated and will receive a mail'], 200);
+  }
+
+  /**
+   * Returns all changes to users
+   *
+   * @return JsonResponse
+   */
+  public function getAllUserChanges() {
+    $userChanges = array();
+    foreach ($this->userChangeRepository->getAllUserChanges() as $userChange) {
+      $userChanges[] = $userChange->getReturnable();
+    }
+
+    return response()->json(['msg' => 'User changes', 'user_changes' => $userChanges], 200);
   }
 }

@@ -4,6 +4,7 @@ namespace App\Repositories\User\UserChange;
 
 use App\Logging;
 use App\Models\User\UserChange;
+use Illuminate\Database\Eloquent\Collection;
 
 class UserChangeRepository implements IUserChangeRepository
 {
@@ -29,5 +30,12 @@ class UserChangeRepository implements IUserChangeRepository
       Logging::error('createUserChange', 'Could not create user change!');
       return null;
     }
+  }
+
+  /**
+   * @return UserChange[]|Collection
+   */
+  public function getAllUserChanges() {
+    return UserChange::all();
   }
 }

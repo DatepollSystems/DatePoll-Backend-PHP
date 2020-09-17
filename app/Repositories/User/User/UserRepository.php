@@ -252,11 +252,11 @@ class UserRepository implements IUserRepository
    * @param string $property
    * @param int $userId
    * @param int $editorId
-   * @param string $newValue
-   * @param string $oldValue
+   * @param string|null $newValue
+   * @param string|null $oldValue
    */
-  public function checkForPropertyChange(string $property, int $userId, int $editorId, string $newValue,
-                                         string $oldValue) {
+  public function checkForPropertyChange(string $property, int $userId, int $editorId, ?string $newValue,
+                                         ?string $oldValue) {
     if ($newValue != $oldValue) {
       $this->userChangeRepository->createUserChange($property, $userId, $editorId, $newValue, $oldValue);
     }
