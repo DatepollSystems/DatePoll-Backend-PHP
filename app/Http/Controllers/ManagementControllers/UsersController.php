@@ -116,7 +116,9 @@ class UsersController extends Controller
         'error_code' => 'username_already_used'], 400);
     }
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate,
+      $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses,
+      $memberNumber, $internalComment, $informationDenied, $bvMember, $request->auth->id,);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
@@ -235,7 +237,9 @@ class UsersController extends Controller
     $phoneNumbers = (array)$request->input('phone_numbers');
     $permissions = (array)$request->input('permissions');
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember, $user);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate,
+      $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses,
+      $memberNumber, $internalComment, $informationDenied, $bvMember, $request->auth->id, $user);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);

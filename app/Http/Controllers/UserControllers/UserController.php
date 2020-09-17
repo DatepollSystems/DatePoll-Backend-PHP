@@ -7,6 +7,7 @@ use App\Models\User\User;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,9 +17,11 @@ use stdClass;
 class UserController extends Controller
 {
   protected $userRepository = null;
+  protected $userChangeRepository = null;
 
-  public function __construct(IUserRepository $userRepository) {
+  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -27,12 +30,9 @@ class UserController extends Controller
    */
   public function getMyself(Request $request) {
     $user = $request->auth;
-
-    $toReturnUser = $user->getReturnable();
-
     return response()->json([
       'msg' => 'Get yourself',
-      'user' => $toReturnUser], 200);
+      'user' => $user->getReturnable()], 200);
   }
 
   /**
@@ -51,30 +51,37 @@ class UserController extends Controller
 
     $user = $request->auth;
 
-    $user->title = $request->input('title');
-    $user->streetname = $request->input('streetname');
-    $user->streetnumber = $request->input('streetnumber');
-    $user->zipcode = $request->input('zipcode');
-    $user->location = $request->input('location');
-    $user->birthday = $request->input('birthday');
+    $title = $request->input('title');
+    $birthday = $request->input('birthday');
+    $streetname = $request->input('streetname');
+    $streetnumber = $request->input('streetnumber');
+    $zipcode = $request->input('zipcode');
+    $location = $request->input('location');
 
-    if ($user->save()) {
-      $userToShow = $user->getReturnable();
-
-      $userToShow->view_yourself = [
-        'href' => 'api/v1/user/myself',
-        'method' => 'GET'];
-
-      $response = [
-        'msg' => 'User updated',
-        'user' => $userToShow];
-
-      return response()->json($response, 201);
+    $this->userRepository->checkForPropertyChange('title', $user->id, $user->id, $title, $user->title);
+    $this->userRepository->checkForPropertyChange('birthday', $user->id, $user->id, $birthday, $user->birthday);
+    $this->userRepository->checkForPropertyChange('streetname', $user->id, $user->id, $streetname, $user->streetname);
+    $this->userRepository->checkForPropertyChange('streetnumber', $user->id, $user->id, $streetnumber, $user->streetnumber);
+    $this->userRepository->checkForPropertyChange('location', $user->id, $user->id, $location, $user->location);
+    // Don't use checkForPropertyChange function because these values aren't strings
+    if ($user->zipcode != $zipcode) {
+      $this->userChangeRepository->createUserChange('zipcode', $user->id,  $user->id, $zipcode, $user->zipcode);
     }
 
-    $response = ['msg' => 'An error occurred'];
+    $user->title = $title;
+    $user->streetname = $streetname;
+    $user->streetnumber = $streetnumber;
+    $user->zipcode = $zipcode;
+    $user->location = $location;
+    $user->birthday = $birthday;
 
-    return response()->json($response, 500);
+    if (!$user->save()) {
+      return response()->json(['msg' => 'An error occurred'], 500);
+    }
+
+    return response()->json([
+      'msg' => 'User updated',
+      'user' => $user->getReturnable()], 201);
   }
 
   /**

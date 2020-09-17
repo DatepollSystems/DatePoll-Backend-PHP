@@ -52,25 +52,38 @@ interface IUserRepository
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
-   * @param string|null $memberNumber
-   * @param string|null $internalComment
-   * @param bool|null $informationDenied
-   * @param string|null $bvMember
+   * @param string $memberNumber
+   * @param string $internalComment
+   * @param bool $informationDenied
+   * @param string $bvMember
+   * @param int $editorId
    * @param User|null $user
    * @return User|null
    * @throws Exception
    */
   public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname,
                                      $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
-                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied = null,
-                                     $bvMember = null, User $user = null);
+                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember,
+                                     int $editorId, User $user = null);
+
+  /**
+   * @param string $property
+   * @param int $userId
+   * @param int $editorId
+   * @param string $newValue
+   * @param string $oldValue
+   */
+  public function checkForPropertyChange(string $property, int $userId, int $editorId, string $newValue,
+                                         string $oldValue);
 
   /**
    * @param User $user
    * @param string[] $emailAddresses
+   * @param int $editorId
    * @return bool|null
+   * @throws Exception
    */
-  public function updateUserEmailAddresses(User $user, $emailAddresses);
+  public function updateUserEmailAddresses(User $user, $emailAddresses, int $editorId);
 
   /**
    * @param array $permissions

@@ -47,7 +47,7 @@ class UserSettingRepository implements IUserSettingRepository
   }
 
   public function getShowBirthdaysInCalendarForUser($user): bool {
-    return $this->getUserSetting($user, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, true);
+    return $this->getUserSetting($user, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, false);
   }
 
   public function setShowBirthdaysInCalendarForUser($user, bool $value): bool {

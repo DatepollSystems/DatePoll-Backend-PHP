@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property int $performance_badge_id
  * @property int $instrument_id
+ * @property string $grade
+ * @property string $date
+ * @property string $note
  * @property string $created_at
  * @property string $updated_at
  * @property Instrument $instrument
