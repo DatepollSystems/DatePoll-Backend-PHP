@@ -186,8 +186,8 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'Could not save UsersHavePerformanceBadgeWithInstrument'], 500);
     }
 
-    $this->userChangeRepository->createUserChange('Performance badge', $userId, $request->auth->id,
-      'Badge: ' . $performanceBadge->name . '; Instrument: ' . $instrument->name . '; Grade: ' . $grade, null);
+    $this->userChangeRepository->createUserChange('performance badge', $userId, $request->auth->id,
+      $performanceBadge->name . '; ' . $instrument->name . '; ' . $grade, null);
 
     return response()->json(['msg' => 'Successful added performance badge with instrument to user'], 200);
   }
@@ -203,8 +203,8 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'User performance badge with instrument not found'], 202);
     }
 
-    $this->userChangeRepository->createUserChange('Performance badge', $userHasPerformanceBadgeWithInstrument->user_id, $request->auth->id, null,
-      'Badge: ' . $userHasPerformanceBadgeWithInstrument->performanceBadge()->name . '; Instrument: ' . $userHasPerformanceBadgeWithInstrument->instrument()->name . '; Grade: ' . $userHasPerformanceBadgeWithInstrument->grade);
+    $this->userChangeRepository->createUserChange('performance badge', $userHasPerformanceBadgeWithInstrument->user_id, $request->auth->id, null,
+      $userHasPerformanceBadgeWithInstrument->performanceBadge()->name . '; ' . $userHasPerformanceBadgeWithInstrument->instrument()->name . '; ' . $userHasPerformanceBadgeWithInstrument->grade);
     if (!$userHasPerformanceBadgeWithInstrument->delete()) {
       return response()->json(['msg' => 'Could not delete user performance badge with instrument'], 500);
     }

@@ -122,8 +122,8 @@ class BadgeController extends Controller
       return response()->json(['msg' => 'An error occurred during user badge saving..'], 500);
     }
 
-    $this->userChangeRepository->createUserChange('Badge', $userId, $request->auth->id,
-      'Description: ' . $description . '; Date: ' . $getDate . '; Reason: ' . $reason, null);
+    $this->userChangeRepository->createUserChange('badge', $userId, $request->auth->id,
+      $description . '; ' . $getDate . '; ' . $reason, null);
 
     Logging::info('createUserBadge', 'UserBadge created id -' . $userHasBadge->id . ' User id - ' . $request->auth->id);
     return response()->json([
@@ -142,8 +142,8 @@ class BadgeController extends Controller
       return response()->json(['msg' => 'UserBadge not found'], 404);
     }
 
-    $this->userChangeRepository->createUserChange('Badge', $badge->user_id, $request->auth->id, null,
-      'Description: ' . $badge->description . '; Date: ' . $badge->getDate . '; Reason: ' . $badge->reason);
+    $this->userChangeRepository->createUserChange('badge', $badge->user_id, $request->auth->id, null,
+      $badge->description . '; ' . $badge->getDate . '; ' . $badge->reason);
 
     if (!$badge->delete()) {
       Logging::error('deleteUserBadge', 'Could not delete user badge! User id - ' . $request->auth->id);

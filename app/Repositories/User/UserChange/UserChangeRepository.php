@@ -35,7 +35,7 @@ class UserChangeRepository implements IUserChangeRepository
   /**
    * @return UserChange[]|Collection
    */
-  public function getAllUserChanges() {
-    return UserChange::all();
+  public function getAllUserChangesOrderedByDate() {
+    return UserChange::orderBy('created_at', 'DESC')->get();
   }
 }

@@ -57,7 +57,7 @@ class UserChange extends Model
     $user = $this->user();
     $editor = $this->editor();
     $dto->editor_name = $editor->firstname . ' ' . $editor->surname;
-    $dto->user_name = $user->firstname . ' ' . $editor->surname;
+    $dto->user_name = $user->firstname . ' ' . $user->surname;
     return $dto;
   }
 }

@@ -391,7 +391,7 @@ class UsersController extends Controller
    */
   public function getAllUserChanges() {
     $userChanges = array();
-    foreach ($this->userChangeRepository->getAllUserChanges() as $userChange) {
+    foreach ($this->userChangeRepository->getAllUserChangesOrderedByDate() as $userChange) {
       $userChanges[] = $userChange->getReturnable();
     }
 

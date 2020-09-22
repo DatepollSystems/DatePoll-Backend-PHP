@@ -21,5 +21,5 @@ interface IUserChangeRepository
   /**
    * @return UserChange[]|Collection
    */
-  public function getAllUserChanges();
+  public function getAllUserChangesOrderedByDate();
 }
