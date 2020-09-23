@@ -38,7 +38,9 @@ $router->group(['prefix' => 'system'], function () use ($router) {
     $router->delete('all', ['uses' => 'SystemControllers\LoggingController@deleteAllLogs']);
     $router->delete('{id}', ['uses' => 'SystemControllers\LoggingController@deleteLog']);
   });
+  $router->post('logs', ['uses' => 'SystemControllers\LoggingController@saveLog']);
 
+  /** Job routes */
   $router->group([
     'prefix' => 'jobs',
     'middleware' => [JobsPermissionMiddleware::class]], function () use ($router) {

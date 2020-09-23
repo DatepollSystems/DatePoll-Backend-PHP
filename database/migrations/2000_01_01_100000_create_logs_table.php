@@ -19,6 +19,11 @@ class CreateLogsTable extends Migration
       $table->string('type')->nullable(false);
       $table->text('message')->nullable(true);
 
+      $table->integer('user_id')->nullable(true)->unsigned();
+      $table->foreign('user_id')
+            ->references('id')->on('users')
+            ->onDelete('cascade');
+
       $table->timestamps();
     });
   }

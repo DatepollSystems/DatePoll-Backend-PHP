@@ -3,12 +3,16 @@
 namespace App\Models\System;
 
 use App\LogTypes;
+use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use stdClass;
+
 /**
  * @property int $id
  * @property LogTypes $type
  * @property string $message
+ * @property int $user_id
  * @property string $created_at
  * @property string $updated_at
  */
@@ -27,22 +31,27 @@ class Log extends Model
   protected $fillable = [
     'type',
     'message',
+    'user_id',
     'created_at',
     'updated_at'];
 
   /**
-   * @return stdClass
+   * @return BelongsTo | User
+   */
+  public function user() {
+    return $this->belongsTo(User::class, 'user_id')
+                ->first();
+  }
+
+  /**
+   * @return Log | stdClass
    */
   public function getReturnable() {
-    $returnable = new stdClass();
+    $returnable = $this;
 
-    $returnable->id = $this->id;
-    $returnable->type = $this->type;
-    $returnable->message = $this->message;
-    $returnable->created_at = $this->created_at;
-    $returnable->updated_at = $this->updated_at;
-
-    $returnable->delete_log = ['href' => 'api/v1/system/logs/' . $this->id, 'method' => 'DELETE'];
+    if ($this->user_id != null) {
+      $returnable->user_name = $this->user()->firstname . ' ' . $this->user()->surname;
+    }
 
     return $returnable;
   }
