@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\Mail;
  */
 class SendEmailJob extends Job
 {
-  private $mailable;
-  private $emailAddresses;
+  private ADatePollMailable $mailable;
+  private array $emailAddresses;
 
-  public $userId;
-  public $broadcastId;
+  public int $userId;
+  public int $broadcastId;
 
   /**
    * Create a new job instance.
@@ -54,6 +54,6 @@ class SendEmailJob extends Job
         $broadcastUserInfo->save();
       }
 
-      Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString . ' using queue: ' . $this->queue);
+      Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString);
     }
 }

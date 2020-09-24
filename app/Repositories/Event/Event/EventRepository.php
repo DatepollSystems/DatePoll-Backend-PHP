@@ -228,7 +228,7 @@ class EventRepository implements IEventRepository
     if ($creating) {
       $time = new DateTime();
       $time->add(new DateInterval('PT' . 1 . 'M'));
-      Queue::later($time, new CreateNewEventEmailsJob($event, $this, $this->eventDateRepository, $this->userSettingRepository, $this->settingRepository), null, "default");
+      Queue::later($time, new CreateNewEventEmailsJob($event, $this, $this->eventDateRepository, $this->userSettingRepository, $this->settingRepository), null, "high");
     }
 
     return $event;
