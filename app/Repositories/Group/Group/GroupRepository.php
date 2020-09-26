@@ -42,7 +42,7 @@ class GroupRepository implements IGroupRepository
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return Group|null
    */
   public function getGroupById($id) {
@@ -52,8 +52,8 @@ class GroupRepository implements IGroupRepository
   /**
    * @param string $name
    * @param string $description
-   * @param int $orderN
-   * @param Group $group
+   * @param int|null $orderN
+   * @param Group|null $group
    * @return Group
    */
   public function createOrUpdateGroup($name, $description, $orderN = null, $group = null) {
@@ -89,8 +89,8 @@ class GroupRepository implements IGroupRepository
   }
 
   /**
-   * @param $groupId
-   * @param $userId
+   * @param int $groupId
+   * @param int $userId
    * @return UsersMemberOfGroups | null
    */
   public function getUserMemberOfGroupByGroupIdAndUserId($groupId, $userId) {
@@ -103,7 +103,7 @@ class GroupRepository implements IGroupRepository
    * @param int $groupId
    * @param int $userId
    * @param string $role
-   * @param UsersMemberOfGroups $userMemberOfGroup
+   * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
   public function createOrUpdateUserMemberOfGroup($groupId, $userId, $role, $userMemberOfGroup = null) {

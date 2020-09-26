@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Models\User\UserPermission;
 use App\Permissions;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -14,10 +16,12 @@ use Illuminate\Validation\ValidationException;
 class UsersController extends Controller
 {
 
-  protected $userRepository;
+  protected IUserRepository $userRepository;
+  protected IUserChangeRepository $userChangeRepository;
 
-  public function __construct(IUserRepository $userRepository) {
+  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -43,6 +47,19 @@ class UsersController extends Controller
     $response = [
       'msg' => 'List of all users',
       'users' => $toReturnUsers];
+
+    return response()->json($response);
+  }
+
+  /**
+   * Display a listing of the resource.
+   *
+   * @return JsonResponse
+   */
+  public function getDeletedUsers() {
+    $response = [
+      'msg' => 'List of deleted users',
+      'users' => $this->userRepository->getDeletedUsers()];
 
     return response()->json($response);
   }
@@ -102,14 +119,15 @@ class UsersController extends Controller
         'error_code' => 'username_already_used'], 400);
     }
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate,
+      $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses,
+      $memberNumber, $internalComment, $informationDenied, $bvMember, $request->auth->id,);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
     }
 
-    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
-
+    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_PERMISSIONS)) {
       if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
         return response()->json(['msg' => 'Failed during permission clearing...'], 500);
       }
@@ -222,7 +240,9 @@ class UsersController extends Controller
     $phoneNumbers = (array)$request->input('phone_numbers');
     $permissions = (array)$request->input('permissions');
 
-    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember, $user);
+    $user = $this->userRepository->createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate,
+      $streetname, $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers, $emailAddresses,
+      $memberNumber, $internalComment, $informationDenied, $bvMember, $request->auth->id, $user);
 
     if ($user == null) {
       return response()->json(['msg' => 'An error occurred during user saving..'], 500);
@@ -230,7 +250,7 @@ class UsersController extends Controller
 
     //---------------------------------------------------------------
     //---- Permissions manager only deletes changed permissions -----
-    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$PERMISSION_ADMINISTRATION)) {
+    if ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_PERMISSIONS)) {
 
       if (!$this->userRepository->createOrUpdatePermissionsForUser($permissions, $user)) {
         return response()->json(['msg' => 'Failed during permission clearing...'], 500);
@@ -287,6 +307,15 @@ class UsersController extends Controller
    * @return JsonResponse
    */
   public function delete(Request $request, $id) {
+    if (!($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
+      return response()->json([
+        'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
+        'needed_permissions' => [
+          Permissions::$ROOT_ADMINISTRATION,
+          Permissions::$MANAGEMENT_EXTRA_USER_DELETE]], 403);
+    }
+
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
@@ -300,14 +329,29 @@ class UsersController extends Controller
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
-    $response = [
-      'msg' => 'User deleted',
-      'create' => [
-        'href' => 'api/v1/management/users',
-        'method' => 'POST',
-        'params' => 'title, email, firstname, surname, birthday, join_date, streetname, streetnumber, zipcode, location, activated, activity, phoneNumbers']];
+    return response()->json(['msg' => 'User deleted'], 200);
+  }
 
-    return response()->json($response);
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function deleteAllDeletedUsers(Request $request) {
+    if (!($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
+      return response()->json([
+        'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
+        'needed_permissions' => [
+          Permissions::$ROOT_ADMINISTRATION,
+          Permissions::$MANAGEMENT_EXTRA_USER_DELETE]], 403);
+    }
+
+
+    Logging::info('deleteDeletedUsers', 'Deleting all deleted users... User id - ' . $request->auth->id);
+    $this->userRepository->deleteAllDeletedUsers();
+    Logging::info('deleteDeletedUsers', 'Deleted all deleted users! User id - ' . $request->auth->id);
+
+    return response()->json(['msg' => 'Deleted users successfully deleted'], 200);
   }
 
   /**
@@ -338,5 +382,19 @@ class UsersController extends Controller
     }
 
     return response()->json(['msg' => 'All users have been activated and will receive a mail'], 200);
+  }
+
+  /**
+   * Returns all changes to users
+   *
+   * @return JsonResponse
+   */
+  public function getAllUserChanges() {
+    $userChanges = array();
+    foreach ($this->userChangeRepository->getAllUserChangesOrderedByDate() as $userChange) {
+      $userChanges[] = $userChange->getReturnable();
+    }
+
+    return response()->json(['msg' => 'User changes', 'user_changes' => $userChanges], 200);
   }
 }

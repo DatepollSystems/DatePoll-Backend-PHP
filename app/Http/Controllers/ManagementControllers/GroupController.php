@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,12 +18,14 @@ class GroupController extends Controller
   protected $groupRepository = null;
   protected $subgroupRepository = null;
   protected $userRepository = null;
+  protected IUserChangeRepository $userChangeRepository;
 
   public function __construct(IGroupRepository $groupRepository, IUserRepository $userRepository,
-                              ISubgroupRepository $subgroupRepository) {
+                              ISubgroupRepository $subgroupRepository, IUserChangeRepository $userChangeRepository) {
     $this->groupRepository = $groupRepository;
     $this->userRepository = $userRepository;
     $this->subgroupRepository = $subgroupRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -150,7 +153,8 @@ class GroupController extends Controller
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    if ($this->groupRepository->getGroupById($groupID) == null) {
+    $group = $this->groupRepository->getGroupById($groupID);
+    if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
@@ -164,6 +168,8 @@ class GroupController extends Controller
     if ($userMemberOfGroup == null) {
       return response()->json(['msg' => 'Could not add user to this group'], 500);
     }
+
+    $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, $group->name, null);
 
     return response()->json([
       'msg' => 'Successfully added user to group',
@@ -188,7 +194,8 @@ class GroupController extends Controller
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    if ($this->groupRepository->getGroupById($groupID) == null) {
+    $group = $this->groupRepository->getGroupById($groupID);
+    if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
@@ -209,6 +216,8 @@ class GroupController extends Controller
         return response()->json(['msg' => 'Could not remove user of child subgroups'], 500);
       }
     }
+
+    $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, null, $group->name);
 
     return response()->json([
       'msg' => 'Successfully removed user from group',
@@ -243,7 +252,8 @@ class GroupController extends Controller
       return response()->json(['msg' => 'User is not a member of this group'], 404);
     }
 
-    $userMemberOfGroup = $this->groupRepository->createOrUpdateUserMemberOfGroup($groupID, $userID, $role, $userMemberOfGroup);
+    $userMemberOfGroup = $this->groupRepository->createOrUpdateUserMemberOfGroup($groupID, $userID, $role,
+      $userMemberOfGroup);
     if ($userMemberOfGroup == null) {
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }

@@ -13,12 +13,12 @@ class NewEvent extends ADatePollMailable
 {
   use Queueable, SerializesModels;
 
-  public $name;
-  public $startDate;
-  public $endDate;
-  public $eventName;
-  public $eventId;
-  public $DatePollAddress;
+  public string $name;
+  public string $startDate;
+  public string $endDate;
+  public string $eventName;
+  public int $eventId;
+  public string $DatePollAddress;
 
   /**
    * Create a new message instance.

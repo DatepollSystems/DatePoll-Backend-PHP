@@ -7,6 +7,7 @@ use App\Models\PerformanceBadge\Instrument;
 use App\Models\PerformanceBadge\PerformanceBadge;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -16,9 +17,11 @@ class PerformanceBadgeController extends Controller
 {
 
   protected $userRepository = null;
+  protected $userChangeRepository = null;
 
-  public function __construct(IUserRepository $userRepository) {
+  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -27,9 +30,12 @@ class PerformanceBadgeController extends Controller
    * @return JsonResponse
    */
   public function getAll() {
-    $performanceBadges = PerformanceBadge::orderBy('name')->get();
+    $performanceBadges = PerformanceBadge::orderBy('name')
+                                         ->get();
 
-    $response = ['msg' => 'List of all performance badges', 'performanceBadges' => $performanceBadges];
+    $response = [
+      'msg' => 'List of all performance badges',
+      'performanceBadges' => $performanceBadges];
 
     return response()->json($response);
   }
@@ -46,8 +52,11 @@ class PerformanceBadgeController extends Controller
 
     $name = $request->input('name');
 
-    if (PerformanceBadge::where('name', $name)->first() != null) {
-      return response()->json(['msg' => 'Performance badge already exist', 'error' => 'performance_badge_already_exists'], 400);
+    if (PerformanceBadge::where('name', $name)
+                        ->first() != null) {
+      return response()->json([
+        'msg' => 'Performance badge already exist',
+        'error' => 'performance_badge_already_exists'], 400);
     }
 
     $performanceBadge = new PerformanceBadge(['name' => $name]);
@@ -55,7 +64,9 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'An error occurred during performance badge saving..'], 500);
     }
 
-    $response = ['msg' => 'Performance badge successful created', 'performanceBadge' => $performanceBadge];
+    $response = [
+      'msg' => 'Performance badge successful created',
+      'performanceBadge' => $performanceBadge];
 
     return response()->json($response, 201);
   }
@@ -73,7 +84,9 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'Performance badge not found'], 404);
     }
 
-    $response = ['msg' => 'Performance badge information', 'performanceBadge' => $performanceBadge];
+    $response = [
+      'msg' => 'Performance badge information',
+      'performanceBadge' => $performanceBadge];
     return response()->json($response);
   }
 
@@ -90,7 +103,9 @@ class PerformanceBadgeController extends Controller
 
     $performanceBadge = PerformanceBadge::find($id);
     if ($performanceBadge == null) {
-      return response()->json(['msg' => 'Performance badge not found', 'error_code' => 'performanceBadge_not_found'], 404);
+      return response()->json([
+        'msg' => 'Performance badge not found',
+        'error_code' => 'performanceBadge_not_found'], 404);
     }
 
     $name = $request->input('name');
@@ -101,7 +116,9 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'An error occurred during performance badge saving..'], 500);
     }
 
-    $response = ['msg' => 'Performance badge updated', 'performanceBadge' => $performanceBadge];
+    $response = [
+      'msg' => 'Performance badge updated',
+      'performanceBadge' => $performanceBadge];
 
     return response()->json($response, 200);
   }
@@ -140,46 +157,55 @@ class PerformanceBadgeController extends Controller
       'note' => 'max:190']);
 
     $userId = $request->input('user_id');
-    if($this->userRepository->getUserById($userId) == null) {
+    if ($this->userRepository->getUserById($userId) == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
     $performanceBadgeId = $request->input('performanceBadge_id');
-    if(PerformanceBadge::find($performanceBadgeId) == null) {
+    $performanceBadge = PerformanceBadge::find($performanceBadgeId);
+    if ($performanceBadge == null) {
       return response()->json(['msg' => 'Performance badge not found'], 404);
     }
 
     $instrumentId = $request->input('instrument_id');
-    if(Instrument::find($instrumentId) == null) {
+    $instrument = Instrument::find($instrumentId);
+    if ($instrument == null) {
       return response()->json(['msg' => 'Instrument not found'], 404);
     }
 
+    $grade = $request->input('grade');
     $userHasPerformanceBadgeWithInstrument = new UserHavePerformanceBadgeWithInstrument([
       'performance_badge_id' => $performanceBadgeId,
       'instrument_id' => $instrumentId,
       'user_id' => $userId,
       'date' => $request->input('date'),
-      'grade' => $request->input('grade'),
+      'grade' => $grade,
       'note' => $request->input('note')]);
 
-    if(!$userHasPerformanceBadgeWithInstrument->save()) {
+    if (!$userHasPerformanceBadgeWithInstrument->save()) {
       return response()->json(['msg' => 'Could not save UsersHavePerformanceBadgeWithInstrument'], 500);
     }
+
+    $this->userChangeRepository->createUserChange('performance badge', $userId, $request->auth->id,
+      $performanceBadge->name . '; ' . $instrument->name . '; ' . $grade, null);
 
     return response()->json(['msg' => 'Successful added performance badge with instrument to user'], 200);
   }
 
   /**
+   * @param Request $request
    * @param int $id
    * @return JsonResponse
    */
-  public function removePerformanceBadgeForUserWithInstrument(int $id) {
+  public function removePerformanceBadgeForUserWithInstrument(Request $request, int $id) {
     $userHasPerformanceBadgeWithInstrument = UserHavePerformanceBadgeWithInstrument::find($id);
-    if($userHasPerformanceBadgeWithInstrument == null) {
+    if ($userHasPerformanceBadgeWithInstrument == null) {
       return response()->json(['msg' => 'User performance badge with instrument not found'], 202);
     }
 
-    if(!$userHasPerformanceBadgeWithInstrument->delete()) {
+    $this->userChangeRepository->createUserChange('performance badge', $userHasPerformanceBadgeWithInstrument->user_id, $request->auth->id, null,
+      $userHasPerformanceBadgeWithInstrument->performanceBadge()->name . '; ' . $userHasPerformanceBadgeWithInstrument->instrument()->name . '; ' . $userHasPerformanceBadgeWithInstrument->grade);
+    if (!$userHasPerformanceBadgeWithInstrument->delete()) {
       return response()->json(['msg' => 'Could not delete user performance badge with instrument'], 500);
     }
 
@@ -192,7 +218,7 @@ class PerformanceBadgeController extends Controller
    */
   public function performanceBadgesForUser(int $id) {
     $user = $this->userRepository->getUserById($id);
-    if($user == null) {
+    if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
@@ -206,7 +232,7 @@ class PerformanceBadgeController extends Controller
       $performanceBadgeToReturn->instrument_id = $performanceBadgeWithInstrument->instrument_id;
       $performanceBadgeToReturn->grade = $performanceBadgeWithInstrument->grade;
       $performanceBadgeToReturn->note = $performanceBadgeWithInstrument->note;
-      if($performanceBadgeWithInstrument->date != '1970-01-01') {
+      if ($performanceBadgeWithInstrument->date != '1970-01-01') {
         $performanceBadgeToReturn->date = $performanceBadgeWithInstrument->date;
       } else {
         $performanceBadgeToReturn->date = null;
@@ -217,6 +243,8 @@ class PerformanceBadgeController extends Controller
       $performanceBadgesToReturn[] = $performanceBadgeToReturn;
     }
 
-    return response()->json(['msg' => 'List of all performance badges for user ' . $user->id, 'performanceBadges' => $performanceBadgesToReturn], 200);
+    return response()->json([
+      'msg' => 'List of all performance badges for user ' . $user->id,
+      'performanceBadges' => $performanceBadgesToReturn], 200);
   }
 }

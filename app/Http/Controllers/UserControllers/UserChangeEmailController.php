@@ -23,7 +23,7 @@ class UserChangeEmailController extends Controller
 
     $emailAddresses = $request->input('email_addresses');
 
-    if($this->userRepository->updateUserEmailAddresses($user, $emailAddresses) == null) {
+    if($this->userRepository->updateUserEmailAddresses($user, $emailAddresses, $user->id) == null) {
       return response()->json(['msg' => 'Failed on email addresses updating...'], 500);
     }
 

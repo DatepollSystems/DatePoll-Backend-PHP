@@ -23,12 +23,6 @@ interface IBroadcastRepository
 
   /**
    * @param Broadcast $broadcast
-   * @return Broadcast|stdClass
-   */
-  public function getBroadcastAdminReturnable(Broadcast $broadcast);
-
-  /**
-   * @param Broadcast $broadcast
    * @return stdClass | Broadcast
    */
   public function getBroadcastUserReturnable(Broadcast $broadcast);
@@ -37,7 +31,7 @@ interface IBroadcastRepository
    * @param Broadcast $broadcast
    * @return stdClass | Broadcast
    */
-  public function getBroadcastCutReturnable(Broadcast $broadcast);
+  public function getBroadcastReturnable(Broadcast $broadcast);
 
   /**
    * @param Broadcast $broadcast
@@ -50,13 +44,19 @@ interface IBroadcastRepository
    * @param string $bodyHTML
    * @param string $body
    * @param int $writerId
-   * @param $groups
-   * @param $subgroups
+   * @param int[] $groups
+   * @param int[] $subgroups
    * @param bool $forEveryone
    * @return Broadcast | null
    * @throws Exception
    */
   public function create(string $subject, string $bodyHTML, string $body, int $writerId, $groups, $subgroups, bool $forEveryone);
+
+  /**
+   * @param Broadcast $broadcast
+   * @throws Exception
+   */
+  public function reQueueNotSentBroadcastsForBroadcast(Broadcast $broadcast);
 
   /**
    * @param Broadcast $broadcast

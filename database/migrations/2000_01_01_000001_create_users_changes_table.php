@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateLogsTable extends Migration
+class CreateUsersChangesTable extends Migration
 {
   /**
    * Run the migrations.
@@ -13,14 +13,20 @@ class CreateLogsTable extends Migration
    */
   public function up()
   {
-    Schema::create('logs', function (Blueprint $table) {
+    Schema::create('users_changes', function (Blueprint $table) {
       $table->increments('id');
 
-      $table->string('type')->nullable(false);
-      $table->text('message')->nullable(true);
+      $table->string('property');
+      $table->text('old_value')->nullable(true);
+      $table->text('new_value')->nullable(true);
 
-      $table->integer('user_id')->nullable(true)->unsigned();
+      $table->integer('user_id')->unsigned();
       $table->foreign('user_id')
+            ->references('id')->on('users')
+            ->onDelete('cascade');
+
+      $table->integer('editor_id')->unsigned();
+      $table->foreign('editor_id')
             ->references('id')->on('users')
             ->onDelete('cascade');
 
@@ -35,6 +41,6 @@ class CreateLogsTable extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('logs');
+    Schema::dropIfExists('users_changes');
   }
 }

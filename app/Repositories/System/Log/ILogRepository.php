@@ -17,7 +17,7 @@ interface ILogRepository
    * @param int $id
    * @return Log|null
    */
-  public function getLogById($id);
+  public function getLogById(int $id);
 
   /**
    * @param Log $log
@@ -27,4 +27,12 @@ interface ILogRepository
   public function deleteLogByLog(Log $log);
 
   public function deleteAllLogs();
+
+  /**
+   * @param string $logType
+   * @param string $message
+   * @param int|null $userId
+   * @return Log
+   */
+  public function createLog(string $logType, string $message, ?int $userId = null);
 }

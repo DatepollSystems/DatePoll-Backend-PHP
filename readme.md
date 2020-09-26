@@ -1,5 +1,12 @@
 # DatePoll-Backend-PHP
 ## Information
+<h4>
+    Get notified about updates and join us at
+    <a href="https://discord.gg/vBb7D9a">
+        <img src="https://img.shields.io/discord/697139052717146123?logo=discord&style=for-the-badge" alt="chat on Discord">
+    </a>
+</h4>
+
 *  Project website (https://datepoll.org)
 *  API / backend documentation (https://doc.datepoll.org)
 *  Other projects
@@ -24,3 +31,10 @@ Please head to [this page](https://docs.datepoll.org/installation/) to get the l
 
 ### Accessing artisan in docker container
 `docker-compose exec datepoll-php php artisan`
+
+### Accessing the sql server
+`docker-compose exec datepoll-mysql mysql -u homestead -p`
+
+Password: `homestead`
+
+To use the DatePoll database: `use homestead;`

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMultipleClassesDeclarationsInOneFile */
 
 namespace App;
 
@@ -14,7 +14,7 @@ abstract class LogTypes
 class Logging
 {
 
-  private static $logRepository = null;
+  private static ?LogRepository $logRepository = null;
 
   public static function info(string $function, string $message) {
     return self::log("INFO", $function, $message);

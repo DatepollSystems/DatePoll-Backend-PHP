@@ -128,6 +128,17 @@ interface ISettingRepository
   public function setCinemaOpenWeatherMapCityId(string $openWeatherMapCityId): string;
 
   /**
+   * @return string
+   */
+  public function getHappyAlert(): string;
+
+  /**
+   * @param string $happyAlert
+   * @return string
+   */
+  public function setHappyAlert(string $happyAlert): string;
+
+  /**
    * @return int
    */
   public function getCurrentDatabaseVersion(): int;

@@ -43,27 +43,12 @@ $app->withEloquent();
 |
 */
 
-$app->singleton(
-  Illuminate\Contracts\Debug\ExceptionHandler::class,
-  App\Exceptions\Handler::class
-);
+$app->singleton(Illuminate\Contracts\Debug\ExceptionHandler::class, App\Exceptions\Handler::class);
 
-$app->singleton(
-  Illuminate\Contracts\Console\Kernel::class,
-  App\Console\Kernel::class
-);
+$app->singleton(Illuminate\Contracts\Console\Kernel::class, App\Console\Kernel::class);
 
-/** Cors fix */
-$app->register(Fruitcake\Cors\CorsServiceProvider::class);
-$app->configure('cors');
-$app->middleware([
-  Fruitcake\Cors\HandleCors::class,
-]);
-
-/** Enable JWT-Auth */
-$app->routeMiddleware([
-  'jwt.auth' => App\Http\Middleware\JwtMiddleware::class
-]);
+/** Register JWT-Auth middleware */
+$app->routeMiddleware(['jwt.auth' => App\Http\Middleware\JwtMiddleware::class]);
 
 /*
 |--------------------------------------------------------------------------
@@ -77,18 +62,19 @@ $app->routeMiddleware([
 */
 $app->register(AppServiceProvider::class);
 
-/** IDE Helper*/
-$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+/** Cors fix */
+$app->register(Fruitcake\Cors\CorsServiceProvider::class);
+$app->configure('cors');
+$app->middleware([Fruitcake\Cors\HandleCors::class]);
 
-/** Make php artisan:make command as powerful as in laravel */
-$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+/** IDE Helper */
+$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
 /** Register DatePoll Service providers to implement the Repository Pattern */
 $app->register(DatePollServiceProvider::class);
 
 /** Redis and Horizon */
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
-$app->register(Laravel\Horizon\HorizonServiceProvider::class);
 
 /** Log reader */
 $app->register(LaravelLogViewerServiceProvider::class);

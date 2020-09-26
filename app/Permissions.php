@@ -4,8 +4,6 @@ namespace App;
 class Permissions {
   public static $ROOT_ADMINISTRATION = 'root.administration';
 
-  public static $PERMISSION_ADMINISTRATION = 'permissions.*';
-
   public static $CINEMA_ADMINISTRATION = 'cinema.*';
 
   public static $EVENTS_ADMINISTRATION = 'events.*';
@@ -16,6 +14,8 @@ class Permissions {
   public static $FILES_ADMINISTRATION = 'files.*';
 
   public static $MANAGEMENT_ADMINISTRATION = 'management.*';
+  public static $MANAGEMENT_EXTRA_USER_PERMISSIONS = 'management.user.permissions';
+  public static $MANAGEMENT_EXTRA_USER_DELETE = 'management.user.delete';
 
   public static $SETTINGS_ADMINISTRATION = 'settings.*';
 

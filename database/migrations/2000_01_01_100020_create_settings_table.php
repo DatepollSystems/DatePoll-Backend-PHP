@@ -16,7 +16,7 @@ class CreateSettingsTable extends Migration
       $table->increments('id');
 
       $table->string('type')->nullable(false);
-      $table->text('key')->nullable(false);
+      $table->string('key')->nullable(false);
       $table->longText('value')->nullable(false);
 
       $table->timestamps();

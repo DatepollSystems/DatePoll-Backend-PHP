@@ -26,11 +26,11 @@ use Illuminate\Support\Facades\Queue;
 class CreateNewEventEmailsJob extends Job
 {
 
-  private $event;
-  private $eventRepository;
-  private $eventDateRepository;
-  private $userSettingRepository;
-  private $settingRepository;
+  private Event $event;
+  private IEventRepository $eventRepository;
+  private IEventDateRepository $eventDateRepository;
+  private IUserSettingRepository $userSettingRepository;
+  private ISettingRepository $settingRepository;
 
   /**
    * Create a new job instance.
@@ -41,7 +41,7 @@ class CreateNewEventEmailsJob extends Job
    * @param IUserSettingRepository $userSettingRepository
    * @param ISettingRepository $settingRepository
    */
-  public function __construct($event, IEventRepository $eventRepository, IEventDateRepository $eventDateRepository,
+  public function __construct(Event $event, IEventRepository $eventRepository, IEventDateRepository $eventDateRepository,
                               IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository) {
     $this->event = $event;
     $this->eventRepository = $eventRepository;
@@ -66,7 +66,8 @@ class CreateNewEventEmailsJob extends Job
 
       if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && !$user->information_denied && $user->activated) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        Queue::later($time, new SendEmailJob(new NewEvent($user->firstname, $this->event, $this->eventDateRepository, $this->settingRepository), $user->getEmailAddresses()), null, "default");
+        Queue::later($time, new SendEmailJob(new NewEvent($user->firstname, $this->event, $this->eventDateRepository,
+          $this->settingRepository), $user->getEmailAddresses()), null, "low");
       }
     }
   }

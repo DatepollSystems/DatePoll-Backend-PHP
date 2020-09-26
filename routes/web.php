@@ -24,7 +24,7 @@ $router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer', 'middleware' => 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
   /** Server info route */
-  $router->get('/', ['uses' => 'DatePollServerController@getServerInfo']);
+  $router->get('/', ['uses' => 'SystemControllers\DatePollServerController@getServerInfo']);
 
   /** Auth routes */
   require(__DIR__ . '/AuthRoutes.php');

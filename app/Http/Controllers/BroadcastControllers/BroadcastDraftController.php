@@ -35,7 +35,7 @@ class BroadcastDraftController extends Controller
   }
 
   /**
-   * @param $id
+   * @param int $id
    * @return JsonResponse
    */
   public function getSingle($id) {

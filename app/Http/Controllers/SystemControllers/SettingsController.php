@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SystemControllers;
 
+use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Http\JsonResponse;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller
 {
-  protected $settingRepository;
+  protected $settingRepository = null;
 
   public function __construct(ISettingRepository $settingRepository) {
     $this->settingRepository = $settingRepository;
@@ -230,5 +231,32 @@ class SettingsController extends Controller
     return response()->json([
       'msg' => 'Set OpenWeatherMap cinema city id',
       'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId]);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  public function getHappyAlert() {
+    return response()->json([
+      'msg' => 'Happy alert',
+      'happy_alert' => $this->settingRepository->getHappyAlert()], 200);
+  }
+
+  /**
+   * @param Request $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setHappyAlert(Request $request) {
+    $this->validate($request, ['happy_alert' => 'string']);
+
+    $happyAlert = $request->input('happy_alert');
+
+    $this->settingRepository->setHappyAlert($happyAlert);
+
+    Logging::info("setHappyAlert", "User - " . $request->auth->id . " | Changed to " . $happyAlert);
+    return response()->json([
+      'msg' => 'Set happy alert key',
+      'happy_alert' => $happyAlert]);
   }
 }

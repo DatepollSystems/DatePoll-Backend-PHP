@@ -18,7 +18,6 @@ use stdClass;
  * @property boolean $email_verified
  * @property boolean $force_password_change
  * @property string $password
- * @property string $rank
  * @property string $title
  * @property string $firstname
  * @property string $surname
@@ -27,7 +26,7 @@ use stdClass;
  * @property string $streetname
  * @property string $streetnumber
  * @property string $member_number
- * @property string $zipcode
+ * @property int $zipcode
  * @property string $location
  * @property boolean $activated
  * @property string $internal_comment
@@ -162,7 +161,7 @@ class User extends Model
    * @return Collection | EventUserVotedForDecision[] | null
    */
   public function votedForDecisions() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecisions')
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
                 ->get();
   }
 

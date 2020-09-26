@@ -5,7 +5,7 @@ namespace App\Repositories\User\User;
 use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
-use App\Models\Broadcasts\Broadcast;
+use App\Models\User\DeletedUser;
 use App\Models\User\User;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
@@ -14,9 +14,11 @@ use App\Models\User\UserCode;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
 
@@ -24,15 +26,18 @@ class UserRepository implements IUserRepository
 {
   protected $settingRepository = null;
   protected $userSettingRepository = null;
+  protected $userChangeRepository = null;
   protected $eventRepository = null;
   protected $broadcastRepository = null;
 
   public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository,
-                              IEventRepository $eventRepository, IBroadcastRepository $broadcastRepository) {
+                              IEventRepository $eventRepository, IBroadcastRepository $broadcastRepository,
+                              IUserChangeRepository $userChangeRepository) {
     $this->settingRepository = $settingRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->eventRepository = $eventRepository;
     $this->broadcastRepository = $broadcastRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -40,6 +45,13 @@ class UserRepository implements IUserRepository
    */
   public function getAllUsers() {
     return User::all();
+  }
+
+  /**
+   * @return DeletedUser[]|Collection
+   */
+  public function getDeletedUsers() {
+    return DeletedUser::all();
   }
 
   /**
@@ -82,18 +94,19 @@ class UserRepository implements IUserRepository
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
-   * @param string|null $memberNumber
-   * @param string|null $internalComment
-   * @param bool|null $informationDenied
-   * @param string|null $bvMember
+   * @param string $memberNumber
+   * @param string $internalComment
+   * @param bool $informationDenied
+   * @param string $bvMember
+   * @param int $editorId
    * @param User|null $user
    * @return User|null
    * @throws Exception
    */
   public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname,
                                      $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
-                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied = null,
-                                     $bvMember = null, User $user = null) {
+                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember,
+                                     int $editorId, User $user = null) {
 
     if ($bvMember == null) {
       $bvMember = '';
@@ -123,6 +136,32 @@ class UserRepository implements IUserRepository
         return null;
       }
     } else {
+      $this->checkForPropertyChange('username', $user->id, $editorId, $username, $user->username);
+      $this->checkForPropertyChange('title', $user->id, $editorId, $title, $user->title);
+      $this->checkForPropertyChange('firstname', $user->id, $editorId, $firstname, $user->firstname);
+      $this->checkForPropertyChange('surname', $user->id, $editorId, $surname, $user->surname);
+      $this->checkForPropertyChange('birthday', $user->id, $editorId, $birthday, $user->birthday);
+      $this->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate, $user->join_date);
+      $this->checkForPropertyChange('streetname', $user->id, $editorId, $streetname, $user->streetname);
+      $this->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber, $user->streetnumber);
+      $this->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
+      $this->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
+      $this->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
+      $this->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment,
+        $user->internal_comment);
+      $this->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
+      // Don't use checkForPropertyChange function because these values aren't strings
+      if ($user->zipcode != $zipcode) {
+        $this->userChangeRepository->createUserChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
+      }
+      if ($user->activated != $activated) {
+        $this->userChangeRepository->createUserChange('activated', $user->id, $editorId, $activated, $user->activated);
+      }
+      if ($user->information_denied != $informationDenied) {
+        $this->userChangeRepository->createUserChange('informationDenied', $user->id, $editorId, $informationDenied,
+          $user->information_denied);
+      }
+
       $user->username = $username;
       $user->title = $title;
       $user->firstname = $firstname;
@@ -152,7 +191,7 @@ class UserRepository implements IUserRepository
 
 
     // Email addresses manager only deletes changed email addresses
-    if ($this->updateUserEmailAddresses($user, $emailAddresses) == null) {
+    if ($this->updateUserEmailAddresses($user, $emailAddresses, $editorId) == null) {
       return null;
     }
 
@@ -173,6 +212,7 @@ class UserRepository implements IUserRepository
 
       if ($toDelete) {
         $phoneNumberToDeleteObject = UserTelephoneNumber::find($oldPhoneNumber->id);
+        $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, null, $phoneNumberToDeleteObject->number);
         if (!$phoneNumberToDeleteObject->delete()) {
           Logging::error('createOrUpdateUser', 'Could not delete $phoneNumberToDeleteObject');
           return null;
@@ -200,6 +240,7 @@ class UserRepository implements IUserRepository
           Logging::error('createOrUpdateUser', 'Could not save phoneNumberToSave');
           return null;
         }
+        $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, $phoneNumber['number'], null);
       }
     }
 
@@ -208,12 +249,27 @@ class UserRepository implements IUserRepository
   }
 
   /**
+   * @param string $property
+   * @param int $userId
+   * @param int $editorId
+   * @param string|null $newValue
+   * @param string|null $oldValue
+   */
+  public function checkForPropertyChange(string $property, int $userId, int $editorId, ?string $newValue,
+                                         ?string $oldValue) {
+    if ($newValue != $oldValue) {
+      $this->userChangeRepository->createUserChange($property, $userId, $editorId, $newValue, $oldValue);
+    }
+  }
+
+  /**
    * @param User $user
    * @param string[] $emailAddresses
+   * @param int $editorId
    * @return bool|null
    * @throws Exception
    */
-  public function updateUserEmailAddresses(User $user, $emailAddresses) {
+  public function updateUserEmailAddresses(User $user, $emailAddresses, int $editorId) {
     $emailAddressesWhichHaveNotBeenDeleted = array();
 
     $OldEmailAddresses = $user->emailAddresses();
@@ -229,6 +285,7 @@ class UserRepository implements IUserRepository
       }
 
       if ($toDelete) {
+        $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, null, $oldEmailAddress->email);
         if (!$oldEmailAddress->delete()) {
           Logging::error('updateUserEmailAddresses', 'Could not delete emailAddressToDeleteObject');
           return null;
@@ -255,6 +312,7 @@ class UserRepository implements IUserRepository
           Logging::error('updateUserEmailAddresses', 'Could not save $emailAddressToSave');
           return null;
         }
+        $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, $emailAddress, null);
       }
     }
 
@@ -284,7 +342,8 @@ class UserRepository implements IUserRepository
       if ($toDelete) {
         $permissionToDeleteObject = UserPermission::find($oldPermission->id);
         if (!$permissionToDeleteObject->delete()) {
-          Logging::error('createOrUpdatePermissionsForUser', 'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for user: ' . $user->id);
+          Logging::error('createOrUpdatePermissionsForUser',
+            'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for user: ' . $user->id);
           return false;
         }
       }
@@ -308,7 +367,8 @@ class UserRepository implements IUserRepository
           'permission' => $permission,
           'user_id' => $user->id]);
         if (!$permissionToSave->save()) {
-          Logging::error('createOrUpdatePermissionsForUser', 'Could not add permission: ' . $permission . ' for user: ' . $user->id);
+          Logging::error('createOrUpdatePermissionsForUser',
+            'Could not add permission: ' . $permission . ' for user: ' . $user->id);
           return false;
         }
       }
@@ -327,7 +387,8 @@ class UserRepository implements IUserRepository
     $user->activated = true;
     $user->save();
 
-    dispatch(new SendEmailJob(new ActivateUser($user->firstname . " " . $user->surname, $user->username, $randomPassword, $this->settingRepository), $user->getEmailAddresses()))->onQueue('default');
+    dispatch(new SendEmailJob(new ActivateUser($user->firstname . " " . $user->surname, $user->username,
+      $randomPassword, $this->settingRepository), $user->getEmailAddresses()))->onQueue('low');
   }
 
   /**
@@ -335,12 +396,28 @@ class UserRepository implements IUserRepository
    * @return bool|null
    */
   public function deleteUser(User $user) {
-    try {
-      return $user->delete();
-    } catch (Exception $e) {
-      Logging::error('deleteUser', 'Exception: ' . $e->getMessage());
+    $deletedUser = new DeletedUser([
+      'firstname' => $user->firstname,
+      'surname' => $user->surname,
+      'join_date' => $user->join_date,
+      'internal_comment' => $user->internal_comment]);
+
+    if ($deletedUser->save()) {
+      try {
+        return $user->delete();
+      } catch (Exception $e) {
+        Logging::error('deleteUser', 'Exception: ' . $e->getMessage());
+        return false;
+      }
+    } else {
+      Logging::error('deleteUser', 'Could not create deleted user - : ' . $user->id);
       return false;
     }
+  }
+
+  public function deleteAllDeletedUsers() {
+    DB::table('users_deleted')
+      ->delete();
   }
 
   /**
@@ -501,7 +578,7 @@ class UserRepository implements IUserRepository
     if ($this->settingRepository->getBroadcastsEnabled()) {
       $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
       foreach ($broadcasts as $broadcast) {
-        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastCutReturnable($broadcast);
+        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
       }
     }
 
@@ -511,7 +588,8 @@ class UserRepository implements IUserRepository
       if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
         $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date("Y-m-d"))));
         $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date("Y-m-d"))));
-        if ($remTimeDate < date("m-d", strtotime($user->birthday)) && date("m-d", strtotime($user->birthday)) < $addTimeDate) {
+        if ($remTimeDate < date("m-d", strtotime($user->birthday)) && date("m-d",
+            strtotime($user->birthday)) < $addTimeDate) {
           $birthdayToShow = new stdClass();
 
           $birthdayToShow->name = $user->firstname . ' ' . $user->surname;
@@ -523,7 +601,7 @@ class UserRepository implements IUserRepository
     }
 
     usort($birthdaysToShow, function ($a, $b) {
-      return strcmp($a->date, $b->date);
+      return strcmp(date('m-d', strtotime($a->date)), date('m-d', strtotime($b->date)));
     });
 
     return [

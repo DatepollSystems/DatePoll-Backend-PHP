@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserChange\IUserChangeRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,12 +18,14 @@ class SubgroupController extends Controller
   protected $subgroupRepository = null;
   protected $groupRepository = null;
   protected $userRepository = null;
+  protected IUserChangeRepository $userChangeRepository;
 
   public function __construct(ISubgroupRepository $subgroupRepository, IGroupRepository $groupRepository,
-                              IUserRepository $userRepository) {
+                              IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->subgroupRepository = $subgroupRepository;
     $this->groupRepository = $groupRepository;
     $this->userRepository = $userRepository;
+    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -184,6 +187,8 @@ class SubgroupController extends Controller
       return response()->json(['msg' => 'Could not add user to this subgroup'], 500);
     }
 
+    $this->userChangeRepository->createUserChange('subgroup', $userID, $request->auth->id, $subgroup->name, null);
+
     return response()->json([
       'msg' => 'Successfully added user to subgroup',
       'userMemberOfSubgroup' => $userMemberOfSubgroup], 201);
@@ -220,6 +225,8 @@ class SubgroupController extends Controller
     if (!$this->subgroupRepository->removeSubgroupForUser($userMemberOfSubgroup)) {
       return response()->json(['msg' => 'Could not remove user of this subgroup'], 500);
     }
+
+    $this->userChangeRepository->createUserChange('subgroup', $userID, $request->auth->id, null, $subgroup->name);
 
     return response()->json(['msg' => 'Successfully removed user from subgroup'], 200);
   }
