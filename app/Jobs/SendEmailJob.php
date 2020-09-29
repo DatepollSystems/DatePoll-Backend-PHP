@@ -28,32 +28,37 @@ class SendEmailJob extends Job
    * @param ADatePollMailable $mailable
    * @param string[] $emailAddresses
    */
-    public function __construct(ADatePollMailable $mailable, array $emailAddresses)
-    {
-        $this->mailable = $mailable;
-        $this->emailAddresses = $emailAddresses;
+  public function __construct(ADatePollMailable $mailable, array $emailAddresses)
+  {
+    $this->mailable = $mailable;
+    $this->emailAddresses = $emailAddresses;
+  }
+
+  /**
+   * Execute the job.
+   *
+   * @return void
+   */
+  public function handle()
+  {
+    $emailAddressString = '';
+    foreach ($this->emailAddresses as $emailAddress) {
+      $emailAddressString .= $emailAddress . ', ';
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle()
-    {
-      Mail::bcc($this->emailAddresses)
-          ->send($this->mailable);
-      $emailAddressString = '';
-      foreach ($this->emailAddresses as $emailAddress) {
-        $emailAddressString .= $emailAddress . ', ';
+    if ($this->mailable instanceof BroadcastMail) {
+      $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $this->userId)->where('broadcast_id', '=', $this->broadcastId)->first();
+      if ($broadcastUserInfo == null) {
+        Logging::info($this->mailable->jobDescription, 'DELETED BROADCAST: Sent to ' . $emailAddressString . ' cancelled!');
+        return;
       }
 
-      if ($this->mailable instanceof BroadcastMail) {
-        $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $this->userId)->where('broadcast_id', '=', $this->broadcastId)->first();
-        $broadcastUserInfo->sent = true;
-        $broadcastUserInfo->save();
-      }
-
-      Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString);
+      $broadcastUserInfo->sent = true;
+      $broadcastUserInfo->save();
     }
+    
+    Mail::bcc($this->emailAddresses)
+        ->send($this->mailable);
+    Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString);
+  }
 }
