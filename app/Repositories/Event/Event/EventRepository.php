@@ -23,11 +23,11 @@ use stdClass;
 class EventRepository implements IEventRepository
 {
 
-  protected $eventDateRepository = null;
-  protected $eventDecisionRepository = null;
-  protected $userSettingRepository = null;
-  protected $settingRepository = null;
-  protected $groupRepository = null;
+  protected IEventDateRepository $eventDateRepository;
+  protected IEventDecisionRepository $eventDecisionRepository;
+  protected IUserSettingRepository $userSettingRepository;
+  protected ISettingRepository $settingRepository;
+  protected IGroupRepository $groupRepository;
 
   public function __construct(IEventDateRepository $eventDateRepository,
                               IEventDecisionRepository $eventDecisionRepository,
@@ -111,7 +111,7 @@ class EventRepository implements IEventRepository
    * @return Event|null
    * @throws Exception
    */
-  public function createOrUpdateEvent(string $name, bool $forEveryone, $description, array $decisions, array $dates,
+  public function createOrUpdateEvent(string $name, bool $forEveryone, string $description, array $decisions, array $dates,
                                       Event $event = null) {
     $creating = false;
     if ($event == null) {
@@ -252,7 +252,7 @@ class EventRepository implements IEventRepository
    * @param Event $event
    * @return stdClass
    */
-  public function getReturnable($event) {
+  public function getReturnable(Event $event) {
     $returnable = new stdClass();
 
     $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
@@ -321,11 +321,11 @@ class EventRepository implements IEventRepository
         $groupToSave->id = $group->id;
         $groupToSave->name = $group->name;
 
-        $usersMemberOfGroup = array();
+        $groupResultUsers = array();
         foreach ($group->getUsersOrderedBySurname() as $userMemberOfGroup) {
-          $usersMemberOfGroup[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup, $event, $anonymous);
+          $groupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup, $event, $anonymous);
         }
-        $groupToSave->users = $usersMemberOfGroup;
+        $groupToSave->users = $groupResultUsers;
 
         $subgroups = array();
         foreach ($group->getSubgroupsOrdered() as $subgroup) {
@@ -334,12 +334,12 @@ class EventRepository implements IEventRepository
           $subgroupToSave->id = $subgroup->id;
           $subgroupToSave->name = $subgroup->name;
 
-          $usersMemberOfSubgroup = array();
+          $subgroupResultUsers = array();
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
-            $usersMemberOfSubgroup[] = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
+            $subgroupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
           }
 
-          $subgroupToSave->users = $usersMemberOfSubgroup;
+          $subgroupToSave->users = $subgroupResultUsers;
 
           $subgroups[] = $subgroupToSave;
         }
@@ -349,17 +349,18 @@ class EventRepository implements IEventRepository
 
       $results->groups = $groups;
 
-      $all = array();
+      $allUsers = array();
       // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
       // a circular dependency and RAM will explodes
       foreach (User::orderBy('surname')
                    ->get() as $user) {
-        $all[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
+        $allUsers[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
       }
 
-      $results->allUsers = $all;
+      $results->allUsers = $allUsers;
     } else {
-      $all = array();
+      $allUsers = array();
+      $allUserIds = array();
       $allSubgroups = array();
 
       $groups = array();
@@ -370,15 +371,16 @@ class EventRepository implements IEventRepository
         $groupToSave->id = $group->id;
         $groupToSave->name = $group->name;
 
-        $usersMemberOfGroup = array();
-        foreach ($group->getUsersOrderedBySurname() as $userMemberOfGroup) {
-          $user = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup, $event, $anonymous);
-          $usersMemberOfGroup[] = $user;
-          if (!in_array($user, $all)) {
-            $all[] = $user;
+        $groupResultUsers = array();
+        foreach ($group->getUsersOrderedBySurname() as $gUser) {
+          $user = $this->eventDecisionRepository->getDecisionForUser($gUser, $event, $anonymous);
+          $groupResultUsers[] = $user;
+          if (!in_array($gUser->id, $allUserIds)) {
+            $allUsers[] = $user;
+            $allUserIds[] = $gUser->id;
           }
         }
-        $groupToSave->users = $usersMemberOfGroup;
+        $groupToSave->users = $groupResultUsers;
 
         $subgroups = array();
         foreach ($group->getSubgroupsOrdered() as $subgroup) {
@@ -389,16 +391,17 @@ class EventRepository implements IEventRepository
           $subgroupToSave->parent_group_name = $subgroup->group()->name;
           $subgroupToSave->parent_group_id = $subgroup->group_id;
 
-          $usersMemberOfSubgroup = array();
+          $subgroupResultUsers = array();
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
-            $usersMemberOfSubgroup[] = $user;
-            if (!in_array($user, $all)) {
-              $all[] = $user;
+            $subgroupResultUsers[] = $user;
+            if (!in_array($sUser->id, $allUserIds)) {
+              $allUsers[] = $user;
+              $allUserIds[] = $sUser->id;
             }
           }
 
-          $subgroupToSave->users = $usersMemberOfSubgroup;
+          $subgroupToSave->users = $subgroupResultUsers;
 
           $subgroups[] = $subgroupToSave;
           $allSubgroups[] = $subgroupToSave;
@@ -422,16 +425,17 @@ class EventRepository implements IEventRepository
         $subgroupToSave->parent_group_name = $subgroup->group()->name;
         $subgroupToSave->parent_group_id = $subgroup->group_id;
 
-        $usersMemberOfSubgroup = array();
+        $subgroupResultUsers = array();
         foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
           $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
-          $usersMemberOfSubgroup[] = $user;
-          if (!in_array($user, $all)) {
-            $all[] = $user;
+          $subgroupResultUsers[] = $user;
+          if (!in_array($sUser->id, $allUserIds)) {
+            $allUsers[] = $user;
+            $allUserIds[] = $sUser->id;
           }
         }
 
-        $subgroupToSave->users = $usersMemberOfSubgroup;
+        $subgroupToSave->users = $subgroupResultUsers;
 
         if (!in_array($subgroupToSave, $allSubgroups)) {
           $subgroups[] = $subgroupToSave;
@@ -442,7 +446,7 @@ class EventRepository implements IEventRepository
 
       $results->groups = $groups;
 
-      $results->allUsers = $all;
+      $results->allUsers = $allUsers;
     }
     $results->anonymous = $anonymous;
     return $results;
@@ -514,20 +518,17 @@ class EventRepository implements IEventRepository
    * @param EventUserVotedForDecision $eventUserVotedForDecision
    * @return stdClass|null
    */
-  public function getUserDecisionReturnable($eventUserVotedForDecision) {
-    $userDecision = null;
-
-    if ($eventUserVotedForDecision != null) {
-      $userDecision = new stdClass();
-      $userDecision->id = $eventUserVotedForDecision->decision()->id;
-      $userDecision->decision = $eventUserVotedForDecision->decision()->decision;
-      $userDecision->event_id = $eventUserVotedForDecision->decision()->event_id;
-      $userDecision->show_in_calendar = $eventUserVotedForDecision->decision()->showInCalendar;
-      $userDecision->color = $eventUserVotedForDecision->decision()->color;
-      $userDecision->created_at = $eventUserVotedForDecision->decision()->created_at;
-      $userDecision->updated_at = $eventUserVotedForDecision->decision()->updated_at;
-      $userDecision->additional_information = $eventUserVotedForDecision->additionalInformation;
-    }
+  public function getUserDecisionReturnable(EventUserVotedForDecision $eventUserVotedForDecision) {
+    $decision = $eventUserVotedForDecision->decision();
+    $userDecision = new stdClass();
+    $userDecision->id = $decision->id;
+    $userDecision->decision = $decision->decision;
+    $userDecision->event_id = $decision->event_id;
+    $userDecision->show_in_calendar = $decision->showInCalendar;
+    $userDecision->color = $decision->color;
+    $userDecision->created_at = $decision->created_at;
+    $userDecision->updated_at = $decision->updated_at;
+    $userDecision->additional_information = $eventUserVotedForDecision->additionalInformation;
 
     return $userDecision;
   }
