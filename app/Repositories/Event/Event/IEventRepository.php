@@ -73,8 +73,8 @@ interface IEventRepository
   public function getPotentialVotersForEvent(Event $event);
 
   /**
-   * @param EventUserVotedForDecision $eventUserVotedForDecision
+   * @param EventUserVotedForDecision|null $eventUserVotedForDecision
    * @return stdClass|null
    */
-  public function getUserDecisionReturnable(EventUserVotedForDecision $eventUserVotedForDecision);
+  public function getUserDecisionReturnable(?EventUserVotedForDecision $eventUserVotedForDecision);
 }

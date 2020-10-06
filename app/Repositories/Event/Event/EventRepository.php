@@ -515,20 +515,23 @@ class EventRepository implements IEventRepository
   }
 
   /**
-   * @param EventUserVotedForDecision $eventUserVotedForDecision
+   * @param EventUserVotedForDecision|null $eventUserVotedForDecision
    * @return stdClass|null
    */
-  public function getUserDecisionReturnable(EventUserVotedForDecision $eventUserVotedForDecision) {
-    $decision = $eventUserVotedForDecision->decision();
-    $userDecision = new stdClass();
-    $userDecision->id = $decision->id;
-    $userDecision->decision = $decision->decision;
-    $userDecision->event_id = $decision->event_id;
-    $userDecision->show_in_calendar = $decision->showInCalendar;
-    $userDecision->color = $decision->color;
-    $userDecision->created_at = $decision->created_at;
-    $userDecision->updated_at = $decision->updated_at;
-    $userDecision->additional_information = $eventUserVotedForDecision->additionalInformation;
+  public function getUserDecisionReturnable(?EventUserVotedForDecision $eventUserVotedForDecision) {
+    $userDecision = null;
+    if ($eventUserVotedForDecision != null) {
+      $decision = $eventUserVotedForDecision->decision();
+      $userDecision = new stdClass();
+      $userDecision->id = $decision->id;
+      $userDecision->decision = $decision->decision;
+      $userDecision->event_id = $decision->event_id;
+      $userDecision->show_in_calendar = $decision->showInCalendar;
+      $userDecision->color = $decision->color;
+      $userDecision->created_at = $decision->created_at;
+      $userDecision->updated_at = $decision->updated_at;
+      $userDecision->additional_information = $eventUserVotedForDecision->additionalInformation;
+    }
 
     return $userDecision;
   }
