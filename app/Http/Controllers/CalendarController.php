@@ -254,7 +254,7 @@ class CalendarController extends Controller
                           ->setStatus('CONFIRMED')
                           ->setCreated(new DateTime($user->created_at))
                           ->setOrganizer($appOrganizer)
-                          ->setSummary($user->firstname . ' ' . $user->surname . '\'s Geburtstag')
+                          ->setSummary($user->getName() . '\'s Geburtstag')
                           ->setUid('userBirthday' . $user->id);
 
             $calendar->addEvent($birthdayEvent);

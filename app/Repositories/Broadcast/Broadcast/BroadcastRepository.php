@@ -68,7 +68,7 @@ class BroadcastRepository implements IBroadcastRepository
     $toReturnBroadcast->id = $broadcast->id;
     $toReturnBroadcast->subject = $broadcast->subject;
     $toReturnBroadcast->body = $broadcast->body;
-    $toReturnBroadcast->writer_name = $broadcast->writer()->firstname . ' ' . $broadcast->writer()->surname;
+    $toReturnBroadcast->writer_name = $broadcast->writer()->getName();
     $toReturnBroadcast->writer_user_id = $broadcast->writer_user_id;
     $toReturnBroadcast->for_everyone = $broadcast->forEveryone;
     $toReturnBroadcast->created_at = $broadcast->created_at;
@@ -269,7 +269,7 @@ class BroadcastRepository implements IBroadcastRepository
     if ($broadcast->writer()->hasEmailAddresses()) {
       $writerEmailAddress = $broadcast->writer()->getEmailAddresses()[0];
     }
-    $writerName = $broadcast->writer()->firstname . " " . $broadcast->writer()->surname;
+    $writerName = $broadcast->writer()->getName();
 
     foreach ($broadcastUserInfos as $broadcastUserInfo) {
       $time->add(new DateInterval('PT' . 1 . 'M'));

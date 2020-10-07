@@ -177,7 +177,7 @@ class User extends Model
    * @param string $permission
    * @return bool
    */
-  public function hasPermission($permission) {
+  public function hasPermission(string $permission) {
     if ($this->permissions()
              ->where('permission', '=', 'root.administration')
              ->first() != null) {
@@ -191,6 +191,13 @@ class User extends Model
     }
 
     return false;
+  }
+
+  /**
+   * @return string
+   */
+  public function getName(): string {
+    return $this->firstname . ' ' . $this->surname;
   }
 
   /**

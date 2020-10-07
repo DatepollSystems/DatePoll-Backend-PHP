@@ -50,7 +50,7 @@ class Log extends Model
     $returnable = $this;
 
     if ($this->user_id != null) {
-      $returnable->user_name = $this->user()->firstname . ' ' . $this->user()->surname;
+      $returnable->user_name = $this->user()->getName();
     }
 
     return $returnable;
