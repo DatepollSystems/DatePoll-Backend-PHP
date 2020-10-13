@@ -86,6 +86,19 @@ class SettingRepository implements ISettingRepository
   }
 
   /**
+   * @return string
+   */
+  public function getBackendUrl(): string {
+    $url = $this->getUrl();
+    if (str_contains($url, 'localhost')) {
+      return 'http://localhost:9130';
+    } else {
+      $urlWithoutPort = explode(":", $url);
+      return $urlWithoutPort[0] .  $urlWithoutPort[1] . ':9230';
+    }
+  }
+
+  /**
    * @param string $url
    * @return string
    */

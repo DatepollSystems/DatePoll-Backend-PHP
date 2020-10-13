@@ -45,6 +45,11 @@ interface ISettingRepository
   public function getUrl(): string;
 
   /**
+   * @return string
+   */
+  public function getBackendUrl(): string;
+
+  /**
    * @param string $url
    * @return string
    */

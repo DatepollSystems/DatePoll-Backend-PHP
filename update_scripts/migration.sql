@@ -111,3 +111,9 @@ ALTER TABLE logs
     ADD COLUMN user_id INT UNSIGNED;
 ALTER TABLE logs
     ADD FOREIGN KEY (user_id) REFERENCES `users` (`id`);
+
+# 6 to 7
+# -------------------------------------------------------------------------------------------
+ALTER TABLE event_dates ADD date_dt DATETIME;
+UPDATE event_dates SET date_dt = STR_TO_DATE(event_dates.date, '%Y-%c-%d %H:%i:%s');
+ALTER TABLE event_dates DROP date, RENAME COLUMN date_dt TO date;

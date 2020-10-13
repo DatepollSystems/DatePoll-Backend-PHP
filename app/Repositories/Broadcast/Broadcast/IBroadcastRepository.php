@@ -7,8 +7,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
-interface IBroadcastRepository
-{
+interface IBroadcastRepository {
 
   /**
    * @return Broadcast[]|Collection
@@ -44,13 +43,14 @@ interface IBroadcastRepository
    * @param string $bodyHTML
    * @param string $body
    * @param int $writerId
-   * @param int[] $groups
-   * @param int[] $subgroups
+   * @param array $groups
+   * @param array $subgroups
    * @param bool $forEveryone
+   * @param array $attachments
    * @return Broadcast | null
-   * @throws Exception
    */
-  public function create(string $subject, string $bodyHTML, string $body, int $writerId, $groups, $subgroups, bool $forEveryone);
+  public function create(string $subject, string $bodyHTML, string $body, int $writerId, array $groups, array $subgroups,
+                         bool $forEveryone, array $attachments);
 
   /**
    * @param Broadcast $broadcast

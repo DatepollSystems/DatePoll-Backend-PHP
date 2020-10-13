@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Broadcasts\BroadcastAttachment;
 use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -10,14 +11,13 @@ class BroadcastMail extends ADatePollMailable
 {
   use Queueable, SerializesModels;
 
-  public $subject;
-  public $body;
-  public $bodyHTML;
-  public $writerName;
-  public $emailAddress;
-  public $DatePollAddress;
-
-  protected $settingRepository = null;
+  public string $mSubject;
+  public string $body;
+  public string $bodyHTML;
+  public string $writerName;
+  public string $emailAddress;
+  public string $DatePollAddress;
+  public string $mAttachments = '';
 
   /**
    * Create a new message instance.
@@ -27,15 +27,14 @@ class BroadcastMail extends ADatePollMailable
    * @param string $bodyHTML
    * @param string $writerName
    * @param string $emailAddress
-   * @param ISettingRepository $settingRepository
+   * @param string $DatePollAddress
+   * @param string $mAttachments
    */
-  public function __construct($subject, $body, $bodyHTML, $writerName, $emailAddress, ISettingRepository $settingRepository) {
+  public function __construct(string $subject, string $body, string $bodyHTML, string $writerName, string $emailAddress, string $DatePollAddress, string $mAttachments) {
     parent::__construct('broadcast');
 
-    $this->settingRepository = $settingRepository;
-
-    $this->DatePollAddress = $this->settingRepository->getUrl();
-    $this->subject = $subject;
+    $this->DatePollAddress = $DatePollAddress;
+    $this->mSubject = $subject;
     $this->body = $body;
     $this->bodyHTML = $bodyHTML;
     $this->writerName = $writerName;
@@ -43,6 +42,8 @@ class BroadcastMail extends ADatePollMailable
       $emailAddress = env('MAIL_FROM_ADDRESS');
     }
     $this->emailAddress = $emailAddress;
+    $this->mAttachments = $mAttachments;
+
   }
 
   /**
@@ -51,7 +52,7 @@ class BroadcastMail extends ADatePollMailable
    * @return $this
    */
   public function build() {
-    return $this->subject('» ' . $this->subject)
+    return $this->subject('» ' . $this->mSubject)
                 ->from(env('MAIL_FROM_ADDRESS'), $this->writerName)
                 ->replyTo($this->emailAddress, $this->writerName)
                 ->view('emails.broadcast.broadcast')
