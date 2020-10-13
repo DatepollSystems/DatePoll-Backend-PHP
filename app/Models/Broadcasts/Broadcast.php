@@ -23,6 +23,7 @@ use stdClass;
  * @property BroadcastForGroup[] $broadcastsForGroups
  * @property BroadcastForSubgroup[] $broadcastsForSubgroups
  * @property BroadcastUserInfo[] $usersInfo
+ * @property BroadcastAttachment[] $broadcastAttachment
  */
 class Broadcast extends Model
 {
@@ -75,5 +76,13 @@ class Broadcast extends Model
   public function usersInfo() {
     return $this->hasMany('App\Models\Broadcasts\BroadcastUserInfo')
                 ->get();
+  }
+
+  /**
+   * @return Collection | BroadcastAttachment[] | null
+   */
+  public function attachments() {
+    return $this->hasMany(BroadcastAttachment::class)
+      ->get();
   }
 }

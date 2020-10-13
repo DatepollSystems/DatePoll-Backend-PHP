@@ -1,1 +1,3 @@
 {{$body}}
+
+<div> {!! $mAttachments !!} </div>

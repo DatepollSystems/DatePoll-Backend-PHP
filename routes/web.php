@@ -6,6 +6,7 @@
 |--------------------------------------------------------------------------
 */
 
+use App\Http\Middleware\Broadcasts\BroadcastsFeatureMiddleware;
 use App\Http\Middleware\System\LogsPermissionMiddleware;
 
 $router->get('/', function () use ($router) {
@@ -16,10 +17,15 @@ $router->get('/', function () use ($router) {
 $router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);
 $router->get('calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 
+/** Broadcast attachment download route */
+$router->get('attachment/{token}',
+             ['uses' => 'BroadcastControllers\BroadcastController@attachmentDownload', 'middleware' => [BroadcastsFeatureMiddleware::class]]);
+
 /** Log viewer */
-$router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer', 'middleware' => ['jwt.auth', LogsPermissionMiddleware::class]], function() use ($router) {
-  $router->get('logs', 'LogViewerController@index');
-});
+$router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer', 'middleware' => ['jwt.auth', LogsPermissionMiddleware::class]],
+  function () use ($router) {
+    $router->get('logs', 'LogViewerController@index');
+  });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
@@ -29,9 +35,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
   /** Auth routes */
   require(__DIR__ . '/AuthRoutes.php');
 
-  $router->group([
-    'prefix' => 'v1',
-    'middleware' => 'jwt.auth'], function () use ($router) {
+  $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
 
     /** System */
     require(__DIR__ . '/SystemRoutes.php');

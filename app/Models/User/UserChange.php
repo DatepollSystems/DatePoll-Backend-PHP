@@ -16,6 +16,7 @@ use stdClass;
  * @property string $created_at
  * @property string $updated_at
  * @property User $user
+ * @property User $editor
  */
 class UserChange extends Model
 {
@@ -54,10 +55,8 @@ class UserChange extends Model
    */
   public function getReturnable() {
     $dto = $this;
-    $user = $this->user();
-    $editor = $this->editor();
-    $dto->editor_name = $editor->firstname . ' ' . $editor->surname;
-    $dto->user_name = $user->firstname . ' ' . $user->surname;
+    $dto->editor_name = $this->editor()->getName();
+    $dto->user_name = $this->user()->getName();
     return $dto;
   }
 }

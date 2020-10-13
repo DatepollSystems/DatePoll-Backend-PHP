@@ -38,7 +38,7 @@ interface IEventRepository
    * @return Event|null
    * @throws Exception
    */
-  public function createOrUpdateEvent(string $name, bool $forEveryone, $description, array $decisions, array $dates, Event $event = null);
+  public function createOrUpdateEvent(string $name, bool $forEveryone, string $description, array $decisions, array $dates, Event $event = null);
 
   /**
    * @param Event $event
@@ -51,7 +51,7 @@ interface IEventRepository
    * @param Event $event
    * @return stdClass
    */
-  public function getReturnable($event);
+  public function getReturnable(Event $event);
 
   /**
    * @param Event $event
@@ -73,8 +73,8 @@ interface IEventRepository
   public function getPotentialVotersForEvent(Event $event);
 
   /**
-   * @param EventUserVotedForDecision $eventUserVotedForDecision
+   * @param EventUserVotedForDecision|null $eventUserVotedForDecision
    * @return stdClass|null
    */
-  public function getUserDecisionReturnable($eventUserVotedForDecision);
+  public function getUserDecisionReturnable(?EventUserVotedForDecision $eventUserVotedForDecision);
 }

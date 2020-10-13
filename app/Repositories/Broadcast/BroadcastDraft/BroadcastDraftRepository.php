@@ -45,7 +45,7 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository
     $toReturnDraft->subject = $draft->subject;
     $toReturnDraft->body = $draft->body;
     $toReturnDraft->bodyHTML = $draft->bodyHTML;
-    $toReturnDraft->writer_name = $draft->writer()->firstname . ' ' . $draft->writer()->surname;
+    $toReturnDraft->writer_name = $draft->writer()->getName();
     $toReturnDraft->writer_user_id = $draft->writer_user_id;
     $toReturnDraft->created_at = $draft->created_at;
     $toReturnDraft->updated_at = $draft->updated_at;

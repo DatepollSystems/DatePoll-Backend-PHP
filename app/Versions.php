@@ -4,10 +4,10 @@ namespace App;
 
 class Versions
 {
-  private static string $application_version_string = '0.9.0';
-  private static int $application_version = 22;
+  private static string $application_version_string = '0.9.1';
+  private static int $application_version = 23;
 
-  private static int $database_version = 6;
+  private static int $database_version = 7;
 
   /**
    * @return string
