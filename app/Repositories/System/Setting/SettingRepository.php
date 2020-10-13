@@ -94,7 +94,7 @@ class SettingRepository implements ISettingRepository
       return 'http://localhost:9130';
     } else {
       $urlWithoutPort = explode(":", $url);
-      return $urlWithoutPort[0] .  $urlWithoutPort[1] . ':9230';
+      return $urlWithoutPort[0] . ':' . $urlWithoutPort[1] . ':9230';
     }
   }
 
