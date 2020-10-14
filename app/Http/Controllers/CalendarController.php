@@ -30,13 +30,13 @@ use Jsvrcek\ICS\Utility\Formatter;
 class CalendarController extends Controller
 {
 
-  protected $userTokenRepository = null;
-  protected $settingRepository = null;
-  protected $userRepository = null;
-  protected $userSettingRepository = null;
-  protected $eventDateRepository = null;
-  protected $movieRepository = null;
-  protected $eventRepository = null;
+  protected IUserTokenRepository $userTokenRepository;
+  protected ISettingRepository $settingRepository;
+  protected IUserRepository $userRepository;
+  protected IUserSettingRepository $userSettingRepository;
+  protected IEventDateRepository $eventDateRepository;
+  protected IMovieRepository $movieRepository;
+  protected IEventRepository $eventRepository;
 
   public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository,
                               IUserRepository $userRepository, IUserSettingRepository $userSettingRepository,
@@ -57,7 +57,7 @@ class CalendarController extends Controller
    * @throws Exception
    * @throws CalendarEventException
    */
-  public function getCalendarOf($token) {
+  public function getCalendarOf(string $token) {
     $tokenObject = $this->userTokenRepository->getUserTokenByTokenAndPurpose($token, 'calendar');
     if ($tokenObject == null) {
       return response()->json(['msg' => 'Provided token is incorrect', 'error_code' => 'token_incorrect'], 401);
@@ -247,8 +247,8 @@ class CalendarController extends Controller
           $d = date_parse_from_format("Y-m-d", $user->birthday);
           if ($d["month"] == date('n')) {
             $birthdayEvent = new CalendarEvent();
-            $birthdayEvent->setStart($this->updateDate($user->birthday))
-                          ->setEnd($this->updateDate($user->birthday))
+            $birthdayEvent->setStart(new DateTime($this->updateDate($user->birthday) . 'T00:00:01'))
+                          ->setEnd(new DateTime($this->updateDate($user->birthday) . 'T00:00:02'))
                           ->setAllDay(true)
                           ->setSequence(1)
                           ->setStatus('CONFIRMED')
@@ -273,14 +273,14 @@ class CalendarController extends Controller
   }
 
   /**
-   * @param String $dateString
-   * @return DateTime
+   * @param string $dateString
+   * @return string
    * @throws Exception
    */
-  private function updateDate($dateString) {
+  private function updateDate(string $dateString) {
     $suppliedDate = new DateTime($dateString);
     $currentYear = (int)(new DateTime())->format('Y');
-    return (new DateTime())->setDate($currentYear, (int)$suppliedDate->format('m'), (int)$suppliedDate->format('d'));
+    return $currentYear . '-' . (int)$suppliedDate->format('m') . '-' . (int)$suppliedDate->format('d');
   }
 
   /**

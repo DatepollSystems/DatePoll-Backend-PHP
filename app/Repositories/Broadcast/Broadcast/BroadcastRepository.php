@@ -12,6 +12,7 @@ use App\Models\Broadcasts\BroadcastForSubgroup;
 use App\Models\Broadcasts\BroadcastUserInfo;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
+use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use DateInterval;
@@ -21,15 +22,17 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Queue;
 use stdClass;
 
-class BroadcastRepository implements IBroadcastRepository
-{
+class BroadcastRepository implements IBroadcastRepository {
 
-  protected $settingRepository = null;
-  protected $groupRepository = null;
+  protected ISettingRepository $settingRepository;
+  protected IGroupRepository $groupRepository;
+  protected IBroadcastAttachmentRepository $broadcastAttachmentRepository;
 
-  public function __construct(ISettingRepository $settingRepository, IGroupRepository $groupRepository) {
+  public function __construct(ISettingRepository $settingRepository, IGroupRepository $groupRepository,
+                              IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
     $this->settingRepository = $settingRepository;
     $this->groupRepository = $groupRepository;
+    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
   }
 
   /**
@@ -37,7 +40,7 @@ class BroadcastRepository implements IBroadcastRepository
    */
   public function getAllBroadcastsOrderedByDate() {
     return Broadcast::orderBy('created_at', 'DESC')
-                    ->get();
+      ->get();
   }
 
   /**
@@ -98,6 +101,13 @@ class BroadcastRepository implements IBroadcastRepository
     }
     $toReturnBroadcast->subgroups = $toReturnSubgroups;
 
+    $toReturnAttachments =  array();
+    $attachments = $broadcast->attachments();
+    foreach ($attachments as $attachment) {
+      $toReturnAttachments[] = $attachment;
+    }
+    $toReturnBroadcast->attachments = $toReturnAttachments;
+
     return $toReturnBroadcast;
   }
 
@@ -112,8 +122,8 @@ class BroadcastRepository implements IBroadcastRepository
 
     $userInfos = [];
     foreach (BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)
-                              ->orderBy('sent')
-                              ->get() as $userInfo) {
+               ->orderBy('sent')
+               ->get() as $userInfo) {
       $userInfoDTO = new stdClass();
       $userInfoDTO->id = $userInfo->id;
       $userInfoDTO->broadcast_id = $userInfo->broadcast_id;
@@ -139,17 +149,19 @@ class BroadcastRepository implements IBroadcastRepository
    * @param int[] $groups
    * @param int[] $subgroups
    * @param bool $forEveryone
+   * @param array $attachments
    * @return Broadcast | null
    * @throws Exception
    */
-  public function create(string $subject, string $bodyHTML, string $body, int $writerId, $groups, $subgroups,
-                         bool $forEveryone) {
+  public function create(string $subject, string $bodyHTML, string $body, int $writerId, array $groups,
+                         array $subgroups,
+                         bool $forEveryone, array $attachments) {
     $broadcast = new Broadcast([
-      'subject' => $subject,
-      'bodyHTML' => $bodyHTML,
-      'body' => $body,
-      'writer_user_id' => $writerId,
-      'forEveryone' => $forEveryone]);
+                                 'subject' => $subject,
+                                 'bodyHTML' => $bodyHTML,
+                                 'body' => $body,
+                                 'writer_user_id' => $writerId,
+                                 'forEveryone' => $forEveryone]);
 
     if (!$broadcast->save()) {
       Logging::error('createBroadcast', 'Broadcast failed to create! User id - ' . $writerId);
@@ -168,14 +180,14 @@ class BroadcastRepository implements IBroadcastRepository
 
         if ($group == null) {
           Logging::error('createBroadcast',
-            'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
+                         'Broadcast failed to create! Unknown group_id - ' . $groupId . ' User id - ' . $writerId);
           $broadcast->delete();
           return null;
         }
 
         $broadcastForGroup = new BroadcastForGroup([
-          'broadcast_id' => $broadcast->id,
-          'group_id' => $groupId]);
+                                                     'broadcast_id' => $broadcast->id,
+                                                     'group_id' => $groupId]);
         if (!$broadcastForGroup->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastForGroup');
           $broadcast->delete();
@@ -194,14 +206,14 @@ class BroadcastRepository implements IBroadcastRepository
 
         if ($subgroup == null) {
           Logging::error('createBroadcast',
-            'Broadcast failed to create! Unknown subgroup_id - ' . $subgroupId . ' User id - ' . $writerId);
+                         'Broadcast failed to create! Unknown subgroup_id - ' . $subgroupId . ' User id - ' . $writerId);
           $broadcast->delete();
           return null;
         }
 
         $broadcastForSubgroup = new BroadcastForSubgroup([
-          'broadcast_id' => $broadcast->id,
-          'subgroup_id' => $subgroupId]);
+                                                           'broadcast_id' => $broadcast->id,
+                                                           'subgroup_id' => $subgroupId]);
         if (!$broadcastForSubgroup->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastForSubgroup');
           $broadcast->delete();
@@ -219,20 +231,44 @@ class BroadcastRepository implements IBroadcastRepository
       }
     }
 
+    $DatePollAddress = $this->settingRepository->getUrl();
+    $backendUrl = $this->settingRepository->getBackendUrl();
+
+    $mAttachments = '';
+    $happened = false;
+    foreach ($attachments as $attachmentId) {
+      $attachment = $this->broadcastAttachmentRepository->getAttachmentById((int) $attachmentId);
+
+      if ($attachment == null) {
+        Logging::error('createBroadcast',
+                       'Broadcast failed to create! Unknown attachment_id - ' . $attachmentId . ' User id - ' . $writerId);
+        $broadcast->delete();
+        return null;
+      }
+      $happened = true;
+
+      $attachment->broadcast_id = $broadcast->id;
+      $attachment->save();
+      $mAttachments = $mAttachments . '> <a href="' . $backendUrl . '/attachment/' . $attachment->token . '">' . $attachment->name . '</a><br>';
+    }
+
+    if ($happened) {
+      $mAttachments = '================= Anhänge =================<br>' . $mAttachments . '========================================<br>';
+    }
+
     $writer = User::find($writerId);
     $writerEmailAddress = null;
     if ($writer->hasEmailAddresses()) {
       $writerEmailAddress = $writer->getEmailAddresses()[0];
     }
 
-
     $time = new DateTime();
     foreach ($users as $user) {
       if ($user->hasEmailAddresses() && $user->activated && !$user->information_denied) {
         $broadcastUserInfo = new BroadcastUserInfo([
-          'broadcast_id' => $broadcast->id,
-          'user_id' => $user->id,
-          'sent' => false]);
+                                                     'broadcast_id' => $broadcast->id,
+                                                     'user_id' => $user->id,
+                                                     'sent' => false]);
         if (!$broadcastUserInfo->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastUserInfo | User id - ' . $user->id);
           $broadcast->delete();
@@ -240,8 +276,8 @@ class BroadcastRepository implements IBroadcastRepository
         }
 
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->firstname . " " . $writer->surname,
-          $writerEmailAddress, $this->settingRepository);
+        $broadcastMail = new BroadcastMail($subject, $body, $bodyHTML, $writer->getName(),
+                                           $writerEmailAddress, $DatePollAddress, $mAttachments);
         $sendEmailJob = new SendEmailJob($broadcastMail, $user->getEmailAddresses());
         $sendEmailJob->broadcastId = $broadcast->id;
         $sendEmailJob->userId = $user->id;
@@ -260,8 +296,25 @@ class BroadcastRepository implements IBroadcastRepository
    */
   public function reQueueNotSentBroadcastsForBroadcast(Broadcast $broadcast) {
     $broadcastUserInfos = BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)
-                                           ->where('sent', '=', false)
-                                           ->get();
+      ->where('sent', '=', false)
+      ->get();
+
+    $DatePollAddress = $this->settingRepository->getUrl();
+    $backendUrl = $this->settingRepository->getBackendUrl();
+
+    $mAttachments = '';
+    $happened = false;
+    foreach ($this->broadcastAttachmentRepository->getAttachmentsByBroadcastId($broadcast->id) as $attachment) {
+      $happened = true;
+
+      $attachment->broadcast_id = $broadcast->id;
+      $attachment->save();
+      $mAttachments = $mAttachments . '> <a href="' . $backendUrl . '/attachment/' . $attachment->token . '">' . $attachment->name . '</a><br>';
+    }
+
+    if ($happened) {
+      $mAttachments = '================= Anhänge =================<br>' . $mAttachments . '========================================<br>';
+    }
 
     $time = new DateTime();
 
@@ -274,7 +327,7 @@ class BroadcastRepository implements IBroadcastRepository
     foreach ($broadcastUserInfos as $broadcastUserInfo) {
       $time->add(new DateInterval('PT' . 1 . 'M'));
       $broadcastMail = new BroadcastMail($broadcast->subject, $broadcast->body, $broadcast->bodyHTML,
-        $writerName, $writerEmailAddress, $this->settingRepository);
+                                         $writerName, $writerEmailAddress, $DatePollAddress, $mAttachments);
       $sendEmailJob = new SendEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses());
       $sendEmailJob->broadcastId = $broadcast->id;
       $sendEmailJob->userId = $broadcastUserInfo->user()->id;
@@ -290,6 +343,13 @@ class BroadcastRepository implements IBroadcastRepository
    * @throws Exception
    */
   public function delete(Broadcast $broadcast) {
+    $broadcastAttachments = $broadcast->attachments();
+    foreach ($broadcastAttachments as $attachment) {
+      if (!$this->broadcastAttachmentRepository->deleteAttachment($attachment)) {
+        Logging::error('deleteAttachment of delete Broadcast', 'Could not delete attachment');
+        return false;
+      }
+    }
     return $broadcast->delete();
   }
 
@@ -301,13 +361,13 @@ class BroadcastRepository implements IBroadcastRepository
   public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1) {
     if ($limit != -1) {
       $broadcastUserInfos = BroadcastUserInfo::where('user_id', '=', $userId)
-                                             ->orderBy('created_at', 'DESC')
-                                             ->limit($limit)
-                                             ->get();
+        ->orderBy('created_at', 'DESC')
+        ->limit($limit)
+        ->get();
     } else {
       $broadcastUserInfos = BroadcastUserInfo::where('user_id', '=', $userId)
-                                             ->orderBy('created_at', 'DESC')
-                                             ->get();
+        ->orderBy('created_at', 'DESC')
+        ->get();
     }
 
     $broadcasts = array();
@@ -325,9 +385,9 @@ class BroadcastRepository implements IBroadcastRepository
    */
   public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId) {
     $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $userId)
-                                          ->where('broadcast_id', '=', $broadcastId)
-                                          ->orderBy('created_at', 'DESC')
-                                          ->first();
+      ->where('broadcast_id', '=', $broadcastId)
+      ->orderBy('created_at', 'DESC')
+      ->first();
     return $broadcastUserInfo != null;
   }
 }

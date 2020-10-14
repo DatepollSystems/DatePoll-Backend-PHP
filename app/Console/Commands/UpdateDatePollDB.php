@@ -109,6 +109,12 @@ class UpdateDatePollDB extends ACommand
             return;
           }
           break;
+        case 7:
+          if (!$this->migrateDatabaseVersionFrom6To7()) {
+            $this->log('handle', 'Migration failed!', LogTypes::WARNING);
+            return;
+          }
+          break;
       }
 
       $this->log('handle', 'Saving new database version', LogTypes::INFO);
@@ -348,6 +354,28 @@ class UpdateDatePollDB extends ACommand
 
     $this->log('db-migrate-' . $version, 'Running database migrations finished!', LogTypes::INFO);
     $this->log('db-migrate-' . $version, 'Running migration from 5 to 6 finished!', LogTypes::INFO);
+    return true;
+  }
+
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom6To7(): bool {
+    $version = '6To7';
+    $this->log('db-migrate-' . $version, 'Running migration from 6 to 7', LogTypes::INFO);
+
+    $this->log('db-migrate-' . $version, 'Altering table dates migrate date from varchar to date', LogTypes::INFO);
+    try {
+      $this->runDbStatement($version, 'ALTER TABLE event_dates ADD date_dt DATETIME;');
+      $this->runDbStatement($version, 'UPDATE event_dates SET date_dt = STR_TO_DATE(event_dates.date, \'%Y-%c-%d %H:%i:%s\');');
+      $this->runDbStatement($version, 'ALTER TABLE event_dates DROP date, RENAME COLUMN date_dt TO date;');
+    } catch (Exception $exception) {
+      $this->log('db-migrate-' . $version, 'Database migrations failed!', LogTypes::ERROR);
+      return false;
+    }
+
+    $this->log('db-migrate-' . $version, 'Running database migrations finished!', LogTypes::INFO);
+    $this->log('db-migrate-' . $version, 'Running migration from 6 to 7 finished!', LogTypes::INFO);
     return true;
   }
 

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMultipleClassesDeclarationsInOneFile */
 
 namespace App\Repositories\System\Setting;
 
@@ -83,6 +83,19 @@ class SettingRepository implements ISettingRepository
    */
   public function getUrl(): string {
     return $this->getStringValueByKey(SettingKey::URL, 'https://datepoll.org');
+  }
+
+  /**
+   * @return string
+   */
+  public function getBackendUrl(): string {
+    $url = $this->getUrl();
+    if (str_contains($url, 'localhost')) {
+      return 'http://localhost:9130';
+    } else {
+      $urlWithoutPort = explode(":", $url);
+      return $urlWithoutPort[0] . ':' . $urlWithoutPort[1] . ':9230';
+    }
   }
 
   /**

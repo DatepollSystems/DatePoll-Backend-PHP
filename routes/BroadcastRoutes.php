@@ -18,6 +18,10 @@ $router->group(['prefix' => 'broadcast', 'middleware' => [BroadcastsFeatureMiddl
       $router->get('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@getSentReceiptReturnable']);
       $router->delete('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@delete']);
 
+      /** Attachments */
+      $router->post('attachment', ['uses' => 'BroadcastControllers\BroadcastController@attachmentsUpload']);
+      $router->delete('attachment/{id}', ['uses' => 'BroadcastControllers\BroadcastController@attachmentDelete']);
+
       /** Drafts */
       $router->get('draft', ['uses' => 'BroadcastControllers\BroadcastDraftController@getAll']);
       $router->post('draft', ['uses' => 'BroadcastControllers\BroadcastDraftController@create']);
