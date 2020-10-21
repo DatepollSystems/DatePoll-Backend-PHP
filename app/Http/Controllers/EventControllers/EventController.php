@@ -3,19 +3,21 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
 
-  protected $eventRepository = null;
-  protected $eventDateRepository = null;
+  protected IEventRepository $eventRepository;
+  protected IEventDateRepository $eventDateRepository;
 
   public function __construct(IEventRepository $eventRepository, IEventDateRepository $eventDateRepository) {
     $this->eventRepository = $eventRepository;
@@ -43,7 +45,7 @@ class EventController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, $id) {
+  public function getSingle(Request $request, int $id) {
     $event = $this->eventRepository->getEventById($id);
 
     if ($event == null) {
@@ -51,12 +53,25 @@ class EventController extends Controller
     }
 
     $user = $request->auth;
+    $anonymous = !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+      $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
+      $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS));
+    $anonymousString = true === (bool)$anonymous ? 'true' : 'false';
+
+    $cacheKey = 'events.results.anonymous.' . $anonymousString . '.' . $id;
+    if (Cache::has($cacheKey)) {
+      Logging::info('getSingleEvent', 'Receiving ' . $cacheKey . ' from cache');
+      return response()->json([
+                                'msg' => 'Event information',
+                                'event' => Cache::get($cacheKey)]);
+    }
+    Logging::info('getSingleEvent', 'Generating ' . $cacheKey . ' and saving to cache');
 
     $toReturnEvent = $this->eventRepository->getReturnable($event);
-    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event,
-      !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
-        $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
-        $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
+    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event, $anonymous);
+
+    // Time to live 2 minutes
+    Cache::put($cacheKey, $toReturnEvent, 60*2);
 
     return response()->json([
       'msg' => 'Event information',
@@ -67,6 +82,7 @@ class EventController extends Controller
    * @param Request $request
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
   public function create(Request $request) {
     $this->validate($request, [
@@ -107,8 +123,9 @@ class EventController extends Controller
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'forEveryone' => 'required|boolean',
@@ -154,7 +171,7 @@ class EventController extends Controller
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);

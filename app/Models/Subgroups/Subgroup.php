@@ -2,6 +2,7 @@
 
 namespace App\Models\Subgroups;
 
+use App\Models\Events\EventForSubgroup;
 use App\Models\Groups\Group;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -83,5 +84,13 @@ class Subgroup extends Model
       return strcmp($a->surname, $b->surname);
     });
     return $users;
+  }
+
+  /**
+   * @return Collection | EventForSubgroup[] | null
+   */
+  public function eventsForSubgroups() {
+    return $this->hasMany(EventForSubgroup::class)
+      ->get();
   }
 }

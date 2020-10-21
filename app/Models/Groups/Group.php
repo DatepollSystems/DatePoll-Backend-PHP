@@ -2,6 +2,7 @@
 
 namespace App\Models\Groups;
 
+use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -89,5 +90,13 @@ class Group extends Model
       return strcmp($a->surname, $b->surname);
     });
     return $users;
+  }
+
+  /**
+   * @return Collection | EventForGroup[] | null
+   */
+  public function eventsForGroups() {
+    return $this->hasMany(EventForGroup::class)
+      ->get();
   }
 }

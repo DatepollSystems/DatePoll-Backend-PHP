@@ -16,6 +16,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Jsvrcek\ICS\CalendarExport;
 use Jsvrcek\ICS\CalendarStream;
@@ -288,6 +289,15 @@ class CalendarController extends Controller
    * @throws Exception
    */
   public function getCompleteCalendar() {
+    $cacheKey = 'calendar.complete';
+    if (Cache::has($cacheKey)) {
+      Logging::info("getCompleteCalendar", "ICS complete calendar request answered from cache");
+      header('Content-type: text/calendar; charset=utf-8');
+      header('Content-Disposition: attachment; filename="calendar.ics"');
+      echo Cache::get($cacheKey);
+      return;
+    }
+
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
     $calendar = new Calendar();
     $timezone = 'Europe/Vienna';
@@ -337,7 +347,7 @@ class CalendarController extends Controller
     }
 
     if ($this->settingRepository->getEventsEnabled()) {
-      foreach ($this->eventRepository->getAllEventsOrderedByDate() as $event) {
+      foreach ($this->eventRepository->getAllEvents() as $event) {
         $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
 
         $geo = new Geo();
@@ -387,10 +397,12 @@ class CalendarController extends Controller
     }
 
     $calendarExport->addCalendar($calendar);
+    $stream = $calendarExport->getStream();
+    Cache::put($cacheKey, $stream, 60*60*4);
 
     Logging::info("getCompleteCalendar", "ICS complete calendar request");
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="calendar.ics"');
-    echo $calendarExport->getStream();
+    echo $stream;
   }
 }
