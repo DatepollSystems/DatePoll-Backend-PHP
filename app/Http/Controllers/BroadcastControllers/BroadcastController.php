@@ -97,7 +97,7 @@ class BroadcastController extends Controller {
 
     return response()->json([
                               'msg' => 'Successful created broadcast',
-                              'event' => $broadcast], 201);
+                              'broadcast' => $broadcast], 201);
   }
 
   /**

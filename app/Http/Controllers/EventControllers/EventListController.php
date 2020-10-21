@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class EventListController extends Controller
 {
 
-  protected $eventRepository = null;
+  protected IEventRepository $eventRepository;
 
   public function __construct(IEventRepository $eventRepository) {
     $this->eventRepository = $eventRepository;
