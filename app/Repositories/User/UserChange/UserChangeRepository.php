@@ -38,4 +38,12 @@ class UserChangeRepository implements IUserChangeRepository
   public function getAllUserChangesOrderedByDate() {
     return UserChange::orderBy('created_at', 'DESC')->get();
   }
+
+  /**
+   * @param int $id
+   * @return UserChange|null
+   */
+  public function getUserChangeById(int $id) {
+    return UserChange::find($id);
+  }
 }

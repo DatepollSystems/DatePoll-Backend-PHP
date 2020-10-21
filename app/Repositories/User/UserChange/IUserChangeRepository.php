@@ -22,4 +22,10 @@ interface IUserChangeRepository
    * @return UserChange[]|Collection
    */
   public function getAllUserChangesOrderedByDate();
+
+  /**
+   * @param int $id
+   * @return UserChange|null
+   */
+  public function getUserChangeById(int $id);
 }

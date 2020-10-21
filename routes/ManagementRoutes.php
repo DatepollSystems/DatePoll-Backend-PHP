@@ -18,6 +18,7 @@ $router->group([
   $router->post('users/activate', ['uses' => 'ManagementControllers\UsersController@activateAll']);
   $router->get('export/users', ['uses' => 'ManagementControllers\UsersController@export']);
   $router->get('changes/users', ['uses' => 'ManagementControllers\UsersController@getAllUserChanges']);
+  $router->delete('changes/users/{id}', ['uses' => 'ManagementControllers\UsersController@deleteUserChange']);
   $router->get('deleted/users', ['uses' => 'ManagementControllers\UsersController@getDeletedUsers']);
   $router->delete('deleted/users', ['uses' => 'ManagementControllers\UsersController@deleteAllDeletedUsers']);
 
