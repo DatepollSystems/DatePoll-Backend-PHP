@@ -31,7 +31,7 @@ class BroadcastMail extends ADatePollMailable
    * @param string $mAttachments
    */
   public function __construct(string $subject, string $body, string $bodyHTML, string $writerName, string $emailAddress, string $DatePollAddress, string $mAttachments) {
-    parent::__construct('broadcast');
+    parent::__construct('broadcastSending');
 
     $this->DatePollAddress = $DatePollAddress;
     $this->mSubject = $subject;
