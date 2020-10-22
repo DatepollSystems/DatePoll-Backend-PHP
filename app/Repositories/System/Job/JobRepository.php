@@ -8,6 +8,6 @@ class JobRepository implements IJobRepository
 {
 
   public function getUndoneJobs() {
-    return DB::table('jobs')->get();
+    return DB::table('jobs')->orderBy('failed_at', 'DESC')->get();
   }
 }

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class JobController extends Controller
 {
 
-  protected $jobRepository = null;
+  protected IJobRepository $jobRepository;
 
   public function __construct(IJobRepository $jobRepository)
   {
