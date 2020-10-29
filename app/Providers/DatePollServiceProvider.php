@@ -26,12 +26,14 @@ use App\Repositories\Event\EventStandardDecision\EventStandardDecisionRepository
 use App\Repositories\Event\EventStandardDecision\IEventStandardDecisionRepository;
 use App\Repositories\Event\EventStandardLocation\IEventStandardLocationRepository;
 use App\Repositories\Event\EventStandardLocation\EventStandardLocationRepository;
-use App\Repositories\Files\File\FileRepository;
-use App\Repositories\Files\File\IFileRepository;
 use App\Repositories\Group\Group\GroupRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
 use App\Repositories\Group\Subgroup\SubgroupRepository;
+use App\Repositories\SeatReservation\Place\IPlaceRepository;
+use App\Repositories\SeatReservation\Place\PlaceRepository;
+use App\Repositories\SeatReservation\UserSeatReservation\IUserSeatReservationRepository;
+use App\Repositories\SeatReservation\UserSeatReservation\UserSeatReservationRepository;
 use App\Repositories\System\DatePollServer\DatePollServerRepository;
 use App\Repositories\System\DatePollServer\IDatePollServerRepository;
 use App\Repositories\System\Job\IJobRepository;
@@ -80,6 +82,10 @@ class DatePollServiceProvider extends ServiceProvider
     $this->app->bind(IBroadcastRepository::class, BroadcastRepository::class);
     $this->app->bind(IBroadcastDraftRepository::class, BroadcastDraftRepository::class);
     $this->app->bind(IBroadcastAttachmentRepository::class, BroadcastAttachmentRepository::class);
+
+    /** Seat repositories */
+    $this->app->bind(IPlaceRepository::class, PlaceRepository::class);
+    $this->app->bind(IUserSeatReservationRepository::class, UserSeatReservationRepository::class);
 
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);

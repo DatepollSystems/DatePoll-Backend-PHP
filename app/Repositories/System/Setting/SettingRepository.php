@@ -2,14 +2,15 @@
 
 namespace App\Repositories\System\Setting;
 
-abstract class SettingKey
-{
+abstract class SettingKey {
   const CINEMA_ENABLED = "cinema_enabled";
   const CINEMA_OPENWEATHERMAP_CITY_ID = "cinema_openweathermap_city_id";
 
   const EVENTS_ENABLED = "events_enabled";
 
   const BROADCASTS_ENABLED = "broadcasts_enabled";
+
+  const SEAT_RESERVATION_ENABLED = "seat_reservation_enabled";
 
   const FILES_ENABLED = "files_enabled";
 
@@ -30,9 +31,9 @@ abstract class SettingKey
 use App\Models\System\Setting;
 use App\Models\System\SettingValueType;
 use App\Versions;
+use Illuminate\Support\Facades\Cache;
 
-class SettingRepository implements ISettingRepository
-{
+class SettingRepository implements ISettingRepository {
   /**
    * @return bool
    */
@@ -76,6 +77,21 @@ class SettingRepository implements ISettingRepository
    */
   public function setBroadcastsEnabled(bool $isEnabled): bool {
     return $this->setBoolValueByKey(SettingKey::BROADCASTS_ENABLED, $isEnabled);
+  }
+
+  /**
+   * @return bool
+   */
+  public function getSeatReservationEnabled(): bool {
+    return $this->getBoolValueByKey(SettingKey::SEAT_RESERVATION_ENABLED, true);
+  }
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setSeatReservationEnabled(bool $isEnabled): bool {
+    return $this->setBoolValueByKey(SettingKey::SEAT_RESERVATION_ENABLED, $isEnabled);
   }
 
   /**
@@ -170,7 +186,8 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   public function getCommunityPrivacyPolicy(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_PRIVACY_POLICY, 'You should provide your website privacy policy here.');
+    return $this->getStringValueByKey(SettingKey::COMMUNITY_PRIVACY_POLICY,
+                                      'You should provide your website privacy policy here.');
   }
 
   /**
@@ -251,9 +268,9 @@ class SettingRepository implements ISettingRepository
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
-        'key' => $settingKey,
-        'value' => $default]);
+                                  'type' => SettingValueType::STRING,
+                                  'key' => $settingKey,
+                                  'value' => $default]);
 
       $newSetting->save();
 
@@ -269,12 +286,13 @@ class SettingRepository implements ISettingRepository
    * @return string
    */
   private function setStringValueByKey(string $settingKey, string $value) {
+    Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
-        'key' => $settingKey,
-        'value' => $value]);
+                                  'type' => SettingValueType::STRING,
+                                  'key' => $settingKey,
+                                  'value' => $value]);
 
       $newSetting->save();
 
@@ -302,9 +320,9 @@ class SettingRepository implements ISettingRepository
       }
 
       $newSetting = new Setting([
-        'type' => SettingValueType::BOOLEAN,
-        'key' => $settingKey,
-        'value' => $valueToSave]);
+                                  'type' => SettingValueType::BOOLEAN,
+                                  'key' => $settingKey,
+                                  'value' => $valueToSave]);
 
       $newSetting->save();
 
@@ -320,6 +338,7 @@ class SettingRepository implements ISettingRepository
    * @return bool
    */
   private function setBoolValueByKey(string $settingKey, bool $value) {
+    Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
 
     if ($setting == null) {
@@ -330,9 +349,9 @@ class SettingRepository implements ISettingRepository
       }
 
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
-        'key' => $settingKey,
-        'value' => $valueToSave]);
+                                  'type' => SettingValueType::STRING,
+                                  'key' => $settingKey,
+                                  'value' => $valueToSave]);
 
       $newSetting->save();
 
@@ -350,12 +369,13 @@ class SettingRepository implements ISettingRepository
    * @return int
    */
   private function setIntegerValueByKey(string $settingKey, int $value) {
+    Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::INTEGER,
-        'key' => $settingKey,
-        'value' => $value]);
+                                  'type' => SettingValueType::INTEGER,
+                                  'key' => $settingKey,
+                                  'value' => $value]);
 
       $newSetting->save();
 
@@ -377,9 +397,9 @@ class SettingRepository implements ISettingRepository
 
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::INTEGER,
-        'key' => $settingKey,
-        'value' => $default]);
+                                  'type' => SettingValueType::INTEGER,
+                                  'key' => $settingKey,
+                                  'value' => $default]);
 
       $newSetting->save();
 
@@ -395,6 +415,6 @@ class SettingRepository implements ISettingRepository
    */
   private function getSettingValueByKey(string $settingKey) {
     return Setting::where('key', '=', $settingKey)
-                  ->first();
+      ->first();
   }
 }

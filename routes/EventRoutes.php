@@ -19,7 +19,9 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
     'middleware' => [EventsAdministrationPermissionMiddleware::class]],
     function () use ($router) {
       /** Event routes */
-      $router->get('avent', ['uses' => 'EventControllers\EventController@getAll']);
+      $router->get('avent', ['uses' => 'EventControllers\EventController@getEventsOrderedByDate']);
+      $router->get('avent/years', ['uses' => 'EventControllers\EventController@getYearsOfEvents']);
+      $router->get('avent/{year}', ['uses' => 'EventControllers\EventController@getEventsOrderedByDate']);
       $router->post('avent', ['uses' => 'EventControllers\EventController@create']);
       $router->put('avent/{id}', ['uses' => 'EventControllers\EventController@update']);
       $router->delete('avent/{id}', ['uses' => 'EventControllers\EventController@delete']);

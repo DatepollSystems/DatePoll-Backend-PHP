@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class DatePollServerController extends Controller
 {
+  private static string $SERVER_INFO_CACHE_KEY = 'server.info';
 
   protected IDatePollServerRepository $datePollServerRepository;
 
@@ -20,15 +21,14 @@ class DatePollServerController extends Controller
    * @return JsonResponse
    */
   public function getServerInfo() {
-    $cacheKey = 'server.info';
-    if (Cache::has($cacheKey)) {
-      return response()->json(Cache::get($cacheKey), 200);
+    if (Cache::has(self::$SERVER_INFO_CACHE_KEY)) {
+      return response()->json(Cache::get(self::$SERVER_INFO_CACHE_KEY), 200);
     }
 
     $serverInfo = $this->datePollServerRepository->getServerInfo();
 
     // Time to live 60 minutes
-    Cache::put($cacheKey, $serverInfo, 60*60);
+    Cache::put(self::$SERVER_INFO_CACHE_KEY, $serverInfo, 60*60);
 
     return response()->json($serverInfo, 200);
   }

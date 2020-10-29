@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
+  private static string $YEARS_CACHE_KEY = 'events.years';
 
   protected IEventRepository $eventRepository;
   protected IEventDateRepository $eventDateRepository;
@@ -27,8 +28,23 @@ class EventController extends Controller
   /**
    * @return JsonResponse
    */
-  public function getAll() {
-    $events = $this->eventRepository->getAllEventsOrderedByDate();
+  public function getYearsOfEvents() {
+    if (Cache::has(self::$YEARS_CACHE_KEY)) {
+      $years = Cache::get(self::$YEARS_CACHE_KEY);
+    } else {
+      $years = $this->eventRepository->getYearsOfEvents();
+      // Time to live 3 hours
+      Cache::put(self::$YEARS_CACHE_KEY, $years, 3*60*60);
+    }
+    return response()->json(['msg' => 'List of all years', 'years' => $years]);
+  }
+
+  /**
+   * @param int|null $year
+   * @return JsonResponse
+   */
+  public function getEventsOrderedByDate(int $year = null) {
+    $events = $this->eventRepository->getEventsOrderedByDate($year);
 
     $toReturnEvents = array();
     foreach ($events as $event) {
@@ -36,7 +52,7 @@ class EventController extends Controller
     }
 
     return response()->json([
-      'msg' => 'List of all events',
+      'msg' => 'List of all events of this year',
       'events' => $toReturnEvents]);
   }
 
@@ -70,8 +86,8 @@ class EventController extends Controller
     $toReturnEvent = $this->eventRepository->getReturnable($event);
     $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event, $anonymous);
 
-    // Time to live 2 minutes
-    Cache::put($cacheKey, $toReturnEvent, 60*2);
+    // Time to live 5 minutes
+    Cache::put($cacheKey, $toReturnEvent, 60*5);
 
     return response()->json([
       'msg' => 'Event information',
@@ -112,6 +128,8 @@ class EventController extends Controller
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
       'method' => 'GET'];
+
+    Cache::forget(self::$YEARS_CACHE_KEY);
 
     return response()->json([
       'msg' => 'Successful created event',

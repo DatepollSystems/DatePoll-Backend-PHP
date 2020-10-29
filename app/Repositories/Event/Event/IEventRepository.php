@@ -18,9 +18,15 @@ interface IEventRepository
   public function getAllEvents();
 
   /**
+   * @return string[]
+   */
+  public function getYearsOfEvents();
+
+  /**
+   * @param int|null $year
    * @return Event[]
    */
-  public function getAllEventsOrderedByDate();
+  public function getEventsOrderedByDate(int $year = null);
 
   /**
    * @param int $id

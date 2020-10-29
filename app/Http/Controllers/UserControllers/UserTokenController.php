@@ -76,11 +76,6 @@ class UserTokenController extends Controller
       $sessionToReturn->information = $session->description;
       $sessionToReturn->last_used = $session->updated_at;
 
-      $sessionToReturn->delete_session = [
-        'href' => 'api/v1/user/myself/session/' . $session->id,
-        'method' => 'DELETE'
-      ];
-
       $sessionsToReturn[] = $sessionToReturn;
     }
 

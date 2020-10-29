@@ -46,17 +46,41 @@ class EventRepository implements IEventRepository {
   }
 
   /**
+   * @return string[]
+   */
+  public function getYearsOfEvents() {
+    $years = array();
+    foreach ($this->getAllEvents() as $event) {
+      $date = date("Y", strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date));
+      if (!in_array($date, $years)) {
+        $years[] = $date;
+      }
+    }
+    usort($years, function ($a, $b) {
+      return strcmp($a, $b);
+    });
+    return $years;
+  }
+
+  /**
+   * @param int|null $year
    * @return Event[]
    */
-  public function getAllEventsOrderedByDate() {
+  public function getEventsOrderedByDate(int $year = null) {
     $events = array();
     foreach ($this->getAllEvents() as $event) {
-      $events[] = $event;
+      if ($year == null) {
+        $events[] = $event;
+      } else {
+        if(date("Y", strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date)) == (string)$year){
+          $events[] = $event;
+        }
+      }
     }
 
     usort($events, function ($a, $b) {
-      return strcmp($this->eventDateRepository->getFirstEventDateForEvent($a)->date,
-                    $this->eventDateRepository->getFirstEventDateForEvent($b)->date);
+      return strcmp($this->eventDateRepository->getFirstEventDateForEvent($b)->date,
+                    $this->eventDateRepository->getFirstEventDateForEvent($a)->date);
     });
 
     return $events;
@@ -438,12 +462,20 @@ class EventRepository implements IEventRepository {
     $events = array();
 
     $time = time();
+    foreach (Event::where('forEveryone', '=', true)->get() as $event) {
+      if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+        $events[] = $this->createOpenEventReturnable($event, $user);
+      }
+    }
     foreach ($user->usersMemberOfGroups() as $userMemberOfGroup) {
       $group = $userMemberOfGroup->group();
       foreach ($group->eventsForGroups() as $eventForGroup) {
         $event = $eventForGroup->event();
         if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
-          $events[] = $this->createOpenEventReturnable($event, $user);
+          $returnableEvent = $this->createOpenEventReturnable($event, $user);
+          if (!in_array($returnableEvent, $events)) {
+            $events[] = $returnableEvent;
+          }
         }
       }
     }
@@ -452,7 +484,10 @@ class EventRepository implements IEventRepository {
       foreach ($subgroup->eventsForSubgroups() as $eventForSubgroup) {
         $event = $eventForSubgroup->event();
         if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
-          $events[] = $this->createOpenEventReturnable($event, $user);
+          $returnableEvent = $this->createOpenEventReturnable($event, $user);
+          if (!in_array($returnableEvent, $events)) {
+            $events[] = $returnableEvent;
+          }
         }
       }
     }
