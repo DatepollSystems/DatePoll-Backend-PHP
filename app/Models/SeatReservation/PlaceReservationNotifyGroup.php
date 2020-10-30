@@ -2,35 +2,31 @@
 
 namespace App\Models\SeatReservation;
 
+use App\Models\Groups\Group;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
- * @property string $name
- * @property double $x
- * @property double $y
+ * @property Group $group
+ * @property int $group_id
  * @property string $created_at
  * @property string $updated_at
- * @property PlaceReservation[] $placeReservations
  */
-class Place extends Model
-{
+class PlaceReservationNotifyGroup extends Model {
 
   /**
    * The table associated with the model.
    *
    * @var string
    */
-  protected $table = 'places';
+  protected $table = 'place_reservation_notify_groups';
 
   /**
    * @var array
    */
   protected $fillable = [
-    'name',
-    'x',
-    'y',
+    'group_id',
     'created_at',
     'updated_at'];
 
@@ -38,9 +34,7 @@ class Place extends Model
   /**
    * @return Collection | PlaceReservation[] | null
    */
-  public function placeReservations()
-  {
-    return $this->hasMany(PlaceReservation::class)
-      ->get();
+  public function getGroups() {
+    return $this->hasMany(Group::class)->get();
   }
 }

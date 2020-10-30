@@ -54,6 +54,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
     /** Broadcasts */
     require(__DIR__ . '/BroadcastRoutes.php');
+
+    /** Seat reservation */
+    require(__DIR__ . '/SeatReservationRoutes.php');
   });
 
   /** Calendar route (deprecated)

@@ -40,6 +40,17 @@ interface ISettingRepository
   public function setBroadcastsEnabled(bool $isEnabled): bool;
 
   /**
+   * @return bool
+   */
+  public function getSeatReservationEnabled(): bool;
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setSeatReservationEnabled(bool $isEnabled): bool;
+
+  /**
    * @return string
    */
   public function getUrl(): string;

@@ -1,11 +1,10 @@
 <?php
 
-use App\Models\SeatReservation\PlaceReservationState;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePlacesReservationsTable extends Migration
+class CreatePlacesReservationsByUsersTable extends Migration
 {
   /**
    * Run the migrations.
@@ -21,7 +20,7 @@ class CreatePlacesReservationsTable extends Migration
       $table->string('description')->nullable(true);
       $table->date('start_date')->nullable(false);
       $table->date('end_date')->nullable(false);
-      $table->string('state')->nullable(false)->default(PlaceReservationState::WAITING);
+      $table->string('state')->nullable(false)->default('WAITING');
 
       $table->integer('place_id')->unsigned();
       $table->foreign('place_id')

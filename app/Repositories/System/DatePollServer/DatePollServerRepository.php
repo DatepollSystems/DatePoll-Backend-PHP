@@ -10,7 +10,7 @@ use stdClass;
 class DatePollServerRepository implements IDatePollServerRepository
 {
 
-  protected $settingRepository = null;
+  protected ISettingRepository $settingRepository;
 
   public function __construct(ISettingRepository $settingRepository) {
     $this->settingRepository = $settingRepository;
@@ -48,6 +48,9 @@ class DatePollServerRepository implements IDatePollServerRepository
     $dto->broadcasts_enabled = $this->settingRepository->getBroadcastsEnabled();
     $dto->broadcasts_count = DB::table('broadcasts')->count();
     $dto->broadcasts_sent_count = DB::table('broadcasts_users_info')->count();
+
+    $dto->seat_reservations_enabled = $this->settingRepository->getSeatReservationEnabled();
+    $dto->seat_reservations_count = DB::table('places_reservations_by_users')->count();
 
     $dto->users_count = DB::table('users')->count();
     $dto->user_email_addresses_count = DB::table('user_email_addresses')->count();

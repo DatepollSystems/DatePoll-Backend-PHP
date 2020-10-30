@@ -18,7 +18,7 @@ class CreateUserTokensTable extends Migration
       $table->string('token')->nullable(false);
 
       $table->string('purpose')->nullable(false);
-      $table->longText('description')->nullable(true);
+      $table->string('description')->nullable(true);
 
       $table->integer('user_id')->unsigned();
 

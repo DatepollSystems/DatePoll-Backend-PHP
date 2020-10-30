@@ -42,6 +42,9 @@ class PlaceReservation extends Model
     'start_date',
     'end_date',
     'state',
+    'user_id',
+    'approver_id',
+    'place_id',
     'created_at',
     'updated_at'];
 
