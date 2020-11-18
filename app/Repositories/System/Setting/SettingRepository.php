@@ -21,17 +21,24 @@ abstract class SettingKey {
   const COMMUNITY_DESCRIPTION = "community_description";
   const COMMUNITY_IMPRINT = "community_imprint";
   const COMMUNITY_PRIVACY_POLICY = 'community_privacy_policy';
-  const COMMUNITY_HAPPY_ALERT = 'community_happy_alert';
+  const COMMUNITY_ALERT = 'community_alert';
+  const COMMUNITY_ALERT_TYPE = 'community_alert_type';
 
   const OPENWEATHERMAP_KEY = "openweathermap_key";
 
   const DATABASE_VERSION = "database_version";
 }
 
+abstract class CommunityAlertTypes {
+  const HAPPY = 'happy';
+  const NORMAL = 'normal';
+}
+
 use App\Models\System\Setting;
 use App\Models\System\SettingValueType;
 use App\Versions;
 use Illuminate\Support\Facades\Cache;
+use stdClass;
 
 class SettingRepository implements ISettingRepository {
   /**
@@ -229,18 +236,25 @@ class SettingRepository implements ISettingRepository {
   }
 
   /**
-   * @return string
+   * @return stdClass
    */
-  public function getHappyAlert(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_HAPPY_ALERT, '');
+  public function getAlert(): stdClass {
+    $alert = new stdClass();
+    $alert->message = $this->getStringValueByKey(SettingKey::COMMUNITY_ALERT, '');
+    $alert->type = $this->getStringValueByKey(SettingKey::COMMUNITY_ALERT_TYPE, CommunityAlertTypes::NORMAL);
+    return $alert;
   }
 
   /**
-   * @param string $happyAlert
-   * @return string
+   * @param string $alertMessage
+   * @param string $communityAlertType
+   * @return stdClass
    */
-  public function setHappyAlert(string $happyAlert): string {
-    return $this->setStringValueByKey(SettingKey::COMMUNITY_HAPPY_ALERT, $happyAlert);
+  public function setAlert(string $alertMessage, string $communityAlertType): stdClass {
+    $alert = new stdClass();
+    $alert->message = $this->setStringValueByKey(SettingKey::COMMUNITY_ALERT, $alertMessage);
+    $alert->type = $this->setStringValueByKey(SettingKey::COMMUNITY_ALERT_TYPE, $communityAlertType);
+    return $alert;
   }
 
   /**

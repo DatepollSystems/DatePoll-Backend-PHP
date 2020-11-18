@@ -3,6 +3,7 @@
 namespace App\Repositories\System\Setting;
 
 use App\Models\System\Setting;
+use stdClass;
 
 interface ISettingRepository
 {
@@ -144,15 +145,16 @@ interface ISettingRepository
   public function setCinemaOpenWeatherMapCityId(string $openWeatherMapCityId): string;
 
   /**
-   * @return string
+   * @return stdClass
    */
-  public function getHappyAlert(): string;
+  public function getAlert(): stdClass;
 
   /**
-   * @param string $happyAlert
-   * @return string
+   * @param string $alertMessage
+   * @param string $communityAlertType
+   * @return stdClass
    */
-  public function setHappyAlert(string $happyAlert): string;
+  public function setAlert(string $alertMessage, string $communityAlertType): stdClass;
 
   /**
    * @return int

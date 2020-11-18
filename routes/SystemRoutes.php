@@ -7,7 +7,7 @@ use App\Http\Middleware\System\LogsPermissionMiddleware;
 $router->group(['prefix' => 'settings'], function () use ($router) {
   $router->get('openweathermap/key', ['uses' => 'SystemControllers\SettingsController@getOpenWeatherMapKey']);
   $router->get('openweathermap/cinemaCityId', ['uses' => 'SystemControllers\SettingsController@getOpenWeatherMapCinemaCityId']);
-  $router->get('happyAlert', ['uses' => 'SystemControllers\SettingsController@getHappyAlert']);
+  $router->get('alert', ['uses' => 'SystemControllers\SettingsController@getAlert']);
 });
 
 $router->group(['prefix' => 'system'], function () use ($router) {
@@ -26,7 +26,7 @@ $router->group(['prefix' => 'system'], function () use ($router) {
     $router->post('openweathermap/key', ['uses' => 'SystemControllers\SettingsController@setOpenWeatherMapKey']);
     $router->post('openweathermap/cinemaCityId', ['uses' => 'SystemControllers\SettingsController@setOpenWeatherMapCinemaCityId']);
     $router->post('url', ['uses' => 'SystemControllers\SettingsController@setUrl']);
-    $router->post('happyAlert', ['uses' => 'SystemControllers\SettingsController@setHappyAlert']);
+    $router->post('alert', ['uses' => 'SystemControllers\SettingsController@setAlert']);
   });
 
   /** Log routes */
