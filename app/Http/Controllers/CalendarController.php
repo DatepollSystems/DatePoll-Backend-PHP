@@ -30,7 +30,6 @@ use Jsvrcek\ICS\Utility\Formatter;
 
 class CalendarController extends Controller
 {
-
   protected IUserTokenRepository $userTokenRepository;
   protected ISettingRepository $settingRepository;
   protected IUserRepository $userRepository;
@@ -38,6 +37,8 @@ class CalendarController extends Controller
   protected IEventDateRepository $eventDateRepository;
   protected IMovieRepository $movieRepository;
   protected IEventRepository $eventRepository;
+
+  private static string $completeCalendarCacheKey = 'calendar.complete';
 
   public function __construct(IUserTokenRepository $userTokenRepository, ISettingRepository $settingRepository,
                               IUserRepository $userRepository, IUserSettingRepository $userSettingRepository,
@@ -289,12 +290,11 @@ class CalendarController extends Controller
    * @throws Exception
    */
   public function getCompleteCalendar() {
-    $cacheKey = 'calendar.complete';
-    if (Cache::has($cacheKey)) {
+    if (Cache::has(CalendarController::$completeCalendarCacheKey)) {
       Logging::info("getCompleteCalendar", "ICS complete calendar request answered from cache");
       header('Content-type: text/calendar; charset=utf-8');
       header('Content-Disposition: attachment; filename="calendar.ics"');
-      echo Cache::get($cacheKey);
+      echo Cache::get(CalendarController::$completeCalendarCacheKey);
       return;
     }
 
@@ -398,7 +398,7 @@ class CalendarController extends Controller
 
     $calendarExport->addCalendar($calendar);
     $stream = $calendarExport->getStream();
-    Cache::put($cacheKey, $stream, 60*60*4);
+    Cache::put(CalendarController::$completeCalendarCacheKey, $stream, 60*60*4);
 
     Logging::info("getCompleteCalendar", "ICS complete calendar request");
     header('Content-type: text/calendar; charset=utf-8');

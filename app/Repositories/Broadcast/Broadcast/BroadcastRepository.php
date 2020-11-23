@@ -36,7 +36,7 @@ class BroadcastRepository implements IBroadcastRepository {
   }
 
   /**
-   * @return Broadcast[]|Collection<Broadcast[]>
+   * @return Broadcast[]|Collection<Broadcast>
    */
   public function getAllBroadcastsOrderedByDate() {
     return Broadcast::orderBy('created_at', 'DESC')

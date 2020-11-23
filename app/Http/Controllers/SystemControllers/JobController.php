@@ -8,13 +8,10 @@ use App\Repositories\System\Job\IJobRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class JobController extends Controller
-{
-
+class JobController extends Controller {
   protected IJobRepository $jobRepository;
 
-  public function __construct(IJobRepository $jobRepository)
-  {
+  public function __construct(IJobRepository $jobRepository) {
     $this->jobRepository = $jobRepository;
   }
 

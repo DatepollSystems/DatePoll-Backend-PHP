@@ -9,10 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class UserChangePhoneNumberController extends Controller
-{
-
-  protected $userChangeRepository = null;
+class UserChangePhoneNumberController extends Controller {
+  protected IUserChangeRepository $userChangeRepository;
 
   public function __construct(IUserChangeRepository $userChangeRepository) {
     $this->userChangeRepository = $userChangeRepository;
@@ -24,20 +22,23 @@ class UserChangePhoneNumberController extends Controller
    * @throws ValidationException
    */
   public function addPhoneNumber(Request $request) {
-    $this->validate($request, ['label' => 'required|string|min:1|max:190', 'number' => 'required|string|min:1|max:190']);
+    $this->validate($request,
+                    ['label' => 'required|string|min:1|max:190', 'number' => 'required|string|min:1|max:190']);
 
     $user = $request->auth;
 
-    $phoneNumber = new UserTelephoneNumber(['label' => $request->input('label'), 'number' => $request->input('number'), 'user_id' => $user->id]);
+    $phoneNumber = new UserTelephoneNumber(['label' => $request->input('label'), 'number' => $request->input('number'),
+                                             'user_id' => $user->id]);
 
     if (!$phoneNumber->save()) {
       return response()->json(['msg' => 'An error occurred'], 500);
     }
 
-    $this->userChangeRepository->createUserChange('phone number', $user->id, $user->id, $request->input('number'), null);
+    $this->userChangeRepository->createUserChange('phone number', $user->id, $user->id, $request->input('number'),
+                                                  null);
     return response()->json([
-      'msg' => 'Added phone number',
-      'phone_number' => $phoneNumber], 200);
+                              'msg' => 'Added phone number',
+                              'phone_number' => $phoneNumber], 200);
   }
 
   /**
@@ -45,7 +46,7 @@ class UserChangePhoneNumberController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function removePhoneNumber(Request $request, $id) {
+  public function removePhoneNumber(Request $request, int $id) {
     $phoneNumber = UserTelephoneNumber::find($id);
     if ($phoneNumber == null) {
       return response()->json(['msg' => 'Phone number not found', 'error_code' => 'phone_number_not_found'], 404);
@@ -53,11 +54,12 @@ class UserChangePhoneNumberController extends Controller
 
     if ($phoneNumber->user_id != $request->auth->id) {
       return response()->json([
-        'msg' => 'Could not delete phone number because it does not belong to you!',
-        'error_code' => 'phone_number_does_not_belong_to_you'], 400);
+                                'msg' => 'Could not delete phone number because it does not belong to you!',
+                                'error_code' => 'phone_number_does_not_belong_to_you'], 400);
     }
 
-    $this->userChangeRepository->createUserChange('phone number', $request->auth->id,  $request->auth->id, null, $phoneNumber->number);
+    $this->userChangeRepository->createUserChange('phone number', $request->auth->id, $request->auth->id, null,
+                                                  $phoneNumber->number);
     if (!$phoneNumber->delete()) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }

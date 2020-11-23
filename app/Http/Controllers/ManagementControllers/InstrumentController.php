@@ -56,7 +56,7 @@ class InstrumentController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $instrument = Instrument::find($id);
 
     if ($instrument == null) {
@@ -75,7 +75,7 @@ class InstrumentController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, ['name' => 'required|max:190|min:1',]);
 
     $instrument = Instrument::find($id);
@@ -102,7 +102,7 @@ class InstrumentController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $instrument = Instrument::find($id);
     if ($instrument == null) {
       return response()->json(['msg' => 'Instrument not found'], 404);

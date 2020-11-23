@@ -12,8 +12,8 @@ use stdClass;
 /**
  * @property int $id
  * @property int $movie_year_id
- * @property int $worker_id
- * @property int $emergency_worker_id
+ * @property int|null $worker_id
+ * @property int|null $emergency_worker_id
  * @property string $name
  * @property string $date
  * @property string $trailerLink
@@ -34,28 +34,28 @@ class Movie extends Model
   protected $fillable = ['movie_year_id', 'worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | User | null
    */
   public function emergencyWorker() {
     return $this->belongsTo('App\Models\User\User', 'emergency_worker_id')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | MovieYear | null
    */
   public function movieYear() {
     return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo  | User | null
    */
   public function worker() {
     return $this->belongsTo('App\Models\User\User', 'worker_id')->first();
   }
 
   /**
-   * @return Collection
+   * @return Collection | MoviesBooking[]
    */
   public function moviesBookings() {
     return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();

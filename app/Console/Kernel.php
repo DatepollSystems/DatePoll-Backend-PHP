@@ -2,7 +2,12 @@
 
 namespace App\Console;
 
+use App\Console\Commands\AddAdminUser;
+use App\Console\Commands\DropDatabase;
+use App\Console\Commands\ProcessBroadcastEmailsInInbox;
 use App\Console\Commands\ReQueueNotSentBroadcasts;
+use App\Console\Commands\SetupDatePoll;
+use App\Console\Commands\UpdateDatePollDB;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
@@ -14,11 +19,12 @@ class Kernel extends ConsoleKernel
    * @var array
    */
   protected $commands = [
-    'App\Console\Commands\AddAdminUser',
-    'App\Console\Commands\DropTables',
-    'App\Console\Commands\SetupDatePoll',
-    'App\Console\Commands\UpdateDatePollDB',
-    ReQueueNotSentBroadcasts::class
+    AddAdminUser::class,
+    DropDatabase::class,
+    SetupDatePoll::class,
+    UpdateDatePollDB::class,
+    ReQueueNotSentBroadcasts::class,
+    ProcessBroadcastEmailsInInbox::class
   ];
 
   /**
@@ -29,6 +35,6 @@ class Kernel extends ConsoleKernel
    */
   protected function schedule(Schedule $schedule)
   {
-    //
+    $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyMinute();
   }
 }

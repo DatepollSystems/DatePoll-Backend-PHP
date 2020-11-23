@@ -13,9 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 class MovieController extends Controller
 {
-
-  protected $movieRepository = null;
-  protected $movieYearRepository = null;
+  protected IMovieRepository $movieRepository;
+  protected IMovieYearRepository $movieYearRepository;
 
   public function __construct(IMovieRepository $movieRepository, IMovieYearRepository $movieYearRepository) {
     $this->movieRepository = $movieRepository;
@@ -98,7 +97,7 @@ class MovieController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, $id) {
+  public function getSingle(Request $request, int $id) {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('getSingleMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
@@ -125,7 +124,7 @@ class MovieController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'date' => 'required|date',
@@ -172,7 +171,7 @@ class MovieController extends Controller
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, $id) {
+  public function delete(Request $request, int $id) {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');

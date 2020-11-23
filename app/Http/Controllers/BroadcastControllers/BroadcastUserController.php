@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class BroadcastUserController extends Controller
 {
 
-  protected $broadcastRepository = null;
+  protected IBroadcastRepository $broadcastRepository;
 
   public function __construct(IBroadcastRepository $broadcastRepository) {
     $this->broadcastRepository = $broadcastRepository;

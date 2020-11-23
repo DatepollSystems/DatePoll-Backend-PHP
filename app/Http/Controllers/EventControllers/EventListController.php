@@ -7,9 +7,7 @@ use App\Repositories\Event\Event\IEventRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class EventListController extends Controller
-{
-
+class EventListController extends Controller {
   protected IEventRepository $eventRepository;
 
   public function __construct(IEventRepository $eventRepository) {
@@ -26,8 +24,8 @@ class EventListController extends Controller
     $events = $this->eventRepository->getOpenEventsForUser($user);
 
     return response()->json([
-      'msg' => 'List of events',
-      'events' => $events], 200);
+                              'msg' => 'List of events',
+                              'events' => $events], 200);
   }
 
 }

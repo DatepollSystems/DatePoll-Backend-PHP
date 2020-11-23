@@ -8,10 +8,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class UserChangePasswordController extends Controller
-{
-
-  protected $userRepository;
+class UserChangePasswordController extends Controller {
+  protected IUserRepository $userRepository;
 
   public function __construct(IUserRepository $userRepository) {
     $this->userRepository = $userRepository;

@@ -10,8 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class LoggingController extends Controller
-{
+class LoggingController extends Controller {
   protected ILogRepository $logRepository;
 
   public function __construct(ILogRepository $logRepository) {
@@ -31,8 +30,8 @@ class LoggingController extends Controller
 
     Logging::info("getAllLogs", "User - " . $request->auth->id . " | Successful");
     return response()->json([
-      'msg' => 'All logs',
-      'logs' => $logs], 200);
+                              'msg' => 'All logs',
+                              'logs' => $logs], 200);
   }
 
   /**
@@ -48,8 +47,8 @@ class LoggingController extends Controller
     $log = $this->logRepository->createLog($request->input('type'), $request->input('message'), $request->auth->id);
 
     return response()->json([
-      'msg' => 'Log saved',
-      'log' => $log->getReturnable()], 201);
+                              'msg' => 'Log saved',
+                              'log' => $log->getReturnable()], 201);
   }
 
   /**

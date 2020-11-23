@@ -278,7 +278,7 @@ class SettingRepository implements ISettingRepository {
    * @param string $default
    * @return string
    */
-  private function getStringValueByKey(string $settingKey, string $default) {
+  private function getStringValueByKey(string $settingKey, string $default): string {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
@@ -299,7 +299,7 @@ class SettingRepository implements ISettingRepository {
    * @param string $value
    * @return string
    */
-  private function setStringValueByKey(string $settingKey, string $value) {
+  private function setStringValueByKey(string $settingKey, string $value): string {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
@@ -323,7 +323,7 @@ class SettingRepository implements ISettingRepository {
    * @param bool $default
    * @return bool
    */
-  private function getBoolValueByKey(string $settingKey, bool $default) {
+  private function getBoolValueByKey(string $settingKey, bool $default): bool {
     $setting = $this->getSettingValueByKey($settingKey);
 
     if ($setting == null) {
@@ -340,9 +340,9 @@ class SettingRepository implements ISettingRepository {
 
       $newSetting->save();
 
-      return $newSetting->value;
+      return (bool)$newSetting->value;
     } else {
-      return $setting->value;
+      return (bool)$setting->value;
     }
   }
 
@@ -351,7 +351,7 @@ class SettingRepository implements ISettingRepository {
    * @param bool $value
    * @return bool
    */
-  private function setBoolValueByKey(string $settingKey, bool $value) {
+  private function setBoolValueByKey(string $settingKey, bool $value): bool {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
 
@@ -369,11 +369,11 @@ class SettingRepository implements ISettingRepository {
 
       $newSetting->save();
 
-      return $newSetting->value;
+      return (bool)$newSetting->value;
     } else {
       $setting->value = $value;
       $setting->save();
-      return $setting->value;
+      return (bool)$setting->value;
     }
   }
 
@@ -382,7 +382,7 @@ class SettingRepository implements ISettingRepository {
    * @param int $value
    * @return int
    */
-  private function setIntegerValueByKey(string $settingKey, int $value) {
+  private function setIntegerValueByKey(string $settingKey, int $value): int {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
@@ -393,11 +393,11 @@ class SettingRepository implements ISettingRepository {
 
       $newSetting->save();
 
-      return $newSetting->value;
+      return (int)$newSetting->value;
     } else {
       $setting->value = $value;
       $setting->save();
-      return $setting->value;
+      return (int)$setting->value;
     }
   }
 
@@ -406,7 +406,7 @@ class SettingRepository implements ISettingRepository {
    * @param int $default
    * @return int
    */
-  private function getIntegerValueByKey(string $settingKey, int $default) {
+  private function getIntegerValueByKey(string $settingKey, int $default): int {
     $setting = $this->getSettingValueByKey($settingKey);
 
     if ($setting == null) {
@@ -417,9 +417,9 @@ class SettingRepository implements ISettingRepository {
 
       $newSetting->save();
 
-      return $newSetting->value;
+      return (int)$newSetting->value;
     } else {
-      return $setting->value;
+      return (int)$setting->value;
     }
   }
 
@@ -427,7 +427,7 @@ class SettingRepository implements ISettingRepository {
    * @param string $settingKey
    * @return Setting
    */
-  private function getSettingValueByKey(string $settingKey) {
+  private function getSettingValueByKey(string $settingKey): Setting {
     return Setting::where('key', '=', $settingKey)
       ->first();
   }

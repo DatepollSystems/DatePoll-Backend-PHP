@@ -7,8 +7,7 @@ use App\Repositories\System\DatePollServer\IDatePollServerRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
-class DatePollServerController extends Controller
-{
+class DatePollServerController extends Controller {
   private static string $SERVER_INFO_CACHE_KEY = 'server.info';
 
   protected IDatePollServerRepository $datePollServerRepository;
@@ -28,7 +27,7 @@ class DatePollServerController extends Controller
     $serverInfo = $this->datePollServerRepository->getServerInfo();
 
     // Time to live 60 minutes
-    Cache::put(self::$SERVER_INFO_CACHE_KEY, $serverInfo, 60*60);
+    Cache::put(self::$SERVER_INFO_CACHE_KEY, $serverInfo, 60 * 60);
 
     return response()->json($serverInfo, 200);
   }

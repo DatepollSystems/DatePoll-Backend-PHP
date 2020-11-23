@@ -67,16 +67,6 @@ interface IUserRepository
                                      int $editorId, User $user = null);
 
   /**
-   * @param string $property
-   * @param int $userId
-   * @param int $editorId
-   * @param string $newValue
-   * @param string $oldValue
-   */
-  public function checkForPropertyChange(string $property, int $userId, int $editorId, string $newValue,
-                                         string $oldValue);
-
-  /**
    * @param User $user
    * @param string[] $emailAddresses
    * @param int $editorId

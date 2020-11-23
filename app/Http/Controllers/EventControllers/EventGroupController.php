@@ -14,7 +14,6 @@ use Illuminate\Validation\ValidationException;
 
 class EventGroupController extends Controller
 {
-
   /**
    * @param Request $request
    * @return JsonResponse
@@ -157,7 +156,7 @@ class EventGroupController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function groupJoined($id) {
+  public function groupJoined(int $id) {
     $event = Event::find($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
@@ -180,7 +179,7 @@ class EventGroupController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function groupFree($id) {
+  public function groupFree(int $id) {
     $event = Event::find($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
@@ -212,7 +211,7 @@ class EventGroupController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function subgroupJoined($id) {
+  public function subgroupJoined(int $id) {
     $event = Event::find($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
@@ -236,7 +235,7 @@ class EventGroupController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function subgroupFree($id) {
+  public function subgroupFree(int $id) {
     $event = Event::find($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);

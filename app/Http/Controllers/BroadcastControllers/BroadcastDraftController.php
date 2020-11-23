@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 class BroadcastDraftController extends Controller
 {
 
-  protected $draftRepository = null;
+  protected IBroadcastDraftRepository $draftRepository;
 
   public function __construct(IBroadcastDraftRepository $draftRepository) {
     $this->draftRepository = $draftRepository;
@@ -38,7 +38,7 @@ class BroadcastDraftController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $draft = $this->draftRepository->getBroadcastDraftById($id);
     if ($draft == null) {
       return response()->json(['msg' => 'Draft not found'], 404);
@@ -113,7 +113,7 @@ class BroadcastDraftController extends Controller
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, $id) {
+  public function delete(Request $request, int $id) {
     $draft = $this->draftRepository->getBroadcastDraftById($id);
     if ($draft == null) {
       return response()->json(['msg' => 'Draft not found'], 404);

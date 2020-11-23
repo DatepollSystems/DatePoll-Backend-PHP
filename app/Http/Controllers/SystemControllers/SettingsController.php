@@ -4,14 +4,13 @@ namespace App\Http\Controllers\SystemControllers;
 
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Repositories\System\Setting\CommunityAlertTypes;
 use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller {
-  protected $settingRepository = null;
+  protected ISettingRepository $settingRepository;
 
   public function __construct(ISettingRepository $settingRepository) {
     $this->settingRepository = $settingRepository;

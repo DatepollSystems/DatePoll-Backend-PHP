@@ -12,12 +12,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class GroupController extends Controller
-{
-
-  protected $groupRepository = null;
-  protected $subgroupRepository = null;
-  protected $userRepository = null;
+class GroupController extends Controller {
+  protected IGroupRepository $groupRepository;
+  protected ISubgroupRepository $subgroupRepository;
+  protected IUserRepository $userRepository;
   protected IUserChangeRepository $userChangeRepository;
 
   public function __construct(IGroupRepository $groupRepository, IUserRepository $userRepository,
@@ -35,8 +33,8 @@ class GroupController extends Controller
     $groups = $this->groupRepository->getAllGroupsWithSubgroupsOrdered();
 
     return response()->json([
-      'msg' => 'List of all groups',
-      'groups' => $groups], 200);
+                              'msg' => 'List of all groups',
+                              'groups' => $groups], 200);
   }
 
   /**
@@ -61,15 +59,15 @@ class GroupController extends Controller
     }
 
     return response()->json([
-      'msg' => 'Group created',
-      'group' => $group], 201);
+                              'msg' => 'Group created',
+                              'group' => $group], 201);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $group = $this->groupRepository->getGroupById($id);
     if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
@@ -80,8 +78,8 @@ class GroupController extends Controller
     $group->users = $group->getUsersWithRolesOrderedBySurname();
 
     return response()->json([
-      'msg' => 'Group information',
-      'group' => $group]);
+                              'msg' => 'Group information',
+                              'group' => $group]);
   }
 
   /**
@@ -90,7 +88,7 @@ class GroupController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'orderN' => 'integer',
@@ -112,8 +110,8 @@ class GroupController extends Controller
     }
 
     return response()->json([
-      'msg' => 'Group updated',
-      'group' => $group], 201);
+                              'msg' => 'Group updated',
+                              'group' => $group], 201);
   }
 
   /**
@@ -121,7 +119,7 @@ class GroupController extends Controller
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $group = $this->groupRepository->getGroupById($id);
     if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
@@ -172,8 +170,8 @@ class GroupController extends Controller
     $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, $group->name, null);
 
     return response()->json([
-      'msg' => 'Successfully added user to group',
-      'userMemberOfGroup' => $userMemberOfGroup], 201);
+                              'msg' => 'Successfully added user to group',
+                              'userMemberOfGroup' => $userMemberOfGroup], 201);
   }
 
   /**
@@ -220,8 +218,8 @@ class GroupController extends Controller
     $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, null, $group->name);
 
     return response()->json([
-      'msg' => 'Successfully removed user from group',
-      'userWasMemberOfSubgroups' => $userMemberOfSubgroupsToRemove], 200);
+                              'msg' => 'Successfully removed user from group',
+                              'userWasMemberOfSubgroups' => $userMemberOfSubgroupsToRemove], 200);
   }
 
   /**
@@ -253,26 +251,26 @@ class GroupController extends Controller
     }
 
     $userMemberOfGroup = $this->groupRepository->createOrUpdateUserMemberOfGroup($groupID, $userID, $role,
-      $userMemberOfGroup);
+                                                                                 $userMemberOfGroup);
     if ($userMemberOfGroup == null) {
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }
 
     return response()->json([
-      'msg' => 'Successfully updated user in group',
-      'userMemberOfGroup' => $userMemberOfGroup], 200);
+                              'msg' => 'Successfully updated user in group',
+                              'userMemberOfGroup' => $userMemberOfGroup], 200);
   }
 
   /**
    * @param int $userID
    * @return JsonResponse
    */
-  public function joined($userID) {
+  public function joined(int $userID) {
     $user = $this->userRepository->getUserById($userID);
     if ($user == null) {
       return response()->json([
-        'msg' => 'User not found',
-        'error_code' => 'user_not_found'], 404);
+                                'msg' => 'User not found',
+                                'error_code' => 'user_not_found'], 404);
     }
 
     $groupsToReturn = array();
@@ -283,26 +281,26 @@ class GroupController extends Controller
     }
 
     return response()->json([
-      'msg' => 'List of joined groups',
-      'groups' => $groupsToReturn], 200);
+                              'msg' => 'List of joined groups',
+                              'groups' => $groupsToReturn], 200);
   }
 
   /**
    * @param int $userID
    * @return JsonResponse
    */
-  public function free($userID) {
+  public function free(int $userID) {
     $user = $this->userRepository->getUserById($userID);
     if ($user == null) {
       return response()->json([
-        'msg' => 'User not found',
-        'error_code' => 'user_not_found'], 404);
+                                'msg' => 'User not found',
+                                'error_code' => 'user_not_found'], 404);
     }
 
     $groupsToReturn = $this->groupRepository->getGroupsWhereUserIsNotIn($user);
 
     return response()->json([
-      'msg' => 'List of free groups',
-      'groups' => $groupsToReturn], 200);
+                              'msg' => 'List of free groups',
+                              'groups' => $groupsToReturn], 200);
   }
 }

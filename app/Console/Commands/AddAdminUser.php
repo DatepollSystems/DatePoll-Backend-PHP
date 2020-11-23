@@ -2,41 +2,30 @@
 
 use App\Models\User\User;
 use App\Models\User\UserPermission;
+use Exception;
 use Illuminate\Console\Command;
 
 class AddAdminUser extends Command
 {
-  /**
-   * The name and signature of the console command.
-   *
-   * @var string
-   */
+
   protected $signature = 'add-admin-user';
-
-  /**
-   * The console command description.
-   *
-   * @var string
-   */
   protected $description = 'Creates admin user with all permissions.';
-
-  /**
-   * Create a new command instance.
-   *
-   * @return void
-   */
   public function __construct()
   {
     parent::__construct();
   }
 
   /**
-   * Execute the console command.
-   *
-   * @return mixed
+   * @return void
+   * @throws Exception
    */
   public function handle()
   {
+    if (!$this->confirm('Are you sure you want to create an admin account?', true)) {
+      $this->comment('Aborting...');
+      return;
+    }
+    $this->line('> Creating admin user...');
     $user = new User([
       'firstname' => 'Helmi',
       'surname' => 'GIS',
@@ -55,27 +44,33 @@ class AddAdminUser extends Command
       'bv_member' => 'bv_member'
     ]);
     if($user->save()) {
-      $this->comment(PHP_EOL."Add Admin User | Created".PHP_EOL);
+      $this->comment('Admin user created');
 
+      $this->line('> Setting password...');
       $user->password = app('hash')->make('123456' . $user->id);
       $user->save();
-      $this->comment(PHP_EOL."Add Admin User | Added password ".PHP_EOL);
+      $this->comment('Password changed');
 
+      $this->line('> Setting permissions...');
       $permission = new UserPermission([
         'user_id' => $user->id,
         'permission' => 'root.administration'
       ]);
 
       if($permission->save()) {
-        $this->comment(PHP_EOL."Add Admin User | Added permissions".PHP_EOL);
+        $this->comment("Permission set");
       } else {
-        $this->comment(PHP_EOL."Add Admin User | Could not add permissions".PHP_EOL);
+        $this->warn("Error during permission setting");
+        $user->delete();
+        return;
       }
 
-      $this->comment(PHP_EOL."Add Admin User | Now login in | Username: admin | Password: 123456".PHP_EOL);
+      $this->info('Admin user successful created');
+      $this->info('Username: admin');
+      $this->info('Password: 123456');
 
     } else {
-      $this->comment(PHP_EOL."Add Admin User | Error".PHP_EOL);
+      $this->warn('Error during admin user creation.');
     }
   }
 }

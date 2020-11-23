@@ -10,10 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
-class UserTokenController extends Controller
-{
-
-  protected $userTokenRepository = null;
+class UserTokenController extends Controller {
+  protected IUserTokenRepository $userTokenRepository;
 
   public function __construct(IUserTokenRepository $userTokenRepository) {
     $this->userTokenRepository = $userTokenRepository;
@@ -24,7 +22,7 @@ class UserTokenController extends Controller
    * @return JsonResponse
    */
   public function getCalendarToken(Request $request) {
-    $user = $request->auth;;
+    $user = $request->auth;
 
     $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
     if ($tokenObject == null) {
@@ -92,8 +90,9 @@ class UserTokenController extends Controller
 
     $user = $request->auth;
 
-    $session = $this->userTokenRepository->getUserTokenByUserAndTokenAndPurpose($user, $request->input('session_token'), 'stayLoggedIn');
-    if($session == null) {
+    $session = $this->userTokenRepository->getUserTokenByUserAndTokenAndPurpose($user, $request->input('session_token'),
+                                                                                'stayLoggedIn');
+    if ($session == null) {
       return response()->json(['msg' => 'Session token is incorrect', 'error_code' => 'session_token_incorrect'], 404);
     }
 
@@ -108,12 +107,13 @@ class UserTokenController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function removeSession(Request $request, $id) {
+  public function removeSession(Request $request, int $id) {
     $user = $request->auth;
 
     $session = $this->userTokenRepository->getUserTokenByIdAndUserAndPurpose($id, $user, 'stayLoggedIn');
-    if($session == null) {
-      return response()->json(['msg' => 'Session token does not exist!', 'error_code' => 'session_token_not_found'], 404);
+    if ($session == null) {
+      return response()->json(['msg' => 'Session token does not exist!', 'error_code' => 'session_token_not_found'],
+                              404);
     }
 
     if ($this->userTokenRepository->deleteUserToken($session) != null) {

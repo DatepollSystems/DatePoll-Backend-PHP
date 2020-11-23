@@ -36,7 +36,7 @@ class Log extends Model
     'updated_at'];
 
   /**
-   * @return BelongsTo | User
+   * @return BelongsTo | User | null
    */
   public function user() {
     return $this->belongsTo(User::class, 'user_id')

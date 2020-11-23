@@ -5,14 +5,14 @@ namespace App\Http\Controllers\CinemaControllers;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class MovieYearController extends Controller
 {
-
-  protected $movieYearRepository = null;
+  protected IMovieYearRepository $movieYearRepository;
 
   public function __construct(IMovieYearRepository $movieYearRepository) {
     $this->movieYearRepository = $movieYearRepository;
@@ -64,7 +64,7 @@ class MovieYearController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, $id) {
+  public function getSingle(Request $request, int $id) {
     $year = $this->movieYearRepository->getMovieYearById($id);
     if ($year == null) {
       Logging::warning('getSingleMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | Movie year not found');
@@ -86,7 +86,7 @@ class MovieYearController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, ['year' => 'required|integer']);
 
     $movieYear = $this->movieYearRepository->getMovieYearById($id);
@@ -116,8 +116,9 @@ class MovieYearController extends Controller
    * @param Request $request
    * @param int $id
    * @return JsonResponse
+   * @throws Exception
    */
-  public function delete(Request $request, $id) {
+  public function delete(Request $request, int $id) {
     $movieYear = $this->movieYearRepository->getMovieYearById($id);
     if ($movieYear == null) {
       Logging::warning('updateMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | Movie year not found');

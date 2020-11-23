@@ -10,7 +10,7 @@ use stdClass;
 interface IBroadcastRepository {
 
   /**
-   * @return Broadcast[]|Collection
+   * @return Broadcast[]|Collection<Broadcast>
    */
   public function getAllBroadcastsOrderedByDate();
 

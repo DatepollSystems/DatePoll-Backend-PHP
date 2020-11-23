@@ -136,20 +136,20 @@ class UserRepository implements IUserRepository
         return null;
       }
     } else {
-      $this->checkForPropertyChange('username', $user->id, $editorId, $username, $user->username);
-      $this->checkForPropertyChange('title', $user->id, $editorId, $title, $user->title);
-      $this->checkForPropertyChange('firstname', $user->id, $editorId, $firstname, $user->firstname);
-      $this->checkForPropertyChange('surname', $user->id, $editorId, $surname, $user->surname);
-      $this->checkForPropertyChange('birthday', $user->id, $editorId, $birthday, $user->birthday);
-      $this->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate, $user->join_date);
-      $this->checkForPropertyChange('streetname', $user->id, $editorId, $streetname, $user->streetname);
-      $this->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber, $user->streetnumber);
-      $this->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
-      $this->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
-      $this->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
-      $this->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment,
+      $this->userChangeRepository->checkForPropertyChange('username', $user->id, $editorId, $username, $user->username);
+      $this->userChangeRepository->checkForPropertyChange('title', $user->id, $editorId, $title, $user->title);
+      $this->userChangeRepository->checkForPropertyChange('firstname', $user->id, $editorId, $firstname, $user->firstname);
+      $this->userChangeRepository->checkForPropertyChange('surname', $user->id, $editorId, $surname, $user->surname);
+      $this->userChangeRepository->checkForPropertyChange('birthday', $user->id, $editorId, $birthday, $user->birthday);
+      $this->userChangeRepository->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate, $user->join_date);
+      $this->userChangeRepository->checkForPropertyChange('streetname', $user->id, $editorId, $streetname, $user->streetname);
+      $this->userChangeRepository->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber, $user->streetnumber);
+      $this->userChangeRepository->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
+      $this->userChangeRepository->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
+      $this->userChangeRepository->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
+      $this->userChangeRepository->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment,
         $user->internal_comment);
-      $this->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
+      $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
       // Don't use checkForPropertyChange function because these values aren't strings
       if ($user->zipcode != $zipcode) {
         $this->userChangeRepository->createUserChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
@@ -246,20 +246,6 @@ class UserRepository implements IUserRepository
 
     Logging::info('createOrUpdateUser', 'Successfully created or updated user ' . $user->id);
     return $user;
-  }
-
-  /**
-   * @param string $property
-   * @param int $userId
-   * @param int $editorId
-   * @param string|null $newValue
-   * @param string|null $oldValue
-   */
-  public function checkForPropertyChange(string $property, int $userId, int $editorId, ?string $newValue,
-                                         ?string $oldValue) {
-    if ($newValue != $oldValue) {
-      $this->userChangeRepository->createUserChange($property, $userId, $editorId, $newValue, $oldValue);
-    }
   }
 
   /**

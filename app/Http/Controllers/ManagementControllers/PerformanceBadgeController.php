@@ -13,11 +13,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
-class PerformanceBadgeController extends Controller
-{
-
-  protected $userRepository = null;
-  protected $userChangeRepository = null;
+class PerformanceBadgeController extends Controller {
+  protected IUserRepository $userRepository;
+  protected IUserChangeRepository $userChangeRepository;
 
   public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;
@@ -31,7 +29,7 @@ class PerformanceBadgeController extends Controller
    */
   public function getAll() {
     $performanceBadges = PerformanceBadge::orderBy('name')
-                                         ->get();
+      ->get();
 
     $response = [
       'msg' => 'List of all performance badges',
@@ -53,10 +51,10 @@ class PerformanceBadgeController extends Controller
     $name = $request->input('name');
 
     if (PerformanceBadge::where('name', $name)
-                        ->first() != null) {
+        ->first() != null) {
       return response()->json([
-        'msg' => 'Performance badge already exist',
-        'error' => 'performance_badge_already_exists'], 400);
+                                'msg' => 'Performance badge already exist',
+                                'error' => 'performance_badge_already_exists'], 400);
     }
 
     $performanceBadge = new PerformanceBadge(['name' => $name]);
@@ -104,8 +102,8 @@ class PerformanceBadgeController extends Controller
     $performanceBadge = PerformanceBadge::find($id);
     if ($performanceBadge == null) {
       return response()->json([
-        'msg' => 'Performance badge not found',
-        'error_code' => 'performanceBadge_not_found'], 404);
+                                'msg' => 'Performance badge not found',
+                                'error_code' => 'performanceBadge_not_found'], 404);
     }
 
     $name = $request->input('name');
@@ -175,19 +173,20 @@ class PerformanceBadgeController extends Controller
 
     $grade = $request->input('grade');
     $userHasPerformanceBadgeWithInstrument = new UserHavePerformanceBadgeWithInstrument([
-      'performance_badge_id' => $performanceBadgeId,
-      'instrument_id' => $instrumentId,
-      'user_id' => $userId,
-      'date' => $request->input('date'),
-      'grade' => $grade,
-      'note' => $request->input('note')]);
+                                                                                          'performance_badge_id' => $performanceBadgeId,
+                                                                                          'instrument_id' => $instrumentId,
+                                                                                          'user_id' => $userId,
+                                                                                          'date' => $request->input('date'),
+                                                                                          'grade' => $grade,
+                                                                                          'note' => $request->input('note')]);
 
     if (!$userHasPerformanceBadgeWithInstrument->save()) {
       return response()->json(['msg' => 'Could not save UsersHavePerformanceBadgeWithInstrument'], 500);
     }
 
     $this->userChangeRepository->createUserChange('performance badge', $userId, $request->auth->id,
-      $performanceBadge->name . '; ' . $instrument->name . '; ' . $grade, null);
+                                                  $performanceBadge->name . '; ' . $instrument->name . '; ' . $grade,
+                                                  null);
 
     return response()->json(['msg' => 'Successful added performance badge with instrument to user'], 200);
   }
@@ -203,8 +202,9 @@ class PerformanceBadgeController extends Controller
       return response()->json(['msg' => 'User performance badge with instrument not found'], 202);
     }
 
-    $this->userChangeRepository->createUserChange('performance badge', $userHasPerformanceBadgeWithInstrument->user_id, $request->auth->id, null,
-      $userHasPerformanceBadgeWithInstrument->performanceBadge()->name . '; ' . $userHasPerformanceBadgeWithInstrument->instrument()->name . '; ' . $userHasPerformanceBadgeWithInstrument->grade);
+    $this->userChangeRepository->createUserChange('performance badge', $userHasPerformanceBadgeWithInstrument->user_id,
+                                                  $request->auth->id, null,
+                                                  $userHasPerformanceBadgeWithInstrument->performanceBadge()->name . '; ' . $userHasPerformanceBadgeWithInstrument->instrument()->name . '; ' . $userHasPerformanceBadgeWithInstrument->grade);
     if (!$userHasPerformanceBadgeWithInstrument->delete()) {
       return response()->json(['msg' => 'Could not delete user performance badge with instrument'], 500);
     }
@@ -244,7 +244,7 @@ class PerformanceBadgeController extends Controller
     }
 
     return response()->json([
-      'msg' => 'List of all performance badges for user ' . $user->id,
-      'performanceBadges' => $performanceBadgesToReturn], 200);
+                              'msg' => 'List of all performance badges for user ' . $user->id,
+                              'performanceBadges' => $performanceBadgesToReturn], 200);
   }
 }

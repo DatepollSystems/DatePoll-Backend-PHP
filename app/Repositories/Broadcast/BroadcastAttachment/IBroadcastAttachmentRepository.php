@@ -4,6 +4,7 @@ namespace App\Repositories\Broadcast\BroadcastAttachment;
 
 use App\Models\Broadcasts\BroadcastAttachment;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 interface IBroadcastAttachmentRepository {
 
@@ -15,7 +16,7 @@ interface IBroadcastAttachmentRepository {
 
   /**
    * @param int $broadcastId
-   * @return BroadcastAttachment[]
+   * @return BroadcastAttachment[]|Collection<BroadcastAttachment>
    */
   public function getAttachmentsByBroadcastId(int $broadcastId);
 

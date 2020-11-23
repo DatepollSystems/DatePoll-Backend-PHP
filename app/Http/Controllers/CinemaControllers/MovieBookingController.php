@@ -15,9 +15,9 @@ use Illuminate\Validation\ValidationException;
 class MovieBookingController extends Controller
 {
 
-  protected $movieBookingRepository = null;
-  protected $movieRepository = null;
-  protected $userRepository = null;
+  protected IMovieBookingRepository $movieBookingRepository;
+  protected IMovieRepository $movieRepository;
+  protected IUserRepository $userRepository;
 
   public function __construct(IMovieBookingRepository $movieBookingRepository, IMovieRepository $movieRepository, IUserRepository $userRepository) {
     $this->movieBookingRepository = $movieBookingRepository;
@@ -47,7 +47,6 @@ class MovieBookingController extends Controller
 
     /* Check if there are enough free tickets */
     if (($movie->bookedTickets + $ticketAmount) > 20) {
-      $availableTickets = 20 - $movie->bookedTickets;
       return response()->json(['msg' => 'The movie is sold out', 'error_code' => 'not_enough_available_tickets'], 400);
     }
 
@@ -120,8 +119,8 @@ class MovieBookingController extends Controller
 
       $user = $this->userRepository->getUserById($booking['user_id']);
       if ($user == null) {
-        Logging::error("bookForUsers", "User - " . $user->id . " | Movie - " . $id . " | User not found");
-        return response()->json(['msg' => 'User ' . $user->id . ' not found!', 'error_code' => 'user_not_found'], 404);
+        Logging::error("bookForUsers", "User - " . $request->auth->id . " | Movie - " . $id . " | User not found");
+        return response()->json(['msg' => 'User ' . $request->auth->id . ' not found!', 'error_code' => 'user_not_found'], 404);
       }
 
       $movieBooking = $this->movieBookingRepository->bookTickets($movie, $user, $ticketAmount);
@@ -142,6 +141,7 @@ class MovieBookingController extends Controller
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
   public function cancelBookingForUsers(Request $request, int $id) {
     $movie = $this->movieRepository->getMovieById($id);
@@ -156,14 +156,8 @@ class MovieBookingController extends Controller
     foreach ($userIds as $userId) {
       $user = $this->userRepository->getUserById($userId);
       if ($user == null) {
-        Logging::error("bookForUsers", "User - " . $user->id . " | Movie - " . $id . " | User not found");
-        return response()->json(['msg' => 'User ' . $user->id . ' not found!'], 404);
-      }
-
-      if ($this->movieBookingRepository->getMovieBookingByMovieAndUser($movie, $user) != null) {
-        $ticketAmount = $this->movieBookingRepository->getMovieBookingByMovieAndUser($movie, $user)->amount;
-      } else {
-        $ticketAmount = 0;
+        Logging::error("bookForUsers", "User - " . $request->auth->id . " | Movie - " . $id . " | User not found");
+        return response()->json(['msg' => 'User ' . $request->auth->id . ' not found!'], 404);
       }
 
       $movieBooking = $this->movieBookingRepository->cancelBooking($movie, $user);

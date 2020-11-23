@@ -46,4 +46,18 @@ class UserChangeRepository implements IUserChangeRepository
   public function getUserChangeById(int $id) {
     return UserChange::find($id);
   }
+
+  /**
+   * @param string $property
+   * @param int $userId
+   * @param int $editorId
+   * @param string|null $newValue
+   * @param string|null $oldValue
+   */
+  public function checkForPropertyChange(string $property, int $userId, int $editorId, ?string $newValue,
+                                         ?string $oldValue) {
+    if ($newValue != $oldValue) {
+      $this->createUserChange($property, $userId, $editorId, $newValue, $oldValue);
+    }
+  }
 }

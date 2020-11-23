@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Events\EventStandardDecision;
 use App\Repositories\Event\EventStandardDecision\IEventStandardDecisionRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,8 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class StandardDecisionController extends Controller
 {
-
-  protected $eventStandardDecisionRepository = null;
+  protected IEventStandardDecisionRepository $eventStandardDecisionRepository;
 
   /**
    * StandardDecisionController constructor.
@@ -37,7 +35,7 @@ class StandardDecisionController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $standardDecision = $this->eventStandardDecisionRepository->getStandardDecisionById($id);
 
     if ($standardDecision == null) {
@@ -83,7 +81,7 @@ class StandardDecisionController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $standardDecision = $this->eventStandardDecisionRepository->getStandardDecisionById($id);
 
     if ($standardDecision == null) {

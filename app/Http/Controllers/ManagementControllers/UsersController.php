@@ -4,14 +4,12 @@ namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Models\User\UserPermission;
 use App\Permissions;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
 class UsersController extends Controller {
@@ -70,6 +68,7 @@ class UsersController extends Controller {
    * @param Request $request
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
   public function create(Request $request) {
     $this->validate($request, [
@@ -157,7 +156,7 @@ class UsersController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
@@ -182,8 +181,9 @@ class UsersController extends Controller {
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, [
       'title' => 'max:190',
       'username' => 'required|min:1|max:190',
@@ -285,7 +285,7 @@ class UsersController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function changePassword(Request $request, $id) {
+  public function changePassword(Request $request, int $id) {
     $this->validate($request, [
       'password' => 'required|min:6']);
 
@@ -310,7 +310,7 @@ class UsersController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function delete(Request $request, $id) {
+  public function delete(Request $request, int $id) {
     if (!($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
       return response()->json([
                                 'msg' => 'Permission denied',

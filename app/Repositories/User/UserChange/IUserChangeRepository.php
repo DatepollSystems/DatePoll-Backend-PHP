@@ -28,4 +28,14 @@ interface IUserChangeRepository
    * @return UserChange|null
    */
   public function getUserChangeById(int $id);
+
+  /**
+   * @param string $property
+   * @param int $userId
+   * @param int $editorId
+   * @param string $newValue
+   * @param string $oldValue
+   */
+  public function checkForPropertyChange(string $property, int $userId, int $editorId, string $newValue,
+                                         string $oldValue);
 }

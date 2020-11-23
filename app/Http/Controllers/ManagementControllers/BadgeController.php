@@ -15,9 +15,8 @@ use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class BadgeController extends Controller {
-
-  protected $userRepository = null;
-  protected $userChangeRepository = null;
+  protected IUserRepository $userRepository;
+  protected IUserChangeRepository $userChangeRepository;
 
   public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
     $this->userRepository = $userRepository;

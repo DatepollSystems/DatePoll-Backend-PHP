@@ -6,8 +6,7 @@ use App\Repositories\System\Setting\ISettingRepository;
 use Closure;
 use Illuminate\Http\Request;
 
-class SeatReservationFeatureMiddleware
-{
+class SeatReservationFeatureMiddleware {
 
   protected ISettingRepository $settingRepository;
 
@@ -16,8 +15,6 @@ class SeatReservationFeatureMiddleware
   }
 
   /**
-   * Handle an incoming request.
-   *
    * @param Request $request
    * @param Closure $next
    * @return mixed
@@ -25,8 +22,8 @@ class SeatReservationFeatureMiddleware
   public function handle(Request $request, Closure $next) {
     if (!$this->settingRepository->getSeatReservationEnabled()) {
       return response()->json([
-        'msg' => 'The seat reservation feature is disabled on this DatePoll server',
-        'error_code' => 'feature_disabled_seat_reservation'], 503);
+                                'msg' => 'The seat reservation feature is disabled on this DatePoll server',
+                                'error_code' => 'feature_disabled_seat_reservation'], 503);
     }
 
     return $next($request);

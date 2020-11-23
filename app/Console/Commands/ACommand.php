@@ -80,27 +80,4 @@ class ACommand extends Command
 
     return $answer;
   }
-
-  /**
-   * @param string $function
-   * @param string $comment
-   * @param string $type
-   */
-  protected function log(string $function, string $comment, string $type) {
-    switch ($type) {
-      case LogTypes::INFO:
-        Logging::info($function, $comment);
-        break;
-
-      case LogTypes::WARNING:
-        Logging::warning($function, $comment);
-        break;
-
-      default:
-        Logging::error('ACommand log', 'Unknown log type!');
-        break;
-    }
-
-    $this->comment($function . ' | ' . $comment);
-  }
 }

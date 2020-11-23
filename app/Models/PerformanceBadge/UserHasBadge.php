@@ -5,13 +5,12 @@ namespace App\Models\PerformanceBadge;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Date;
 
 /**
  * @property int $id
  * @property int $user_id
  * @property string $description
- * @property Date $getDate
+ * @property string $getDate
  * @property string $reason
  * @property string $created_at
  * @property string $updated_at

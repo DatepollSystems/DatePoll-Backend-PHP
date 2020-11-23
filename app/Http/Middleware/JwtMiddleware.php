@@ -10,15 +10,14 @@ use Firebase\JWT\ExpiredException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class JwtMiddleware
-{
+class JwtMiddleware {
   /**
    * @param Request $request
    * @param Closure $next
    * @param null $guard
    * @return JsonResponse|mixed
    */
-  public function handle($request, Closure $next, $guard = null) {
+  public function handle(Request $request, Closure $next, $guard = null) {
     $token = $request->get('token');
 
     if (!$token) {

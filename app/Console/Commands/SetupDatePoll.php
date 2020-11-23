@@ -1,33 +1,14 @@
 <?php namespace App\Console\Commands;
 
-use App\Models\User\User;
-use App\Models\User\UserPermission;
 use App\Repositories\User\UserToken\IUserTokenRepository;
-use Illuminate\Console\Command;
 
 class SetupDatePoll extends ACommand
 {
-  protected $userTokenRepository = null;
+  protected IUserTokenRepository $userTokenRepository;
 
-  /**
-   * The name and signature of the console command.
-   *
-   * @var string
-   */
   protected $signature = 'setup-datepoll';
-
-  /**
-   * The console command description.
-   *
-   * @var string
-   */
   protected $description = 'Set up process for DatePoll';
 
-  /**
-   * Create a new command instance.
-   *
-   * @param IUserTokenRepository $userTokenRepository
-   */
   public function __construct(IUserTokenRepository $userTokenRepository)
   {
     parent::__construct();
@@ -36,9 +17,7 @@ class SetupDatePoll extends ACommand
   }
 
   /**
-   * Execute the console command.
-   *
-   * @return mixed
+   * @return void
    */
   public function handle()
   {

@@ -11,11 +11,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class UserSettingsController extends Controller
-{
-
-  protected $userSettingRepository = null;
-  protected $userRepository = null;
+class UserSettingsController extends Controller {
+  protected IUserSettingRepository $userSettingRepository;
+  protected IUserRepository $userRepository;
 
   public function __construct(IUserSettingRepository $userSettingRepository, IUserRepository $userRepository) {
     $this->userSettingRepository = $userSettingRepository;
@@ -141,9 +139,9 @@ class UserSettingsController extends Controller
     }
 
     return response()->json([
-      'msg' => 'Set setting successful',
-      'setting_key' => $settingKey,
-      'setting_value' => $returnValue]);
+                              'msg' => 'Set setting successful',
+                              'setting_key' => $settingKey,
+                              'setting_value' => $returnValue]);
   }
 
   /**
@@ -176,8 +174,8 @@ class UserSettingsController extends Controller
     }
 
     return response()->json([
-      'msg' => 'Get setting successful',
-      'setting_key' => $settingKey,
-      'setting_value' => $value]);
+                              'msg' => 'Get setting successful',
+                              'setting_key' => $settingKey,
+                              'setting_value' => $value]);
   }
 }

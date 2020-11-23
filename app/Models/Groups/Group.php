@@ -32,7 +32,7 @@ class Group extends Model
     'updated_at'];
 
   /**
-   * @return Collection | Subgroup[] | null
+   * @return Collection<Subgroup> | Subgroup[] | null
    */
   public function subgroups() {
     return $this->hasMany('App\Models\Subgroups\Subgroup')
@@ -40,7 +40,7 @@ class Group extends Model
   }
 
   /**
-   * @return Collection | Subgroup[]
+   * @return Collection<Subgroup> | Subgroup[]
    */
   public function getSubgroupsOrdered() {
     return $this->hasMany('App\Models\Subgroups\Subgroup')
@@ -49,7 +49,7 @@ class Group extends Model
   }
 
   /**
-   * @return Collection | UsersMemberOfGroups[] | null
+   * @return Collection<UsersMemberOfGroups> | UsersMemberOfGroups[] | null
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')

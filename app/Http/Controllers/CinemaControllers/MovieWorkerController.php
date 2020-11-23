@@ -10,9 +10,8 @@ use Illuminate\Http\Request;
 
 class MovieWorkerController extends Controller
 {
-
-  protected $movieWorkerRepository = null;
-  protected $movieRepository = null;
+  protected IMovieWorkerRepository $movieWorkerRepository;
+  protected IMovieRepository $movieRepository;
 
   public function __construct(IMovieWorkerRepository $movieWorkerRepository, IMovieRepository $movieRepository)
   {
@@ -25,7 +24,7 @@ class MovieWorkerController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function applyForWorker(Request $request, $id) {
+  public function applyForWorker(Request $request, int $id) {
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
@@ -54,7 +53,7 @@ class MovieWorkerController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function signOutForWorker(Request $request, $id) {
+  public function signOutForWorker(Request $request, int $id) {
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
@@ -87,7 +86,7 @@ class MovieWorkerController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function applyForEmergencyWorker(Request $request, $id) {
+  public function applyForEmergencyWorker(Request $request, int $id) {
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
 
@@ -117,7 +116,7 @@ class MovieWorkerController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function signOutForEmergencyWorker(Request $request, $id) {
+  public function signOutForEmergencyWorker(Request $request, int $id) {
     /* Check if movie exists */
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {

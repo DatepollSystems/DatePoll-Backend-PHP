@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class StandardLocationController extends Controller
 {
 
-  protected $eventStandardLocationRepository = null;
+  protected IEventStandardLocationRepository $eventStandardLocationRepository;
 
   public function __construct(IEventStandardLocationRepository $eventStandardLocationRepository) {
     $this->eventStandardLocationRepository = $eventStandardLocationRepository;
@@ -41,7 +41,7 @@ class StandardLocationController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $standardLocation = $this->eventStandardLocationRepository->getStandardLocationById($id);
 
     if ($standardLocation == null) {
@@ -95,7 +95,7 @@ class StandardLocationController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function delete($id) {
+  public function delete(int $id) {
     /*
      * Success is an integer because laravel returns the count of deleted objects. If the count is 0 there wasn't a
      * standard location found with this id and therefore not deleted

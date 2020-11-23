@@ -45,7 +45,7 @@ class GroupRepository implements IGroupRepository
    * @param int $id
    * @return Group|null
    */
-  public function getGroupById($id) {
+  public function getGroupById(int $id) {
     return Group::find($id);
   }
 
@@ -54,9 +54,9 @@ class GroupRepository implements IGroupRepository
    * @param string $description
    * @param int|null $orderN
    * @param Group|null $group
-   * @return Group
+   * @return Group|null
    */
-  public function createOrUpdateGroup($name, $description, $orderN = null, $group = null) {
+  public function createOrUpdateGroup(string $name, string $description, $orderN = null, $group = null) {
     if ($group == null) {
       $group = new Group([
         'name' => $name,
@@ -93,7 +93,7 @@ class GroupRepository implements IGroupRepository
    * @param int $userId
    * @return UsersMemberOfGroups | null
    */
-  public function getUserMemberOfGroupByGroupIdAndUserId($groupId, $userId) {
+  public function getUserMemberOfGroupByGroupIdAndUserId(int $groupId, int $userId) {
     return UsersMemberOfGroups::where('group_id', $groupId)
                               ->where('user_id', $userId)
                               ->first();
@@ -106,7 +106,7 @@ class GroupRepository implements IGroupRepository
    * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
-  public function createOrUpdateUserMemberOfGroup($groupId, $userId, $role, $userMemberOfGroup = null) {
+  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, string $role, $userMemberOfGroup = null) {
     if ($userMemberOfGroup == null) {
       $userMemberOfGroup = new UsersMemberOfGroups([
         'user_id' => $userId,
