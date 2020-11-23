@@ -1,11 +1,8 @@
 <?php namespace App\Console\Commands;
 
-use App\Logging;
-use App\LogTypes;
 use Illuminate\Console\Command;
 
-class ACommand extends Command
-{
+class ACommand extends Command {
 
   /**
    * @param string $question
@@ -15,7 +12,7 @@ class ACommand extends Command
   protected function askStringQuestion(string $question, string $default = null): string {
     $answer = null;
 
-    while(true) {
+    while (true) {
       if ($default != null) {
         $answer = $this->ask($question . ' [' . $default . ']');
       } else {
@@ -48,7 +45,7 @@ class ACommand extends Command
   protected function askBooleanQuestion(string $question): bool {
     $answer = null;
 
-    while(true) {
+    while (true) {
       $answer = $this->anticipate($question . ' [Y/n]', ['y', 'n']);
       if ($answer == null) {
         $answer = true;

@@ -18,8 +18,12 @@ class SubgroupController extends Controller {
   protected IUserRepository $userRepository;
   protected IUserChangeRepository $userChangeRepository;
 
-  public function __construct(ISubgroupRepository $subgroupRepository, IGroupRepository $groupRepository,
-                              IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
+  public function __construct(
+    ISubgroupRepository $subgroupRepository,
+    IGroupRepository $groupRepository,
+    IUserRepository $userRepository,
+    IUserChangeRepository $userChangeRepository
+  ) {
     $this->subgroupRepository = $subgroupRepository;
     $this->groupRepository = $groupRepository;
     $this->userRepository = $userRepository;
@@ -33,8 +37,8 @@ class SubgroupController extends Controller {
     $subgroups = $this->subgroupRepository->getAllSubgroupsOrdered();
 
     return response()->json([
-                              'msg' => 'List of all subgroups',
-                              'subgroups' => $subgroups], 200);
+      'msg' => 'List of all subgroups',
+      'subgroups' => $subgroups, ], 200);
   }
 
   /**
@@ -47,7 +51,7 @@ class SubgroupController extends Controller {
       'name' => 'required|max:190|min:1',
       'description' => 'max:65535',
       'orderN' => 'integer',
-      'group_id' => 'required|integer']);
+      'group_id' => 'required|integer', ]);
 
     $groupId = $request->input('group_id');
     if ($this->groupRepository->getGroupById($groupId) == null) {
@@ -65,8 +69,8 @@ class SubgroupController extends Controller {
     }
 
     return response()->json([
-                              'msg' => 'Subgroup created',
-                              'subgroup' => $subgroup], 201);
+      'msg' => 'Subgroup created',
+      'subgroup' => $subgroup, ], 201);
   }
 
   /**
@@ -82,8 +86,8 @@ class SubgroupController extends Controller {
     $subgroup->users = $subgroup->getUsersWithRolesOrderedBySurname();
 
     return response()->json([
-                              'msg' => 'Subgroup information',
-                              'subgroup' => $subgroup]);
+      'msg' => 'Subgroup information',
+      'subgroup' => $subgroup, ]);
   }
 
   /**
@@ -97,7 +101,7 @@ class SubgroupController extends Controller {
       'name' => 'required|max:190|min:1',
       'description' => 'max:65535',
       'orderN' => 'integer',
-      'group_id' => 'required|integer']);
+      'group_id' => 'required|integer', ]);
 
     $subgroup = $this->subgroupRepository->getSubgroupById($id);
     if ($subgroup == null) {
@@ -120,8 +124,8 @@ class SubgroupController extends Controller {
     }
 
     return response()->json([
-                              'msg' => 'Subgroup updated',
-                              'subgroup' => $subgroup], 201);
+      'msg' => 'Subgroup updated',
+      'subgroup' => $subgroup, ], 201);
   }
 
   /**
@@ -135,10 +139,9 @@ class SubgroupController extends Controller {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
-    if (!$this->subgroupRepository->deleteSubgroup($subgroup)) {
+    if (! $this->subgroupRepository->deleteSubgroup($subgroup)) {
       return response()->json(['msg' => 'Subgroup deletion failed'], 500);
     }
-
 
     return response()->json(['msg' => 'Subgroup deleted!'], 200);
   }
@@ -154,7 +157,7 @@ class SubgroupController extends Controller {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'subgroup_id' => 'required|integer',
-      'role' => 'max:190']);
+      'role' => 'max:190', ]);
 
     $userID = $request->input('user_id');
     $subgroupID = $request->input('subgroup_id');
@@ -173,8 +176,10 @@ class SubgroupController extends Controller {
       return response()->json(['msg' => 'User is already member of this subgroup'], 201);
     }
 
-    $userMemberOfParentGroup = $this->groupRepository->getUserMemberOfGroupByGroupIdAndUserId($subgroup->group_id,
-                                                                                              $userID);
+    $userMemberOfParentGroup = $this->groupRepository->getUserMemberOfGroupByGroupIdAndUserId(
+      $subgroup->group_id,
+      $userID
+    );
     if ($userMemberOfParentGroup == null) {
       if ($this->groupRepository->createOrUpdateUserMemberOfGroup($subgroup->group_id, $userID, null) == null) {
         return response()->json(['msg' => 'Could not add user to the parent group'], 500);
@@ -189,8 +194,8 @@ class SubgroupController extends Controller {
     $this->userChangeRepository->createUserChange('subgroup', $userID, $request->auth->id, $subgroup->name, null);
 
     return response()->json([
-                              'msg' => 'Successfully added user to subgroup',
-                              'userMemberOfSubgroup' => $userMemberOfSubgroup], 201);
+      'msg' => 'Successfully added user to subgroup',
+      'userMemberOfSubgroup' => $userMemberOfSubgroup, ], 201);
   }
 
   /**
@@ -202,7 +207,7 @@ class SubgroupController extends Controller {
   public function removeUser(Request $request) {
     $this->validate($request, [
       'user_id' => 'required|integer',
-      'subgroup_id' => 'required|integer']);
+      'subgroup_id' => 'required|integer', ]);
 
     $userID = $request->input('user_id');
     $subgroupID = $request->input('subgroup_id');
@@ -216,13 +221,15 @@ class SubgroupController extends Controller {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
-    $userMemberOfSubgroup = $this->subgroupRepository->getUserMemberOfSubgroupBySubgroupIdAndUserId($subgroupID,
-                                                                                                    $userID);
+    $userMemberOfSubgroup = $this->subgroupRepository->getUserMemberOfSubgroupBySubgroupIdAndUserId(
+      $subgroupID,
+      $userID
+    );
     if ($userMemberOfSubgroup == null) {
       return response()->json(['msg' => 'User is not a member of this subgroup'], 201);
     }
 
-    if (!$this->subgroupRepository->removeSubgroupForUser($userMemberOfSubgroup)) {
+    if (! $this->subgroupRepository->removeSubgroupForUser($userMemberOfSubgroup)) {
       return response()->json(['msg' => 'Could not remove user of this subgroup'], 500);
     }
 
@@ -240,7 +247,7 @@ class SubgroupController extends Controller {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'subgroup_id' => 'required|integer',
-      'role' => 'max:190']);
+      'role' => 'max:190', ]);
 
     $userID = $request->input('user_id');
     $subgroupID = $request->input('subgroup_id');
@@ -255,21 +262,27 @@ class SubgroupController extends Controller {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
-    $userMemberOfSubgroup = $this->subgroupRepository->getUserMemberOfSubgroupBySubgroupIdAndUserId($subgroupID,
-                                                                                                    $userID);
+    $userMemberOfSubgroup = $this->subgroupRepository->getUserMemberOfSubgroupBySubgroupIdAndUserId(
+      $subgroupID,
+      $userID
+    );
     if ($userMemberOfSubgroup == null) {
       return response()->json(['msg' => 'User is not a member of this subgroup'], 404);
     }
 
-    $userMemberOfSubgroup = $this->subgroupRepository->createOrUpdateUserMemberOfSubgroup($subgroupID, $userID, $role,
-                                                                                          $userMemberOfSubgroup);
+    $userMemberOfSubgroup = $this->subgroupRepository->createOrUpdateUserMemberOfSubgroup(
+      $subgroupID,
+      $userID,
+      $role,
+      $userMemberOfSubgroup
+    );
     if ($userMemberOfSubgroup == null) {
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }
 
     return response()->json([
-                              'msg' => 'Successfully updated user in subgroup',
-                              'userMemberOfSubgroup' => $userMemberOfSubgroup], 200);
+      'msg' => 'Successfully updated user in subgroup',
+      'userMemberOfSubgroup' => $userMemberOfSubgroup, ], 200);
   }
 
   /**
@@ -279,13 +292,16 @@ class SubgroupController extends Controller {
   public function joined(int $userID) {
     if ($this->userRepository->getUserById($userID) == null) {
       return response()->json([
-                                'msg' => 'User not found',
-                                'error_code' => 'user_not_found'], 404);
+        'msg' => 'User not found',
+        'error_code' => 'user_not_found', ], 404);
     }
-    return response()->json([
-                              'msg' => 'List of joined subgroups',
-                              'subgroups' => $this->subgroupRepository->getJoinedSubgroupsReturnableByUserId($userID)],
-                            200);
+
+    return response()->json(
+      [
+        'msg' => 'List of joined subgroups',
+        'subgroups' => $this->subgroupRepository->getJoinedSubgroupsReturnableByUserId($userID), ],
+      200
+    );
   }
 
   /**
@@ -295,13 +311,15 @@ class SubgroupController extends Controller {
   public function free(int $userID) {
     if ($this->userRepository->getUserById($userID) == null) {
       return response()->json([
-                                'msg' => 'User not found',
-                                'error_code' => 'user_not_found'], 404);
+        'msg' => 'User not found',
+        'error_code' => 'user_not_found', ], 404);
     }
 
-    return response()->json([
-                              'msg' => 'List of free subgroups',
-                              'subgroups' => $this->subgroupRepository->getFreeSubgroupsReturnableByUserId($userID)],
-                            200);
+    return response()->json(
+      [
+        'msg' => 'List of free subgroups',
+        'subgroups' => $this->subgroupRepository->getFreeSubgroupsReturnableByUserId($userID), ],
+      200
+    );
   }
 }

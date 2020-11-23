@@ -60,14 +60,21 @@ class UserSeatReservationRepository implements IUserSeatReservationRepository {
    * @param PlaceReservation|null $placeReservation
    * @return PlaceReservation|null
    */
-  public function createOrUpdatePlaceReservation(string $reason, string $description, string $startDate,
-                                                 string $endDate, string $state, Place $place, ?User $user = null,
-                                                 ?User $approver = null, ?PlaceReservation $placeReservation = null) {
-
+  public function createOrUpdatePlaceReservation(
+    string $reason,
+    string $description,
+    string $startDate,
+    string $endDate,
+    string $state,
+    Place $place,
+    ?User $user = null,
+    ?User $approver = null,
+    ?PlaceReservation $placeReservation = null
+  ) {
     if ($placeReservation == null && $user != null) {
       $placeReservation = new PlaceReservation(['reason' => $reason, 'description' => $description,
-                                                 'start_date' => $startDate, 'end_date' => $endDate,
-                                                 'state' => $state, 'place_id' => $place->id, 'user_id' => $user->id]);
+        'start_date' => $startDate, 'end_date' => $endDate,
+        'state' => $state, 'place_id' => $place->id, 'user_id' => $user->id, ]);
     } else {
       $placeReservation->reason = $reason;
       $placeReservation->description = $description;
@@ -80,8 +87,9 @@ class UserSeatReservationRepository implements IUserSeatReservationRepository {
       $placeReservation->approver_id = $approver->id;
     }
 
-    if (!$placeReservation->save()) {
+    if (! $placeReservation->save()) {
       Logging::error('createOrUpdatePlaceReservation', 'Could not save place reservation!');
+
       return null;
     }
 

@@ -9,8 +9,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
-interface IEventRepository
-{
+interface IEventRepository {
 
   /**
    * @return Event[]|Collection

@@ -22,16 +22,17 @@ class LoggingController extends Controller {
    * @return JsonResponse
    */
   public function getAllLogs(Request $request) {
-    $logs = array();
+    $logs = [];
 
     foreach ($this->logRepository->getAllLogsOrderedByDate() as $log) {
       $logs[] = $log->getReturnable();
     }
 
-    Logging::info("getAllLogs", "User - " . $request->auth->id . " | Successful");
+    Logging::info('getAllLogs', 'User - ' . $request->auth->id . ' | Successful');
+
     return response()->json([
-                              'msg' => 'All logs',
-                              'logs' => $logs], 200);
+      'msg' => 'All logs',
+      'logs' => $logs, ], 200);
   }
 
   /**
@@ -42,13 +43,13 @@ class LoggingController extends Controller {
   public function saveLog(Request $request) {
     $this->validate($request, [
       'type' => 'required|string|min:1|max:190|in:INFO,WARNING,ERROR',
-      'message' => 'required|string|min:1|max:65534']);
+      'message' => 'required|string|min:1|max:65534', ]);
 
     $log = $this->logRepository->createLog($request->input('type'), $request->input('message'), $request->auth->id);
 
     return response()->json([
-                              'msg' => 'Log saved',
-                              'log' => $log->getReturnable()], 201);
+      'msg' => 'Log saved',
+      'log' => $log->getReturnable(), ], 201);
   }
 
   /**
@@ -63,11 +64,12 @@ class LoggingController extends Controller {
       return response()->json(['msg' => 'Log not found'], 404);
     }
 
-    if (!$this->logRepository->deleteLogByLog($log)) {
+    if (! $this->logRepository->deleteLogByLog($log)) {
       return response()->json(['msg' => 'Could not delete log'], 404);
     }
 
-    Logging::info("deleteLog", "User - " . $request->auth->id . " | Log - " . $id . " | Successful");
+    Logging::info('deleteLog', 'User - ' . $request->auth->id . ' | Log - ' . $id . ' | Successful');
+
     return response()->json(['msg' => 'Log deleted'], 200);
   }
 
@@ -78,7 +80,8 @@ class LoggingController extends Controller {
   public function deleteAllLogs(Request $request) {
     $this->logRepository->deleteAllLogs();
 
-    Logging::info("deleteAllLogs", "User - " . $request->auth->id . " | Successful");
+    Logging::info('deleteAllLogs', 'User - ' . $request->auth->id . ' | Successful');
+
     return response()->json(['msg' => 'All logs deleted'], 200);
   }
 }

@@ -7,9 +7,7 @@ use App\Versions;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
-class DatePollServerRepository implements IDatePollServerRepository
-{
-
+class DatePollServerRepository implements IDatePollServerRepository {
   protected ISettingRepository $settingRepository;
 
   public function __construct(ISettingRepository $settingRepository) {

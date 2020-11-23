@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Repositories\Event\EventDecision;
-
 
 use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
@@ -11,8 +9,7 @@ use App\Models\User\User;
 use Exception;
 use stdClass;
 
-class EventDecisionRepository implements IEventDecisionRepository
-{
+class EventDecisionRepository implements IEventDecisionRepository {
   /**
    * @param int $id
    * @return EventDecision
@@ -44,7 +41,7 @@ class EventDecisionRepository implements IEventDecisionRepository
         'event_id' => $event->id,
         'decision' => $decision,
         'showInCalendar' => $showInCalendar,
-        'color' => $color]);
+        'color' => $color, ]);
     } else {
       $eventDecision->decision = $decision;
       $eventDecision->showInCalendar = $showInCalendar;
@@ -62,7 +59,7 @@ class EventDecisionRepository implements IEventDecisionRepository
    */
   public function getDecisionForUser(User $user, Event $event, $anonymous = true) {
     $userToSave = new stdClass();
-    if (!$anonymous) {
+    if (! $anonymous) {
       $userToSave->id = $user->id;
       $userToSave->firstname = $user->firstname;
       $userToSave->surname = $user->surname;
@@ -73,8 +70,8 @@ class EventDecisionRepository implements IEventDecisionRepository
     }
 
     $decision = EventUserVotedForDecision::where('user_id', $user->id)
-                                         ->where('event_id', $event->id)
-                                         ->first();
+      ->where('event_id', $event->id)
+      ->first();
     $userToSave->additional_information = null;
     if ($decision == null) {
       $userToSave->decisionId = null;
@@ -82,7 +79,7 @@ class EventDecisionRepository implements IEventDecisionRepository
     } else {
       $userToSave->decisionId = $decision->decision()->id;
       $userToSave->decision = $decision->decision()->decision;
-      if (!$anonymous) {
+      if (! $anonymous) {
         $userToSave->additional_information = $decision->additionalInformation;
       }
     }
@@ -97,8 +94,7 @@ class EventDecisionRepository implements IEventDecisionRepository
    */
   public function getEventUserVotedForDecisionByEventIdAndUserId(int $eventId, int $userId) {
     return EventUserVotedForDecision::where('event_id', $eventId)
-                                    ->where('user_id', $userId)
-                                    ->first();
+      ->where('user_id', $userId)
+      ->first();
   }
-
 }

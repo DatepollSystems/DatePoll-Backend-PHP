@@ -1,19 +1,17 @@
 <?php
 
-
 namespace App\Repositories\Event\EventStandardDecision;
 
 use App\Models\Events\EventStandardDecision;
 use Illuminate\Support\Collection;
 
-class EventStandardDecisionRepository implements IEventStandardDecisionRepository
-{
+class EventStandardDecisionRepository implements IEventStandardDecisionRepository {
   /**
    * @return Collection<EventStandardDecision>
    */
   public function getAllStandardDecisionsOrderedByName() {
     return EventStandardDecision::orderBy('decision')
-                                ->get();
+      ->get();
   }
 
   /**
@@ -34,9 +32,9 @@ class EventStandardDecisionRepository implements IEventStandardDecisionRepositor
     $standardDecision = new EventStandardDecision([
       'decision' => $decision,
       'showInCalendar' => $showInCalendar,
-      'color' => $color]);
+      'color' => $color, ]);
 
-    if (!$standardDecision->save()) {
+    if (! $standardDecision->save()) {
       return null;
     }
 

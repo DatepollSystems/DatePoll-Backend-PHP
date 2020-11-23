@@ -8,8 +8,7 @@ use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IGroupRepository
-{
+interface IGroupRepository {
   /**
    * @return Group[]|Collection
    */

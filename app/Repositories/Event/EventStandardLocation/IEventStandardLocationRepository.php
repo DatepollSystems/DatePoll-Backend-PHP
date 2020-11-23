@@ -5,8 +5,7 @@ namespace App\Repositories\Event\EventStandardLocation;
 use App\Models\Events\EventStandardLocation;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IEventStandardLocationRepository
-{
+interface IEventStandardLocationRepository {
   /**
    * @return Collection<EventStandardLocation>
    */
@@ -32,5 +31,4 @@ interface IEventStandardLocationRepository
    * @return int
    */
   public function deleteStandardLocation(int $id);
-
 }

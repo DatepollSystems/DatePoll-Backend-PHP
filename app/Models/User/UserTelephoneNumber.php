@@ -14,8 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  * @property User $user
  */
-class UserTelephoneNumber extends Model
-{
+class UserTelephoneNumber extends Model {
   /**
    * @var array
    */

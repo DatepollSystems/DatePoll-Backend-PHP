@@ -6,7 +6,7 @@ $router->group(['prefix' => 'auth'], function () use ($router) {
   $router->post('IamLoggedIn', ['uses' => 'AuthController@IamLoggedIn']);
 
   /** Forgot password routes */
-  $router->group(['prefix' => 'forgotPassword'], function () use($router) {
+  $router->group(['prefix' => 'forgotPassword'], function () use ($router) {
     $router->post('sendEmail', ['uses' => 'AuthController@sendForgotPasswordEmail']);
     $router->post('checkCode', ['uses' => 'AuthController@checkForgotPasswordCode']);
     $router->post('resetPassword', ['uses' => 'AuthController@resetPasswordAfterForgotPassword']);

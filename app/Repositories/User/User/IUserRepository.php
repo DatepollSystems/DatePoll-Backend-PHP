@@ -7,8 +7,7 @@ use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IUserRepository
-{
+interface IUserRepository {
 
   /**
    * @return User[]|Collection
@@ -61,10 +60,28 @@ interface IUserRepository
    * @return User|null
    * @throws Exception
    */
-  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname,
-                                     $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
-                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember,
-                                     int $editorId, User $user = null);
+  public function createOrUpdateUser(
+    $title,
+    $username,
+    $firstname,
+    $surname,
+    $birthday,
+    $joinDate,
+    $streetname,
+    $streetnumber,
+    $zipcode,
+    $location,
+    $activated,
+    $activity,
+    $phoneNumbers,
+    $emailAddresses,
+    $memberNumber,
+    $internalComment,
+    $informationDenied,
+    $bvMember,
+    int $editorId,
+    User $user = null
+  );
 
   /**
    * @param User $user

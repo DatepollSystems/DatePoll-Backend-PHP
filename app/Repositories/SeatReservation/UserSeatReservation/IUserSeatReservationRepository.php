@@ -42,8 +42,15 @@ interface IUserSeatReservationRepository {
    * @param PlaceReservation|null $placeReservation
    * @return PlaceReservation|null
    */
-  public function createOrUpdatePlaceReservation(string $reason, string $description, string $startDate,
-                                                 string $endDate, string $state, Place $place, ?User $user = null,
-                                                 ?User $approver = null, ?PlaceReservation $placeReservation = null);
-
+  public function createOrUpdatePlaceReservation(
+    string $reason,
+    string $description,
+    string $startDate,
+    string $endDate,
+    string $state,
+    Place $place,
+    ?User $user = null,
+    ?User $approver = null,
+    ?PlaceReservation $placeReservation = null
+  );
 }

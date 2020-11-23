@@ -8,9 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class StandardLocationController extends Controller
-{
-
+class StandardLocationController extends Controller {
   protected IEventStandardLocationRepository $eventStandardLocationRepository;
 
   public function __construct(IEventStandardLocationRepository $eventStandardLocationRepository) {
@@ -23,18 +21,18 @@ class StandardLocationController extends Controller
   public function getAll() {
     $standardLocations = $this->eventStandardLocationRepository->getAllStandardLocationsOrderedByName();
 
-    $toReturn = array();
+    $toReturn = [];
     foreach ($standardLocations as $standardLocation) {
       $standardLocation->view_standard_location = [
         'href' => 'api/v1/avent/administration/standardLocation/' . $standardLocation->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
 
       $toReturn[] = $standardLocation;
     }
 
     return response()->json([
       'msg' => 'List of all standard locations',
-      'standardLocations' => $toReturn]);
+      'standardLocations' => $toReturn, ]);
   }
 
   /**
@@ -47,16 +45,16 @@ class StandardLocationController extends Controller
     if ($standardLocation == null) {
       return response()->json([
         'msg' => 'Standard location not found',
-        'error_code' => 'standard_location_not_found'], 404);
+        'error_code' => 'standard_location_not_found', ], 404);
     }
 
     $standardLocation->view_standard_locations = [
       'href' => 'api/v1/avent/administration/standardLocation',
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Standard location information',
-      'standardLocation' => $standardLocation]);
+      'standardLocation' => $standardLocation, ]);
   }
 
   /**
@@ -69,12 +67,12 @@ class StandardLocationController extends Controller
       'name' => 'required|min:1|max:190',
       'x' => 'numeric|nullable',
       'y' => 'numeric|nullable',
-      'location' => 'string|nullable|max:190']);
+      'location' => 'string|nullable|max:190', ]);
 
     $name = $request->input('name');
     $location = $request->input('location');
     $x = $request->input('x');
-    $y =  $request->input('y');
+    $y = $request->input('y');
 
     $standardLocation = $this->eventStandardLocationRepository->createStandardLocation($name, $location, $x, $y);
 
@@ -84,11 +82,11 @@ class StandardLocationController extends Controller
 
     $standardLocation->view_standard_location = [
       'href' => 'api/v1/avent/administration/standardLocation/' . $standardLocation->id,
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Successful created standard location',
-      'standardLocation' => $standardLocation], 201);
+      'standardLocation' => $standardLocation, ], 201);
   }
 
   /**

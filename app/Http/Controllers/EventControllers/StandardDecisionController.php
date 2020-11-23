@@ -8,8 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class StandardDecisionController extends Controller
-{
+class StandardDecisionController extends Controller {
   protected IEventStandardDecisionRepository $eventStandardDecisionRepository;
 
   /**
@@ -28,7 +27,7 @@ class StandardDecisionController extends Controller
 
     return response()->json([
       'msg' => 'List of all standard decisions',
-      'standardDecisions' => $standardDecisions]);
+      'standardDecisions' => $standardDecisions, ]);
   }
 
   /**
@@ -44,11 +43,11 @@ class StandardDecisionController extends Controller
 
     $standardDecision->view_standard_decisions = [
       'href' => 'api/v1/avent/administration/standardDecision',
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Standard decision information',
-      'standardDecision' => $standardDecision]);
+      'standardDecision' => $standardDecision, ]);
   }
 
   /**
@@ -70,11 +69,11 @@ class StandardDecisionController extends Controller
 
     $decisionObject->view_standard_decision = [
       'href' => 'api/v1/avent/administration/standardDecision/' . $decisionObject->id,
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Successful created standard decision',
-      'standardDecision' => $decisionObject], 201);
+      'standardDecision' => $decisionObject, ], 201);
   }
 
   /**
@@ -88,7 +87,7 @@ class StandardDecisionController extends Controller
       return response()->json(['msg' => 'Standard decision not found'], 404);
     }
 
-    if (!$this->eventStandardDecisionRepository->deleteStandardDecision($standardDecision->id)) {
+    if (! $this->eventStandardDecisionRepository->deleteStandardDecision($standardDecision->id)) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 

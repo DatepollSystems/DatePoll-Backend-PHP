@@ -2,8 +2,7 @@
 
 namespace App;
 
-class Versions
-{
+class Versions {
   private static string $application_version_string = '0.9.1';
   private static int $application_version = 23;
 

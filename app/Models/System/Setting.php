@@ -4,11 +4,10 @@ namespace App\Models\System;
 
 use Illuminate\Database\Eloquent\Model;
 
-abstract class SettingValueType
-{
-  const STRING = "string";
-  const BOOLEAN = "boolean";
-  const INTEGER = "integer";
+abstract class SettingValueType {
+  const STRING = 'string';
+  const BOOLEAN = 'boolean';
+  const INTEGER = 'integer';
 }
 
 /**
@@ -19,9 +18,7 @@ abstract class SettingValueType
  * @property string $created_at
  * @property string $updated_at
  */
-class Setting extends Model
-{
-
+class Setting extends Model {
 
   /**
    * The table associated with the model.
@@ -38,7 +35,5 @@ class Setting extends Model
     'key',
     'value',
     'created_at',
-    'updated_at'];
-
-
+    'updated_at', ];
 }

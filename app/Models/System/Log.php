@@ -16,8 +16,7 @@ use stdClass;
  * @property string $created_at
  * @property string $updated_at
  */
-class Log extends Model
-{
+class Log extends Model {
   /**
    * The table associated with the model.
    *
@@ -33,14 +32,14 @@ class Log extends Model
     'message',
     'user_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | User | null
    */
   public function user() {
     return $this->belongsTo(User::class, 'user_id')
-                ->first();
+      ->first();
   }
 
   /**

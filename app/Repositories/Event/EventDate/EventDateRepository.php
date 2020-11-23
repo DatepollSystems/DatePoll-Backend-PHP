@@ -1,14 +1,12 @@
 <?php
 
-
 namespace App\Repositories\Event\EventDate;
 
 use App\Models\Events\Event;
 use App\Models\Events\EventDate;
 use Exception;
 
-class EventDateRepository implements IEventDateRepository
-{
+class EventDateRepository implements IEventDateRepository {
 
   /**
    * @param Event $event
@@ -16,8 +14,8 @@ class EventDateRepository implements IEventDateRepository
    */
   public function getEventDatesOrderedByDateForEvent(Event $event) {
     return EventDate::where('event_id', '=', $event->id)
-                    ->orderBy('date')
-                    ->get();
+      ->orderBy('date')
+      ->get();
   }
 
   /**
@@ -45,7 +43,7 @@ class EventDateRepository implements IEventDateRepository
       'y' => $y,
       'date' => $date,
       'location' => $location,
-      'description' => $description]);
+      'description' => $description, ]);
 
     return $eventDate->save() ? $eventDate : null;
   }
@@ -56,8 +54,8 @@ class EventDateRepository implements IEventDateRepository
    */
   public function getFirstEventDateForEvent(Event $event) {
     return EventDate::where('event_id', '=', $event->id)
-                    ->orderBy('date', 'ASC')
-                    ->first();
+      ->orderBy('date', 'ASC')
+      ->first();
   }
 
   /**
@@ -66,7 +64,7 @@ class EventDateRepository implements IEventDateRepository
    */
   public function getLastEventDateForEvent(Event $event) {
     return EventDate::where('event_id', '=', $event->id)
-                    ->latest('date')
-                    ->first();
+      ->latest('date')
+      ->first();
   }
 }

@@ -3,8 +3,7 @@
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use Exception;
 
-class ReQueueNotSentBroadcasts extends ACommand
-{
+class ReQueueNotSentBroadcasts extends ACommand {
   protected IBroadcastRepository $broadcastRepository;
 
   protected $signature = 'requeue-broadcast';
@@ -26,6 +25,7 @@ class ReQueueNotSentBroadcasts extends ACommand
     $broadcast = $this->broadcastRepository->getBroadcastById($broadcastId);
     if ($broadcast == null) {
       $this->error('Broadcast id must be an integer');
+
       return;
     }
 

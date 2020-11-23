@@ -2,11 +2,9 @@
 
 namespace App\Repositories\System\Setting;
 
-use App\Models\System\Setting;
 use stdClass;
 
-interface ISettingRepository
-{
+interface ISettingRepository {
   /**
    * @return bool
    */

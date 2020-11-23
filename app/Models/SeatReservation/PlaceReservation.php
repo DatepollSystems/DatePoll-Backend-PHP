@@ -23,8 +23,7 @@ use stdClass;
  * @property string $created_at
  * @property string $updated_at
  */
-class PlaceReservation extends Model
-{
+class PlaceReservation extends Model {
 
   /**
    * The table associated with the model.
@@ -46,7 +45,7 @@ class PlaceReservation extends Model
     'approver_id',
     'place_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Place
@@ -80,13 +79,13 @@ class PlaceReservation extends Model
     $returnable->user_name = $this->user()->getName();
     $returnable->approver_name = $this->approver()->getName();
     $returnable->place_name = $this->place()->name;
+
     return $returnable;
   }
 }
 
-abstract class PlaceReservationState
-{
-  const WAITING = "WAITING";
-  const APPROVED = "APPROVED";
-  const REJECTED = "REJECTED";
+abstract class PlaceReservationState {
+  const WAITING = 'WAITING';
+  const APPROVED = 'APPROVED';
+  const REJECTED = 'REJECTED';
 }

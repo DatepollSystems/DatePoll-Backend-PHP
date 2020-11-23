@@ -43,7 +43,7 @@ class UserChangePasswordController extends Controller {
     $user = $request->auth;
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {
-      if (!$this->userRepository->changePasswordOfUser($user, $request->input('new_password'))) {
+      if (! $this->userRepository->changePasswordOfUser($user, $request->input('new_password'))) {
         return response()->json(['msg' => 'Could not save user'], 500);
       }
 

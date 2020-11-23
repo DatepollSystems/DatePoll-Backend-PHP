@@ -14,7 +14,7 @@ class FilesFeatureMiddleware {
    * @return mixed
    */
   public function handle(Request $request, Closure $next) {
-    if (!env('APP_FEATURE_FILES_ENABLED', false)) {
+    if (! env('APP_FEATURE_FILES_ENABLED', false)) {
       return response()->json(['msg' => 'The files feature is disabled on this DatePoll server'], 503);
     }
 

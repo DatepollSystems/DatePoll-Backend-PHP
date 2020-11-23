@@ -22,7 +22,8 @@ class JobController extends Controller {
   public function getUndoneJobs(Request $request) {
     $jobs = $this->jobRepository->getUndoneJobs();
 
-    Logging::info("getFailedJobs", "User - " . $request->auth->id . " | Successful");
+    Logging::info('getFailedJobs', 'User - ' . $request->auth->id . ' | Successful');
+
     return response()->json(['msg' => 'All jobs', 'jobs' => $jobs], 200);
   }
 }

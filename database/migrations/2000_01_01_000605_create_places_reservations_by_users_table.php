@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreatePlacesReservationsByUsersTable extends Migration
-{
+class CreatePlacesReservationsByUsersTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('places_reservations_by_users', function (Blueprint $table) {
       $table->increments('id');
 
@@ -24,15 +22,15 @@ class CreatePlacesReservationsByUsersTable extends Migration
 
       $table->integer('place_id')->unsigned();
       $table->foreign('place_id')
-          ->references('id')->on('places')->onDelete('cascade');
+        ->references('id')->on('places')->onDelete('cascade');
 
       $table->integer('user_id')->unsigned()->nullable(true);
       $table->foreign('user_id')
-          ->references('id')->on('users');
+        ->references('id')->on('users');
 
       $table->integer('approver_id')->unsigned()->nullable(true);
       $table->foreign('approver_id')
-          ->references('id')->on('users');
+        ->references('id')->on('users');
 
       $table->timestamps();
     });
@@ -43,8 +41,7 @@ class CreatePlacesReservationsByUsersTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('places_reservations_by_users');
   }
 }

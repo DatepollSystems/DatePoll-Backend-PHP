@@ -16,8 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  * @property User $user
  */
-class UserHasBadge extends Model
-{
+class UserHasBadge extends Model {
   /**
    * The table associated with the model.
    *
@@ -34,13 +33,13 @@ class UserHasBadge extends Model
     'reason',
     'user_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | User
    */
   public function user() {
     return $this->belongsTo('App\Models\User\User')
-                ->first();
+      ->first();
   }
 }

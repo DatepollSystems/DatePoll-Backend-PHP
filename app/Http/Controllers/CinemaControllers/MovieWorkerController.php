@@ -8,13 +8,11 @@ use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class MovieWorkerController extends Controller
-{
+class MovieWorkerController extends Controller {
   protected IMovieWorkerRepository $movieWorkerRepository;
   protected IMovieRepository $movieRepository;
 
-  public function __construct(IMovieWorkerRepository $movieWorkerRepository, IMovieRepository $movieRepository)
-  {
+  public function __construct(IMovieWorkerRepository $movieWorkerRepository, IMovieRepository $movieRepository) {
     $this->movieWorkerRepository = $movieWorkerRepository;
     $this->movieRepository = $movieRepository;
   }
@@ -134,7 +132,7 @@ class MovieWorkerController extends Controller
     $user = $request->auth;
 
     if ($movie->emergencyWorker()->id != $user->id) {
-      return response()->json(['msg' => 'You are not the emergency worker for this movie' , 'error_code' => 'not_the_worker_for_movie'], 400);
+      return response()->json(['msg' => 'You are not the emergency worker for this movie', 'error_code' => 'not_the_worker_for_movie'], 400);
     }
 
     if ($this->movieWorkerRepository->removeEmergencyWorkerFromMovie($movie)) {

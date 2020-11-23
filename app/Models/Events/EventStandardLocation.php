@@ -13,8 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $created_at
  * @property string $updated_at
  */
-class EventStandardLocation extends Model
-{
+class EventStandardLocation extends Model {
   /**
    * The table associated with the model.
    *
@@ -31,6 +30,5 @@ class EventStandardLocation extends Model
     'x',
     'y',
     'created_at',
-    'updated_at'];
-
+    'updated_at', ];
 }

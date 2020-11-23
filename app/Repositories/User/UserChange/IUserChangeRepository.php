@@ -5,8 +5,7 @@ namespace App\Repositories\User\UserChange;
 use App\Models\User\UserChange;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IUserChangeRepository
-{
+interface IUserChangeRepository {
   /**
    * @param string $property
    * @param int $userId
@@ -15,8 +14,13 @@ interface IUserChangeRepository
    * @param string|null $oldValue
    * @return UserChange|null
    */
-  public function createUserChange(string $property, int $userId, int $editorId, string $newValue = null,
-                                   string $oldValue = null);
+  public function createUserChange(
+    string $property,
+    int $userId,
+    int $editorId,
+    string $newValue = null,
+    string $oldValue = null
+  );
 
   /**
    * @return UserChange[]|Collection
@@ -36,6 +40,11 @@ interface IUserChangeRepository
    * @param string $newValue
    * @param string $oldValue
    */
-  public function checkForPropertyChange(string $property, int $userId, int $editorId, string $newValue,
-                                         string $oldValue);
+  public function checkForPropertyChange(
+    string $property,
+    int $userId,
+    int $editorId,
+    string $newValue,
+    string $oldValue
+  );
 }

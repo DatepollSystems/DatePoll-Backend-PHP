@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User\User;
 use Closure;
 use Exception;
-use App\Models\User\User;
-use Firebase\JWT\JWT;
 use Firebase\JWT\ExpiredException;
+use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,7 +20,7 @@ class JwtMiddleware {
   public function handle(Request $request, Closure $next, $guard = null) {
     $token = $request->get('token');
 
-    if (!$token) {
+    if (! $token) {
       // Unauthorized response if token not there
       return response()->json(['msg' => 'Token not provided.', 'error_code' => 'token_not_provided'], 401);
     }
@@ -34,6 +34,7 @@ class JwtMiddleware {
     $user = User::find($credentials->sub);
     // Put the user into the request
     $request->auth = $user;
+
     return $next($request);
   }
 }

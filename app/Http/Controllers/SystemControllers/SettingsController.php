@@ -28,10 +28,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCinemaEnabled($isEnabled);
 
-    Logging::info("setCinemaFeatureIsEnabled", "User - " . $request->auth->id . " | Changed to " . $isEnabled);
+    Logging::info('setCinemaFeatureIsEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+
     return response()->json([
-                              'msg' => 'Set cinema service enabled',
-                              'isEnabled' => $isEnabled]);
+      'msg' => 'Set cinema service enabled',
+      'isEnabled' => $isEnabled, ]);
   }
 
   /**
@@ -46,10 +47,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setEventsEnabled($isEnabled);
 
-    Logging::info("setEventsFeatureIsEnabled", "User - " . $request->auth->id . " | Changed to " . $isEnabled);
+    Logging::info('setEventsFeatureIsEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+
     return response()->json([
-                              'msg' => 'Set events service enabled',
-                              'isEnabled' => $isEnabled]);
+      'msg' => 'Set events service enabled',
+      'isEnabled' => $isEnabled, ]);
   }
 
   /**
@@ -64,10 +66,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setBroadcastsEnabled($isEnabled);
 
-    Logging::info("setBroadcastFeatureIsEnabled", "User - " . $request->auth->id . " | Changed to " . $isEnabled);
+    Logging::info('setBroadcastFeatureIsEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+
     return response()->json([
-                              'msg' => 'Set broadcast service enabled',
-                              'isEnabled' => $isEnabled]);
+      'msg' => 'Set broadcast service enabled',
+      'isEnabled' => $isEnabled, ]);
   }
 
   /**
@@ -82,10 +85,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCommunityName($communityName);
 
-    Logging::info("setCommunityName", "User - " . $request->auth->id . " | Changed to " . $communityName);
+    Logging::info('setCommunityName', 'User - ' . $request->auth->id . ' | Changed to ' . $communityName);
+
     return response()->json([
-                              'msg' => 'Set community name',
-                              'community_name' => $communityName]);
+      'msg' => 'Set community name',
+      'community_name' => $communityName, ]);
   }
 
   /**
@@ -100,10 +104,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCommunityUrl($communityUrl);
 
-    Logging::info("setCommunityUrl", "User - " . $request->auth->id . " | Changed to " . $communityUrl);
+    Logging::info('setCommunityUrl', 'User - ' . $request->auth->id . ' | Changed to ' . $communityUrl);
+
     return response()->json([
-                              'msg' => 'Set community url',
-                              'community_url' => $communityUrl]);
+      'msg' => 'Set community url',
+      'community_url' => $communityUrl, ]);
   }
 
   /**
@@ -118,10 +123,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCommunityDescription($communityDescription);
 
-    Logging::info("setCommunityDescription", "User - " . $request->auth->id . " | Changed");
+    Logging::info('setCommunityDescription', 'User - ' . $request->auth->id . ' | Changed');
+
     return response()->json([
-                              'msg' => 'Set community description',
-                              'community_description' => $communityDescription]);
+      'msg' => 'Set community description',
+      'community_description' => $communityDescription, ]);
   }
 
   /**
@@ -136,10 +142,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCommunityImprint($communityImprint);
 
-    Logging::info("setCommunityImprint", "User - " . $request->auth->id . " | Changed");
+    Logging::info('setCommunityImprint', 'User - ' . $request->auth->id . ' | Changed');
+
     return response()->json([
-                              'msg' => 'Set community imprint',
-                              'community_url' => $communityImprint]);
+      'msg' => 'Set community imprint',
+      'community_url' => $communityImprint, ]);
   }
 
   /**
@@ -154,10 +161,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCommunityPrivacyPolicy($communityPrivacyPolicy);
 
-    Logging::info("setCommunityPrivacyPolicy", "User - " . $request->auth->id . " | Changed");
+    Logging::info('setCommunityPrivacyPolicy', 'User - ' . $request->auth->id . ' | Changed');
+
     return response()->json([
-                              'msg' => 'Set community privacy policy',
-                              'community_url' => $communityPrivacyPolicy]);
+      'msg' => 'Set community privacy policy',
+      'community_url' => $communityPrivacyPolicy, ]);
   }
 
   /**
@@ -172,10 +180,11 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setUrl($url);
 
-    Logging::info("setCommunityUrl", "User - " . $request->auth->id . " | Changed to " . $url);
+    Logging::info('setCommunityUrl', 'User - ' . $request->auth->id . ' | Changed to ' . $url);
+
     return response()->json([
-                              'msg' => 'Set url',
-                              'url' => $url]);
+      'msg' => 'Set url',
+      'url' => $url, ]);
   }
 
   /**
@@ -183,8 +192,8 @@ class SettingsController extends Controller {
    */
   public function getOpenWeatherMapKey() {
     return response()->json([
-                              'msg' => 'OpenWeatherMap key',
-                              'openweathermap_key' => $this->settingRepository->getOpenWeatherMapKey()], 200);
+      'msg' => 'OpenWeatherMap key',
+      'openweathermap_key' => $this->settingRepository->getOpenWeatherMapKey(), ], 200);
   }
 
   /**
@@ -199,20 +208,23 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setOpenWeatherMapKey($openWeatherMapKey);
 
-    Logging::info("setOpenWeatherMapKey", "User - " . $request->auth->id . " | Changed to " . $openWeatherMapKey);
+    Logging::info('setOpenWeatherMapKey', 'User - ' . $request->auth->id . ' | Changed to ' . $openWeatherMapKey);
+
     return response()->json([
-                              'msg' => 'Set OpenWeatherMap key',
-                              'openweathermap_key' => $openWeatherMapKey]);
+      'msg' => 'Set OpenWeatherMap key',
+      'openweathermap_key' => $openWeatherMapKey, ]);
   }
 
   /**
    * @return JsonResponse
    */
   public function getOpenWeatherMapCinemaCityId() {
-    return response()->json([
-                              'msg' => 'OpenWeatherMap cinema city id',
-                              'openweathermap_cinema_city_id' => $this->settingRepository->getCinemaOpenWeatherMapCityId()],
-                            200);
+    return response()->json(
+      [
+        'msg' => 'OpenWeatherMap cinema city id',
+        'openweathermap_cinema_city_id' => $this->settingRepository->getCinemaOpenWeatherMapCityId(), ],
+      200
+    );
   }
 
   /**
@@ -227,11 +239,14 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setCinemaOpenWeatherMapCityId($openWeatherMapCinemaCityId);
 
-    Logging::info("setOpenWeatherMapCinemaCityId",
-                  "User - " . $request->auth->id . " | Changed to " . $openWeatherMapCinemaCityId);
+    Logging::info(
+      'setOpenWeatherMapCinemaCityId',
+      'User - ' . $request->auth->id . ' | Changed to ' . $openWeatherMapCinemaCityId
+    );
+
     return response()->json([
-                              'msg' => 'Set OpenWeatherMap cinema city id',
-                              'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId]);
+      'msg' => 'Set OpenWeatherMap cinema city id',
+      'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId, ]);
   }
 
   /**
@@ -239,8 +254,8 @@ class SettingsController extends Controller {
    */
   public function getAlert() {
     return response()->json([
-                              'msg' => 'Alert',
-                              'alert' => $this->settingRepository->getAlert()], 200);
+      'msg' => 'Alert',
+      'alert' => $this->settingRepository->getAlert(), ], 200);
   }
 
   /**
@@ -254,18 +269,19 @@ class SettingsController extends Controller {
     $alertMessage = $request->input('message');
     $aType = $request->input('type');
 
-    if (!str_contains($aType, 'happy') && !str_contains($aType, 'normal')) {
+    if (! str_contains($aType, 'happy') && ! str_contains($aType, 'normal')) {
       return response()->json(['msg' => 'Unknown type', 'error_code' => 'unknown_alert_type',
-                                'possible types' => ['happy', 'normal']], 422);
+        'possible types' => ['happy', 'normal'], ], 422);
     }
 
     //return response()->json(['msg' => $aType]);
 
     $alert = $this->settingRepository->setAlert($alertMessage, $aType);
 
-    Logging::info("setAlert", "User - " . $request->auth->id . " | Changed to " . $alert->message);
+    Logging::info('setAlert', 'User - ' . $request->auth->id . ' | Changed to ' . $alert->message);
+
     return response()->json([
-                              'msg' => 'Set alert',
-                              'alert' => $alert]);
+      'msg' => 'Set alert',
+      'alert' => $alert, ]);
   }
 }

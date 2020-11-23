@@ -135,13 +135,14 @@ class UserSettingsController extends Controller {
         break;
       default:
         Logging::error('setValueRequest UserSettingsRepository', 'Unknown setting_key');
+
         return response()->json(['msg' => 'Could not find setting_key'], 500);
     }
 
     return response()->json([
-                              'msg' => 'Set setting successful',
-                              'setting_key' => $settingKey,
-                              'setting_value' => $returnValue]);
+      'msg' => 'Set setting successful',
+      'setting_key' => $settingKey,
+      'setting_value' => $returnValue, ]);
   }
 
   /**
@@ -170,12 +171,13 @@ class UserSettingsController extends Controller {
         break;
       default:
         Logging::error('getValueRequest UserSettingsRepository', 'Unknown setting_key');
+
         return response()->json(['msg' => 'Could not find setting_key'], 500);
     }
 
     return response()->json([
-                              'msg' => 'Get setting successful',
-                              'setting_key' => $settingKey,
-                              'setting_value' => $value]);
+      'msg' => 'Get setting successful',
+      'setting_key' => $settingKey,
+      'setting_value' => $value, ]);
   }
 }

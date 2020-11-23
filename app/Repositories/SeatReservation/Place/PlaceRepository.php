@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Repositories\SeatReservation\Place;
 
 use App\Logging;
@@ -41,8 +40,9 @@ class PlaceRepository implements IPlaceRepository {
       $place->y = $y;
     }
 
-    if (!$place->save()) {
+    if (! $place->save()) {
       Logging::error('createOrUpdatePlace', 'Could not save place!');
+
       return null;
     }
 

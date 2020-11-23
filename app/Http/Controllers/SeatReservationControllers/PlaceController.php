@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\SeatReservationControllers;
 
-use App\Logging;
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Repositories\SeatReservation\Place\IPlaceRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class PlaceController extends Controller {
-
   protected IPlaceRepository $placeRepository;
 
   public function __construct(IPlaceRepository $placeRepository) {
@@ -36,7 +35,7 @@ class PlaceController extends Controller {
     $this->validate($request, [
       'name' => 'required|string',
       'x' => 'nullable|numeric',
-      'y' => 'nullable|numeric'
+      'y' => 'nullable|numeric',
     ]);
 
     $name = $request->input('name');
@@ -62,7 +61,7 @@ class PlaceController extends Controller {
     $this->validate($request, [
       'name' => 'required|string',
       'x' => 'nullable|numeric',
-      'y' => 'nullable|numeric'
+      'y' => 'nullable|numeric',
     ]);
 
     $name = $request->input('name');
@@ -95,12 +94,14 @@ class PlaceController extends Controller {
       return response()->json(['msg' => 'Place not found'], 404);
     }
 
-    if (!$this->placeRepository->deletePlace($place)) {
+    if (! $this->placeRepository->deletePlace($place)) {
       Logging::error('deletePlace', 'Could not delete place! User id - ' . $request->auth->id);
+
       return response()->json(['msg' => 'Could not delete place'], 500);
     }
 
     Logging::info('deletePlace', 'Deleted place! User id - ' . $request->auth->id);
+
     return response()->json(['msg' => 'Successfully deleted place'], 200);
   }
 }

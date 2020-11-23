@@ -6,13 +6,11 @@ use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\User\User;
 
-class MovieBookingRepository implements IMovieBookingRepository
-{
-
+class MovieBookingRepository implements IMovieBookingRepository {
   public function getMovieBookingByMovieAndUser(Movie $movie, User $user) {
     return MoviesBooking::where('user_id', $user->id)
-                        ->where('movie_id', $movie->id)
-                        ->first();
+      ->where('movie_id', $movie->id)
+      ->first();
   }
 
   public function bookTickets(Movie $movie, User $user, int $ticketAmount) {
@@ -23,7 +21,7 @@ class MovieBookingRepository implements IMovieBookingRepository
       $movieBooking = new MoviesBooking([
         'user_id' => $user->id,
         'movie_id' => $movie->id,
-        'amount' => $ticketAmount]);
+        'amount' => $ticketAmount, ]);
 
       if ($movieBooking->save()) {
         /* If movie booking was successful, update movie booked tickets */

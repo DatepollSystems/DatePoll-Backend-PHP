@@ -6,8 +6,7 @@ use App\Models\System\Log;
 use Exception;
 use Illuminate\Support\Collection;
 
-interface ILogRepository
-{
+interface ILogRepository {
   /**
    * @return Collection<Log>
    */

@@ -3,30 +3,30 @@
 namespace App\Repositories\System\Setting;
 
 abstract class SettingKey {
-  const CINEMA_ENABLED = "cinema_enabled";
-  const CINEMA_OPENWEATHERMAP_CITY_ID = "cinema_openweathermap_city_id";
+  const CINEMA_ENABLED = 'cinema_enabled';
+  const CINEMA_OPENWEATHERMAP_CITY_ID = 'cinema_openweathermap_city_id';
 
-  const EVENTS_ENABLED = "events_enabled";
+  const EVENTS_ENABLED = 'events_enabled';
 
-  const BROADCASTS_ENABLED = "broadcasts_enabled";
+  const BROADCASTS_ENABLED = 'broadcasts_enabled';
 
-  const SEAT_RESERVATION_ENABLED = "seat_reservation_enabled";
+  const SEAT_RESERVATION_ENABLED = 'seat_reservation_enabled';
 
-  const FILES_ENABLED = "files_enabled";
+  const FILES_ENABLED = 'files_enabled';
 
-  const URL = "url";
+  const URL = 'url';
 
-  const COMMUNITY_NAME = "community_name";
-  const COMMUNITY_URL = "community_url";
-  const COMMUNITY_DESCRIPTION = "community_description";
-  const COMMUNITY_IMPRINT = "community_imprint";
+  const COMMUNITY_NAME = 'community_name';
+  const COMMUNITY_URL = 'community_url';
+  const COMMUNITY_DESCRIPTION = 'community_description';
+  const COMMUNITY_IMPRINT = 'community_imprint';
   const COMMUNITY_PRIVACY_POLICY = 'community_privacy_policy';
   const COMMUNITY_ALERT = 'community_alert';
   const COMMUNITY_ALERT_TYPE = 'community_alert_type';
 
-  const OPENWEATHERMAP_KEY = "openweathermap_key";
+  const OPENWEATHERMAP_KEY = 'openweathermap_key';
 
-  const DATABASE_VERSION = "database_version";
+  const DATABASE_VERSION = 'database_version';
 }
 
 abstract class CommunityAlertTypes {
@@ -116,7 +116,8 @@ class SettingRepository implements ISettingRepository {
     if (str_contains($url, 'localhost')) {
       return 'http://localhost:9130';
     } else {
-      $urlWithoutPort = explode(":", $url);
+      $urlWithoutPort = explode(':', $url);
+
       return $urlWithoutPort[0] . ':' . $urlWithoutPort[1] . ':9230';
     }
   }
@@ -193,8 +194,10 @@ class SettingRepository implements ISettingRepository {
    * @return string
    */
   public function getCommunityPrivacyPolicy(): string {
-    return $this->getStringValueByKey(SettingKey::COMMUNITY_PRIVACY_POLICY,
-                                      'You should provide your website privacy policy here.');
+    return $this->getStringValueByKey(
+      SettingKey::COMMUNITY_PRIVACY_POLICY,
+      'You should provide your website privacy policy here.'
+    );
   }
 
   /**
@@ -242,6 +245,7 @@ class SettingRepository implements ISettingRepository {
     $alert = new stdClass();
     $alert->message = $this->getStringValueByKey(SettingKey::COMMUNITY_ALERT, '');
     $alert->type = $this->getStringValueByKey(SettingKey::COMMUNITY_ALERT_TYPE, CommunityAlertTypes::NORMAL);
+
     return $alert;
   }
 
@@ -254,6 +258,7 @@ class SettingRepository implements ISettingRepository {
     $alert = new stdClass();
     $alert->message = $this->setStringValueByKey(SettingKey::COMMUNITY_ALERT, $alertMessage);
     $alert->type = $this->setStringValueByKey(SettingKey::COMMUNITY_ALERT_TYPE, $communityAlertType);
+
     return $alert;
   }
 
@@ -272,7 +277,6 @@ class SettingRepository implements ISettingRepository {
     return $this->setIntegerValueByKey(SettingKey::DATABASE_VERSION, $currentDatabaseVersion);
   }
 
-
   /**
    * @param string $settingKey
    * @param string $default
@@ -282,9 +286,9 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-                                  'type' => SettingValueType::STRING,
-                                  'key' => $settingKey,
-                                  'value' => $default]);
+        'type' => SettingValueType::STRING,
+        'key' => $settingKey,
+        'value' => $default, ]);
 
       $newSetting->save();
 
@@ -304,9 +308,9 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-                                  'type' => SettingValueType::STRING,
-                                  'key' => $settingKey,
-                                  'value' => $value]);
+        'type' => SettingValueType::STRING,
+        'key' => $settingKey,
+        'value' => $value, ]);
 
       $newSetting->save();
 
@@ -314,6 +318,7 @@ class SettingRepository implements ISettingRepository {
     } else {
       $setting->value = $value;
       $setting->save();
+
       return $setting->value;
     }
   }
@@ -334,9 +339,9 @@ class SettingRepository implements ISettingRepository {
       }
 
       $newSetting = new Setting([
-                                  'type' => SettingValueType::BOOLEAN,
-                                  'key' => $settingKey,
-                                  'value' => $valueToSave]);
+        'type' => SettingValueType::BOOLEAN,
+        'key' => $settingKey,
+        'value' => $valueToSave, ]);
 
       $newSetting->save();
 
@@ -363,9 +368,9 @@ class SettingRepository implements ISettingRepository {
       }
 
       $newSetting = new Setting([
-                                  'type' => SettingValueType::STRING,
-                                  'key' => $settingKey,
-                                  'value' => $valueToSave]);
+        'type' => SettingValueType::STRING,
+        'key' => $settingKey,
+        'value' => $valueToSave, ]);
 
       $newSetting->save();
 
@@ -373,6 +378,7 @@ class SettingRepository implements ISettingRepository {
     } else {
       $setting->value = $value;
       $setting->save();
+
       return (bool)$setting->value;
     }
   }
@@ -387,9 +393,9 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-                                  'type' => SettingValueType::INTEGER,
-                                  'key' => $settingKey,
-                                  'value' => $value]);
+        'type' => SettingValueType::INTEGER,
+        'key' => $settingKey,
+        'value' => $value, ]);
 
       $newSetting->save();
 
@@ -397,6 +403,7 @@ class SettingRepository implements ISettingRepository {
     } else {
       $setting->value = $value;
       $setting->save();
+
       return (int)$setting->value;
     }
   }
@@ -411,9 +418,9 @@ class SettingRepository implements ISettingRepository {
 
     if ($setting == null) {
       $newSetting = new Setting([
-                                  'type' => SettingValueType::INTEGER,
-                                  'key' => $settingKey,
-                                  'value' => $default]);
+        'type' => SettingValueType::INTEGER,
+        'key' => $settingKey,
+        'value' => $default, ]);
 
       $newSetting->save();
 

@@ -16,8 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Subgroup $subgroup
  * @property User $user
  */
-class UsersMemberOfSubgroups extends Model
-{
+class UsersMemberOfSubgroups extends Model {
   /**
    * @var array
    */

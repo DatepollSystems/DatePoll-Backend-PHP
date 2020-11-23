@@ -34,7 +34,7 @@ class UserChangeEmailController extends Controller {
     }
 
     return response()->json([
-                              'msg' => 'All email addresses saved',
-                              'user' => $user->getReturnable()], 200);
+      'msg' => 'All email addresses saved',
+      'user' => $user->getReturnable(), ], 200);
   }
 }

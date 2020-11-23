@@ -12,9 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class MovieBookingController extends Controller
-{
-
+class MovieBookingController extends Controller {
   protected IMovieBookingRepository $movieBookingRepository;
   protected IMovieRepository $movieRepository;
   protected IUserRepository $userRepository;
@@ -33,13 +31,14 @@ class MovieBookingController extends Controller
   public function bookTickets(Request $request) {
     $this->validate($request, [
       'movie_id' => 'required|numeric',
-      'ticket_amount' => 'required|int']);
+      'ticket_amount' => 'required|int', ]);
 
     $user = $request->auth;
 
     $movie = $this->movieRepository->getMovieById($request->input('movie_id'));
     if ($movie == null) {
       Logging::warning('bookTickets', 'User - ' . $user->id . ' | Movie id - ' . $request->input('movie_id') . ' | Movie not found');
+
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
@@ -56,15 +55,16 @@ class MovieBookingController extends Controller
 
       $movieBooking->cancel_booking = [
         'href' => 'api/v1/cinema/booking/' . $movie->id,
-        'method' => 'DELETE'];
+        'method' => 'DELETE', ];
 
-      Logging::info("bookTickets", "Movie booking - " . $movieBooking->id . " | Created");
+      Logging::info('bookTickets', 'Movie booking - ' . $movieBooking->id . ' | Created');
+
       return response()->json([
         'msg' => 'Reservation successful',
-        'movie_booking' => $movieBooking], 200);
-
+        'movie_booking' => $movieBooking, ], 200);
     } else {
-      Logging::error("bookTickets", "User - " . $user->id . " | Could not save movie booking");
+      Logging::error('bookTickets', 'User - ' . $user->id . ' | Could not save movie booking');
+
       return response()->json(['msg' => 'An error occurred during booking saving'], 500);
     }
   }
@@ -81,6 +81,7 @@ class MovieBookingController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('bookTickets', 'User - ' . $user->id . ' | Movie id - ' . $request->input('movie_id') . ' | Movie not found');
+
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
@@ -88,11 +89,12 @@ class MovieBookingController extends Controller
     if ($movieBooking == null) {
       $movie->save();
 
-      Logging::info("cancelBooking", "Movie booking | Successful");
-      return response()->json(['msg' => 'Booking successful removed'], 200);
+      Logging::info('cancelBooking', 'Movie booking | Successful');
 
+      return response()->json(['msg' => 'Booking successful removed'], 200);
     } else {
-      Logging::error("cancelBooking", "Movie booking - " . $movieBooking->id . " | Could not cancel booking");
+      Logging::error('cancelBooking', 'Movie booking - ' . $movieBooking->id . ' | Could not cancel booking');
+
       return response()->json(['msg' => 'An error occurred during removing'], 500);
     }
   }
@@ -109,6 +111,7 @@ class MovieBookingController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('bookTickets', 'User - ' . $request->auth->id . ' | Movie id - ' . $request->input('movie_id') . ' | Movie not found');
+
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
@@ -119,20 +122,23 @@ class MovieBookingController extends Controller
 
       $user = $this->userRepository->getUserById($booking['user_id']);
       if ($user == null) {
-        Logging::error("bookForUsers", "User - " . $request->auth->id . " | Movie - " . $id . " | User not found");
+        Logging::error('bookForUsers', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | User not found');
+
         return response()->json(['msg' => 'User ' . $request->auth->id . ' not found!', 'error_code' => 'user_not_found'], 404);
       }
 
       $movieBooking = $this->movieBookingRepository->bookTickets($movie, $user, $ticketAmount);
 
       if ($movieBooking == null) {
-        Logging::error("bookForUsers", "User - " . $user->id . " | Movie - " . $id . " | Could not reserve");
+        Logging::error('bookForUsers', 'User - ' . $user->id . ' | Movie - ' . $id . ' | Could not reserve');
+
         return response()->json(['msg' => 'An error occurred during booking saving!'], 500);
       }
     }
     $movie->save();
 
-    Logging::info("bookForUsers", "User - " . $request->auth->id . " | Successful");
+    Logging::info('bookForUsers', 'User - ' . $request->auth->id . ' | Successful');
+
     return response()->json(['msg' => 'Saved selected bookings successfully!'], 201);
   }
 
@@ -156,22 +162,25 @@ class MovieBookingController extends Controller
     foreach ($userIds as $userId) {
       $user = $this->userRepository->getUserById($userId);
       if ($user == null) {
-        Logging::error("bookForUsers", "User - " . $request->auth->id . " | Movie - " . $id . " | User not found");
+        Logging::error('bookForUsers', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | User not found');
+
         return response()->json(['msg' => 'User ' . $request->auth->id . ' not found!'], 404);
       }
 
       $movieBooking = $this->movieBookingRepository->cancelBooking($movie, $user);
 
       if ($movieBooking != null) {
-        Logging::error("cancelBookingForUsers", "Movie booking - " . $movieBooking->id . " | Could not delete");
+        Logging::error('cancelBookingForUsers', 'Movie booking - ' . $movieBooking->id . ' | Could not delete');
+
         return response()->json(['msg' => 'Could not remove booking!'], 500);
       }
     }
 
     $movie->save();
 
-    Logging::info("cancelBookingForUsers", "User - " . $request->auth->id . " | Successful");
+    Logging::info('cancelBookingForUsers', 'User - ' . $request->auth->id . ' | Successful');
+
     return response()->json([
-      'msg' => 'Removed selected bookings successfully!'], 201);
+      'msg' => 'Removed selected bookings successfully!', ], 201);
   }
 }

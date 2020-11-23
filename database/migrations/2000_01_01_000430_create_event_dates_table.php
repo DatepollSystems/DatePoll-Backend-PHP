@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateEventDatesTable extends Migration
-{
+class CreateEventDatesTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('event_dates', function (Blueprint $table) {
       $table->increments('id');
 
@@ -23,12 +21,11 @@ class CreateEventDatesTable extends Migration
       $table->double('x', 9, 6)->nullable(true);
       $table->double('y', 9, 6)->nullable(true);
 
-      $table->integer('event_id')->unsigned();;
+      $table->integer('event_id')->unsigned();
+      ;
       $table->foreign('event_id')
         ->references('id')->on('events')
         ->onDelete('cascade');
-
-
 
       $table->timestamps();
     });
@@ -39,8 +36,7 @@ class CreateEventDatesTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('event_dates');
   }
 }

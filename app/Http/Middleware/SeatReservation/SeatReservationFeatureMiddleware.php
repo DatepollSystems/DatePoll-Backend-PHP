@@ -7,7 +7,6 @@ use Closure;
 use Illuminate\Http\Request;
 
 class SeatReservationFeatureMiddleware {
-
   protected ISettingRepository $settingRepository;
 
   public function __construct(ISettingRepository $settingRepository) {
@@ -20,10 +19,10 @@ class SeatReservationFeatureMiddleware {
    * @return mixed
    */
   public function handle(Request $request, Closure $next) {
-    if (!$this->settingRepository->getSeatReservationEnabled()) {
+    if (! $this->settingRepository->getSeatReservationEnabled()) {
       return response()->json([
-                                'msg' => 'The seat reservation feature is disabled on this DatePoll server',
-                                'error_code' => 'feature_disabled_seat_reservation'], 503);
+        'msg' => 'The seat reservation feature is disabled on this DatePoll server',
+        'error_code' => 'feature_disabled_seat_reservation', ], 503);
     }
 
     return $next($request);

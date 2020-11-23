@@ -12,8 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $updated_at
  * @property UserHavePerformanceBadgeWithInstrument[] $userHavePerformanceBadgeWithInstrument
  */
-class Instrument extends Model
-{
+class Instrument extends Model {
   /**
    * @var array
    */

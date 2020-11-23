@@ -1,15 +1,12 @@
 <?php
 
-
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
 
-class MovieRepository implements IMovieRepository
-{
-
+class MovieRepository implements IMovieRepository {
   public function getMovieById(int $id) {
     return Movie::find($id);
   }
@@ -19,18 +16,24 @@ class MovieRepository implements IMovieRepository
    */
   public function getAllMoviesOrderedByDate() {
     return Movie::orderBy('date')
-                ->get();
+      ->get();
   }
 
-  public function createMovie(string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets,
-                              int $movieYearId) {
+  public function createMovie(
+    string $name,
+    string $date,
+    string $trailerLink,
+    string $posterLink,
+    int $bookedTickets,
+    int $movieYearId
+  ) {
     $movie = new Movie([
       'name' => $name,
       'date' => $date,
       'trailerLink' => $trailerLink,
       'posterLink' => $posterLink,
       'bookedTickets' => $bookedTickets,
-      'movie_year_id' => $movieYearId]);
+      'movie_year_id' => $movieYearId, ]);
 
     if ($movie->save()) {
       return $movie;
@@ -39,8 +42,15 @@ class MovieRepository implements IMovieRepository
     }
   }
 
-  public function updateMovie(Movie $movie, string $name, string $date, string $trailerLink, string $posterLink,
-                              int $bookedTickets, int $movieYearId) {
+  public function updateMovie(
+    Movie $movie,
+    string $name,
+    string $date,
+    string $trailerLink,
+    string $posterLink,
+    int $bookedTickets,
+    int $movieYearId
+  ) {
     $movie->name = $name;
     $movie->date = $date;
     $movie->trailerLink = $trailerLink;
@@ -69,13 +79,13 @@ class MovieRepository implements IMovieRepository
       }
     }
 
-    $returnableMovies = array();
+    $returnableMovies = [];
     foreach ($movies as $movie) {
       $returnable = $movie->getReturnable();
 
       $movieBookingForYourself = $user->moviesBookings()
-                                      ->where('movie_id', $movie->id)
-                                      ->first();
+        ->where('movie_id', $movie->id)
+        ->first();
 
       if ($movieBookingForYourself == null) {
         $returnable->booked_tickets_for_yourself = 0;
@@ -85,7 +95,7 @@ class MovieRepository implements IMovieRepository
 
       $returnable->view_movie = [
         'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
       $returnableMovies[] = $returnable;
     }
 

@@ -10,8 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class MovieYearController extends Controller
-{
+class MovieYearController extends Controller {
   protected IMovieYearRepository $movieYearRepository;
 
   public function __construct(IMovieYearRepository $movieYearRepository) {
@@ -26,12 +25,12 @@ class MovieYearController extends Controller
     foreach ($years as $year) {
       $year->view_year = [
         'href' => 'api/v1/cinema/administration/year/' . $year->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
     }
 
     return response()->json([
       'msg' => 'List of all years',
-      'years' => $years]);
+      'years' => $years, ]);
   }
 
   /**
@@ -47,15 +46,17 @@ class MovieYearController extends Controller
     if ($movieYear != null) {
       $movieYear->view_year = [
         'href' => 'api/v1/cinema/administration/year/' . $movieYear->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
 
       Logging::info('createMovieYear', 'User - ' . $request->auth->id . ' | Created movie year - ' . $movieYear->id);
+
       return response()->json([
         'msg' => 'Year created',
-        'year' => $movieYear], 201);
+        'year' => $movieYear, ], 201);
     }
 
     Logging::error('createMovieYear', 'User - ' . $request->auth->id . ' | Year - ' . $request->input('year') . ' | An error occurred during movie year saving');
+
     return response()->json(['msg' => 'An error occurred during movie year saving'], 500);
   }
 
@@ -68,16 +69,17 @@ class MovieYearController extends Controller
     $year = $this->movieYearRepository->getMovieYearById($id);
     if ($year == null) {
       Logging::warning('getSingleMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | Movie year not found');
+
       return response()->json(['msg' => 'Movie year not found'], 404);
     }
 
     $year->view_years = [
       'href' => 'api/v1/cinema/administration/year',
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Year information',
-      'year' => $year]);
+      'year' => $year, ]);
   }
 
   /**
@@ -92,6 +94,7 @@ class MovieYearController extends Controller
     $movieYear = $this->movieYearRepository->getMovieYearById($id);
     if ($movieYear == null) {
       Logging::warning('updateMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | Movie year not found');
+
       return response()->json(['msg' => 'Movie year not found'], 404);
     }
 
@@ -100,17 +103,17 @@ class MovieYearController extends Controller
     if ($movieYear != null) {
       $movieYear->view_year = [
         'href' => 'api/v1/cinema/administration/year/' . $movieYear->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
 
       return response()->json([
         'msg' => 'Year updated',
-        'year' => $movieYear], 201);
+        'year' => $movieYear, ], 201);
     }
 
     Logging::error('updateMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | An error occurred during movie year updating');
+
     return response()->json(['msg' => 'An error occurred during movie year updating'], 500);
   }
-
 
   /**
    * @param Request $request
@@ -122,11 +125,13 @@ class MovieYearController extends Controller
     $movieYear = $this->movieYearRepository->getMovieYearById($id);
     if ($movieYear == null) {
       Logging::warning('updateMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | Movie year not found');
+
       return response()->json(['msg' => 'Movie year not found'], 404);
     }
 
-    if (!$this->movieYearRepository->deleteMovieYear($movieYear)) {
+    if (! $this->movieYearRepository->deleteMovieYear($movieYear)) {
       Logging::error('deleteMovieYear', 'User - ' . $request->auth->id . ' | Movie year id - ' . $id . ' | An error occurred during movie year deletion');
+
       return response()->json(['msg' => 'Movie year deletion failed'], 404);
     }
 
@@ -135,6 +140,6 @@ class MovieYearController extends Controller
       'create' => [
         'href' => 'api/v1/cinema/administration/year',
         'method' => 'POST',
-        'params' => 'year']]);
+        'params' => 'year', ], ]);
   }
 }

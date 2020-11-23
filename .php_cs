@@ -7,14 +7,13 @@ $finder = Finder::create()
     ->in(__DIR__)
     ->name('*.php')
     ->ignoreDotFiles(true)
-    ->ignoreVCS(true)
-    ->setIndent(str_pad('', 2));
+    ->ignoreVCS(true);
 
 return Config::create()
     ->setRules([
         '@PSR2' => true,
         'array_indentation' => true,
-        'array_syntax' => ['syntax' => 'long'],
+        'array_syntax' => ['syntax' => 'short'],
         'binary_operator_spaces' => true,
         'blank_line_after_namespace' => true,
         'blank_line_before_return' => true,
@@ -27,7 +26,7 @@ return Config::create()
         'no_unused_imports' => true,
         'no_whitespace_before_comma_in_array' => true,
         'not_operator_with_successor_space' => true,
-        'ordered_imports' => ['sortAlgorithm' => 'length'],
+        'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'trailing_comma_in_multiline_array' => true,
         'trim_array_spaces' => true,
         'single_quote' => true,
@@ -36,4 +35,5 @@ return Config::create()
                     'allow_single_line_closure' => true,
                     'position_after_functions_and_oop_constructs' => 'same']
     ])
+    ->setIndent(str_pad('', 2))
     ->setFinder($finder);

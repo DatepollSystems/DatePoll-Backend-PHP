@@ -28,8 +28,7 @@ class PlaceReservationNotifyGroup extends Model {
   protected $fillable = [
     'group_id',
     'created_at',
-    'updated_at'];
-
+    'updated_at', ];
 
   /**
    * @return Collection | PlaceReservation[] | null

@@ -16,8 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Broadcast $broadcast
  * @property User $user
  */
-class BroadcastUserInfo extends Model
-{
+class BroadcastUserInfo extends Model {
   /**
    * The table associated with the model.
    *
@@ -33,7 +32,7 @@ class BroadcastUserInfo extends Model
     'user_id',
     'sent',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Broadcast

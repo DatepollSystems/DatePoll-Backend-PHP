@@ -20,8 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property PerformanceBadge $performanceBadge
  * @property User $user
  */
-class UserHavePerformanceBadgeWithInstrument extends Model
-{
+class UserHavePerformanceBadgeWithInstrument extends Model {
   /**
    * The table associated with the model.
    *

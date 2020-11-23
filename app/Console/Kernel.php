@@ -11,8 +11,7 @@ use App\Console\Commands\UpdateDatePollDB;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
-class Kernel extends ConsoleKernel
-{
+class Kernel extends ConsoleKernel {
   /**
    * The Artisan commands provided by your application.
    *
@@ -24,7 +23,7 @@ class Kernel extends ConsoleKernel
     SetupDatePoll::class,
     UpdateDatePollDB::class,
     ReQueueNotSentBroadcasts::class,
-    ProcessBroadcastEmailsInInbox::class
+    ProcessBroadcastEmailsInInbox::class,
   ];
 
   /**
@@ -33,8 +32,7 @@ class Kernel extends ConsoleKernel
    * @param Schedule $schedule
    * @return void
    */
-  protected function schedule(Schedule $schedule)
-  {
+  protected function schedule(Schedule $schedule) {
     $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyMinute();
   }
 }

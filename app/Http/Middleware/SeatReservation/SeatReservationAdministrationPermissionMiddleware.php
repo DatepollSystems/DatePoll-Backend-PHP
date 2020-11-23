@@ -14,13 +14,13 @@ class SeatReservationAdministrationPermissionMiddleware {
    */
   public function handle(Request $request, Closure $next) {
     $user = $request->auth;
-    if (!($user->hasPermission(Permissions::$SEAT_RESERVATION_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
+    if (! ($user->hasPermission(Permissions::$SEAT_RESERVATION_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
       return response()->json([
-                                'msg' => 'Permission denied',
-                                'error_code' => 'permissions_denied',
-                                'needed_permissions' => [
-                                  Permissions::$ROOT_ADMINISTRATION,
-                                  Permissions::$SEAT_RESERVATION_ADMINISTRATION]], 403);
+        'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
+        'needed_permissions' => [
+          Permissions::$ROOT_ADMINISTRATION,
+          Permissions::$SEAT_RESERVATION_ADMINISTRATION, ], ], 403);
     }
 
     return $next($request);

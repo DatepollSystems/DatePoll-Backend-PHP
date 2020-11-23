@@ -11,40 +11,37 @@ $router->group(['prefix' => 'settings'], function () use ($router) {
 });
 
 $router->group(['prefix' => 'system'], function () use ($router) {
-
   $router->group([
     'prefix' => 'settings',
-    'middleware' => [SettingsPermissionMiddleware::class]], function () use ($router) {
-    $router->post('cinema', ['uses' => 'SystemControllers\SettingsController@setCinemaFeatureIsEnabled']);
-    $router->post('events', ['uses' => 'SystemControllers\SettingsController@setEventsFeatureIsEnabled']);
-    $router->post('broadcast', ['uses' => 'SystemControllers\SettingsController@setBroadcastFeatureIsEnabled']);
-    $router->post('name', ['uses' => 'SystemControllers\SettingsController@setCommunityName']);
-    $router->post('communityUrl', ['uses' => 'SystemControllers\SettingsController@setCommunityUrl']);
-    $router->post('description', ['uses' => 'SystemControllers\SettingsController@setCommunityDescription']);
-    $router->post('imprint', ['uses' => 'SystemControllers\SettingsController@setCommunityImprint']);
-    $router->post('privacyPolicy', ['uses' => 'SystemControllers\SettingsController@setCommunityPrivacyPolicy']);
-    $router->post('openweathermap/key', ['uses' => 'SystemControllers\SettingsController@setOpenWeatherMapKey']);
-    $router->post('openweathermap/cinemaCityId', ['uses' => 'SystemControllers\SettingsController@setOpenWeatherMapCinemaCityId']);
-    $router->post('url', ['uses' => 'SystemControllers\SettingsController@setUrl']);
-    $router->post('alert', ['uses' => 'SystemControllers\SettingsController@setAlert']);
-  });
+    'middleware' => [SettingsPermissionMiddleware::class], ], function () use ($router) {
+      $router->post('cinema', ['uses' => 'SystemControllers\SettingsController@setCinemaFeatureIsEnabled']);
+      $router->post('events', ['uses' => 'SystemControllers\SettingsController@setEventsFeatureIsEnabled']);
+      $router->post('broadcast', ['uses' => 'SystemControllers\SettingsController@setBroadcastFeatureIsEnabled']);
+      $router->post('name', ['uses' => 'SystemControllers\SettingsController@setCommunityName']);
+      $router->post('communityUrl', ['uses' => 'SystemControllers\SettingsController@setCommunityUrl']);
+      $router->post('description', ['uses' => 'SystemControllers\SettingsController@setCommunityDescription']);
+      $router->post('imprint', ['uses' => 'SystemControllers\SettingsController@setCommunityImprint']);
+      $router->post('privacyPolicy', ['uses' => 'SystemControllers\SettingsController@setCommunityPrivacyPolicy']);
+      $router->post('openweathermap/key', ['uses' => 'SystemControllers\SettingsController@setOpenWeatherMapKey']);
+      $router->post('openweathermap/cinemaCityId', ['uses' => 'SystemControllers\SettingsController@setOpenWeatherMapCinemaCityId']);
+      $router->post('url', ['uses' => 'SystemControllers\SettingsController@setUrl']);
+      $router->post('alert', ['uses' => 'SystemControllers\SettingsController@setAlert']);
+    });
 
   /** Log routes */
   $router->group([
     'prefix' => 'logs',
-    'middleware' => [LogsPermissionMiddleware::class]], function () use ($router) {
-
-    $router->get('', ['uses' => 'SystemControllers\LoggingController@getAllLogs']);
-    $router->delete('all', ['uses' => 'SystemControllers\LoggingController@deleteAllLogs']);
-    $router->delete('{id}', ['uses' => 'SystemControllers\LoggingController@deleteLog']);
-  });
+    'middleware' => [LogsPermissionMiddleware::class], ], function () use ($router) {
+      $router->get('', ['uses' => 'SystemControllers\LoggingController@getAllLogs']);
+      $router->delete('all', ['uses' => 'SystemControllers\LoggingController@deleteAllLogs']);
+      $router->delete('{id}', ['uses' => 'SystemControllers\LoggingController@deleteLog']);
+    });
   $router->post('logs', ['uses' => 'SystemControllers\LoggingController@saveLog']);
 
   /** Job routes */
   $router->group([
     'prefix' => 'jobs',
-    'middleware' => [JobsPermissionMiddleware::class]], function () use ($router) {
-
-    $router->get('', ['uses' => 'SystemControllers\JobController@getUndoneJobs']);
-  });
+    'middleware' => [JobsPermissionMiddleware::class], ], function () use ($router) {
+      $router->get('', ['uses' => 'SystemControllers\JobController@getUndoneJobs']);
+    });
 });

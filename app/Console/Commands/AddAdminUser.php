@@ -5,13 +5,10 @@ use App\Models\User\UserPermission;
 use Exception;
 use Illuminate\Console\Command;
 
-class AddAdminUser extends Command
-{
-
+class AddAdminUser extends Command {
   protected $signature = 'add-admin-user';
   protected $description = 'Creates admin user with all permissions.';
-  public function __construct()
-  {
+  public function __construct() {
     parent::__construct();
   }
 
@@ -19,10 +16,10 @@ class AddAdminUser extends Command
    * @return void
    * @throws Exception
    */
-  public function handle()
-  {
-    if (!$this->confirm('Are you sure you want to create an admin account?', true)) {
+  public function handle() {
+    if (! $this->confirm('Are you sure you want to create an admin account?', true)) {
       $this->comment('Aborting...');
+
       return;
     }
     $this->line('> Creating admin user...');
@@ -41,9 +38,9 @@ class AddAdminUser extends Command
       'zipcode' => '3500',
       'location' => 'Krems an der Donau',
       'activity' => 'active',
-      'bv_member' => 'bv_member'
+      'bv_member' => 'bv_member',
     ]);
-    if($user->save()) {
+    if ($user->save()) {
       $this->comment('Admin user created');
 
       $this->line('> Setting password...');
@@ -54,21 +51,21 @@ class AddAdminUser extends Command
       $this->line('> Setting permissions...');
       $permission = new UserPermission([
         'user_id' => $user->id,
-        'permission' => 'root.administration'
+        'permission' => 'root.administration',
       ]);
 
-      if($permission->save()) {
-        $this->comment("Permission set");
+      if ($permission->save()) {
+        $this->comment('Permission set');
       } else {
-        $this->warn("Error during permission setting");
+        $this->warn('Error during permission setting');
         $user->delete();
+
         return;
       }
 
       $this->info('Admin user successful created');
       $this->info('Username: admin');
       $this->info('Password: 123456');
-
     } else {
       $this->warn('Error during admin user creation.');
     }

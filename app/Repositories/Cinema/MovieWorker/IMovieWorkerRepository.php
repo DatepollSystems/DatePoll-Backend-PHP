@@ -5,8 +5,7 @@ namespace App\Repositories\Cinema\MovieWorker;
 use App\Models\Cinema\Movie;
 use App\Models\User\User;
 
-interface IMovieWorkerRepository
-{
+interface IMovieWorkerRepository {
   public function setWorkerForMovie(User $worker, Movie $movie): bool;
 
   public function setEmergencyWorkerForMovie(User $emergencyWorker, Movie $movie): bool;

@@ -11,8 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class MovieController extends Controller
-{
+class MovieController extends Controller {
   protected IMovieRepository $movieRepository;
   protected IMovieYearRepository $movieYearRepository;
 
@@ -27,7 +26,7 @@ class MovieController extends Controller
    * @return JsonResponse
    */
   public function getAll() {
-    $toReturnMovies = array();
+    $toReturnMovies = [];
 
     $movies = $this->movieRepository->getAllMoviesOrderedByDate();
     foreach ($movies as $movie) {
@@ -35,13 +34,13 @@ class MovieController extends Controller
 
       $returnable->view_movie = [
         'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
       $toReturnMovies[] = $returnable;
     }
 
     $response = [
       'msg' => 'List of all movies',
-      'movies' => $toReturnMovies];
+      'movies' => $toReturnMovies, ];
 
     return response()->json($response);
   }
@@ -60,12 +59,13 @@ class MovieController extends Controller
       'trailer_link' => 'required|max:190|min:1',
       'poster_link' => 'required|max:190|min:1',
       'booked_tickets' => 'integer',
-      'movie_year_id' => 'required|integer']);
+      'movie_year_id' => 'required|integer', ]);
 
     $movieYearId = $request->input('movie_year_id');
 
-    if (!$this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
+    if (! $this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
       Logging::warning('createMovie', 'User - ' . $request->auth->id . ' | Tried to create new movie with non-existing movie_year_id - ' . $movieYearId);
+
       return response()->json(['msg' => 'Movie year does not exist'], 404);
     }
 
@@ -77,16 +77,17 @@ class MovieController extends Controller
       $returnable = $movie->getReturnable();
       $returnable->view_movie = [
         'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
 
       $response = [
         'msg' => 'Movie created',
-        'movie' => $returnable];
+        'movie' => $returnable, ];
 
       return response()->json($response, 201);
     }
 
     Logging::error('createMovie', 'User - ' . $request->auth->id . ' | Could not create movie');
+
     return response()->json(['msg' => 'An error occurred during movie creating!'], 500);
   }
 
@@ -101,6 +102,7 @@ class MovieController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('getSingleMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
+
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
@@ -108,11 +110,12 @@ class MovieController extends Controller
 
     $returnable->view_movies = [
       'href' => 'api/v1/cinema/administration/movie',
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     $response = [
       'msg' => 'Movie information',
-      'movie' => $returnable];
+      'movie' => $returnable, ];
+
     return response()->json($response);
   }
 
@@ -131,18 +134,20 @@ class MovieController extends Controller
       'trailer_link' => 'required|max:190|min:1',
       'poster_link' => 'required|max:190|min:1',
       'booked_tickets' => 'integer',
-      'movie_year_id' => 'required|integer']);
+      'movie_year_id' => 'required|integer', ]);
 
     $movieYearId = $request->input('movie_year_id');
 
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('updateMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
+
       return response()->json(['msg' => 'Movie does not exist'], 404);
     }
 
-    if (!$this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
+    if (! $this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
       Logging::warning('updateMovie', 'User - ' . $request->auth->id . ' | Tried to update movie with non-existing movie_year_id - ' . $movieYearId);
+
       return response()->json(['msg' => 'Movie year does not exist'], 404);
     }
 
@@ -152,14 +157,15 @@ class MovieController extends Controller
       $returnable = $movie->getReturnable();
       $returnable->view_movie = [
         'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET'];
+        'method' => 'GET', ];
 
       return response()->json([
         'msg' => 'Movie updated',
-        'movie' => $returnable], 201);
+        'movie' => $returnable, ], 201);
     }
 
     Logging::error('updateMovie', 'User . ' . $request->auth->id . ' | Could not update movie');
+
     return response()->json(['msg' => 'An error occurred during movie saving'], 500);
   }
 
@@ -175,11 +181,13 @@ class MovieController extends Controller
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
+
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    if (!$this->movieRepository->deleteMovie($movie)) {
+    if (! $this->movieRepository->deleteMovie($movie)) {
       Logging::error('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Could not delete movie');
+
       return response()->json(['msg' => 'Movie deletion failed'], 500);
     }
 
@@ -188,7 +196,7 @@ class MovieController extends Controller
       'create' => [
         'href' => 'api/v1/cinema/administration/movie',
         'method' => 'POST',
-        'params' => 'name, date, trailer_link, poster_link, booked_tickets, movie_year_id']]);
+        'params' => 'name, date, trailer_link, poster_link, booked_tickets, movie_year_id', ], ]);
   }
 
   /**
@@ -202,7 +210,7 @@ class MovieController extends Controller
 
     $response = [
       'msg' => 'List of not shown movies',
-      'movies' => $returnableMovies];
+      'movies' => $returnableMovies, ];
 
     return response()->json($response);
   }

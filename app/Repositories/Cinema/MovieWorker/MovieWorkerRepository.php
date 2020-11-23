@@ -1,14 +1,12 @@
 <?php
 
-
 namespace App\Repositories\Cinema\MovieWorker;
 
 use App\Models\Cinema\Movie;
 use App\Models\User\User;
 use stdClass;
 
-class MovieWorkerRepository implements IMovieWorkerRepository
-{
+class MovieWorkerRepository implements IMovieWorkerRepository {
 
   /**
    * @param User $worker
@@ -57,8 +55,8 @@ class MovieWorkerRepository implements IMovieWorkerRepository
    * @return array
    */
   public function getMoviesWhereUserAppliedAsWorker(User $user): array {
-    $movies = array();
-    $moviesIDs = array();
+    $movies = [];
+    $moviesIDs = [];
 
     foreach ($user->workerMovies() as $movie) {
       if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
@@ -69,7 +67,7 @@ class MovieWorkerRepository implements IMovieWorkerRepository
         $localMovie->movie_id = $movie->id;
         $localMovie->date = $movie->date;
 
-        $orders = array();
+        $orders = [];
         foreach ($movie->moviesBookings() as $moviesBooking) {
           $localBooking = new stdClass();
           $bookingUser = $moviesBooking->user();
@@ -86,13 +84,13 @@ class MovieWorkerRepository implements IMovieWorkerRepository
 
     foreach ($user->emergencyWorkerMovies() as $movie) {
       if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 20:00:00')) {
-        if (!in_array($movie->id, $moviesIDs)) {
+        if (! in_array($movie->id, $moviesIDs)) {
           $localMovie = new stdClass();
           $localMovie->movie_name = $movie->name;
           $localMovie->movie_id = $movie->id;
           $localMovie->date = $movie->date;
 
-          $orders = array();
+          $orders = [];
           foreach ($movie->moviesBookings() as $moviesBooking) {
             $localBooking = new stdClass();
             $bookingUser = $moviesBooking->user();

@@ -18,16 +18,20 @@ $router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);
 $router->get('calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 
 // Broadcast attachment download route
-$router->get('attachment/{token}',
-             ['uses' => 'BroadcastControllers\BroadcastController@attachmentDownload',
-               'middleware' => [BroadcastsFeatureMiddleware::class]]);
+$router->get(
+  'attachment/{token}',
+  ['uses' => 'BroadcastControllers\BroadcastController@attachmentDownload',
+    'middleware' => [BroadcastsFeatureMiddleware::class], ]
+);
 
 // Log viewer
-$router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer',
-                 'middleware' => ['jwt.auth', LogsPermissionMiddleware::class]],
+$router->group(
+  ['namespace' => '\Rap2hpoutre\LaravelLogViewer',
+    'middleware' => ['jwt.auth', LogsPermissionMiddleware::class], ],
   function () use ($router) {
     $router->get('logs', 'LogViewerController@index');
-  });
+  }
+);
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 

@@ -16,8 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $created_at
  * @property string $updated_at
  */
-class BroadcastDraft extends Model
-{
+class BroadcastDraft extends Model {
 
   /**
    * The table associated with the model.
@@ -35,7 +34,7 @@ class BroadcastDraft extends Model
     'body',
     'writer_user_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | User

@@ -14,8 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $updated_at
  * @property PlaceReservation[] $placeReservations
  */
-class Place extends Model
-{
+class Place extends Model {
 
   /**
    * The table associated with the model.
@@ -32,14 +31,12 @@ class Place extends Model
     'x',
     'y',
     'created_at',
-    'updated_at'];
-
+    'updated_at', ];
 
   /**
    * @return Collection | PlaceReservation[] | null
    */
-  public function placeReservations()
-  {
+  public function placeReservations() {
     return $this->hasMany(PlaceReservation::class)
       ->get();
   }

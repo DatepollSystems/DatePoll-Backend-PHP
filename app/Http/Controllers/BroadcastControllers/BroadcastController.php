@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\BroadcastControllers;
 
-use App\Logging;
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Models\Broadcasts\BroadcastAttachment;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
@@ -19,13 +19,15 @@ use Laravel\Lumen\Http\Redirector;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class BroadcastController extends Controller {
-
   protected IBroadcastRepository $broadcastRepository;
   protected IBroadcastAttachmentRepository $broadcastAttachmentRepository;
   protected ISettingRepository $settingsRepository;
 
-  public function __construct(IBroadcastRepository $broadcastRepository, ISettingRepository $settingRepository,
-                              IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
+  public function __construct(
+    IBroadcastRepository $broadcastRepository,
+    ISettingRepository $settingRepository,
+    IBroadcastAttachmentRepository $broadcastAttachmentRepository
+  ) {
     $this->broadcastRepository = $broadcastRepository;
     $this->settingsRepository = $settingRepository;
     $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
@@ -36,14 +38,14 @@ class BroadcastController extends Controller {
    */
   public function getAll() {
     $broadcasts = $this->broadcastRepository->getAllBroadcastsOrderedByDate();
-    $toReturnBroadcasts = array();
+    $toReturnBroadcasts = [];
     foreach ($broadcasts as $broadcast) {
       $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
     }
 
     return response()->json([
-                              'msg' => 'List of all broadcasts',
-                              'broadcasts' => $toReturnBroadcasts]);
+      'msg' => 'List of all broadcasts',
+      'broadcasts' => $toReturnBroadcasts, ]);
   }
 
   /**
@@ -57,8 +59,8 @@ class BroadcastController extends Controller {
     }
 
     return response()->json([
-                              'msg' => 'Get broadcast with send receipts',
-                              'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast)]);
+      'msg' => 'Get broadcast with send receipts',
+      'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast), ]);
   }
 
   /**
@@ -88,16 +90,24 @@ class BroadcastController extends Controller {
     $subgroups = (array)$request->input('subgroups');
     $attachments = (array)$request->input('attachments');
 
-    $broadcast = $this->broadcastRepository->create($subject, $bodyHTML, $body, $request->auth->id, $groups, $subgroups,
-                                                    $forEveryone, $attachments);
+    $broadcast = $this->broadcastRepository->create(
+      $subject,
+      $bodyHTML,
+      $body,
+      $request->auth->id,
+      $groups,
+      $subgroups,
+      $forEveryone,
+      $attachments
+    );
 
     if ($broadcast == null) {
       return response()->json(['msg' => 'Could not create broadcast'], 500);
     }
 
     return response()->json([
-                              'msg' => 'Successful created broadcast',
-                              'broadcast' => $broadcast], 201);
+      'msg' => 'Successful created broadcast',
+      'broadcast' => $broadcast, ], 201);
   }
 
   /**
@@ -112,12 +122,14 @@ class BroadcastController extends Controller {
       return response()->json(['msg' => 'Broadcast not found'], 404);
     }
 
-    if (!$this->broadcastRepository->delete($broadcast)) {
+    if (! $this->broadcastRepository->delete($broadcast)) {
       Logging::error('deleteBroadcast', 'Could not delete broadcast! User id - ' . $request->auth->id);
+
       return response()->json(['msg' => 'Could not delete broadcast'], 500);
     }
 
     Logging::info('deleteBroadcast', 'Deleted broadcast! User id - ' . $request->auth->id);
+
     return response()->json(['msg' => 'Successfully deleted broadcast'], 200);
   }
 
@@ -131,7 +143,7 @@ class BroadcastController extends Controller {
 
     $count = $request->input('files_count');
 
-    $files = array();
+    $files = [];
 
     for ($i = 0; $i < $count; $i++) {
       $file = $request->file('file_' . $i);
@@ -140,7 +152,7 @@ class BroadcastController extends Controller {
 
       $fileModel = new BroadcastAttachment(['path' => $path, 'name' => $file->getClientOriginalName(), 'token' => $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken()]);
 
-      if (!$fileModel->save()) {
+      if (! $fileModel->save()) {
         Storage::delete($path);
 
         return response()->json(['msg' => 'Could not save files!'], 500);
@@ -182,9 +194,10 @@ class BroadcastController extends Controller {
 
     $path = storage_path('app/' . $attachment->path);
     $type = File::mimeType($path);
-    $headers = array('Content-Type' => $type);
+    $headers = ['Content-Type' => $type];
     $response = response()->download($path, $attachment->name, $headers);
     ob_end_clean();
+
     return $response;
   }
 }

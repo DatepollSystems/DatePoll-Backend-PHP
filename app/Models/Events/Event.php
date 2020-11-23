@@ -20,8 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property EventForSubgroup[] $eventsForSubgroups
  * @property EventUserVotedForDecision[] $eventsUsersVotedForDecision
  */
-class Event extends Model
-{
+class Event extends Model {
 
   /**
    * The table associated with the model.
@@ -38,14 +37,14 @@ class Event extends Model
     'description',
     'forEveryone',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return Collection | EventDecision[] | null
    */
   public function eventsDecisions() {
     return $this->hasMany('App\Models\Events\EventDecision', 'event_id')
-                ->get();
+      ->get();
   }
 
   /**
@@ -53,7 +52,7 @@ class Event extends Model
    */
   public function eventsForGroups() {
     return $this->hasMany('App\Models\Events\EventForGroup')
-                ->get();
+      ->get();
   }
 
   /**
@@ -61,13 +60,14 @@ class Event extends Model
    */
   public function getGroupsOrdered() {
     $eventForGroups = $this->eventsForGroups();
-    $groups = array();
+    $groups = [];
     foreach ($eventForGroups as $eventForGroup) {
       $groups[] = $eventForGroup->group();
     }
     usort($groups, function ($a, $b) {
       return strcmp($a->orderN, $b->orderN);
     });
+
     return $groups;
   }
 
@@ -76,7 +76,7 @@ class Event extends Model
    */
   public function eventsForSubgroups() {
     return $this->hasMany('App\Models\Events\EventForSubgroup')
-                ->get();
+      ->get();
   }
 
   /**
@@ -84,13 +84,14 @@ class Event extends Model
    */
   public function getSubgroupsOrdered() {
     $eventForSubgroups = $this->eventsForSubgroups();
-    $subgroups = array();
+    $subgroups = [];
     foreach ($eventForSubgroups as $eventForSubgroup) {
       $subgroups[] = $eventForSubgroup->subgroup();
     }
     usort($subgroups, function ($a, $b) {
       return strcmp($a->orderN, $b->orderN);
     });
+
     return $subgroups;
   }
 
@@ -99,7 +100,7 @@ class Event extends Model
    */
   public function usersVotedForDecision() {
     return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-                ->get();
+      ->get();
   }
 
   /**
@@ -107,6 +108,6 @@ class Event extends Model
    */
   public function getEventDates() {
     return $this->hasMany('App\Models\Events\EventDate', 'event_id')
-                ->get();
+      ->get();
   }
 }

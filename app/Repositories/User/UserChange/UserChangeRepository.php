@@ -6,8 +6,7 @@ use App\Logging;
 use App\Models\User\UserChange;
 use Illuminate\Database\Eloquent\Collection;
 
-class UserChangeRepository implements IUserChangeRepository
-{
+class UserChangeRepository implements IUserChangeRepository {
   /**
    * @param string $property
    * @param int $userId
@@ -22,12 +21,13 @@ class UserChangeRepository implements IUserChangeRepository
       'old_value' => $oldValue,
       'new_value' => $newValue,
       'editor_id' => $editorId,
-      'user_id' => $userId]);
+      'user_id' => $userId, ]);
 
     if ($userChange->save()) {
       return $userChange;
     } else {
       Logging::error('createUserChange', 'Could not create user change!');
+
       return null;
     }
   }
@@ -54,8 +54,13 @@ class UserChangeRepository implements IUserChangeRepository
    * @param string|null $newValue
    * @param string|null $oldValue
    */
-  public function checkForPropertyChange(string $property, int $userId, int $editorId, ?string $newValue,
-                                         ?string $oldValue) {
+  public function checkForPropertyChange(
+    string $property,
+    int $userId,
+    int $editorId,
+    ?string $newValue,
+    ?string $oldValue
+  ) {
     if ($newValue != $oldValue) {
       $this->createUserChange($property, $userId, $editorId, $newValue, $oldValue);
     }

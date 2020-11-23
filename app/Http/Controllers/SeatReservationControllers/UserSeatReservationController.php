@@ -12,12 +12,13 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserSeatReservationController extends Controller {
-
   protected IPlaceRepository $placeRepository;
   protected IUserSeatReservationRepository $userSeatReservationRepository;
 
-  public function __construct(IPlaceRepository $placeRepository,
-                              IUserSeatReservationRepository $userSeatReservationRepository) {
+  public function __construct(
+    IPlaceRepository $placeRepository,
+    IUserSeatReservationRepository $userSeatReservationRepository
+  ) {
     $this->placeRepository = $placeRepository;
     $this->userSeatReservationRepository = $userSeatReservationRepository;
   }
@@ -27,10 +28,11 @@ class UserSeatReservationController extends Controller {
    */
   public function getAllPlaceReservations() {
     $all = $this->userSeatReservationRepository->getAllPlaceReservationsOrderedByDate();
-    $reservations = array();
+    $reservations = [];
     foreach ($all as $reservation) {
       $reservations[] = $reservation->getReturnable();
     }
+
     return response()->json(['msg' => 'All place reservations', 'reservations' => $reservations]);
   }
 
@@ -39,10 +41,11 @@ class UserSeatReservationController extends Controller {
    */
   public function getUpcomingPlaceReservations() {
     $upcoming = $this->userSeatReservationRepository->getUpcomingPlaceReservationsOrderedByDate();
-    $reservations = array();
+    $reservations = [];
     foreach ($upcoming as $reservation) {
       $reservations[] = $reservation->getReturnable();
     }
+
     return response()->json(['msg' => 'Upcoming place reservations', 'reservations' => $reservations]);
   }
 
@@ -51,12 +54,13 @@ class UserSeatReservationController extends Controller {
    * @return JsonResponse
    */
   public function getUserReservations(Request $request) {
-    $reservations = array();
+    $reservations = [];
     foreach ($this->userSeatReservationRepository->getUserReservationsByUserId($request->auth->id) as $reservation) {
       $reservations[] = $reservation->getReturnable();
     }
+
     return response()->json(['msg' => 'Your reservations',
-                              'reservations' => $reservations]);
+      'reservations' => $reservations, ]);
   }
 
   /**
@@ -70,7 +74,7 @@ class UserSeatReservationController extends Controller {
       'description' => 'nullable|string|max:190',
       'start_date' => 'required|date',
       'end_date' => 'required|date',
-      'place_id' => 'required|numeric'
+      'place_id' => 'required|numeric',
     ]);
 
     $place = $this->placeRepository->getPlaceById($request->input('place_id'));
@@ -81,18 +85,22 @@ class UserSeatReservationController extends Controller {
     $description = $request->input('description');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
-    $placeReservation = $this->userSeatReservationRepository->createOrUpdatePlaceReservation($reason, $description,
-                                                                                             $startDate,
-                                                                                             $endDate,
-                                                                                             PlaceReservationState::WAITING,
-                                                                                             $place, $request->auth);
+    $placeReservation = $this->userSeatReservationRepository->createOrUpdatePlaceReservation(
+      $reason,
+      $description,
+      $startDate,
+      $endDate,
+      PlaceReservationState::WAITING,
+      $place,
+      $request->auth
+    );
 
     if ($placeReservation == null) {
       return response()->json(['msg' => 'Could not create place reservation'], 500);
     }
 
     return response()->json(['msg' => 'Successfully created place reservation',
-                              'place_reservation' => $placeReservation], 201);
+      'place_reservation' => $placeReservation, ], 201);
   }
 
   /**
@@ -108,7 +116,7 @@ class UserSeatReservationController extends Controller {
       'start_date' => 'required|date',
       'end_date' => 'required|date',
       'place_id' => 'required|numeric',
-      'state' => 'nullable|string|min:1|max:190|in:WAITING,APPROVED,REJECTED'
+      'state' => 'nullable|string|min:1|max:190|in:WAITING,APPROVED,REJECTED',
     ]);
 
     $placeReservation = $this->userSeatReservationRepository->getPlaceReservationById($id);
@@ -126,8 +134,10 @@ class UserSeatReservationController extends Controller {
         return response()->json(['msg' => 'Insufficient permissions to edit this place reservation'], 403);
       }
       if ($placeReservation->state != PlaceReservationState::WAITING) {
-        return response()->json(['msg' => 'You are not allowed to edit this place reservation after approval or declining'],
-                                400);
+        return response()->json(
+          ['msg' => 'You are not allowed to edit this place reservation after approval or declining'],
+          400
+        );
       }
     }
 
@@ -140,18 +150,23 @@ class UserSeatReservationController extends Controller {
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
 
-    $placeReservation = $this->userSeatReservationRepository->createOrUpdatePlaceReservation($reason, $description,
-                                                                                             $startDate,
-                                                                                             $endDate, $state, $place,
-                                                                                             null,
-                                                                                             $approver,
-                                                                                             $placeReservation);
+    $placeReservation = $this->userSeatReservationRepository->createOrUpdatePlaceReservation(
+      $reason,
+      $description,
+      $startDate,
+      $endDate,
+      $state,
+      $place,
+      null,
+      $approver,
+      $placeReservation
+    );
 
     if ($placeReservation == null) {
       return response()->json(['msg' => 'Could not save place reservation'], 500);
     }
 
     return response()->json(['msg' => 'Successfully updated place reservation',
-                              'place_reservation' => $placeReservation], 201);
+      'place_reservation' => $placeReservation, ], 201);
   }
 }

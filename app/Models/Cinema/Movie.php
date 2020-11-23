@@ -26,8 +26,7 @@ use stdClass;
  * @property User $worker
  * @property MoviesBooking[] $moviesBookings
  */
-class Movie extends Model
-{
+class Movie extends Model {
   /**
    * @var array
    */
@@ -104,7 +103,7 @@ class Movie extends Model
    */
   public function getAdminReturnable() {
     $returnableMovie = $this->getReturnable();
-    $bookings = array();
+    $bookings = [];
     foreach ($this->moviesBookings() as $moviesBooking) {
       $booking = new stdClass();
       $booking->user_id = $moviesBooking->user()->id;
@@ -114,9 +113,9 @@ class Movie extends Model
       $bookings[] = $booking;
     }
 
-    $usersNotBooked = DB::select("SELECT id, firstname, surname FROM users WHERE users.id 
+    $usersNotBooked = DB::select('SELECT id, firstname, surname FROM users WHERE users.id 
                                                                      NOT IN (SELECT mb.user_id FROM movies_bookings mb 
-                                                                     WHERE mb.movie_id = " . $this->id . ")");
+                                                                     WHERE mb.movie_id = ' . $this->id . ')');
 
     foreach ($usersNotBooked as $user) {
       $booking = new stdClass();
@@ -129,6 +128,7 @@ class Movie extends Model
     }
 
     $returnableMovie->bookings = $bookings;
+
     return $returnableMovie;
   }
 }
