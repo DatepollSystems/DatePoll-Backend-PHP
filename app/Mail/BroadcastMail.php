@@ -52,7 +52,7 @@ class BroadcastMail extends ADatePollMailable
    * @return $this
    */
   public function build() {
-    return $this->subject('» ' . $this->mSubject)
+    return $this->subject($this->mSubject)
                 ->from(env('MAIL_FROM_ADDRESS'), $this->writerName)
                 ->replyTo($this->emailAddress, $this->writerName)
                 ->view('emails.broadcast.broadcast')
