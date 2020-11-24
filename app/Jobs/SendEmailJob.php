@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Mail;
  * @property ADatePollMailable $mailable
  * @property string[] $emailAddresses
  */
-class SendEmailJob extends Job
-{
+class SendEmailJob extends Job {
   private ADatePollMailable $mailable;
   private array $emailAddresses;
 
@@ -28,8 +27,7 @@ class SendEmailJob extends Job
    * @param ADatePollMailable $mailable
    * @param string[] $emailAddresses
    */
-  public function __construct(ADatePollMailable $mailable, array $emailAddresses)
-  {
+  public function __construct(ADatePollMailable $mailable, array $emailAddresses) {
     $this->mailable = $mailable;
     $this->emailAddresses = $emailAddresses;
   }
@@ -39,26 +37,29 @@ class SendEmailJob extends Job
    *
    * @return void
    */
-  public function handle()
-  {
+  public function handle() {
     $emailAddressString = '';
     foreach ($this->emailAddresses as $emailAddress) {
       $emailAddressString .= $emailAddress . ', ';
     }
 
+    $broadcastUserInfo = null;
     if ($this->mailable instanceof BroadcastMail) {
       $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $this->userId)->where('broadcast_id', '=', $this->broadcastId)->first();
       if ($broadcastUserInfo == null) {
         Logging::info($this->mailable->jobDescription, 'DELETED BROADCAST: Sent to ' . $emailAddressString . ' cancelled!');
+
         return;
       }
-
-      $broadcastUserInfo->sent = true;
-      $broadcastUserInfo->save();
     }
     
     Mail::bcc($this->emailAddresses)
-        ->send($this->mailable);
+      ->send($this->mailable);
     Logging::info($this->mailable->jobDescription, 'Sent to ' . $emailAddressString);
+
+    if ($broadcastUserInfo != null) {
+      $broadcastUserInfo->sent = true;
+      $broadcastUserInfo->save();
+    }
   }
 }

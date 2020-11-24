@@ -3,7 +3,6 @@
 namespace App\Models\PerformanceBadge;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -13,8 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $updated_at
  * @property UserHavePerformanceBadgeWithInstrument[] $userHavePerformanceBadgeWithInstrument
  */
-class Badge extends Model
-{
+class Badge extends Model {
   /**
    * The table associated with the model.
    *
@@ -29,5 +27,5 @@ class Badge extends Model
     'description',
     'afterYears',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 }

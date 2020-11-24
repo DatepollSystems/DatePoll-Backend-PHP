@@ -12,18 +12,16 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $created_at
  * @property string $updated_at
  */
-class EventStandardDecision extends Model
-{
-    /**
-     * The table associated with the model.
-     * 
-     * @var string
-     */
-    protected $table = 'events_standard_decisions';
+class EventStandardDecision extends Model {
+  /**
+   * The table associated with the model.
+   *
+   * @var string
+   */
+  protected $table = 'events_standard_decisions';
 
-    /**
-     * @var array
-     */
-    protected $fillable = ['decision', 'showInCalendar', 'color', 'created_at', 'updated_at'];
-
+  /**
+   * @var array
+   */
+  protected $fillable = ['decision', 'showInCalendar', 'color', 'created_at', 'updated_at'];
 }

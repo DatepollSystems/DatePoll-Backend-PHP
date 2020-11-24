@@ -7,8 +7,7 @@ use App\Models\Cinema\MoviesBooking;
 use App\Models\User\User;
 use Exception;
 
-interface IMovieBookingRepository
-{
+interface IMovieBookingRepository {
   /**
    * @param Movie $movie
    * @param User $user

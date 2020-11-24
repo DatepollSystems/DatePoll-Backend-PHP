@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateBroadcastDraftsTable extends Migration
-{
+class CreateBroadcastDraftsTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('broadcast_drafts', function (Blueprint $table) {
       $table->increments('id');
 
@@ -25,8 +23,8 @@ class CreateBroadcastDraftsTable extends Migration
       $table->timestamps();
 
       $table->foreign('writer_user_id')
-            ->references('id')->on('users')
-            ->onDelete('cascade');
+        ->references('id')->on('users')
+        ->onDelete('cascade');
     });
   }
 
@@ -35,8 +33,7 @@ class CreateBroadcastDraftsTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('broadcast_drafts');
   }
 }

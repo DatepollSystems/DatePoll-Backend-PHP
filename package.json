@@ -1,0 +1,24 @@
+{
+  "name": "datepoll-backend-php",
+  "version": "1.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "husky": "^4.3.0",
+    "lint-staged": "^10.5.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/DatePoll/datepoll-backend-php.git"
+  },
+  "author": "DatePoll",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://gitlab.com/DatePoll/datepoll-backend-php/issues"
+  },
+  "homepage": "https://gitlab.com/DatePoll/datepoll-backend-php#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}

@@ -11,11 +11,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class UserSettingsController extends Controller
-{
-
-  protected $userSettingRepository = null;
-  protected $userRepository = null;
+class UserSettingsController extends Controller {
+  protected IUserSettingRepository $userSettingRepository;
+  protected IUserRepository $userRepository;
 
   public function __construct(IUserSettingRepository $userSettingRepository, IUserRepository $userRepository) {
     $this->userSettingRepository = $userSettingRepository;
@@ -137,13 +135,14 @@ class UserSettingsController extends Controller
         break;
       default:
         Logging::error('setValueRequest UserSettingsRepository', 'Unknown setting_key');
+
         return response()->json(['msg' => 'Could not find setting_key'], 500);
     }
 
     return response()->json([
       'msg' => 'Set setting successful',
       'setting_key' => $settingKey,
-      'setting_value' => $returnValue]);
+      'setting_value' => $returnValue, ]);
   }
 
   /**
@@ -172,12 +171,13 @@ class UserSettingsController extends Controller
         break;
       default:
         Logging::error('getValueRequest UserSettingsRepository', 'Unknown setting_key');
+
         return response()->json(['msg' => 'Could not find setting_key'], 500);
     }
 
     return response()->json([
       'msg' => 'Get setting successful',
       'setting_key' => $settingKey,
-      'setting_value' => $value]);
+      'setting_value' => $value, ]);
   }
 }

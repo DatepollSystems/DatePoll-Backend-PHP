@@ -12,8 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $updated_at
  * @property Movie[] $movies
  */
-class MovieYear extends Model
-{
+class MovieYear extends Model {
   /**
    * @var array
    */

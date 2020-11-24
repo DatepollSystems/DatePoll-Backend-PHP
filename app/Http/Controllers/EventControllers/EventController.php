@@ -3,19 +3,21 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
-class EventController extends Controller
-{
+class EventController extends Controller {
+  private static string $YEARS_CACHE_KEY = 'events.years';
 
-  protected $eventRepository = null;
-  protected $eventDateRepository = null;
+  protected IEventRepository $eventRepository;
+  protected IEventDateRepository $eventDateRepository;
 
   public function __construct(IEventRepository $eventRepository, IEventDateRepository $eventDateRepository) {
     $this->eventRepository = $eventRepository;
@@ -25,17 +27,33 @@ class EventController extends Controller
   /**
    * @return JsonResponse
    */
-  public function getAll() {
-    $events = $this->eventRepository->getAllEventsOrderedByDate();
+  public function getYearsOfEvents() {
+    if (Cache::has(self::$YEARS_CACHE_KEY)) {
+      $years = Cache::get(self::$YEARS_CACHE_KEY);
+    } else {
+      $years = $this->eventRepository->getYearsOfEvents();
+      // Time to live 3 hours
+      Cache::put(self::$YEARS_CACHE_KEY, $years, 3 * 60 * 60);
+    }
 
-    $toReturnEvents = array();
+    return response()->json(['msg' => 'List of all years', 'years' => $years]);
+  }
+
+  /**
+   * @param int|null $year
+   * @return JsonResponse
+   */
+  public function getEventsOrderedByDate(int $year = null) {
+    $events = $this->eventRepository->getEventsOrderedByDate($year);
+
+    $toReturnEvents = [];
     foreach ($events as $event) {
       $toReturnEvents[] = $this->eventRepository->getReturnable($event);
     }
 
     return response()->json([
-      'msg' => 'List of all events',
-      'events' => $toReturnEvents]);
+      'msg' => 'List of all events of this year',
+      'events' => $toReturnEvents, ]);
   }
 
   /**
@@ -43,7 +61,7 @@ class EventController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, $id) {
+  public function getSingle(Request $request, int $id) {
     $event = $this->eventRepository->getEventById($id);
 
     if ($event == null) {
@@ -51,22 +69,37 @@ class EventController extends Controller
     }
 
     $user = $request->auth;
+    $anonymous = ! ($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
+      $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
+      $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS));
+    $anonymousString = true === (bool)$anonymous ? 'true' : 'false';
+
+    $cacheKey = 'events.results.anonymous.' . $anonymousString . '.' . $id;
+    if (Cache::has($cacheKey)) {
+      Logging::info('getSingleEvent', 'Receiving ' . $cacheKey . ' from cache');
+
+      return response()->json([
+        'msg' => 'Event information',
+        'event' => Cache::get($cacheKey), ]);
+    }
+    Logging::info('getSingleEvent', 'Generating ' . $cacheKey . ' and saving to cache');
 
     $toReturnEvent = $this->eventRepository->getReturnable($event);
-    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event,
-      !($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
-        $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
-        $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS)));
+    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event, $anonymous);
+
+    // Time to live 5 minutes
+    Cache::put($cacheKey, $toReturnEvent, 60 * 5);
 
     return response()->json([
       'msg' => 'Event information',
-      'event' => $toReturnEvent]);
+      'event' => $toReturnEvent, ]);
   }
 
   /**
    * @param Request $request
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
   public function create(Request $request) {
     $this->validate($request, [
@@ -82,7 +115,7 @@ class EventController extends Controller
       'dates.*.y' => 'nullable|numeric',
       'dates.*.date' => 'date|nullable',
       'dates.*.location' => 'string|nullable|max:190',
-      'dates.*.description' => 'string|nullable|max:255']);
+      'dates.*.description' => 'string|nullable|max:255', ]);
 
     $name = $request->input('name');
     $forEveryone = $request->input('forEveryone');
@@ -95,11 +128,13 @@ class EventController extends Controller
     $returnable = $this->eventRepository->getReturnable($event);
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
-      'method' => 'GET'];
+      'method' => 'GET', ];
+
+    Cache::forget(self::$YEARS_CACHE_KEY);
 
     return response()->json([
       'msg' => 'Successful created event',
-      'event' => $returnable], 201);
+      'event' => $returnable, ], 201);
   }
 
   /**
@@ -107,8 +142,9 @@ class EventController extends Controller
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
+   * @throws Exception
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'forEveryone' => 'required|boolean',
@@ -124,7 +160,7 @@ class EventController extends Controller
       'dates.*.y' => 'nullable|numeric',
       'dates.*.date' => 'date|nullable',
       'dates.*.location' => 'string|nullable|max:190',
-      'dates.*.description' => 'string|nullable|max:255']);
+      'dates.*.description' => 'string|nullable|max:255', ]);
 
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
@@ -142,11 +178,11 @@ class EventController extends Controller
     $returnable = $this->eventRepository->getReturnable($event);
     $returnable->view_event = [
       'href' => 'api/v1/avent/administration/avent/' . $event->id,
-      'method' => 'GET'];
+      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Successful updated event',
-      'event' => $returnable], 200);
+      'event' => $returnable, ], 200);
   }
 
   /**
@@ -154,13 +190,13 @@ class EventController extends Controller
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
-    if (!$this->eventRepository->deleteEvent($event)) {
+    if (! $this->eventRepository->deleteEvent($event)) {
       return response()->json(['msg' => 'Could not delete event'], 500);
     }
 

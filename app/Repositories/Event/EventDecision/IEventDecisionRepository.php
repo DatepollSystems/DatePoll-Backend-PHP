@@ -2,7 +2,6 @@
 
 namespace App\Repositories\Event\EventDecision;
 
-
 use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
@@ -10,8 +9,7 @@ use App\Models\User\User;
 use Exception;
 use stdClass;
 
-interface IEventDecisionRepository
-{
+interface IEventDecisionRepository {
   /**
    * @param int $id
    * @return EventDecision

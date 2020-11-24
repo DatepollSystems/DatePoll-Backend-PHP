@@ -4,12 +4,9 @@ namespace App\Mail;
 
 use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ActivateUser extends ADatePollMailable
-{
+class ActivateUser extends ADatePollMailable {
   use Queueable, SerializesModels;
 
   public $name;
@@ -27,8 +24,7 @@ class ActivateUser extends ADatePollMailable
    * @param string $code
    * @param ISettingRepository $settingRepository
    */
-  public function __construct($name, $username, $code, ISettingRepository $settingRepository)
-  {
+  public function __construct($name, $username, $code, ISettingRepository $settingRepository) {
     parent::__construct('activateUser');
 
     $this->settingRepository = $settingRepository;
@@ -44,8 +40,7 @@ class ActivateUser extends ADatePollMailable
    *
    * @return $this
    */
-  public function build()
-  {
+  public function build() {
     return $this
       ->subject('» DatePoll Accountaktivierung')
       ->view('emails.userActivation.activateUser')

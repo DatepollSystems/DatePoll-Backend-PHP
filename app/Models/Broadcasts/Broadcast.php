@@ -2,13 +2,10 @@
 
 namespace App\Models\Broadcasts;
 
-use App\Models\Groups\Group;
 use App\Models\User\User;
-use App\Permissions;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use stdClass;
 
 /**
  * @property int $id
@@ -25,8 +22,7 @@ use stdClass;
  * @property BroadcastUserInfo[] $usersInfo
  * @property BroadcastAttachment[] $broadcastAttachment
  */
-class Broadcast extends Model
-{
+class Broadcast extends Model {
 
   /**
    * The table associated with the model.
@@ -45,7 +41,7 @@ class Broadcast extends Model
     'writer_user_id',
     'forEveryone',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | User
@@ -59,7 +55,7 @@ class Broadcast extends Model
    */
   public function broadcastsForGroups() {
     return $this->hasMany('App\Models\Broadcasts\BroadcastForGroup')
-                ->get();
+      ->get();
   }
 
   /**
@@ -67,7 +63,7 @@ class Broadcast extends Model
    */
   public function broadcastsForSubgroups() {
     return $this->hasMany('App\Models\Broadcasts\BroadcastForSubgroup')
-                ->get();
+      ->get();
   }
 
   /**
@@ -75,7 +71,7 @@ class Broadcast extends Model
    */
   public function usersInfo() {
     return $this->hasMany('App\Models\Broadcasts\BroadcastUserInfo')
-                ->get();
+      ->get();
   }
 
   /**

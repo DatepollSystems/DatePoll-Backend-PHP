@@ -1,12 +1,8 @@
 <?php namespace App\Console\Commands;
 
-use App\Logging;
-use App\LogTypes;
 use Illuminate\Console\Command;
 
-class ACommand extends Command
-{
-
+class ACommand extends Command {
   /**
    * @param string $question
    * @param string|null $default
@@ -15,7 +11,7 @@ class ACommand extends Command
   protected function askStringQuestion(string $question, string $default = null): string {
     $answer = null;
 
-    while(true) {
+    while (true) {
       if ($default != null) {
         $answer = $this->ask($question . ' [' . $default . ']');
       } else {
@@ -48,7 +44,7 @@ class ACommand extends Command
   protected function askBooleanQuestion(string $question): bool {
     $answer = null;
 
-    while(true) {
+    while (true) {
       $answer = $this->anticipate($question . ' [Y/n]', ['y', 'n']);
       if ($answer == null) {
         $answer = true;
@@ -79,28 +75,5 @@ class ACommand extends Command
     }
 
     return $answer;
-  }
-
-  /**
-   * @param string $function
-   * @param string $comment
-   * @param string $type
-   */
-  protected function log(string $function, string $comment, string $type) {
-    switch ($type) {
-      case LogTypes::INFO:
-        Logging::info($function, $comment);
-        break;
-
-      case LogTypes::WARNING:
-        Logging::warning($function, $comment);
-        break;
-
-      default:
-        Logging::error('ACommand log', 'Unknown log type!');
-        break;
-    }
-
-    $this->comment($function . ' | ' . $comment);
   }
 }

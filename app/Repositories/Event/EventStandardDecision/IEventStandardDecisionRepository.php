@@ -5,8 +5,7 @@ namespace App\Repositories\Event\EventStandardDecision;
 use App\Models\Events\EventStandardDecision;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IEventStandardDecisionRepository
-{
+interface IEventStandardDecisionRepository {
   /**
    * @return Collection<EventStandardDecision>
    */

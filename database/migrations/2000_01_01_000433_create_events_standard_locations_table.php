@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateEventsStandardLocationsTable extends Migration
-{
+class CreateEventsStandardLocationsTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('events_standard_locations', function (Blueprint $table) {
       $table->increments('id');
 
@@ -32,8 +30,7 @@ class CreateEventsStandardLocationsTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('events_standard_locations');
   }
 }

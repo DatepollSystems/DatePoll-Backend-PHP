@@ -1,4 +1,4 @@
-<html>
+<html lang="de">
 <head>
     <style type="text/css">
         a {
@@ -39,7 +39,7 @@
         <p>Benutzername: <b>{{$username}}</b></p>
         <p>Passwort für die Erstanmeldung: <b>{{$code}}</b></p>
         <small>Wir empfehlen ein eigenes Passwort für DatePoll zu benutzen.</small>
-        <p><i>Sie haben keinen DatePoll Account? Ignorieren Sie diese Email einfach.</i></p>
+        <p><i>Sie haben keinen DatePoll Account? Ignorieren Sie diese E-Mail einfach.</i></p>
         <i>Dies ist eine automatisierte Nachricht. Bitte antworten Sie nicht.</i>
     </div>
 </body>

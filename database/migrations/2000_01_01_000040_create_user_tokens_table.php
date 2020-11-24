@@ -1,24 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateUserTokensTable extends Migration
-{
+class CreateUserTokensTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('user_tokens', function (Blueprint $table) {
       $table->increments('id');
       $table->string('token')->nullable(false);
 
       $table->string('purpose')->nullable(false);
-      $table->longText('description')->nullable(true);
+      $table->string('description')->nullable(true);
 
       $table->integer('user_id')->unsigned();
 
@@ -35,8 +33,7 @@ class CreateUserTokensTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('user_tokens');
   }
 }

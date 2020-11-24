@@ -15,8 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  * @property User $user
  */
-class UserToken extends Model
-{
+class UserToken extends Model {
   /**
    * @var array
    */

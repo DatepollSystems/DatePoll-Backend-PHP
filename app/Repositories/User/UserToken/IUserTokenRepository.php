@@ -4,11 +4,9 @@ namespace App\Repositories\User\UserToken;
 
 use App\Models\User\User;
 use App\Models\User\UserToken;
-use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IUserTokenRepository
-{
+interface IUserTokenRepository {
 
   /**
    * @param User $user

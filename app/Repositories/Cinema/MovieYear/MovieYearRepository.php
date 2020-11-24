@@ -6,8 +6,7 @@ use App\Models\Cinema\MovieYear;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
-class MovieYearRepository implements IMovieYearRepository
-{
+class MovieYearRepository implements IMovieYearRepository {
   /**
    * @param int $id
    * @return MovieYear
@@ -29,7 +28,7 @@ class MovieYearRepository implements IMovieYearRepository
    */
   public function getMovieYearsOrderedByDate() {
     return MovieYear::orderBy('year')
-                    ->get();
+      ->get();
   }
 
   /**

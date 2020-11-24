@@ -1,12 +1,11 @@
 <?php
 
-require_once (__DIR__ . '/../../../factories/MovieFac.php');
+require_once(__DIR__ . '/../../../factories/MovieFac.php');
 
 use App\Models\Cinema\MovieYear;
 use Tests\Factories\MovieFactory;
 
-class MovieYearTest extends TestCase
-{
+class MovieYearTest extends TestCase {
   private function clearMovieYearTesting() {
     MovieFactory::findAndDeleteMovieYear(1234);
     MovieFactory::findAndDeleteMovieYear(4321);
@@ -28,7 +27,7 @@ class MovieYearTest extends TestCase
 
   public function testUpdateMovieYear() {
     $movieYear = MovieYear::where('year', '=', 1234)
-                          ->first();
+      ->first();
     if ($movieYear == null) {
       $this->fail('Could not update movie year! Movie year was not created!');
     }
@@ -43,7 +42,7 @@ class MovieYearTest extends TestCase
 
   public function testDeleteMovieYear() {
     $movieYear = MovieYear::where('year', '=', 4321)
-                          ->first();
+      ->first();
     if ($movieYear == null) {
       $this->fail('Could not delete movie year! Movie year was not updated!');
     }

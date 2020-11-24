@@ -1,31 +1,34 @@
 <?php
 
+use App\Console\Kernel as AppKernel;
+use App\Exceptions\Handler;
+use App\Http\Middleware\JwtMiddleware;
 use App\Providers\AppServiceProvider;
-use App\Providers\DatePollServiceProvider;
+use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use Dotenv\Exception\InvalidPathException;
+use Fruitcake\Cors\CorsServiceProvider;
+use Fruitcake\Cors\HandleCors;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Mail\Mailer as ConMailer;
+use Illuminate\Contracts\Mail\MailQueue;
+use Illuminate\Mail\Mailer;
+use Illuminate\Mail\MailServiceProvider;
+use Illuminate\Redis\RedisServiceProvider;
+use Laravel\Lumen\Application;
+use Laravel\Lumen\Bootstrap\LoadEnvironmentVariables;
 use Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-  (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
+  (new LoadEnvironmentVariables(
     dirname(__DIR__)
   ))->bootstrap();
-} catch (Dotenv\Exception\InvalidPathException $e) {
-  //
+} catch (InvalidPathException $e) {
 }
 
-/*
-|--------------------------------------------------------------------------
-| Create The Application
-|--------------------------------------------------------------------------
-|
-| Here we will load the environment and create the application instance
-| that serves as the central piece of this framework. We'll use this
-| application as an "IoC" container and router for this framework.
-|
-*/
-
-$app = new Laravel\Lumen\Application(
+$app = new Application(
   dirname(__DIR__)
 );
 
@@ -36,55 +39,42 @@ $app->withEloquent();
 |--------------------------------------------------------------------------
 | Register Container Bindings
 |--------------------------------------------------------------------------
-|
-| Now we will register a few bindings in the service container. We will
-| register the exception handler and the console kernel. You may add
-| your own bindings here if you like or you can make another file.
-|
 */
+$app->singleton(ExceptionHandler::class, Handler::class);
 
-$app->singleton(Illuminate\Contracts\Debug\ExceptionHandler::class, App\Exceptions\Handler::class);
-
-$app->singleton(Illuminate\Contracts\Console\Kernel::class, App\Console\Kernel::class);
-
-/** Register JWT-Auth middleware */
-$app->routeMiddleware(['jwt.auth' => App\Http\Middleware\JwtMiddleware::class]);
+$app->singleton(Kernel::class, AppKernel::class);
 
 /*
 |--------------------------------------------------------------------------
 | Register Service Providers
 |--------------------------------------------------------------------------
-|
-| Here we will register all of the application's service providers which
-| are used to bind services into the container. Service providers are
-| totally optional, so you are not required to uncomment this line.
-|
 */
+/**
+ * Register DatePoll Service providers to implement the Repository Pattern and change default database
+ * string limit to 191 chars
+ */
 $app->register(AppServiceProvider::class);
 
 /** Cors fix */
-$app->register(Fruitcake\Cors\CorsServiceProvider::class);
+$app->register(CorsServiceProvider::class);
 $app->configure('cors');
-$app->middleware([Fruitcake\Cors\HandleCors::class]);
+$app->middleware([HandleCors::class]);
 
 /** IDE Helper */
-$app->register(Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
-
-/** Register DatePoll Service providers to implement the Repository Pattern */
-$app->register(DatePollServiceProvider::class);
+$app->register(IdeHelperServiceProvider::class);
 
 /** Redis and Horizon */
-$app->register(Illuminate\Redis\RedisServiceProvider::class);
+$app->register(RedisServiceProvider::class);
 
 /** Log reader */
 $app->register(LaravelLogViewerServiceProvider::class);
 
 /** Mail configuration */
-$app->register(Illuminate\Mail\MailServiceProvider::class);
+$app->register(MailServiceProvider::class);
 $app->configure('mail');
-$app->alias('mailer', Illuminate\Mail\Mailer::class);
-$app->alias('mailer', Illuminate\Contracts\Mail\Mailer::class);
-$app->alias('mailer', Illuminate\Contracts\Mail\MailQueue::class);
+$app->alias('mailer', Mailer::class);
+$app->alias('mailer', ConMailer::class);
+$app->alias('mailer', MailQueue::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -97,9 +87,10 @@ $app->alias('mailer', Illuminate\Contracts\Mail\MailQueue::class);
 |
 */
 
-$app->router->group([
-  'namespace' => 'App\Http\Controllers',
-], function ($router) {
+/** Register JWT-Auth middleware */
+$app->routeMiddleware(['jwt.auth' => JwtMiddleware::class]);
+
+$app->router->group(['namespace' => 'App\Http\Controllers'], function ($router) {
   require __DIR__ . '/../routes/web.php';
 });
 

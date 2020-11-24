@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateUsersHasBadgesTable extends Migration
-{
+class CreateUsersHasBadgesTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('users_has_badges', function (Blueprint $table) {
       $table->increments('id');
 
@@ -20,7 +18,8 @@ class CreateUsersHasBadgesTable extends Migration
       $table->date('getDate')->nullable(true);
       $table->string('reason')->nullable(true);
 
-      $table->integer('user_id')->unsigned();;
+      $table->integer('user_id')->unsigned();
+      ;
       $table->foreign('user_id')
         ->references('id')->on('users')
         ->onDelete('cascade');
@@ -34,8 +33,7 @@ class CreateUsersHasBadgesTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('users_has_badges');
   }
 }

@@ -4,8 +4,7 @@ namespace App\Repositories\System\DatePollServer;
 
 use stdClass;
 
-interface IDatePollServerRepository
-{
+interface IDatePollServerRepository {
   /**
    * @return stdClass
    */

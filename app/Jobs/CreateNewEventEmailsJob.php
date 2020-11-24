@@ -23,9 +23,7 @@ use Illuminate\Support\Facades\Queue;
  * @property IUserSettingRepository $userSettingRepository
  * @property ISettingRepository $settingRepository
  */
-class CreateNewEventEmailsJob extends Job
-{
-
+class CreateNewEventEmailsJob extends Job {
   private Event $event;
   private IEventRepository $eventRepository;
   private IEventDateRepository $eventDateRepository;
@@ -41,8 +39,13 @@ class CreateNewEventEmailsJob extends Job
    * @param IUserSettingRepository $userSettingRepository
    * @param ISettingRepository $settingRepository
    */
-  public function __construct(Event $event, IEventRepository $eventRepository, IEventDateRepository $eventDateRepository,
-                              IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository) {
+  public function __construct(
+    Event $event,
+    IEventRepository $eventRepository,
+    IEventDateRepository $eventDateRepository,
+    IUserSettingRepository $userSettingRepository,
+    ISettingRepository $settingRepository
+  ) {
     $this->event = $event;
     $this->eventRepository = $eventRepository;
     $this->eventDateRepository = $eventDateRepository;
@@ -64,10 +67,14 @@ class CreateNewEventEmailsJob extends Job
       // Also check if user is not information denied
       $user = User::find($eventUser->id);
 
-      if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && !$user->information_denied && $user->activated) {
+      if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && ! $user->information_denied && $user->activated) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        Queue::later($time, new SendEmailJob(new NewEvent($user->firstname, $this->event, $this->eventDateRepository,
-          $this->settingRepository), $user->getEmailAddresses()), null, "low");
+        Queue::later($time, new SendEmailJob(new NewEvent(
+          $user->firstname,
+          $this->event,
+          $this->eventDateRepository,
+          $this->settingRepository
+        ), $user->getEmailAddresses()), null, 'low');
       }
     }
   }

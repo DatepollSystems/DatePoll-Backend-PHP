@@ -15,8 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Broadcast $broadcast
  * @property Subgroup $subgroup
  */
-class BroadcastForSubgroup extends Model
-{
+class BroadcastForSubgroup extends Model {
   /**
    * The table associated with the model.
    *
@@ -31,7 +30,7 @@ class BroadcastForSubgroup extends Model
     'broadcast_id',
     'subgroup_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Broadcast

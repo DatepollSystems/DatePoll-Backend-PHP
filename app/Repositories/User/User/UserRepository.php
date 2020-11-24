@@ -7,10 +7,10 @@ use App\Logging;
 use App\Mail\ActivateUser;
 use App\Models\User\DeletedUser;
 use App\Models\User\User;
+use App\Models\User\UserCode;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
-use App\Models\User\UserCode;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
@@ -22,17 +22,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
 
-class UserRepository implements IUserRepository
-{
+class UserRepository implements IUserRepository {
   protected $settingRepository = null;
   protected $userSettingRepository = null;
   protected $userChangeRepository = null;
   protected $eventRepository = null;
   protected $broadcastRepository = null;
 
-  public function __construct(ISettingRepository $settingRepository, IUserSettingRepository $userSettingRepository,
-                              IEventRepository $eventRepository, IBroadcastRepository $broadcastRepository,
-                              IUserChangeRepository $userChangeRepository) {
+  public function __construct(
+    ISettingRepository $settingRepository,
+    IUserSettingRepository $userSettingRepository,
+    IEventRepository $eventRepository,
+    IBroadcastRepository $broadcastRepository,
+    IUserChangeRepository $userChangeRepository
+  ) {
     $this->settingRepository = $settingRepository;
     $this->userSettingRepository = $userSettingRepository;
     $this->eventRepository = $eventRepository;
@@ -59,7 +62,7 @@ class UserRepository implements IUserRepository
    */
   public function getAllUsersOrderedBySurname() {
     return User::orderBy('surname')
-               ->get();
+      ->get();
   }
 
   /**
@@ -76,7 +79,7 @@ class UserRepository implements IUserRepository
    */
   public function getUserByUsername(string $username) {
     return User::where('username', $username)
-               ->first();
+      ->first();
   }
 
   /**
@@ -103,11 +106,28 @@ class UserRepository implements IUserRepository
    * @return User|null
    * @throws Exception
    */
-  public function createOrUpdateUser($title, $username, $firstname, $surname, $birthday, $joinDate, $streetname,
-                                     $streetnumber, $zipcode, $location, $activated, $activity, $phoneNumbers,
-                                     $emailAddresses, $memberNumber, $internalComment, $informationDenied, $bvMember,
-                                     int $editorId, User $user = null) {
-
+  public function createOrUpdateUser(
+    $title,
+    $username,
+    $firstname,
+    $surname,
+    $birthday,
+    $joinDate,
+    $streetname,
+    $streetnumber,
+    $zipcode,
+    $location,
+    $activated,
+    $activity,
+    $phoneNumbers,
+    $emailAddresses,
+    $memberNumber,
+    $internalComment,
+    $informationDenied,
+    $bvMember,
+    int $editorId,
+    User $user = null
+  ) {
     if ($bvMember == null) {
       $bvMember = '';
     }
@@ -129,27 +149,33 @@ class UserRepository implements IUserRepository
         'member_number' => $memberNumber,
         'internal_comment' => $internalComment,
         'bv_member' => $bvMember,
-        'password' => 'Null']);
+        'password' => 'Null', ]);
 
-      if (!$user->save()) {
+      if (! $user->save()) {
         Logging::error('createOrUpdateUser', 'Could not save user into database!');
+
         return null;
       }
     } else {
-      $this->checkForPropertyChange('username', $user->id, $editorId, $username, $user->username);
-      $this->checkForPropertyChange('title', $user->id, $editorId, $title, $user->title);
-      $this->checkForPropertyChange('firstname', $user->id, $editorId, $firstname, $user->firstname);
-      $this->checkForPropertyChange('surname', $user->id, $editorId, $surname, $user->surname);
-      $this->checkForPropertyChange('birthday', $user->id, $editorId, $birthday, $user->birthday);
-      $this->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate, $user->join_date);
-      $this->checkForPropertyChange('streetname', $user->id, $editorId, $streetname, $user->streetname);
-      $this->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber, $user->streetnumber);
-      $this->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
-      $this->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
-      $this->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
-      $this->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment,
-        $user->internal_comment);
-      $this->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
+      $this->userChangeRepository->checkForPropertyChange('username', $user->id, $editorId, $username, $user->username);
+      $this->userChangeRepository->checkForPropertyChange('title', $user->id, $editorId, $title, $user->title);
+      $this->userChangeRepository->checkForPropertyChange('firstname', $user->id, $editorId, $firstname, $user->firstname);
+      $this->userChangeRepository->checkForPropertyChange('surname', $user->id, $editorId, $surname, $user->surname);
+      $this->userChangeRepository->checkForPropertyChange('birthday', $user->id, $editorId, $birthday, $user->birthday);
+      $this->userChangeRepository->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate, $user->join_date);
+      $this->userChangeRepository->checkForPropertyChange('streetname', $user->id, $editorId, $streetname, $user->streetname);
+      $this->userChangeRepository->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber, $user->streetnumber);
+      $this->userChangeRepository->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
+      $this->userChangeRepository->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
+      $this->userChangeRepository->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
+      $this->userChangeRepository->checkForPropertyChange(
+        'internal_comment',
+        $user->id,
+        $editorId,
+        $internalComment,
+        $user->internal_comment
+      );
+      $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
       // Don't use checkForPropertyChange function because these values aren't strings
       if ($user->zipcode != $zipcode) {
         $this->userChangeRepository->createUserChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
@@ -158,8 +184,13 @@ class UserRepository implements IUserRepository
         $this->userChangeRepository->createUserChange('activated', $user->id, $editorId, $activated, $user->activated);
       }
       if ($user->information_denied != $informationDenied) {
-        $this->userChangeRepository->createUserChange('informationDenied', $user->id, $editorId, $informationDenied,
-          $user->information_denied);
+        $this->userChangeRepository->createUserChange(
+          'informationDenied',
+          $user->id,
+          $editorId,
+          $informationDenied,
+          $user->information_denied
+        );
       }
 
       $user->username = $username;
@@ -184,11 +215,11 @@ class UserRepository implements IUserRepository
       $user->information_denied = $informationDenied;
     }
 
-    if (!$user->save()) {
+    if (! $user->save()) {
       Logging::error('createUser', 'Could not save user into database!');
+
       return null;
     }
-
 
     // Email addresses manager only deletes changed email addresses
     if ($this->updateUserEmailAddresses($user, $emailAddresses, $editorId) == null) {
@@ -196,7 +227,7 @@ class UserRepository implements IUserRepository
     }
 
     //----Phone numbers manager only deletes changed phone numbers---
-    $phoneNumbersWhichHaveNotBeenDeleted = array();
+    $phoneNumbersWhichHaveNotBeenDeleted = [];
 
     $OldPhoneNumbers = $user->telephoneNumbers();
     foreach ($OldPhoneNumbers as $oldPhoneNumber) {
@@ -213,8 +244,9 @@ class UserRepository implements IUserRepository
       if ($toDelete) {
         $phoneNumberToDeleteObject = UserTelephoneNumber::find($oldPhoneNumber->id);
         $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, null, $phoneNumberToDeleteObject->number);
-        if (!$phoneNumberToDeleteObject->delete()) {
+        if (! $phoneNumberToDeleteObject->delete()) {
           Logging::error('createOrUpdateUser', 'Could not delete $phoneNumberToDeleteObject');
+
           return null;
         }
       }
@@ -234,10 +266,11 @@ class UserRepository implements IUserRepository
         $phoneNumberToSave = new UserTelephoneNumber([
           'label' => $phoneNumber['label'],
           'number' => $phoneNumber['number'],
-          'user_id' => $user->id]);
+          'user_id' => $user->id, ]);
 
-        if (!$phoneNumberToSave->save()) {
+        if (! $phoneNumberToSave->save()) {
           Logging::error('createOrUpdateUser', 'Could not save phoneNumberToSave');
+
           return null;
         }
         $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, $phoneNumber['number'], null);
@@ -245,21 +278,8 @@ class UserRepository implements IUserRepository
     }
 
     Logging::info('createOrUpdateUser', 'Successfully created or updated user ' . $user->id);
-    return $user;
-  }
 
-  /**
-   * @param string $property
-   * @param int $userId
-   * @param int $editorId
-   * @param string|null $newValue
-   * @param string|null $oldValue
-   */
-  public function checkForPropertyChange(string $property, int $userId, int $editorId, ?string $newValue,
-                                         ?string $oldValue) {
-    if ($newValue != $oldValue) {
-      $this->userChangeRepository->createUserChange($property, $userId, $editorId, $newValue, $oldValue);
-    }
+    return $user;
   }
 
   /**
@@ -270,7 +290,7 @@ class UserRepository implements IUserRepository
    * @throws Exception
    */
   public function updateUserEmailAddresses(User $user, $emailAddresses, int $editorId) {
-    $emailAddressesWhichHaveNotBeenDeleted = array();
+    $emailAddressesWhichHaveNotBeenDeleted = [];
 
     $OldEmailAddresses = $user->emailAddresses();
     foreach ($OldEmailAddresses as $oldEmailAddress) {
@@ -286,8 +306,9 @@ class UserRepository implements IUserRepository
 
       if ($toDelete) {
         $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, null, $oldEmailAddress->email);
-        if (!$oldEmailAddress->delete()) {
+        if (! $oldEmailAddress->delete()) {
           Logging::error('updateUserEmailAddresses', 'Could not delete emailAddressToDeleteObject');
+
           return null;
         }
       }
@@ -306,10 +327,11 @@ class UserRepository implements IUserRepository
       if ($toAdd) {
         $emailAddressToSave = new UserEmailAddress([
           'email' => $emailAddress,
-          'user_id' => $user->id]);
+          'user_id' => $user->id, ]);
 
-        if (!$emailAddressToSave->save()) {
+        if (! $emailAddressToSave->save()) {
           Logging::error('updateUserEmailAddresses', 'Could not save $emailAddressToSave');
+
           return null;
         }
         $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, $emailAddress, null);
@@ -325,7 +347,7 @@ class UserRepository implements IUserRepository
    * @return bool
    */
   public function createOrUpdatePermissionsForUser($permissions, User $user) {
-    $permissionsWhichHaveNotBeenDeleted = array();
+    $permissionsWhichHaveNotBeenDeleted = [];
 
     $OldPermissions = $user->permissions();
     foreach ($OldPermissions as $oldPermission) {
@@ -341,9 +363,12 @@ class UserRepository implements IUserRepository
 
       if ($toDelete) {
         $permissionToDeleteObject = UserPermission::find($oldPermission->id);
-        if (!$permissionToDeleteObject->delete()) {
-          Logging::error('createOrUpdatePermissionsForUser',
-            'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for user: ' . $user->id);
+        if (! $permissionToDeleteObject->delete()) {
+          Logging::error(
+            'createOrUpdatePermissionsForUser',
+            'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for user: ' . $user->id
+          );
+
           return false;
         }
       }
@@ -365,10 +390,13 @@ class UserRepository implements IUserRepository
       if ($toAdd) {
         $permissionToSave = new UserPermission([
           'permission' => $permission,
-          'user_id' => $user->id]);
-        if (!$permissionToSave->save()) {
-          Logging::error('createOrUpdatePermissionsForUser',
-            'Could not add permission: ' . $permission . ' for user: ' . $user->id);
+          'user_id' => $user->id, ]);
+        if (! $permissionToSave->save()) {
+          Logging::error(
+            'createOrUpdatePermissionsForUser',
+            'Could not add permission: ' . $permission . ' for user: ' . $user->id
+          );
+
           return false;
         }
       }
@@ -382,13 +410,18 @@ class UserRepository implements IUserRepository
    */
   public function activateUser(User $user) {
     $randomPassword = UserCode::generateCode();
-    $user->password = app('hash')->make($randomPassword . $user->id);;
+    $user->password = app('hash')->make($randomPassword . $user->id);
+    ;
     $user->force_password_change = true;
     $user->activated = true;
     $user->save();
 
-    dispatch(new SendEmailJob(new ActivateUser($user->getName(), $user->username,
-      $randomPassword, $this->settingRepository), $user->getEmailAddresses()))->onQueue('low');
+    dispatch(new SendEmailJob(new ActivateUser(
+      $user->getName(),
+      $user->username,
+      $randomPassword,
+      $this->settingRepository
+    ), $user->getEmailAddresses()))->onQueue('low');
   }
 
   /**
@@ -400,17 +433,19 @@ class UserRepository implements IUserRepository
       'firstname' => $user->firstname,
       'surname' => $user->surname,
       'join_date' => $user->join_date,
-      'internal_comment' => $user->internal_comment]);
+      'internal_comment' => $user->internal_comment, ]);
 
     if ($deletedUser->save()) {
       try {
         return $user->delete();
       } catch (Exception $e) {
         Logging::error('deleteUser', 'Exception: ' . $e->getMessage());
+
         return false;
       }
     } else {
       Logging::error('deleteUser', 'Could not create deleted user - : ' . $user->id);
+
       return false;
     }
   }
@@ -424,11 +459,10 @@ class UserRepository implements IUserRepository
    * @return array
    */
   public function exportAllUsers() {
-    $toReturnUsers = array();
+    $toReturnUsers = [];
 
     $users = $this->getAllUsersOrderedBySurname();
     foreach ($users as $user) {
-
       $toReturnUser = new stdClass();
 
       $toReturnUser->Email = '';
@@ -480,7 +514,7 @@ class UserRepository implements IUserRepository
         }
 
         $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
-                                                  ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
+          ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 
@@ -508,7 +542,7 @@ class UserRepository implements IUserRepository
    */
   public function getAllNotActivatedUsers() {
     return User::where('activated', 0)
-               ->get();
+      ->get();
   }
 
   /**
@@ -518,6 +552,7 @@ class UserRepository implements IUserRepository
    */
   public function changePasswordOfUser(User $user, string $notHashedPassword) {
     $user->password = app('hash')->make($notHashedPassword . $user->id);
+
     return $user->save();
   }
 
@@ -535,7 +570,7 @@ class UserRepository implements IUserRepository
    * @return array
    */
   public function getHomepageDataForUser(User $user) {
-    $bookingsToShow = array();
+    $bookingsToShow = [];
     if ($this->settingRepository->getCinemaEnabled()) {
       $bookings = $user->moviesBookings();
       foreach ($bookings as $booking) {
@@ -569,12 +604,12 @@ class UserRepository implements IUserRepository
       }
     }
 
-    $eventsToShow = array();
+    $eventsToShow = [];
     if ($this->settingRepository->getEventsEnabled()) {
       $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
     }
 
-    $broadcastsToShow = array();
+    $broadcastsToShow = [];
     if ($this->settingRepository->getBroadcastsEnabled()) {
       $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
       foreach ($broadcasts as $broadcast) {
@@ -583,13 +618,15 @@ class UserRepository implements IUserRepository
     }
 
     $users = $this->getAllUsers();
-    $birthdaysToShow = array();
+    $birthdaysToShow = [];
     foreach ($users as $user) {
       if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
-        $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date("Y-m-d"))));
-        $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date("Y-m-d"))));
-        if ($remTimeDate < date("m-d", strtotime($user->birthday)) && date("m-d",
-            strtotime($user->birthday)) < $addTimeDate) {
+        $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
+        $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
+        if ($remTimeDate < date('m-d', strtotime($user->birthday)) && date(
+          'm-d',
+          strtotime($user->birthday)
+        ) < $addTimeDate) {
           $birthdayToShow = new stdClass();
 
           $birthdayToShow->name = $user->getName();
@@ -609,6 +646,6 @@ class UserRepository implements IUserRepository
       'events' => $eventsToShow,
       'bookings' => $bookingsToShow,
       'broadcasts' => $broadcastsToShow,
-      'birthdays' => $birthdaysToShow];
+      'birthdays' => $birthdaysToShow, ];
   }
 }

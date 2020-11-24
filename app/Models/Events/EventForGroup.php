@@ -15,8 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Event $event
  * @property Group $group
  */
-class EventForGroup extends Model
-{
+class EventForGroup extends Model {
   /**
    * The table associated with the model.
    *
@@ -31,7 +30,7 @@ class EventForGroup extends Model
     'event_id',
     'group_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Event

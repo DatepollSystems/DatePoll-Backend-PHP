@@ -2,6 +2,7 @@
 
 namespace App\Models\Subgroups;
 
+use App\Models\Events\EventForSubgroup;
 use App\Models\Groups\Group;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -20,8 +21,7 @@ use stdClass;
  * @property Group $group
  * @property UsersMemberOfSubgroups[] $usersMemberOfSubgroups
  */
-class Subgroup extends Model
-{
+class Subgroup extends Model {
   /**
    * @var array
    */
@@ -31,14 +31,14 @@ class Subgroup extends Model
     'orderN',
     'description',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Group
    */
   public function group() {
     return $this->belongsTo('App\Models\Groups\Group')
-                ->first();
+      ->first();
   }
 
   /**
@@ -46,7 +46,7 @@ class Subgroup extends Model
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
-                ->get();
+      ->get();
   }
 
   /**
@@ -67,6 +67,7 @@ class Subgroup extends Model
     usort($rUsers, function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
+
     return $rUsers;
   }
 
@@ -75,13 +76,22 @@ class Subgroup extends Model
    */
   public function getUsersOrderedBySurname() {
     $usersMemberOfSubgroups = $this->usersMemberOfSubgroups();
-    $users = array();
+    $users = [];
     foreach ($usersMemberOfSubgroups as $usersMemberOfSubgroup) {
       $users[] = $usersMemberOfSubgroup->user();
     }
     usort($users, function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
+
     return $users;
+  }
+
+  /**
+   * @return Collection | EventForSubgroup[] | null
+   */
+  public function eventsForSubgroups() {
+    return $this->hasMany(EventForSubgroup::class)
+      ->get();
   }
 }

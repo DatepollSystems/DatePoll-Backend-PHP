@@ -7,8 +7,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
-interface IBroadcastDraftRepository
-{
+interface IBroadcastDraftRepository {
 
   /**
    * @return BroadcastDraft[]|Collection
@@ -35,8 +34,13 @@ interface IBroadcastDraftRepository
    * @param BroadcastDraft|null $draft
    * @return BroadcastDraft | null
    */
-  public function createOrUpdate(string $subject, string $bodyHTML, string $body, int $writerId,
-                                 BroadcastDraft $draft = null);
+  public function createOrUpdate(
+    string $subject,
+    string $bodyHTML,
+    string $body,
+    int $writerId,
+    BroadcastDraft $draft = null
+  );
 
   /**
    * @param BroadcastDraft $draft
@@ -44,5 +48,4 @@ interface IBroadcastDraftRepository
    * @throws Exception
    */
   public function delete(BroadcastDraft $draft);
-
 }

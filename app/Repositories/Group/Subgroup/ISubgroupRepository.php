@@ -8,8 +8,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
-interface ISubgroupRepository
-{
+interface ISubgroupRepository {
   /**
    * @return Subgroup[] | Collection<Subgroup>
    */

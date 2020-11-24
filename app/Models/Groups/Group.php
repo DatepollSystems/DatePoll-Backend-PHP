@@ -2,6 +2,7 @@
 
 namespace App\Models\Groups;
 
+use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,8 +19,7 @@ use stdClass;
  * @property Subgroup[] $subgroups
  * @property UsersMemberOfGroups[] $usersMemberOfGroups
  */
-class Group extends Model
-{
+class Group extends Model {
   /**
    * @var array
    */
@@ -28,31 +28,31 @@ class Group extends Model
     'orderN',
     'description',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
-   * @return Collection | Subgroup[] | null
+   * @return Collection<Subgroup> | Subgroup[] | null
    */
   public function subgroups() {
     return $this->hasMany('App\Models\Subgroups\Subgroup')
-                ->get();
+      ->get();
   }
 
   /**
-   * @return Collection | Subgroup[]
+   * @return Collection<Subgroup> | Subgroup[]
    */
   public function getSubgroupsOrdered() {
     return $this->hasMany('App\Models\Subgroups\Subgroup')
-                ->orderBy('orderN')
-                ->get();
+      ->orderBy('orderN')
+      ->get();
   }
 
   /**
-   * @return Collection | UsersMemberOfGroups[] | null
+   * @return Collection<UsersMemberOfGroups> | UsersMemberOfGroups[] | null
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
-                ->get();
+      ->get();
   }
 
   /**
@@ -73,6 +73,7 @@ class Group extends Model
     usort($rUsers, function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
+
     return $rUsers;
   }
 
@@ -81,13 +82,22 @@ class Group extends Model
    */
   public function getUsersOrderedBySurname() {
     $usersMemberOfGroups = $this->usersMemberOfGroups();
-    $users = array();
+    $users = [];
     foreach ($usersMemberOfGroups as $usersMemberOfGroup) {
       $users[] = $usersMemberOfGroup->user();
     }
     usort($users, function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
+
     return $users;
+  }
+
+  /**
+   * @return Collection | EventForGroup[] | null
+   */
+  public function eventsForGroups() {
+    return $this->hasMany(EventForGroup::class)
+      ->get();
   }
 }

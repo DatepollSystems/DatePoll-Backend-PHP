@@ -10,7 +10,7 @@ use stdClass;
 interface IBroadcastRepository {
 
   /**
-   * @return Broadcast[]|Collection
+   * @return Broadcast[]|Collection<Broadcast>
    */
   public function getAllBroadcastsOrderedByDate();
 
@@ -49,8 +49,16 @@ interface IBroadcastRepository {
    * @param array $attachments
    * @return Broadcast | null
    */
-  public function create(string $subject, string $bodyHTML, string $body, int $writerId, array $groups, array $subgroups,
-                         bool $forEveryone, array $attachments);
+  public function create(
+    string $subject,
+    string $bodyHTML,
+    string $body,
+    int $writerId,
+    array $groups,
+    array $subgroups,
+    bool $forEveryone,
+    array $attachments
+  );
 
   /**
    * @param Broadcast $broadcast
@@ -78,5 +86,4 @@ interface IBroadcastRepository {
    * @return bool
    */
   public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId);
-
 }

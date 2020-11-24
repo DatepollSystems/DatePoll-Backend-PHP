@@ -6,11 +6,9 @@ use App\Models\Events\Event;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class NewEvent extends ADatePollMailable
-{
+class NewEvent extends ADatePollMailable {
   use Queueable, SerializesModels;
 
   public string $name;
@@ -28,8 +26,7 @@ class NewEvent extends ADatePollMailable
    * @param IEventDateRepository $eventDateRepository
    * @param ISettingRepository $settingRepository
    */
-  public function __construct($name, Event $event, IEventDateRepository $eventDateRepository, ISettingRepository $settingRepository)
-  {
+  public function __construct($name, Event $event, IEventDateRepository $eventDateRepository, ISettingRepository $settingRepository) {
     parent::__construct('newEvent');
 
     $this->DatePollAddress = $settingRepository->getUrl();
@@ -45,8 +42,7 @@ class NewEvent extends ADatePollMailable
    *
    * @return $this
    */
-  public function build()
-  {
+  public function build() {
     return $this
       ->subject('» Neues Event erstellt')
       ->view('emails.newEvent.newEvent')

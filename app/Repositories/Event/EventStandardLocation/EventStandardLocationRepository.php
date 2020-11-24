@@ -1,19 +1,17 @@
 <?php
 
-
 namespace App\Repositories\Event\EventStandardLocation;
 
 use App\Models\Events\EventStandardLocation;
 use Illuminate\Database\Eloquent\Collection;
 
-class EventStandardLocationRepository implements IEventStandardLocationRepository
-{
+class EventStandardLocationRepository implements IEventStandardLocationRepository {
   /**
    * @return Collection<EventStandardLocation>
    */
   public function getAllStandardLocationsOrderedByName() {
     return EventStandardLocation::orderBy('name')
-                                ->get();
+      ->get();
   }
 
   /**
@@ -36,9 +34,9 @@ class EventStandardLocationRepository implements IEventStandardLocationRepositor
       'name' => $name,
       'location' => $location,
       'x' => $x,
-      'y' => $y]);
+      'y' => $y, ]);
 
-    if (!$standardLocation->save()) {
+    if (! $standardLocation->save()) {
       return null;
     }
 

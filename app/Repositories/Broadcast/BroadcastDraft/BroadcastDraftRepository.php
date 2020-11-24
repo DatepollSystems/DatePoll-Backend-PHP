@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Repositories\Broadcast\BroadcastDraft;
 
 use App\Logging;
@@ -10,9 +9,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
-class BroadcastDraftRepository implements IBroadcastDraftRepository
-{
-
+class BroadcastDraftRepository implements IBroadcastDraftRepository {
   protected $userRepository = null;
 
   public function __construct(IUserRepository $userRepository) {
@@ -24,7 +21,7 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository
    */
   public function getAllBroadcastDraftsOrderedByDate() {
     return BroadcastDraft::orderBy('updated_at', 'DESC')
-                         ->get();
+      ->get();
   }
 
   /**
@@ -61,27 +58,33 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository
    * @param BroadcastDraft|null $draft
    * @return BroadcastDraft | null
    */
-  public function createOrUpdate(string $subject, string $bodyHTML, string $body, int $writerId,
-                                 BroadcastDraft $draft = null) {
+  public function createOrUpdate(
+    string $subject,
+    string $bodyHTML,
+    string $body,
+    int $writerId,
+    BroadcastDraft $draft = null
+  ) {
     if ($draft == null) {
       $draft = new BroadcastDraft([
         'subject' => $subject,
         'bodyHTML' => $bodyHTML,
         'body' => $body,
-        'writer_user_id' => $writerId]);
+        'writer_user_id' => $writerId, ]);
     } else {
       $draft->subject = $subject;
       $draft->bodyHTML = $bodyHTML;
       $draft->body = $body;
     }
 
-    if (!$draft->save()) {
+    if (! $draft->save()) {
       Logging::error('createOrUpdateBroadcastDraft', 'Draft failed to create or update! User id - ' . $writerId);
+
       return null;
     }
+
     return $draft;
   }
-
 
   /**
    * @param BroadcastDraft $draft

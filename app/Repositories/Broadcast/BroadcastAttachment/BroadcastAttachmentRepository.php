@@ -4,6 +4,7 @@ namespace App\Repositories\Broadcast\BroadcastAttachment;
 
 use App\Models\Broadcasts\BroadcastAttachment;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
@@ -18,7 +19,7 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
 
   /**
    * @param int $broadcastId
-   * @return BroadcastAttachment[]
+   * @return BroadcastAttachment[]|Collection<BroadcastAttachment>
    */
   public function getAttachmentsByBroadcastId(int $broadcastId) {
     return BroadcastAttachment::where('broadcast_id', '=', $broadcastId)->get();
@@ -39,6 +40,7 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
    */
   public function deleteAttachment(BroadcastAttachment $attachment) {
     Storage::delete($attachment->path);
+
     return $attachment->delete();
   }
 
@@ -55,10 +57,11 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
       }
 
       if (BroadcastAttachment::where('token', $randomToken)
-          ->first() == null) {
+        ->first() == null) {
         break;
       }
     }
+
     return $randomToken;
   }
 }

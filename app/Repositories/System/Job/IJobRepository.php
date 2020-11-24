@@ -2,12 +2,9 @@
 
 namespace App\Repositories\System\Job;
 
-use App\Models\System\Log;
-use Exception;
 use Illuminate\Support\Collection;
 
-interface IJobRepository
-{
+interface IJobRepository {
   /**
    * @return Collection
    */
