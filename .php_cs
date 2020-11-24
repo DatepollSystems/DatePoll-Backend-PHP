@@ -7,7 +7,8 @@ $finder = Finder::create()
     ->in(__DIR__)
     ->name('*.php')
     ->ignoreDotFiles(true)
-    ->ignoreVCS(true);
+    ->ignoreVCS(true)
+    ->exclude(['vendor', 'storage']);
 
 return Config::create()
     ->setRules([
