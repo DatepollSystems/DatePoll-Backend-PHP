@@ -5,23 +5,7 @@ cache:
     - vendor/
 
 before_script:
-  - apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    default-mysql-client \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libmagickwand-dev \
-    libzip-dev \
-    libonig-dev \
-    libc-client-dev \
-    libkrb5-dev \
-    locales \
-    zip \
-    unzip \
-    git \
-    supervisor \
-    jpegoptim optipng pngquant gifsicle
+  - apt-get update && apt-get install -y --no-install-recommends build-essential default-mysql-client libpng-dev libjpeg62-turbo-dev libfreetype6-dev libmagickwand-dev libzip-dev libonig-dev libc-client-dev libkrb5-dev locales zip unzip git supervisor jpegoptim optipng pngquant gifsicle
   - docker-php-ext-install pdo_mysql pcntl opcache > /dev/null
   - docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap > /dev/null
   - wget https://composer.github.io/installer.sig -O - -q | tr -d '\n' > installer.sig
