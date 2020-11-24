@@ -3,9 +3,6 @@
 use Illuminate\Console\Command;
 
 class ACommand extends Command {
-  public function tets() {
-    echo 'test';
-  }
   /**
    * @param string $question
    * @param string|null $default
