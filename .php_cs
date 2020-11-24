@@ -1,4 +1,4 @@
-<?php // file ".php_cs"
+<?php
 
 use PhpCsFixer\Config;
 use Symfony\Component\Finder\Finder;
@@ -8,7 +8,7 @@ $finder = Finder::create()
     ->name('*.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true)
-    ->exclude(['vendor', 'storage']);
+    ->exclude(['vendor', 'storage', 'resources', 'node_modules', '']);
 
 return Config::create()
     ->setRules([
