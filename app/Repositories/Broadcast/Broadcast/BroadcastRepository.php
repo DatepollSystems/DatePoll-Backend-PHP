@@ -169,7 +169,7 @@ class BroadcastRepository implements IBroadcastRepository {
       'bodyHTML' => $bodyHTML,
       'body' => $body,
       'writer_user_id' => $writerId,
-      'forEveryone' => $forEveryone, ]);
+      'forEveryone' => $forEveryone,]);
 
     if (! $broadcast->save()) {
       Logging::error('createBroadcast', 'Broadcast failed to create! User id - ' . $writerId);
@@ -199,7 +199,7 @@ class BroadcastRepository implements IBroadcastRepository {
 
         $broadcastForGroup = new BroadcastForGroup([
           'broadcast_id' => $broadcast->id,
-          'group_id' => $groupId, ]);
+          'group_id' => $groupId,]);
         if (! $broadcastForGroup->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastForGroup');
           $broadcast->delete();
@@ -229,7 +229,7 @@ class BroadcastRepository implements IBroadcastRepository {
 
         $broadcastForSubgroup = new BroadcastForSubgroup([
           'broadcast_id' => $broadcast->id,
-          'subgroup_id' => $subgroupId, ]);
+          'subgroup_id' => $subgroupId,]);
         if (! $broadcastForSubgroup->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastForSubgroup');
           $broadcast->delete();
@@ -254,7 +254,7 @@ class BroadcastRepository implements IBroadcastRepository {
     $mAttachments = '';
     $happened = false;
     foreach ($attachments as $attachmentId) {
-      $attachment = $this->broadcastAttachmentRepository->getAttachmentById((int) $attachmentId);
+      $attachment = $this->broadcastAttachmentRepository->getAttachmentById((int)$attachmentId);
 
       if ($attachment == null) {
         Logging::error(
@@ -265,6 +265,16 @@ class BroadcastRepository implements IBroadcastRepository {
 
         return null;
       }
+      if ($attachment->broadcast_id != null) {
+        Logging::error(
+          'createBroadcast',
+          'Broadcast failed to create! Attachment already used. attachment_id - ' . $attachmentId . ' User id - ' . $writerId . ' Broadcast id - ' . $attachment->broadcast_id
+        );
+        $broadcast->delete();
+
+        return null;
+      }
+
       $happened = true;
 
       $attachment->broadcast_id = $broadcast->id;
@@ -288,7 +298,7 @@ class BroadcastRepository implements IBroadcastRepository {
         $broadcastUserInfo = new BroadcastUserInfo([
           'broadcast_id' => $broadcast->id,
           'user_id' => $user->id,
-          'sent' => false, ]);
+          'sent' => false,]);
         if (! $broadcastUserInfo->save()) {
           Logging::error('createBroadcast', 'Broadcast failed to create! - BroadcastUserInfo | User id - ' . $user->id);
           $broadcast->delete();

@@ -1,6 +1,4 @@
-<?php /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-
-/** @noinspection PhpRedundantCatchClauseInspection */
+<?php /** @noinspection PhpPossiblePolymorphicInvocationInspection PhpRedundantCatchClauseInspection */
 
 namespace App\Console\Commands;
 
@@ -9,26 +7,31 @@ use App\Logging;
 use App\Mail\BroadcastInvalidSubject;
 use App\Mail\BroadcastPermissionDenied;
 use App\Mail\BroadcastUnknownReceiver;
+use App\Models\Broadcasts\BroadcastAttachment;
 use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
+use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
 
 class ProcessBroadcastEmailsInInbox extends Command {
   private IBroadcastRepository $broadcastRepository;
+  private IBroadcastAttachmentRepository $broadcastAttachmentRepository;
   private IGroupRepository $groupRepository;
 
   protected $signature = 'process-inbox-broadcast-mails';
   protected $description = 'Processes all emails!';
 
-  public function __construct(IBroadcastRepository $broadcastRepository, IGroupRepository $groupRepository) {
+  public function __construct(IBroadcastRepository $broadcastRepository, IGroupRepository $groupRepository, IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
     parent::__construct();
 
     $this->broadcastRepository = $broadcastRepository;
+    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
     $this->groupRepository = $groupRepository;
   }
 
@@ -82,6 +85,21 @@ class ProcessBroadcastEmailsInInbox extends Command {
             $textHtml = $mail->textHtml;
           }
 
+          $attachmentIds = [];
+          foreach ($mail->getAttachments() as $attachment) {
+            $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
+            $path = 'files/' . $token . '.' . $attachment->fileExtension;
+            $attachmentModel = new BroadcastAttachment(['path' => $path, 'name' => $attachment->name, 'token' => $token]);
+            if (! Storage::put($path, $attachment->getContents()) || ! $attachmentModel->save()) {
+              Logging::error('processBroadcastEmails', 'Could not save attachment!');
+              $this->deleteMail($mailbox, $mailId);
+
+              return;
+            }
+
+            $attachmentIds[] = $attachmentModel->id;
+          }
+
           if ($this->containsSendToAllKeyword($subject)) {
             Logging::info(
               'processBroadcastEmails',
@@ -96,45 +114,23 @@ class ProcessBroadcastEmailsInInbox extends Command {
               [],
               [],
               true,
-              []
+              $attachmentIds
             );
           } else {
-            $groupsIds = [];
-            $receiverStrings = explode(',', $this->getReceiverString($subject));
-
-            foreach ($receiverStrings as $receiverGroupName) {
-              $foundSomething = false;
-              foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
-                if (strtolower(trim($group->name)) == strtolower(trim($receiverGroupName))) {
-                  Logging::info('processBroadcastEmails', 'Receiver found: ' . $group->name);
-                  $groupsIds[] = $group->id;
-                  $foundSomething = true;
-                }
-              }
-
-              if (! $foundSomething) {
-                Logging::info('processBroadcastEmails', 'Unknown receiver specified in subject: ' . $receiverGroupName);
-                dispatch(new SendEmailJob(
-                  new BroadcastUnknownReceiver($receiverGroupName),
-                  [$mail->fromAddress]
-                ))->onQueue('high');
-                $this->deleteMail($mailbox, $mailId);
-
-                return;
-              }
+            $groupsIds = $this->getGroupIdsOfSubject($subject, $mail->fromAddress);
+            if ($groupsIds != null) {
+              Logging::info('processBroadcastEmails', 'Creating broadcast...');
+              $this->broadcastRepository->create(
+                $subject,
+                $textHtml,
+                $mail->textPlain,
+                $userHasPermissionToSendBroadcasts->user_id,
+                $groupsIds,
+                [],
+                false,
+                $attachmentIds
+              );
             }
-
-            Logging::info('processBroadcastEmails', 'Creating broadcast...');
-            $this->broadcastRepository->create(
-              $subject,
-              $textHtml,
-              $mail->textPlain,
-              $userHasPermissionToSendBroadcasts->user_id,
-              $groupsIds,
-              [],
-              false,
-              []
-            );
           }
         } else {
           dispatch(new SendEmailJob(new BroadcastInvalidSubject(), [$mail->fromAddress]))->onQueue('high');
@@ -150,6 +146,34 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
   private function deleteMail(Mailbox $mailbox, int $mailId) {
     $mailbox->deleteMail($mailId);
+  }
+
+  private function getGroupIdsOfSubject(string $subject, string $fromAddress): ?array {
+    $groupsIds = [];
+    $receiverStrings = explode(',', $this->getReceiverString($subject));
+
+    foreach ($receiverStrings as $receiverGroupName) {
+      $foundSomething = false;
+      foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
+        if (strtolower(trim($group->name)) == strtolower(trim($receiverGroupName))) {
+          Logging::info('processBroadcastEmails', 'Receiver found: ' . $group->name);
+          $groupsIds[] = $group->id;
+          $foundSomething = true;
+        }
+      }
+
+      if (! $foundSomething) {
+        Logging::info('processBroadcastEmails', 'Unknown receiver specified in subject: ' . $receiverGroupName);
+        dispatch(new SendEmailJob(
+          new BroadcastUnknownReceiver($receiverGroupName),
+          [$fromAddress]
+        ))->onQueue('high');
+
+        return null;
+      }
+    }
+
+    return $groupsIds;
   }
 
   private function containsSendToAllKeyword(string $subject): bool {

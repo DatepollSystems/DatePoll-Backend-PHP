@@ -45,6 +45,22 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
   }
 
   /**
+   * @param int $olderThanDay = 1
+   * @return BroadcastAttachment[]
+   */
+  public function getAttachmentsOlderThanDayWithoutBroadcastId(int $olderThanDay = 1): array {
+    $rAttachments = [];
+    $attachments = BroadcastAttachment::where('broadcast_id', '=', null)->get();
+    foreach ($attachments as $attachment) {
+      if (strtotime('-' . $olderThanDay . ' day') < strtotime($attachment->created_at)) {
+        $rAttachments[] = $attachment;
+      }
+    }
+
+    return $rAttachments;
+  }
+
+  /**
    * @return string
    */
   public function getUniqueRandomBroadcastAttachmentToken(): string {

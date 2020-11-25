@@ -34,6 +34,12 @@ interface IBroadcastAttachmentRepository {
   public function deleteAttachment(BroadcastAttachment $attachment);
 
   /**
+   * @param int $olderThanDay = 1
+   * @return BroadcastAttachment[]
+   */
+  public function getAttachmentsOlderThanDayWithoutBroadcastId(int $olderThanDay = 1): array;
+
+  /**
    * @return string
    */
   public function getUniqueRandomBroadcastAttachmentToken(): string;

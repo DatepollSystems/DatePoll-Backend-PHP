@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Console\Commands\AddAdminUser;
+use App\Console\Commands\DeleteUnusedBroadcastAttachments;
 use App\Console\Commands\DropDatabase;
 use App\Console\Commands\ProcessBroadcastEmailsInInbox;
 use App\Console\Commands\ReQueueNotSentBroadcasts;
@@ -24,6 +25,7 @@ class Kernel extends ConsoleKernel {
     UpdateDatePollDB::class,
     ReQueueNotSentBroadcasts::class,
     ProcessBroadcastEmailsInInbox::class,
+    DeleteUnusedBroadcastAttachments::class,
   ];
 
   /**
@@ -34,5 +36,6 @@ class Kernel extends ConsoleKernel {
    */
   protected function schedule(Schedule $schedule) {
     $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyMinute();
+    $schedule->command(DeleteUnusedBroadcastAttachments::class, ['--force'])->daily();
   }
 }
