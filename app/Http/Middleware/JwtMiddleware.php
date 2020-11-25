@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\AuthenticatedRequest;
 use App\Models\User\User;
 use Closure;
 use Exception;
@@ -35,6 +36,9 @@ class JwtMiddleware {
     // Put the user into the request
     $request->auth = $user;
 
-    return $next($request);
+    $authenticatedRequest = new AuthenticatedRequest($request);
+    $authenticatedRequest->auth = $user;
+
+    return $next($authenticatedRequest);
   }
 }

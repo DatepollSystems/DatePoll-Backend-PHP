@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\UserControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller {
@@ -19,10 +19,10 @@ class UserController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getMyself(Request $request) {
+  public function getMyself(AuthenticatedRequest $request) {
     $user = $request->auth;
 
     return response()->json([
@@ -31,11 +31,11 @@ class UserController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function updateMyself(Request $request) {
+  public function updateMyself(AuthenticatedRequest $request) {
     $this->validate($request, [
       'title' => 'max:190',
       'streetname' => 'required|max:190|min:1',
@@ -80,10 +80,10 @@ class UserController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function homepage(Request $request) {
+  public function homepage(AuthenticatedRequest $request) {
     $user = $request->auth;
 
     $response = $this->userRepository->getHomepageDataForUser($user);

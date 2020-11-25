@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingParentConstructorInspection */
 
 namespace App\Http;
 
@@ -12,4 +12,10 @@ use Illuminate\Http\Request;
  */
 class AuthenticatedRequest extends Request {
   public User $auth;
+
+  public function __construct(Request $request) {
+    foreach ($request as $property => $value) {
+      $this->$property = $value;
+    }
+  }
 }

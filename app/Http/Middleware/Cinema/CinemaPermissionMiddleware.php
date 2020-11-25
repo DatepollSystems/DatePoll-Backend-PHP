@@ -2,17 +2,17 @@
 
 namespace App\Http\Middleware\Cinema;
 
+use App\Http\AuthenticatedRequest;
 use App\Permissions;
 use Closure;
-use Illuminate\Http\Request;
 
 class CinemaPermissionMiddleware {
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param Closure $next
    * @return mixed
    */
-  public function handle(Request $request, Closure $next) {
+  public function handle(AuthenticatedRequest $request, Closure $next) {
     $user = $request->auth;
     if (! ($user->hasPermission(Permissions::$CINEMA_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
       return response()->json([
