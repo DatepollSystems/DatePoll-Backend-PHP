@@ -8,8 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class InstrumentController extends Controller
-{
+class InstrumentController extends Controller {
 
   /**
    * Display a listing of the resource.
@@ -41,7 +40,7 @@ class InstrumentController extends Controller
     }
 
     $instrument = new Instrument(['name' => $name]);
-    if (!$instrument->save()) {
+    if (! $instrument->save()) {
       return response()->json(['msg' => 'An error occurred during instrument saving..'], 500);
     }
 
@@ -56,7 +55,7 @@ class InstrumentController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $instrument = Instrument::find($id);
 
     if ($instrument == null) {
@@ -64,6 +63,7 @@ class InstrumentController extends Controller
     }
 
     $response = ['msg' => 'Instrument information', 'instrument' => $instrument];
+
     return response()->json($response);
   }
 
@@ -75,7 +75,7 @@ class InstrumentController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, $id) {
+  public function update(Request $request, int $id) {
     $this->validate($request, ['name' => 'required|max:190|min:1',]);
 
     $instrument = Instrument::find($id);
@@ -87,7 +87,7 @@ class InstrumentController extends Controller
 
     $instrument->name = $name;
 
-    if (!$instrument->save()) {
+    if (! $instrument->save()) {
       return response()->json(['msg' => 'An error occurred during instrument saving..'], 500);
     }
 
@@ -102,13 +102,13 @@ class InstrumentController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function delete($id) {
+  public function delete(int $id) {
     $instrument = Instrument::find($id);
     if ($instrument == null) {
       return response()->json(['msg' => 'Instrument not found'], 404);
     }
 
-    if (!$instrument->delete()) {
+    if (! $instrument->delete()) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 

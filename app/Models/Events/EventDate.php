@@ -17,8 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  * @property Event $event
  */
-class EventDate extends Model
-{
+class EventDate extends Model {
   /**
    * The table associated with the model.
    *
@@ -37,13 +36,13 @@ class EventDate extends Model
     'x',
     'y',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Event
    */
   public function getEvent() {
     return $this->belongsTo('App\Models\Events\Event', 'event_id')
-                ->first();
+      ->first();
   }
 }

@@ -17,8 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Event $event
  * @property EventUserVotedForDecision[] $eventsUsersVotedFor
  */
-class EventDecision extends Model
-{
+class EventDecision extends Model {
   /**
    * The table associated with the model.
    *
@@ -35,7 +34,7 @@ class EventDecision extends Model
     'showInCalendar',
     'color',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Event | null

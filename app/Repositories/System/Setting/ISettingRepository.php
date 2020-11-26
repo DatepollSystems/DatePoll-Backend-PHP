@@ -2,10 +2,9 @@
 
 namespace App\Repositories\System\Setting;
 
-use App\Models\System\Setting;
+use stdClass;
 
-interface ISettingRepository
-{
+interface ISettingRepository {
   /**
    * @return bool
    */
@@ -38,6 +37,17 @@ interface ISettingRepository
    * @return bool
    */
   public function setBroadcastsEnabled(bool $isEnabled): bool;
+
+  /**
+   * @return bool
+   */
+  public function getSeatReservationEnabled(): bool;
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setSeatReservationEnabled(bool $isEnabled): bool;
 
   /**
    * @return string
@@ -133,15 +143,16 @@ interface ISettingRepository
   public function setCinemaOpenWeatherMapCityId(string $openWeatherMapCityId): string;
 
   /**
-   * @return string
+   * @return stdClass
    */
-  public function getHappyAlert(): string;
+  public function getAlert(): stdClass;
 
   /**
-   * @param string $happyAlert
-   * @return string
+   * @param string $alertMessage
+   * @param string $communityAlertType
+   * @return stdClass
    */
-  public function setHappyAlert(string $happyAlert): string;
+  public function setAlert(string $alertMessage, string $communityAlertType): stdClass;
 
   /**
    * @return int

@@ -7,9 +7,7 @@ use App\Models\Cinema\MoviesBooking;
 use Tests\Factories\MovieFactory;
 use Tests\Factories\UserFactory;
 
-class MovieBookingTest extends TestCase
-{
-
+class MovieBookingTest extends TestCase {
   private function clearMovieBookingsTesting() {
     MovieFactory::findAndDeleteMovieYear(1234);
     MovieFactory::findAndDeleteMovie('TestMovie');
@@ -30,7 +28,7 @@ class MovieBookingTest extends TestCase
     $movieBooking = new MoviesBooking([
       'user_id' => $user->id,
       'movie_id' => $movie->id,
-      'amount' => 12]);
+      'amount' => 12, ]);
     $movieBooking->save();
 
     $this->assertSame(1, count($movie->moviesBookings()));
@@ -41,8 +39,8 @@ class MovieBookingTest extends TestCase
     $user = UserFactory::findUserByUsername('test.user');
 
     $movieBooking = MoviesBooking::where('user_id', $user->id)
-                                 ->where('movie_id', $movie->id)
-                                 ->first();
+      ->where('movie_id', $movie->id)
+      ->first();
     $this->assertTrue($movieBooking->delete());
   }
 

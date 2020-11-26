@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Repositories\Event\Event;
 
 use App\Jobs\CreateNewEventEmailsJob;
@@ -20,19 +19,20 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Queue;
 use stdClass;
 
-class EventRepository implements IEventRepository
-{
-
+class EventRepository implements IEventRepository {
   protected IEventDateRepository $eventDateRepository;
   protected IEventDecisionRepository $eventDecisionRepository;
   protected IUserSettingRepository $userSettingRepository;
   protected ISettingRepository $settingRepository;
   protected IGroupRepository $groupRepository;
 
-  public function __construct(IEventDateRepository $eventDateRepository,
-                              IEventDecisionRepository $eventDecisionRepository,
-                              IUserSettingRepository $userSettingRepository, ISettingRepository $settingRepository,
-                              IGroupRepository $groupRepository) {
+  public function __construct(
+    IEventDateRepository $eventDateRepository,
+    IEventDecisionRepository $eventDecisionRepository,
+    IUserSettingRepository $userSettingRepository,
+    ISettingRepository $settingRepository,
+    IGroupRepository $groupRepository
+  ) {
     $this->eventDateRepository = $eventDateRepository;
     $this->eventDecisionRepository = $eventDecisionRepository;
     $this->userSettingRepository = $userSettingRepository;
@@ -48,49 +48,47 @@ class EventRepository implements IEventRepository
   }
 
   /**
-   * @return Event[]
+   * @return string[]
    */
-  public function getAllEventsOrderedByDate() {
-    $events = $this->getAllEvents();
-    $dates = array();
-    foreach ($events as $event) {
-      foreach ($this->eventDateRepository->getEventDatesOrderedByDateForEvent($event) as $date) {
-        $dates[] = $date;
+  public function getYearsOfEvents() {
+    $years = [];
+    foreach ($this->getAllEvents() as $event) {
+      $date = date('Y', strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date));
+      if (! in_array($date, $years)) {
+        $years[] = $date;
       }
     }
-
-    usort($dates, function ($a, $b) {
-      return strcmp($a->date, $b->date);
+    usort($years, function ($a, $b) {
+      return strcmp($a, $b);
     });
 
-    $returnEvents = array();
-    foreach ($dates as $date) {
-      $add = true;
-      foreach ($returnEvents as $returnEvent) {
-        if ($date->getEvent()->id == $returnEvent->id) {
-          $add = false;
-          break;
-        }
-      }
-      if ($add) {
-        $returnEvents[] = $date->getEvent();
-      }
-    }
-    foreach ($events as $event) {
-      $toAdd = true;
-      foreach ($returnEvents as $returnEvent) {
-        if ($event->id == $returnEvent->id) {
-          $toAdd = false;
-          break;
-        }
-      }
+    return $years;
+  }
 
-      if ($toAdd) {
-        $returnEvents[] = $event;
+  /**
+   * @param int|null $year
+   * @return Event[]
+   */
+  public function getEventsOrderedByDate(int $year = null) {
+    $events = [];
+    foreach ($this->getAllEvents() as $event) {
+      if ($year == null) {
+        $events[] = $event;
+      } else {
+        if (date('Y', strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date)) == (string)$year) {
+          $events[] = $event;
+        }
       }
     }
 
-    return $returnEvents;
+    usort($events, function ($a, $b) {
+      return strcmp(
+        $this->eventDateRepository->getFirstEventDateForEvent($b)->date,
+        $this->eventDateRepository->getFirstEventDateForEvent($a)->date
+      );
+    });
+
+    return $events;
   }
 
   /**
@@ -111,8 +109,14 @@ class EventRepository implements IEventRepository
    * @return Event|null
    * @throws Exception
    */
-  public function createOrUpdateEvent(string $name, bool $forEveryone, string $description, array $decisions, array $dates,
-                                      Event $event = null) {
+  public function createOrUpdateEvent(
+    string $name,
+    bool $forEveryone,
+    string $description,
+    array $decisions,
+    array $dates,
+    Event $event = null
+  ) {
     $creating = false;
     if ($event == null) {
       $creating = true;
@@ -120,10 +124,11 @@ class EventRepository implements IEventRepository
       $event = new Event([
         'name' => $name,
         'forEveryone' => $forEveryone,
-        'description' => $description]);
+        'description' => $description, ]);
 
-      if (!$event->save()) {
+      if (! $event->save()) {
         Logging::error('createOrUpdateEvent', 'Could not create (save) event');
+
         return null;
       }
     } else {
@@ -131,14 +136,15 @@ class EventRepository implements IEventRepository
       $event->forEveryone = $forEveryone;
       $event->description = $description;
 
-      if (!$event->save()) {
+      if (! $event->save()) {
         Logging::error('createOrUpdateEvent', 'Could not update (save) event');
+
         return null;
       }
     }
 
     //-------------------------------- Only delete changed decisions --------------------------------------
-    $decisionsWhichHaveNotBeenDeleted = array();
+    $decisionsWhichHaveNotBeenDeleted = [];
 
     $oldDecisions = $event->eventsDecisions();
     foreach ($oldDecisions as $oldDecision) {
@@ -154,8 +160,9 @@ class EventRepository implements IEventRepository
       }
 
       if ($toDelete) {
-        if (!$this->eventDecisionRepository->deleteEventDecision($oldDecision)) {
+        if (! $this->eventDecisionRepository->deleteEventDecision($oldDecision)) {
           Logging::error('createOrUpdateEvent', 'Could not delete old event decision');
+
           return null;
         }
       }
@@ -172,15 +179,22 @@ class EventRepository implements IEventRepository
         }
       }
 
-      if ($this->eventDecisionRepository->createOrUpdateEventDecision($event, $decisionObject->decision, $decisionObject->show_in_calendar, $decisionObject->color, $decisionInDatabaseObject) == null) {
+      if ($this->eventDecisionRepository->createOrUpdateEventDecision(
+        $event,
+        $decisionObject->decision,
+        $decisionObject->show_in_calendar,
+        $decisionObject->color,
+        $decisionInDatabaseObject
+      ) == null) {
         $this->deleteEvent($event);
         Logging::error('createOrUpdateEvent', 'Could not add or update event decision');
+
         return null;
       }
     }
 
     //-------------------------------- Only delete changed dates --------------------------------------
-    $datesWhichHaveNotBeenDeleted = array();
+    $datesWhichHaveNotBeenDeleted = [];
     $oldDates = $event->getEventDates();
     foreach ($oldDates as $oldDate) {
       $toDelete = true;
@@ -195,8 +209,9 @@ class EventRepository implements IEventRepository
       }
 
       if ($toDelete) {
-        if (!$this->eventDateRepository->deleteEventDate($oldDate)) {
+        if (! $this->eventDateRepository->deleteEventDate($oldDate)) {
           Logging::error('createOrUpdateEvent', 'Could not delete old event date');
+
           return null;
         }
       }
@@ -214,9 +229,17 @@ class EventRepository implements IEventRepository
       }
 
       if ($toAdd) {
-        if ($this->eventDateRepository->createEventDate($event, $dateObject->x, $dateObject->y, $dateObject->date, $dateObject->location, $dateObject->description) == null) {
+        if ($this->eventDateRepository->createEventDate(
+          $event,
+          $dateObject->x,
+          $dateObject->y,
+          $dateObject->date,
+          $dateObject->location,
+          $dateObject->description
+        ) == null) {
           $this->deleteEvent($event);
           Logging::error('createOrUpdateEvent', 'Could not add new event date');
+
           return null;
         }
       }
@@ -228,7 +251,18 @@ class EventRepository implements IEventRepository
     if ($creating) {
       $time = new DateTime();
       $time->add(new DateInterval('PT' . 1 . 'M'));
-      Queue::later($time, new CreateNewEventEmailsJob($event, $this, $this->eventDateRepository, $this->userSettingRepository, $this->settingRepository), null, "high");
+      Queue::later(
+        $time,
+        new CreateNewEventEmailsJob(
+          $event,
+          $this,
+          $this->eventDateRepository,
+          $this->userSettingRepository,
+          $this->settingRepository
+        ),
+        null,
+        'high'
+      );
     }
 
     return $event;
@@ -240,8 +274,9 @@ class EventRepository implements IEventRepository
    * @throws Exception
    */
   public function deleteEvent(Event $event) {
-    if (!$event->delete()) {
+    if (! $event->delete()) {
       Logging::error('deleteEvent', 'Could not delete event');
+
       return false;
     } else {
       return true;
@@ -273,7 +308,7 @@ class EventRepository implements IEventRepository
     }
     $returnable->for_everyone = $event->forEveryone;
 
-    $decisions = array();
+    $decisions = [];
     foreach ($event->eventsDecisions() as $eventsDecision) {
       $decision = new stdClass();
       $decision->id = $eventsDecision->id;
@@ -286,7 +321,7 @@ class EventRepository implements IEventRepository
     }
     $returnable->decisions = $decisions;
 
-    $dates = array();
+    $dates = [];
     foreach ($this->eventDateRepository->getEventDatesOrderedByDateForEvent($event) as $eventDate) {
       $date = new stdClass();
       $date->id = $eventDate->id;
@@ -300,7 +335,6 @@ class EventRepository implements IEventRepository
     }
     $returnable->dates = $dates;
 
-
     return $returnable;
   }
 
@@ -313,7 +347,7 @@ class EventRepository implements IEventRepository
     $results = new stdClass();
 
     if ($event->forEveryone) {
-      $groups = array();
+      $groups = [];
 
       foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
         $groupToSave = new stdClass();
@@ -321,20 +355,24 @@ class EventRepository implements IEventRepository
         $groupToSave->id = $group->id;
         $groupToSave->name = $group->name;
 
-        $groupResultUsers = array();
+        $groupResultUsers = [];
         foreach ($group->getUsersOrderedBySurname() as $userMemberOfGroup) {
-          $groupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($userMemberOfGroup, $event, $anonymous);
+          $groupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser(
+            $userMemberOfGroup,
+            $event,
+            $anonymous
+          );
         }
         $groupToSave->users = $groupResultUsers;
 
-        $subgroups = array();
+        $subgroups = [];
         foreach ($group->getSubgroupsOrdered() as $subgroup) {
           $subgroupToSave = new stdClass();
 
           $subgroupToSave->id = $subgroup->id;
           $subgroupToSave->name = $subgroup->name;
 
-          $subgroupResultUsers = array();
+          $subgroupResultUsers = [];
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $subgroupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
           }
@@ -349,21 +387,21 @@ class EventRepository implements IEventRepository
 
       $results->groups = $groups;
 
-      $allUsers = array();
+      $allUsers = [];
       // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
       // a circular dependency and RAM will explodes
       foreach (User::orderBy('surname')
-                   ->get() as $user) {
+        ->get() as $user) {
         $allUsers[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
       }
 
       $results->allUsers = $allUsers;
     } else {
-      $allUsers = array();
-      $allUserIds = array();
-      $allSubgroups = array();
+      $allUsers = [];
+      $allUserIds = [];
+      $allSubgroups = [];
 
-      $groups = array();
+      $groups = [];
 
       foreach ($event->getGroupsOrdered() as $group) {
         $groupToSave = new stdClass();
@@ -371,18 +409,18 @@ class EventRepository implements IEventRepository
         $groupToSave->id = $group->id;
         $groupToSave->name = $group->name;
 
-        $groupResultUsers = array();
+        $groupResultUsers = [];
         foreach ($group->getUsersOrderedBySurname() as $gUser) {
           $user = $this->eventDecisionRepository->getDecisionForUser($gUser, $event, $anonymous);
           $groupResultUsers[] = $user;
-          if (!in_array($gUser->id, $allUserIds)) {
+          if (! in_array($gUser->id, $allUserIds)) {
             $allUsers[] = $user;
             $allUserIds[] = $gUser->id;
           }
         }
         $groupToSave->users = $groupResultUsers;
 
-        $subgroups = array();
+        $subgroups = [];
         foreach ($group->getSubgroupsOrdered() as $subgroup) {
           $subgroupToSave = new stdClass();
 
@@ -391,11 +429,11 @@ class EventRepository implements IEventRepository
           $subgroupToSave->parent_group_name = $subgroup->group()->name;
           $subgroupToSave->parent_group_id = $subgroup->group_id;
 
-          $subgroupResultUsers = array();
+          $subgroupResultUsers = [];
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
             $subgroupResultUsers[] = $user;
-            if (!in_array($sUser->id, $allUserIds)) {
+            if (! in_array($sUser->id, $allUserIds)) {
               $allUsers[] = $user;
               $allUserIds[] = $sUser->id;
             }
@@ -413,10 +451,10 @@ class EventRepository implements IEventRepository
       $unknownGroupToSave = new stdClass();
 
       $unknownGroupToSave->id = -1;
-      $unknownGroupToSave->name = "unknown";
-      $unknownGroupToSave->users = array();
+      $unknownGroupToSave->name = 'unknown';
+      $unknownGroupToSave->users = [];
 
-      $subgroups = array();
+      $subgroups = [];
       foreach ($event->getSubgroupsOrdered() as $subgroup) {
         $subgroupToSave = new stdClass();
 
@@ -425,11 +463,11 @@ class EventRepository implements IEventRepository
         $subgroupToSave->parent_group_name = $subgroup->group()->name;
         $subgroupToSave->parent_group_id = $subgroup->group_id;
 
-        $subgroupResultUsers = array();
+        $subgroupResultUsers = [];
         foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
           $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
           $subgroupResultUsers[] = $user;
-          if (!in_array($sUser->id, $allUserIds)) {
+          if (! in_array($sUser->id, $allUserIds)) {
             $allUsers[] = $user;
             $allUserIds[] = $sUser->id;
           }
@@ -437,7 +475,7 @@ class EventRepository implements IEventRepository
 
         $subgroupToSave->users = $subgroupResultUsers;
 
-        if (!in_array($subgroupToSave, $allSubgroups)) {
+        if (! in_array($subgroupToSave, $allSubgroups)) {
           $subgroups[] = $subgroupToSave;
         }
       }
@@ -449,6 +487,7 @@ class EventRepository implements IEventRepository
       $results->allUsers = $allUsers;
     }
     $results->anonymous = $anonymous;
+
     return $results;
   }
 
@@ -457,53 +496,59 @@ class EventRepository implements IEventRepository
    * @return array
    */
   public function getOpenEventsForUser(User $user) {
-    $events = array();
-    $allEvents = $this->getAllEventsOrderedByDate();
-    foreach ($allEvents as $event) {
-      if (time() <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+    $events = [];
 
-        $in = false;
-
-        if ($event->forEveryone) {
-          $in = true;
-        } else {
-
-          foreach ($event->eventsForGroups() as $eventForGroup) {
-            foreach ($eventForGroup->group()
-                                   ->usersMemberOfGroups() as $userMemberOfGroup) {
-              if ($userMemberOfGroup->user_id == $user->id) {
-                $in = true;
-                break;
-              }
-            }
-          }
-
-          if (!$in) {
-            foreach ($event->eventsForSubgroups() as $eventForSubgroup) {
-              foreach ($eventForSubgroup->subgroup()
-                                        ->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-                if ($userMemberOfSubgroup->user_id == $user->id) {
-                  $in = true;
-                  break;
-                }
-              }
-            }
+    $time = time();
+    foreach (Event::where('forEveryone', '=', true)->get() as $event) {
+      if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+        $events[] = $this->createOpenEventReturnable($event, $user);
+      }
+    }
+    foreach ($user->usersMemberOfGroups() as $userMemberOfGroup) {
+      $group = $userMemberOfGroup->group();
+      foreach ($group->eventsForGroups() as $eventForGroup) {
+        $event = $eventForGroup->event();
+        if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+          $returnableEvent = $this->createOpenEventReturnable($event, $user);
+          if (! in_array($returnableEvent, $events)) {
+            $events[] = $returnableEvent;
           }
         }
-
-        if ($in) {
-          $eventUserVotedFor = $this->eventDecisionRepository->getEventUserVotedForDecisionByEventIdAndUserId($event->id, $user->id);
-          $alreadyVoted = ($eventUserVotedFor != null);
-
-          $eventToReturn = $this->getReturnable($event);
-          $eventToReturn->already_voted = $alreadyVoted;
-          $eventToReturn->user_decision = $this->getUserDecisionReturnable($eventUserVotedFor);
-          $events[] = $eventToReturn;
+      }
+    }
+    foreach ($user->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+      $subgroup = $userMemberOfSubgroup->subgroup();
+      foreach ($subgroup->eventsForSubgroups() as $eventForSubgroup) {
+        $event = $eventForSubgroup->event();
+        if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+          $returnableEvent = $this->createOpenEventReturnable($event, $user);
+          if (! in_array($returnableEvent, $events)) {
+            $events[] = $returnableEvent;
+          }
         }
       }
     }
 
     return $events;
+  }
+
+  /**
+   * @param Event $event
+   * @param User $user
+   * @return stdClass
+   */
+  private function createOpenEventReturnable(Event $event, User $user) {
+    $eventUserVotedFor = $this->eventDecisionRepository->getEventUserVotedForDecisionByEventIdAndUserId(
+      $event->id,
+      $user->id
+    );
+    $alreadyVoted = ($eventUserVotedFor != null);
+
+    $eventToReturn = $this->getReturnable($event);
+    $eventToReturn->already_voted = $alreadyVoted;
+    $eventToReturn->user_decision = $this->getUserDecisionReturnable($eventUserVotedFor);
+
+    return $eventToReturn;
   }
 
   /**

@@ -8,9 +8,7 @@ use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use Firebase\JWT\JWT;
 
-class UserFactory
-{
-
+class UserFactory {
   public static function createUser($username, $administrator = true) {
     $user = new User([
       'title' => 'Dr.',
@@ -26,14 +24,14 @@ class UserFactory
       'activated' => 1,
       'activity' => 'active',
       'bv_member' => 'not',
-      'password' => 'Null']);
+      'password' => 'Null', ]);
     $user->save();
 
     for ($i = 111111; $i < 111115; $i++) {
       $phoneNumberToSave = new UserTelephoneNumber([
         'label' => 'Testnumber',
         'number' => $i,
-        'user_id' => $user->id]);
+        'user_id' => $user->id, ]);
 
       $phoneNumberToSave->save();
     }
@@ -41,7 +39,7 @@ class UserFactory
     for ($i = 0; $i < 3; $i++) {
       $emailAddressToSave = new UserEmailAddress([
         'email' => 'test' . $i . '@testgmail.at',
-        'user_id' => $user->id]);
+        'user_id' => $user->id, ]);
       $emailAddressToSave->save();
     }
 
@@ -60,10 +58,10 @@ class UserFactory
    * @return string
    */
   public static function getJWTTokenForUserId($userID) {
-    $payload = ['iss' => "lumen-jwt",// Issuer of the token
-                'sub' => $userID,// Subject of the token
-                'iat' => time(),// Time when JWT was issued.
-                'exp' => time() + 60 * 60// Expiration time
+    $payload = ['iss' => 'lumen-jwt',// Issuer of the token
+      'sub' => $userID,// Subject of the token
+      'iat' => time(),// Time when JWT was issued.
+      'exp' => time() + 60 * 60,// Expiration time
     ];
 
     // As you can see we are passing `JWT_SECRET` as the second parameter that will

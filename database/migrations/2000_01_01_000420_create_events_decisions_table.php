@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateEventsDecisionsTable extends Migration
-{
+class CreateEventsDecisionsTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('events_decisions', function (Blueprint $table) {
       $table->increments('id');
 
@@ -20,7 +18,8 @@ class CreateEventsDecisionsTable extends Migration
       $table->boolean('showInCalendar')->nullable(false);
       $table->string('color', 7)->nullable(false);
 
-      $table->integer('event_id')->unsigned();;
+      $table->integer('event_id')->unsigned();
+      ;
       $table->foreign('event_id')
         ->references('id')->on('events')
         ->onDelete('cascade');
@@ -34,8 +33,7 @@ class CreateEventsDecisionsTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('events_decisions');
   }
 }

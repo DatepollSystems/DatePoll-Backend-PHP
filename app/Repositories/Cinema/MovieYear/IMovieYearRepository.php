@@ -6,8 +6,7 @@ use App\Models\Cinema\MovieYear;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IMovieYearRepository
-{
+interface IMovieYearRepository {
   /**
    * @param int $id
    * @return MovieYear

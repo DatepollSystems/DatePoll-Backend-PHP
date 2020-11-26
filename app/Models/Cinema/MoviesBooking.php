@@ -16,8 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Movie $movie
  * @property User $user
  */
-class MoviesBooking extends Model
-{
+class MoviesBooking extends Model {
   /**
    * @var array
    */

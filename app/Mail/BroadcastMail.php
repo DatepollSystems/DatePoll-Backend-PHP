@@ -2,13 +2,10 @@
 
 namespace App\Mail;
 
-use App\Models\Broadcasts\BroadcastAttachment;
-use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 
-class BroadcastMail extends ADatePollMailable
-{
+class BroadcastMail extends ADatePollMailable {
   use Queueable, SerializesModels;
 
   public string $mSubject;
@@ -31,7 +28,7 @@ class BroadcastMail extends ADatePollMailable
    * @param string $mAttachments
    */
   public function __construct(string $subject, string $body, string $bodyHTML, string $writerName, string $emailAddress, string $DatePollAddress, string $mAttachments) {
-    parent::__construct('broadcast');
+    parent::__construct('broadcastSending');
 
     $this->DatePollAddress = $DatePollAddress;
     $this->mSubject = $subject;
@@ -43,7 +40,6 @@ class BroadcastMail extends ADatePollMailable
     }
     $this->emailAddress = $emailAddress;
     $this->mAttachments = $mAttachments;
-
   }
 
   /**
@@ -52,10 +48,10 @@ class BroadcastMail extends ADatePollMailable
    * @return $this
    */
   public function build() {
-    return $this->subject('» ' . $this->mSubject)
-                ->from(env('MAIL_FROM_ADDRESS'), $this->writerName)
-                ->replyTo($this->emailAddress, $this->writerName)
-                ->view('emails.broadcast.broadcast')
-                ->text('emails.broadcast.broadcast_plain');
+    return $this->subject($this->mSubject)
+      ->from(env('MAIL_FROM_ADDRESS'), $this->writerName)
+      ->replyTo($this->emailAddress, $this->writerName)
+      ->view('emails.broadcast.broadcast')
+      ->text('emails.broadcast.broadcast_plain');
   }
 }

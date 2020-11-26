@@ -18,9 +18,10 @@ $router->group(['prefix' => 'cinema', 'middleware' => [CinemaFeatureMiddleware::
   $router->get('worker', ['uses' => 'CinemaControllers\MovieWorkerController@getMovies']);
 
   /** Movie administration routes */
-  $router->group([
-    'prefix' => 'administration',
-    'middleware' => [CinemaPermissionMiddleware::class]],
+  $router->group(
+    [
+      'prefix' => 'administration',
+      'middleware' => [CinemaPermissionMiddleware::class], ],
     function () use ($router) {
       /** Movie routes */
       $router->get('movie', ['uses' => 'CinemaControllers\MovieController@getAll']);
@@ -38,5 +39,6 @@ $router->group(['prefix' => 'cinema', 'middleware' => [CinemaFeatureMiddleware::
       $router->get('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@getSingle']);
       $router->put('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@update']);
       $router->delete('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@delete']);
-    });
+    }
+  );
 });

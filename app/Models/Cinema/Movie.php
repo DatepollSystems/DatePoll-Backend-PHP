@@ -12,8 +12,8 @@ use stdClass;
 /**
  * @property int $id
  * @property int $movie_year_id
- * @property int $worker_id
- * @property int $emergency_worker_id
+ * @property int|null $worker_id
+ * @property int|null $emergency_worker_id
  * @property string $name
  * @property string $date
  * @property string $trailerLink
@@ -26,36 +26,35 @@ use stdClass;
  * @property User $worker
  * @property MoviesBooking[] $moviesBookings
  */
-class Movie extends Model
-{
+class Movie extends Model {
   /**
    * @var array
    */
   protected $fillable = ['movie_year_id', 'worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | User | null
    */
   public function emergencyWorker() {
     return $this->belongsTo('App\Models\User\User', 'emergency_worker_id')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo | MovieYear | null
    */
   public function movieYear() {
     return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
   }
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo  | User | null
    */
   public function worker() {
     return $this->belongsTo('App\Models\User\User', 'worker_id')->first();
   }
 
   /**
-   * @return Collection
+   * @return Collection | MoviesBooking[]
    */
   public function moviesBookings() {
     return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
@@ -104,7 +103,7 @@ class Movie extends Model
    */
   public function getAdminReturnable() {
     $returnableMovie = $this->getReturnable();
-    $bookings = array();
+    $bookings = [];
     foreach ($this->moviesBookings() as $moviesBooking) {
       $booking = new stdClass();
       $booking->user_id = $moviesBooking->user()->id;
@@ -114,9 +113,9 @@ class Movie extends Model
       $bookings[] = $booking;
     }
 
-    $usersNotBooked = DB::select("SELECT id, firstname, surname FROM users WHERE users.id 
+    $usersNotBooked = DB::select('SELECT id, firstname, surname FROM users WHERE users.id 
                                                                      NOT IN (SELECT mb.user_id FROM movies_bookings mb 
-                                                                     WHERE mb.movie_id = " . $this->id . ")");
+                                                                     WHERE mb.movie_id = ' . $this->id . ')');
 
     foreach ($usersNotBooked as $user) {
       $booking = new stdClass();
@@ -129,6 +128,7 @@ class Movie extends Model
     }
 
     $returnableMovie->bookings = $bookings;
+
     return $returnableMovie;
   }
 }

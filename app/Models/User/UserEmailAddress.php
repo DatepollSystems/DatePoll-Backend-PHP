@@ -13,8 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  * @property User $user
  */
-class UserEmailAddress extends Model
-{
+class UserEmailAddress extends Model {
   /**
    * @var array
    */

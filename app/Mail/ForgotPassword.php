@@ -5,8 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 
-class ForgotPassword extends ADatePollMailable
-{
+class ForgotPassword extends ADatePollMailable {
   use Queueable, SerializesModels;
 
   public $name;
@@ -18,8 +17,7 @@ class ForgotPassword extends ADatePollMailable
    * @param string $name
    * @param string $code
    */
-  public function __construct($name, $code)
-  {
+  public function __construct($name, $code) {
     parent::__construct('forgotPassword');
 
     $this->name = $name;
@@ -31,8 +29,7 @@ class ForgotPassword extends ADatePollMailable
    *
    * @return $this
    */
-  public function build()
-  {
+  public function build() {
     return $this
       ->subject('» DatePoll Passwort-Reset')
       ->view('emails.forgotPassword.forgotPassword')

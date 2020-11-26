@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\BroadcastControllers;
 
-use App\Logging;
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Repositories\Broadcast\BroadcastDraft\IBroadcastDraftRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class BroadcastDraftController extends Controller
-{
-
-  protected $draftRepository = null;
+class BroadcastDraftController extends Controller {
+  protected IBroadcastDraftRepository $draftRepository;
 
   public function __construct(IBroadcastDraftRepository $draftRepository) {
     $this->draftRepository = $draftRepository;
@@ -24,21 +22,21 @@ class BroadcastDraftController extends Controller
    */
   public function getAll() {
     $drafts = $this->draftRepository->getAllBroadcastDraftsOrderedByDate();
-    $toReturnDrafts = array();
+    $toReturnDrafts = [];
     foreach ($drafts as $draft) {
       $toReturnDrafts[] = $this->draftRepository->getBroadcastDraftReturnable($draft);
     }
 
     return response()->json([
       'msg' => 'List of all broadcast drafts',
-      'drafts' => $toReturnDrafts]);
+      'drafts' => $toReturnDrafts, ]);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle($id) {
+  public function getSingle(int $id) {
     $draft = $this->draftRepository->getBroadcastDraftById($id);
     if ($draft == null) {
       return response()->json(['msg' => 'Draft not found'], 404);
@@ -46,7 +44,7 @@ class BroadcastDraftController extends Controller
 
     return response()->json([
       'msg' => 'Get broadcast draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft)]);
+      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ]);
   }
 
   /**
@@ -72,7 +70,7 @@ class BroadcastDraftController extends Controller
 
     return response()->json([
       'msg' => 'Successful created draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft)], 201);
+      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ], 201);
   }
 
   /**
@@ -104,7 +102,7 @@ class BroadcastDraftController extends Controller
 
     return response()->json([
       'msg' => 'Successful updated draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft)], 201);
+      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ], 201);
   }
 
   /**
@@ -113,18 +111,20 @@ class BroadcastDraftController extends Controller
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, $id) {
+  public function delete(Request $request, int $id) {
     $draft = $this->draftRepository->getBroadcastDraftById($id);
     if ($draft == null) {
       return response()->json(['msg' => 'Draft not found'], 404);
     }
 
-    if (!$this->draftRepository->delete($draft)) {
+    if (! $this->draftRepository->delete($draft)) {
       Logging::error('deleteDraft', 'Could not delete draft! User id - ' . $request->auth->id);
+
       return response()->json(['msg' => 'Could not delete draft'], 500);
     }
 
     Logging::info('deleteDraft', 'Deleted draft! User id - ' . $request->auth->id);
+
     return response()->json(['msg' => 'Successfully deleted draft'], 200);
   }
 }

@@ -8,10 +8,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class UserChangePasswordController extends Controller
-{
-
-  protected $userRepository;
+class UserChangePasswordController extends Controller {
+  protected IUserRepository $userRepository;
 
   public function __construct(IUserRepository $userRepository) {
     $this->userRepository = $userRepository;
@@ -45,7 +43,7 @@ class UserChangePasswordController extends Controller
     $user = $request->auth;
 
     if ($this->userRepository->checkPasswordOfUser($user, $request->input('old_password'))) {
-      if (!$this->userRepository->changePasswordOfUser($user, $request->input('new_password'))) {
+      if (! $this->userRepository->changePasswordOfUser($user, $request->input('new_password'))) {
         return response()->json(['msg' => 'Could not save user'], 500);
       }
 

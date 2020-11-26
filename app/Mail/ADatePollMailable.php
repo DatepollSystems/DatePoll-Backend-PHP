@@ -6,8 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-abstract class ADatePollMailable extends Mailable
-{
+abstract class ADatePollMailable extends Mailable {
   use Queueable, SerializesModels;
 
   public $jobDescription;
@@ -17,8 +16,7 @@ abstract class ADatePollMailable extends Mailable
    *
    * @param string $jobDescription
    */
-  public function __construct(string $jobDescription)
-  {
+  public function __construct(string $jobDescription) {
     $this->jobDescription = $jobDescription;
   }
 }

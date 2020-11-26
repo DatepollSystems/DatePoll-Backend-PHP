@@ -6,8 +6,7 @@ use App\Models\Events\Event;
 use App\Models\Events\EventDate;
 use Exception;
 
-interface IEventDateRepository
-{
+interface IEventDateRepository {
 
   /**
    * @param Event $event

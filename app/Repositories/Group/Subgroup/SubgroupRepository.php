@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Repositories\Group\Subgroup;
 
 use App\Logging;
@@ -10,14 +9,13 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
-class SubgroupRepository implements ISubgroupRepository
-{
+class SubgroupRepository implements ISubgroupRepository {
   /**
    * @return Subgroup[] | Collection<Subgroup>
    */
   public function getAllSubgroupsOrdered() {
     return Subgroup::orderBy('orderN')
-                   ->get();
+      ->get();
   }
 
   /**
@@ -42,7 +40,7 @@ class SubgroupRepository implements ISubgroupRepository
         'name' => $name,
         'description' => $description,
         'orderN' => $orderN,
-        'group_id' => $groupId]);
+        'group_id' => $groupId, ]);
     } else {
       $subgroup->name = $name;
       $subgroup->description = $description;
@@ -53,10 +51,12 @@ class SubgroupRepository implements ISubgroupRepository
       }
     }
 
-    if (!$subgroup->save()) {
+    if (! $subgroup->save()) {
       Logging::error('createOrUpdateSubgroup', 'Could not save subgroup!');
+
       return null;
     }
+
     return $subgroup;
   }
 
@@ -76,8 +76,8 @@ class SubgroupRepository implements ISubgroupRepository
    */
   public function getUserMemberOfSubgroupBySubgroupIdAndUserId($subgroupId, $userId) {
     return UsersMemberOfSubgroups::where('user_id', $userId)
-                                 ->where('subgroup_id', $subgroupId)
-                                 ->first();
+      ->where('subgroup_id', $subgroupId)
+      ->first();
   }
 
   /**
@@ -92,13 +92,14 @@ class SubgroupRepository implements ISubgroupRepository
       $userMemberOfSubgroup = new UsersMemberOfSubgroups([
         'user_id' => $userId,
         'subgroup_id' => $subgroupId,
-        'role' => $role]);
+        'role' => $role, ]);
     } else {
       $userMemberOfSubgroup->role = $role;
     }
 
-    if (!$userMemberOfSubgroup->save()) {
+    if (! $userMemberOfSubgroup->save()) {
       Logging::error('createOrUpdateUserMemberOfSubgroup', 'Could not save userMemberOfSubgroup');
+
       return null;
     }
 
@@ -111,14 +112,15 @@ class SubgroupRepository implements ISubgroupRepository
    * @return array|UsersMemberOfSubgroups[]
    */
   public function getUserMemberOfSubgroupsAndInGroups($userId, $groupId) {
-    $userMemberOfSubgroups = array();
+    $userMemberOfSubgroups = [];
     $userMemberOfSubgroupsS = UsersMemberOfSubgroups::where('user_id', $userId)
-                                                    ->get();
+      ->get();
     foreach ($userMemberOfSubgroupsS as $userMemberOfSubgroupI) {
       if ($userMemberOfSubgroupI->subgroup()->group_id = $groupId) {
         $userMemberOfSubgroups[] = $userMemberOfSubgroupI;
       }
     }
+
     return $userMemberOfSubgroups;
   }
 
@@ -136,9 +138,9 @@ class SubgroupRepository implements ISubgroupRepository
    * @return stdClass[]|Subgroup[]
    */
   public function getJoinedSubgroupsReturnableByUserId($userId) {
-    $subgroupsToReturn = array();
+    $subgroupsToReturn = [];
     $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userId)
-                                                   ->get();
+      ->get();
 
     foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
       $subgroup = $userMemberOfSubgroup->subgroup();
@@ -157,9 +159,9 @@ class SubgroupRepository implements ISubgroupRepository
    */
   public function getFreeSubgroupsReturnableByUserId($userId) {
     $allSubgroups = $this->getAllSubgroupsOrdered();
-    $subgroupsToReturn = array();
+    $subgroupsToReturn = [];
     $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userId)
-                                                   ->get();
+      ->get();
     foreach ($allSubgroups as $subgroup) {
       $isInSubgroup = false;
       foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
@@ -169,7 +171,7 @@ class SubgroupRepository implements ISubgroupRepository
         }
       }
 
-      if (!$isInSubgroup) {
+      if (! $isInSubgroup) {
         $subgroup['group_name'] = $subgroup->group()->name;
         $subgroupsToReturn[] = $subgroup;
       }

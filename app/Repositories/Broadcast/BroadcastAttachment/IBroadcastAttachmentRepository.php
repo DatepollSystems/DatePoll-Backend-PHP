@@ -4,6 +4,7 @@ namespace App\Repositories\Broadcast\BroadcastAttachment;
 
 use App\Models\Broadcasts\BroadcastAttachment;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 interface IBroadcastAttachmentRepository {
 
@@ -15,7 +16,7 @@ interface IBroadcastAttachmentRepository {
 
   /**
    * @param int $broadcastId
-   * @return BroadcastAttachment[]
+   * @return BroadcastAttachment[]|Collection<BroadcastAttachment>
    */
   public function getAttachmentsByBroadcastId(int $broadcastId);
 
@@ -31,6 +32,12 @@ interface IBroadcastAttachmentRepository {
    * @throws Exception
    */
   public function deleteAttachment(BroadcastAttachment $attachment);
+
+  /**
+   * @param int $olderThanDay = 1
+   * @return BroadcastAttachment[]
+   */
+  public function getAttachmentsOlderThanDayWithoutBroadcastId(int $olderThanDay = 1): array;
 
   /**
    * @return string

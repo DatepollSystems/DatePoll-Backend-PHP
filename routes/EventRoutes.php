@@ -3,8 +3,7 @@
 use App\Http\Middleware\Events\EventsAdministrationPermissionMiddleware;
 use App\Http\Middleware\Events\EventsFeatureMiddleware;
 
-$router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::class]], function () use($router) {
-
+$router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::class]], function () use ($router) {
   $router->get('', ['uses' => 'EventControllers\EventListController@getOpenEvents']);
 
   $router->post('vote', ['uses' => 'EventControllers\EventVoteController@vote']);
@@ -14,12 +13,15 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
   $router->get('{id}', ['uses' => 'EventControllers\EventController@getSingle']);
 
   /** Event administration routes */
-  $router->group([
-    'prefix' => 'administration',
-    'middleware' => [EventsAdministrationPermissionMiddleware::class]],
+  $router->group(
+    [
+      'prefix' => 'administration',
+      'middleware' => [EventsAdministrationPermissionMiddleware::class], ],
     function () use ($router) {
       /** Event routes */
-      $router->get('avent', ['uses' => 'EventControllers\EventController@getAll']);
+      $router->get('avent', ['uses' => 'EventControllers\EventController@getEventsOrderedByDate']);
+      $router->get('avent/years', ['uses' => 'EventControllers\EventController@getYearsOfEvents']);
+      $router->get('avent/{year}', ['uses' => 'EventControllers\EventController@getEventsOrderedByDate']);
       $router->post('avent', ['uses' => 'EventControllers\EventController@create']);
       $router->put('avent/{id}', ['uses' => 'EventControllers\EventController@update']);
       $router->delete('avent/{id}', ['uses' => 'EventControllers\EventController@delete']);
@@ -48,5 +50,6 @@ $router->group(['prefix' => 'avent', 'middleware' => [EventsFeatureMiddleware::c
       $router->post('standardLocation', ['uses' => 'EventControllers\StandardLocationController@create']);
       $router->get('standardLocation/{id}', ['uses' => 'EventControllers\StandardLocationController@getSingle']);
       $router->delete('standardLocation/{id}', ['uses' => 'EventControllers\StandardLocationController@delete']);
-    });
+    }
+  );
 });

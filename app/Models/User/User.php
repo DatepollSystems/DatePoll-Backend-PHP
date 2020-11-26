@@ -36,8 +36,7 @@ use stdClass;
  * @property string $created_at
  * @property string $updated_at
  */
-class User extends Model
-{
+class User extends Model {
   /**
    * @var array
    */
@@ -61,14 +60,14 @@ class User extends Model
     'created_at',
     'updated_at',
     'activated',
-    'activity'];
+    'activity', ];
 
   /**
    * @return Collection | Movie[] | null
    */
   public function emergencyWorkerMovies() {
     return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')
-                ->get();
+      ->get();
   }
 
   /**
@@ -76,8 +75,8 @@ class User extends Model
    */
   public function workerMovies() {
     return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')
-                ->orderBy('date')
-                ->get();
+      ->orderBy('date')
+      ->get();
   }
 
   /**
@@ -85,10 +84,10 @@ class User extends Model
    */
   public function moviesBookings() {
     return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
-                        ->orderBy('m.date')
-                        ->select('movies_bookings.*')
-                        ->where('user_id', $this->id)
-                        ->get();
+      ->orderBy('m.date')
+      ->select('movies_bookings.*')
+      ->where('user_id', $this->id)
+      ->get();
   }
 
   /**
@@ -96,7 +95,7 @@ class User extends Model
    */
   public function userCodes() {
     return $this->hasMany('App\Models\User\UserCode')
-                ->get();
+      ->get();
   }
 
   /**
@@ -104,7 +103,7 @@ class User extends Model
    */
   public function telephoneNumbers() {
     return $this->hasMany('App\Models\User\UserTelephoneNumber')
-                ->get();
+      ->get();
   }
 
   /**
@@ -112,7 +111,7 @@ class User extends Model
    */
   public function emailAddresses() {
     return $this->hasMany('App\Models\User\UserEmailAddress')
-                ->get();
+      ->get();
   }
 
   /**
@@ -130,6 +129,7 @@ class User extends Model
     foreach ($this->emailAddresses() as $emailAddressObject) {
       $emailAddresses[] = $emailAddressObject['email'];
     }
+
     return $emailAddresses;
   }
 
@@ -138,7 +138,7 @@ class User extends Model
    */
   public function usersMemberOfGroups() {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
-                ->get();
+      ->get();
   }
 
   /**
@@ -146,7 +146,7 @@ class User extends Model
    */
   public function usersMemberOfSubgroups() {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
-                ->get();
+      ->get();
   }
 
   /**
@@ -154,7 +154,7 @@ class User extends Model
    */
   public function performanceBadges() {
     return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument')
-                ->get();
+      ->get();
   }
 
   /**
@@ -162,7 +162,7 @@ class User extends Model
    */
   public function votedForDecisions() {
     return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-                ->get();
+      ->get();
   }
 
   /**
@@ -170,7 +170,7 @@ class User extends Model
    */
   public function permissions() {
     return $this->hasMany('App\Models\User\UserPermission')
-                ->get();
+      ->get();
   }
 
   /**
@@ -179,14 +179,14 @@ class User extends Model
    */
   public function hasPermission(string $permission) {
     if ($this->permissions()
-             ->where('permission', '=', 'root.administration')
-             ->first() != null) {
+      ->where('permission', '=', 'root.administration')
+      ->first() != null) {
       return true;
     }
 
     if ($this->permissions()
-             ->where("permission", "=", $permission)
-             ->first() != null) {
+      ->where('permission', '=', $permission)
+      ->first() != null) {
       return true;
     }
 
@@ -229,7 +229,7 @@ class User extends Model
     $returnableUser->phone_numbers = $this->telephoneNumbers();
     $returnableUser->email_addresses = $this->getEmailAddresses();
 
-    $permissions = array();
+    $permissions = [];
     if ($this->permissions() != null) {
       foreach ($this->permissions() as $permission) {
         $permissions[] = $permission->permission;

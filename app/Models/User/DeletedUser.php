@@ -2,15 +2,7 @@
 
 namespace App\Models\User;
 
-use App\Models\Cinema\Movie;
-use App\Models\Cinema\MoviesBooking;
-use App\Models\Events\EventUserVotedForDecision;
-use App\Models\Groups\UsersMemberOfGroups;
-use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
-use App\Models\Subgroups\UsersMemberOfSubgroups;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use stdClass;
 
 /**
  * @property int $id
@@ -21,8 +13,7 @@ use stdClass;
  * @property string $created_at
  * @property string $updated_at
  */
-class DeletedUser extends Model
-{
+class DeletedUser extends Model {
   /**
    * The table associated with the model.
    *
@@ -39,5 +30,5 @@ class DeletedUser extends Model
     'join_date',
     'internal_comment',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 }

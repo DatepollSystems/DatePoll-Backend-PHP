@@ -1,10 +1,17 @@
+# Dependencies
 /vendor
+/node_modules
+package-lock.json
+
+# Project specific things
+.env
+storage/app/files/
+/storage/app/files/
+
+# IDE
 /.idea
 Homestead.json
 Homestead.yaml
-.env
-
 _ide_helper\.php
 
-storage/app/files/
-/storage/app/files/
+

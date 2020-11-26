@@ -8,8 +8,7 @@ use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
-interface IGroupRepository
-{
+interface IGroupRepository {
   /**
    * @return Group[]|Collection
    */
@@ -29,16 +28,16 @@ interface IGroupRepository
    * @param int $id
    * @return Group|null
    */
-  public function getGroupById($id);
+  public function getGroupById(int $id);
 
   /**
    * @param string $name
    * @param string $description
    * @param int|null $orderN
    * @param Group|null $group
-   * @return Group
+   * @return Group | null
    */
-  public function createOrUpdateGroup($name, $description, $orderN = null, $group = null);
+  public function createOrUpdateGroup(string $name, string $description, $orderN = null, $group = null);
 
   /**
    * @param Group $group
@@ -52,7 +51,7 @@ interface IGroupRepository
    * @param int $userId
    * @return UsersMemberOfGroups | null
    */
-  public function getUserMemberOfGroupByGroupIdAndUserId($groupId, $userId);
+  public function getUserMemberOfGroupByGroupIdAndUserId(int $groupId, int $userId);
 
   /**
    * @param int $groupId
@@ -61,7 +60,7 @@ interface IGroupRepository
    * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
-  public function createOrUpdateUserMemberOfGroup($groupId, $userId, $role, $userMemberOfGroup = null);
+  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, string $role, $userMemberOfGroup = null);
 
   /**
    * @param UsersMemberOfGroups $userMemberOfGroup

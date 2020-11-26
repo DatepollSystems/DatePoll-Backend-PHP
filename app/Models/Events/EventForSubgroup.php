@@ -15,8 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Event $event
  * @property Subgroup $subgroup
  */
-class EventForSubgroup extends Model
-{
+class EventForSubgroup extends Model {
   /**
    * The table associated with the model.
    *
@@ -31,7 +30,7 @@ class EventForSubgroup extends Model
     'event_id',
     'subgroup_id',
     'created_at',
-    'updated_at'];
+    'updated_at', ];
 
   /**
    * @return BelongsTo | Event

@@ -11,11 +11,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class EventVoteController extends Controller
-{
-
-  protected $eventRepository = null;
-  protected $userRepository = null;
+class EventVoteController extends Controller {
+  protected IEventRepository $eventRepository;
+  protected IUserRepository $userRepository;
 
   public function __construct(IEventRepository $eventRepository, IUserRepository $userRepository) {
     $this->eventRepository = $eventRepository;
@@ -31,22 +29,22 @@ class EventVoteController extends Controller
     $this->validate($request, [
       'decision_id' => 'required|integer',
       'event_id' => 'required|integer',
-      'additional_information' => 'nullable|string|max:128|min:1']);
+      'additional_information' => 'nullable|string|max:128|min:1', ]);
 
     $eventId = $request->input('event_id');
     if ($this->eventRepository->getEventById($eventId) == null) {
       return response()->json([
         'msg' => 'Event not found',
-        'error_code' => 'event_not_found'], 404);
+        'error_code' => 'event_not_found', ], 404);
     }
 
     $eventDecisions = EventDecision::where('event_id', $eventId)
-                                   ->where('id', $request->input('decision_id'))
-                                   ->first();
+      ->where('id', $request->input('decision_id'))
+      ->first();
     if ($eventDecisions == null) {
       return response()->json([
         'msg' => 'Decision not found for this event',
-        'error_code' => 'decision_not_found_for_event'], 404);
+        'error_code' => 'decision_not_found_for_event', ], 404);
     }
 
     $user = $request->auth;
@@ -58,7 +56,7 @@ class EventVoteController extends Controller
         if ($openEvent->already_voted) {
           return response()->json([
             'msg' => 'User already voted for event',
-            'error_code' => 'already_voted'], 400);
+            'error_code' => 'already_voted', ], 400);
         }
 
         $allowedToVote = true;
@@ -66,25 +64,28 @@ class EventVoteController extends Controller
       }
     }
 
-    if (!$allowedToVote) {
+    if (! $allowedToVote) {
       return response()->json([
         'msg' => 'You are not allowed to vote for this event',
-        'error_code' => 'not_allowed'], 400);
+        'error_code' => 'not_allowed', ], 400);
     }
 
     $eventUserVotedForDecision = new EventUserVotedForDecision([
       'additionalInformation' => $request->input('additional_information'),
       'event_id' => $eventId,
       'decision_id' => $eventDecisions->id,
-      'user_id' => $user->id]);
+      'user_id' => $user->id, ]);
 
-    if (!$eventUserVotedForDecision->save()) {
+    if (! $eventUserVotedForDecision->save()) {
       return response()->json(['msg' => 'Could not save user voting...'], 500);
     }
 
-    return response()->json([
-      'msg' => 'Voting saved',
-      'user_decision' => $this->eventRepository->getUserDecisionReturnable($eventUserVotedForDecision)], 200);
+    return response()->json(
+      [
+        'msg' => 'Voting saved',
+        'user_decision' => $this->eventRepository->getUserDecisionReturnable($eventUserVotedForDecision), ],
+      200
+    );
   }
 
   /**
@@ -92,21 +93,21 @@ class EventVoteController extends Controller
    * @param int $id
    * @return JsonResponse
    */
-  public function removeVoting(Request $request, $id) {
+  public function removeVoting(Request $request, int $id) {
     if ($this->eventRepository->getEventById($id) == null) {
       return response()->json([
         'msg' => 'Event not found',
-        'error_code' => 'event_not_found'], 404);
+        'error_code' => 'event_not_found', ], 404);
     }
 
     $user = $request->auth;
 
     $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
-                                                          ->where('user_id', $user->id)
-                                                          ->first();
+      ->where('user_id', $user->id)
+      ->first();
 
     if ($eventUserVotedForDecision != null) {
-      if (!$eventUserVotedForDecision->delete()) {
+      if (! $eventUserVotedForDecision->delete()) {
         return response()->json(['msg' => 'Could not delete decision'], 500);
       }
 
@@ -115,7 +116,7 @@ class EventVoteController extends Controller
 
     return response()->json([
       'msg' => 'There is no voting for this event to remove',
-      'error_code' => 'not_voted'], 404);
+      'error_code' => 'not_voted', ], 404);
   }
 
   /**
@@ -124,11 +125,11 @@ class EventVoteController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function voteForUsers(Request $request, $id) {
+  public function voteForUsers(Request $request, int $id) {
     $this->validate($request, [
       'decision_id' => 'required|integer',
       'additional_information' => 'nullable|string|max:128|min:1',
-      'user_ids' => 'array']);
+      'user_ids' => 'array', ]);
 
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
@@ -136,8 +137,8 @@ class EventVoteController extends Controller
     }
 
     $eventDecision = EventDecision::where('event_id', $id)
-                                  ->where('id', $request->input('decision_id'))
-                                  ->first();
+      ->where('id', $request->input('decision_id'))
+      ->first();
     if ($eventDecision == null) {
       return response()->json(['msg' => 'Decision not found for this event'], 404);
     }
@@ -147,14 +148,14 @@ class EventVoteController extends Controller
       if ($this->userRepository->getUserById($userId) == null) {
         return response()->json([
           'msg' => 'User not found',
-          'user_id' => $userId], 404);
+          'user_id' => $userId, ], 404);
       }
 
       $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
-                                                            ->where('user_id', $userId)
-                                                            ->first();
+        ->where('user_id', $userId)
+        ->first();
       if ($eventUserVotedForDecision != null) {
-        if (!$eventUserVotedForDecision->delete()) {
+        if (! $eventUserVotedForDecision->delete()) {
           return response()->json(['msg' => 'Could not delete old decisions'], 500);
         }
       }
@@ -163,9 +164,9 @@ class EventVoteController extends Controller
         'additionalInformation' => $request->input('additional_information'),
         'event_id' => $id,
         'decision_id' => $eventDecision->id,
-        'user_id' => $userId]);
+        'user_id' => $userId, ]);
 
-      if (!$eventUserVotedForDecision->save()) {
+      if (! $eventUserVotedForDecision->save()) {
         return response()->json(['msg' => 'Could not save eventUserVotedForDecision'], 500);
       }
     }
@@ -179,7 +180,7 @@ class EventVoteController extends Controller
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function cancelVotingForUsers(Request $request, $id) {
+  public function cancelVotingForUsers(Request $request, int $id) {
     $this->validate($request, ['user_ids' => 'array']);
 
     $event = $this->eventRepository->getEventById($id);
@@ -192,14 +193,14 @@ class EventVoteController extends Controller
       if ($this->userRepository->getUserById($userId) == null) {
         return response()->json([
           'msg' => 'User not found',
-          'user_id' => $userId], 404);
+          'user_id' => $userId, ], 404);
       }
 
       $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
-                                                            ->where('user_id', $userId)
-                                                            ->first();
+        ->where('user_id', $userId)
+        ->first();
       if ($eventUserVotedForDecision != null) {
-        if (!$eventUserVotedForDecision->delete()) {
+        if (! $eventUserVotedForDecision->delete()) {
           return response()->json(['msg' => 'Could not delete old decisions'], 500);
         }
       }

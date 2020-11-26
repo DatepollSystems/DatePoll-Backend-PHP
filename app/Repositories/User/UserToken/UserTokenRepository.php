@@ -6,16 +6,15 @@ use App\Models\User\User;
 use App\Models\User\UserToken;
 use Exception;
 
-class UserTokenRepository implements IUserTokenRepository
-{
+class UserTokenRepository implements IUserTokenRepository {
   public function createUserToken(User $user, string $token, string $purpose, $description = null) {
     $userToken = new UserToken([
       'user_id' => $user->id,
       'token' => $token,
       'purpose' => $purpose,
-      'description' => $description]);
+      'description' => $description, ]);
 
-    if (!$userToken->save()) {
+    if (! $userToken->save()) {
       return null;
     } else {
       return $userToken;
@@ -24,7 +23,7 @@ class UserTokenRepository implements IUserTokenRepository
 
   public function deleteUserToken(UserToken $userToken) {
     try {
-      if (!$userToken->delete()) {
+      if (! $userToken->delete()) {
         return $userToken;
       }
     } catch (Exception $e) {
@@ -45,7 +44,7 @@ class UserTokenRepository implements IUserTokenRepository
       }
 
       if (UserToken::where('token', $randomToken)
-                   ->first() == null) {
+        ->first() == null) {
         break;
       }
     }
@@ -55,33 +54,33 @@ class UserTokenRepository implements IUserTokenRepository
 
   public function getUserTokenByIdAndUserAndPurpose(int $id, User $user, string $purpose) {
     return UserToken::where('purpose', $purpose)
-                    ->where('user_id', $user->id)
-                    ->where('id', $id)->first();
+      ->where('user_id', $user->id)
+      ->where('id', $id)->first();
   }
 
   public function getUserTokenByTokenAndPurpose(string $token, string $purpose) {
     return UserToken::where('token', $token)
-                    ->where('purpose', $purpose)
-                    ->first();
+      ->where('purpose', $purpose)
+      ->first();
   }
 
   public function getUserTokenByUserAndPurpose(User $user, string $purpose) {
     return UserToken::where('user_id', $user->id)
-                    ->where('purpose', $purpose)
-                    ->first();
+      ->where('purpose', $purpose)
+      ->first();
   }
 
   public function getUserTokenByUserAndTokenAndPurpose(User $user, string $token, string $purpose) {
     return UserToken::where('user_id', $user->id)
-                    ->where('token', $token)
-                    ->where('purpose', $purpose)
-                    ->first();
+      ->where('token', $token)
+      ->where('purpose', $purpose)
+      ->first();
   }
 
   public function getUserTokensByUserAndPurposeOrderedByDate(User $user, string $purpose) {
     return UserToken::where('user_id', $user->id)
-                    ->where('purpose', $purpose)
-                    ->orderBy('updated_at', 'ASC')
-                    ->get();
+      ->where('purpose', $purpose)
+      ->orderBy('updated_at', 'ASC')
+      ->get();
   }
 }

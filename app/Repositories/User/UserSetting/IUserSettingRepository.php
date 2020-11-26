@@ -4,8 +4,7 @@ namespace App\Repositories\User\UserSetting;
 
 use App\Models\User\User;
 
-interface IUserSettingRepository
-{
+interface IUserSettingRepository {
   /**
    * @param User $user
    * @return bool

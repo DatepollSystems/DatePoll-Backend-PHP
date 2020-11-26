@@ -7,15 +7,14 @@ use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class LogRepository implements ILogRepository
-{
+class LogRepository implements ILogRepository {
 
   /**
    * @return Collection
    */
   public function getAllLogsOrderedByDate() {
     return Log::orderBy('created_at', 'desc')
-              ->get();
+      ->get();
   }
 
   /**
@@ -50,7 +49,7 @@ class LogRepository implements ILogRepository
     $log = new Log([
       'type' => $logType,
       'message' => $message,
-      'user_id' => $userId]);
+      'user_id' => $userId, ]);
 
     return $log->save() ? $log : null;
   }

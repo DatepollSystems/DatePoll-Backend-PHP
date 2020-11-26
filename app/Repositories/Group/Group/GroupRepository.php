@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
-class GroupRepository implements IGroupRepository
-{
+class GroupRepository implements IGroupRepository {
   /**
    * @return Group[]|Collection
    */
@@ -25,9 +24,8 @@ class GroupRepository implements IGroupRepository
    */
   public function getAllGroupsOrdered() {
     return Group::orderBy('orderN')
-                ->get();
+      ->get();
   }
-
 
   /**
    * @return Group[]|Collection
@@ -38,6 +36,7 @@ class GroupRepository implements IGroupRepository
     foreach ($groups as $group) {
       $group->subgroups = $group->getSubgroupsOrdered();
     }
+
     return $groups;
   }
 
@@ -45,7 +44,7 @@ class GroupRepository implements IGroupRepository
    * @param int $id
    * @return Group|null
    */
-  public function getGroupById($id) {
+  public function getGroupById(int $id) {
     return Group::find($id);
   }
 
@@ -54,14 +53,14 @@ class GroupRepository implements IGroupRepository
    * @param string $description
    * @param int|null $orderN
    * @param Group|null $group
-   * @return Group
+   * @return Group|null
    */
-  public function createOrUpdateGroup($name, $description, $orderN = null, $group = null) {
+  public function createOrUpdateGroup(string $name, string $description, $orderN = null, $group = null) {
     if ($group == null) {
       $group = new Group([
         'name' => $name,
         'orderN' => $orderN,
-        'description' => $description]);
+        'description' => $description, ]);
     } else {
       $group->name = $name;
       $group->description = $description;
@@ -71,8 +70,9 @@ class GroupRepository implements IGroupRepository
       }
     }
 
-    if (!$group->save()) {
+    if (! $group->save()) {
       Logging::error('createOrUpdateGroup', 'Could not update group');
+
       return null;
     }
 
@@ -93,10 +93,10 @@ class GroupRepository implements IGroupRepository
    * @param int $userId
    * @return UsersMemberOfGroups | null
    */
-  public function getUserMemberOfGroupByGroupIdAndUserId($groupId, $userId) {
+  public function getUserMemberOfGroupByGroupIdAndUserId(int $groupId, int $userId) {
     return UsersMemberOfGroups::where('group_id', $groupId)
-                              ->where('user_id', $userId)
-                              ->first();
+      ->where('user_id', $userId)
+      ->first();
   }
 
   /**
@@ -106,18 +106,19 @@ class GroupRepository implements IGroupRepository
    * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
-  public function createOrUpdateUserMemberOfGroup($groupId, $userId, $role, $userMemberOfGroup = null) {
+  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, string $role, $userMemberOfGroup = null) {
     if ($userMemberOfGroup == null) {
       $userMemberOfGroup = new UsersMemberOfGroups([
         'user_id' => $userId,
         'group_id' => $groupId,
-        'role' => $role]);
+        'role' => $role, ]);
     } else {
       $userMemberOfGroup->role = $role;
     }
 
-    if (!$userMemberOfGroup->save()) {
+    if (! $userMemberOfGroup->save()) {
       Logging::error('createUserMemberOfGroup', 'Could not create user member of group');
+
       return null;
     }
 
@@ -139,7 +140,7 @@ class GroupRepository implements IGroupRepository
    */
   public function getGroupsWhereUserIsNotIn($user) {
     $allGroups = $this->getAllGroups();
-    $groupsToReturn = array();
+    $groupsToReturn = [];
     $userMemberOfGroups = $user->usersMemberOfGroups();
     foreach ($allGroups as $group) {
       $isInGroup = false;
@@ -150,10 +151,11 @@ class GroupRepository implements IGroupRepository
         }
       }
 
-      if (!$isInGroup) {
+      if (! $isInGroup) {
         $groupsToReturn[] = $group;
       }
     }
+
     return $groupsToReturn;
   }
 
@@ -164,13 +166,13 @@ class GroupRepository implements IGroupRepository
   public function getGroupStatisticsByGroup(Group $group) {
     $usersInGroups = $group->usersMemberOfGroups();
 
-    $joinYears = array();
+    $joinYears = [];
 
-    $users_only_in_this_group = array();
+    $users_only_in_this_group = [];
     foreach ($usersInGroups as $user) {
       if (DB::table('users_member_of_groups')
-            ->where('user_id', '=', $user->user_id)
-            ->count() < 2) {
+        ->where('user_id', '=', $user->user_id)
+        ->count() < 2) {
         $userD = $user->user();
         $userR = new stdClass();
         $userR->firstname = $userD->firstname;
@@ -181,17 +183,17 @@ class GroupRepository implements IGroupRepository
       }
 
       $joinYear = date_format($user->created_at, 'Y');
-      if (!in_array($joinYear, $joinYears)) {
+      if (! in_array($joinYear, $joinYears)) {
         $joinYears[] = $joinYear;
       }
     }
     $group->users_only_in_this_group = $users_only_in_this_group;
 
-    $users_grouped_by_join_year = array();
+    $users_grouped_by_join_year = [];
     foreach ($joinYears as $joinYear) {
       $year = new stdClass();
       $year->year = $joinYear;
-      $userToAdd = array();
+      $userToAdd = [];
       foreach ($usersInGroups as $user) {
         $userJoinYear = date_format($user->created_at, 'Y');
         if (str_contains($joinYear, $userJoinYear)) {

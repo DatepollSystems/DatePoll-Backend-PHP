@@ -2,9 +2,8 @@
 
 namespace App\Repositories\User\UserSetting;
 
-abstract class UserSettingKey
-{
-  const SHARE_BIRTHDAY = "share_birthday";
+abstract class UserSettingKey {
+  const SHARE_BIRTHDAY = 'share_birthday';
   const SHOW_MOVIES_IN_CALENDAR = 'show_movies_in_calendar';
   const SHOW_EVENTS_IN_CALENDAR = 'show_events_in_calendar';
   const SHOW_BIRTHDAYS_IN_CALENDAR = 'show_birthdays_in_calendar';
@@ -14,8 +13,7 @@ abstract class UserSettingKey
 use App\Models\User\User;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 
-class UserSettingRepository implements IUserSettingRepository
-{
+class UserSettingRepository implements IUserSettingRepository {
   protected $userTokenRepository = null;
 
   public function __construct(IUserTokenRepository $userTokenRepository) {
@@ -76,6 +74,7 @@ class UserSettingRepository implements IUserSettingRepository
       $setting->token = $value;
       $setting->save();
     }
+
     return $setting->token;
   }
 
@@ -89,6 +88,7 @@ class UserSettingRepository implements IUserSettingRepository
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, $settingKey);
     if ($setting == null) {
       $setting = $this->userTokenRepository->createUserToken($user, $default, $settingKey);
+
       return $setting->token;
     } else {
       return $setting->token;

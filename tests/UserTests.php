@@ -4,14 +4,12 @@ use App\Permissions;
 use Laravel\Lumen\Testing\DatabaseMigrations;
 use Tests\Factories\UserFactory;
 
-class UserTests extends TestCase
-{
+class UserTests extends TestCase {
   use DatabaseMigrations;
-
 
   public function testExample() {
     $this->get('/');
-    $this->assertEquals("Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)", $this->response->getContent());
+    $this->assertEquals('Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)', $this->response->getContent());
   }
 
   public function testUserManagementMiddleware() {
@@ -19,7 +17,7 @@ class UserTests extends TestCase
     $jwt = UserFactory::getJWTTokenForUserId($nonAdmin->id);
 
     $data = [
-      'test' => "Test"];
+      'test' => 'Test', ];
 
     $response = $this->post('/api/v1/management/users?token=' . $jwt, $data);
     $response->assertResponseStatus(403);
@@ -27,7 +25,7 @@ class UserTests extends TestCase
       'error_code' => 'permissions_denied',
       'needed_permissions' => [
         Permissions::$ROOT_ADMINISTRATION,
-        Permissions::$MANAGEMENT_ADMINISTRATION]]);
+        Permissions::$MANAGEMENT_ADMINISTRATION, ], ]);
   }
 
   public function testUserCreate() {
@@ -54,16 +52,16 @@ class UserTests extends TestCase
       'phone_numbers' => [
         [
           'label' => 'Mobile',
-          'number' => '+43 3333 6666'],
+          'number' => '+43 3333 6666', ],
         [
           'label' => 'Home',
-          'number' => '+43 33333 3333']],
+          'number' => '+43 33333 3333', ], ],
       'permissions' => [
         'test.permission',
-        'test.permission2'],
+        'test.permission2', ],
       'email_addresses' => [
         'test1@datepoll.org',
-        'test2@datepoll.org']];
+        'test2@datepoll.org', ], ];
 
     $response = $this->post('/api/v1/management/users?token=' . $jwt, $data);
     $response->assertResponseStatus(201);
@@ -80,24 +78,24 @@ class UserTests extends TestCase
       'msg',
       'users' => [
         [
-          "id",
-          "title",
-          "firstname",
-          "surname",
-          "username",
-          "birthday",
-          "join_date",
-          "streetname",
-          "streetnumber",
-          "zipcode",
-          "location",
-          "activated",
-          "activity",
-          "member_number",
-          "internal_comment",
-          "information_denied",
-          "bv_member",
-          "force_password_change",]]]);
+          'id',
+          'title',
+          'firstname',
+          'surname',
+          'username',
+          'birthday',
+          'join_date',
+          'streetname',
+          'streetnumber',
+          'zipcode',
+          'location',
+          'activated',
+          'activity',
+          'member_number',
+          'internal_comment',
+          'information_denied',
+          'bv_member',
+          'force_password_change',], ], ]);
   }
 
   public function testUserUpdate() {
@@ -109,7 +107,7 @@ class UserTests extends TestCase
     // --- Attention ---
     // The id is at exactly this position. If user names / data changes the position may also change
     // --- Attention ---
-    $id = substr($this->response->getContent(), strpos($this->response->getContent(), 'id') +4, 1);
+    $id = substr($this->response->getContent(), strpos($this->response->getContent(), 'id') + 4, 1);
 
     $data = [
       'title' => 'Mag.',
@@ -131,16 +129,16 @@ class UserTests extends TestCase
       'phone_numbers' => [
         [
           'label' => 'Mobile.neu',
-          'number' => '+43 3333 6666.neu'],
+          'number' => '+43 3333 6666.neu', ],
         [
           'label' => 'Hom.neue',
-          'number' => '+43 33333 3333.neu']],
+          'number' => '+43 33333 3333.neu', ], ],
       'permissions' => [
         'test.permission.neu',
-        'test.permission2.neu'],
+        'test.permission2.neu', ],
       'email_addresses' => [
         'test1@datepoll.org.neu',
-        'test2@datepoll.org.neu']];
+        'test2@datepoll.org.neu', ], ];
 
     $response = $this->put('/api/v1/management/users/' . $id . '?token=' . $jwt, $data);
     $response->assertResponseStatus(200);

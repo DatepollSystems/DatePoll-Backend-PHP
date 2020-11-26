@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateLogsTable extends Migration
-{
+class CreateLogsTable extends Migration {
   /**
    * Run the migrations.
    *
    * @return void
    */
-  public function up()
-  {
+  public function up() {
     Schema::create('logs', function (Blueprint $table) {
       $table->increments('id');
 
@@ -21,8 +19,8 @@ class CreateLogsTable extends Migration
 
       $table->integer('user_id')->nullable(true)->unsigned();
       $table->foreign('user_id')
-            ->references('id')->on('users')
-            ->onDelete('cascade');
+        ->references('id')->on('users')
+        ->onDelete('cascade');
 
       $table->timestamps();
     });
@@ -33,8 +31,7 @@ class CreateLogsTable extends Migration
    *
    * @return void
    */
-  public function down()
-  {
+  public function down() {
     Schema::dropIfExists('logs');
   }
 }

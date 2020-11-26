@@ -13,50 +13,45 @@ $router->get('/', function () use ($router) {
   return 'Running DatePoll-Backend! ( ͡° ͜ʖ ͡°)';
 });
 
-/** Calendar route */
+// Calendar routes
 $router->get('calendar', ['uses' => 'CalendarController@getCompleteCalendar']);
 $router->get('calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);
 
-/** Broadcast attachment download route */
-$router->get('attachment/{token}',
-             ['uses' => 'BroadcastControllers\BroadcastController@attachmentDownload', 'middleware' => [BroadcastsFeatureMiddleware::class]]);
+// Broadcast attachment download route
+$router->get(
+  'attachment/{token}',
+  ['uses' => 'BroadcastControllers\BroadcastController@attachmentDownload',
+    'middleware' => [BroadcastsFeatureMiddleware::class], ]
+);
 
-/** Log viewer */
-$router->group(['namespace' => '\Rap2hpoutre\LaravelLogViewer', 'middleware' => ['jwt.auth', LogsPermissionMiddleware::class]],
+// Log viewer
+$router->group(
+  ['namespace' => '\Rap2hpoutre\LaravelLogViewer',
+    'middleware' => ['jwt.auth', LogsPermissionMiddleware::class], ],
   function () use ($router) {
     $router->get('logs', 'LogViewerController@index');
-  });
+  }
+);
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
-  /** Server info route */
+  // Server info route
   $router->get('/', ['uses' => 'SystemControllers\DatePollServerController@getServerInfo']);
 
-  /** Auth routes */
   require(__DIR__ . '/AuthRoutes.php');
 
   $router->group(['prefix' => 'v1', 'middleware' => 'jwt.auth'], function () use ($router) {
-
-    /** System */
     require(__DIR__ . '/SystemRoutes.php');
-
-    /** User routes */
     require(__DIR__ . '/UserRoutes.php');
-
-    /** Management routes */
     require(__DIR__ . '/ManagementRoutes.php');
-
-    /** Cinema routes */
     require(__DIR__ . '/CinemaRoutes.php');
-
-    /** Events */
     require(__DIR__ . '/EventRoutes.php');
-
-    /** Broadcasts */
     require(__DIR__ . '/BroadcastRoutes.php');
+    require(__DIR__ . '/SeatReservationRoutes.php');
   });
 
-  /** Calendar route (deprecated)
+  /**
+   * Calendar route (deprecated)
    * To remove date: 27.7.2025
    */
   $router->get('user/calendar/{token}', ['uses' => 'CalendarController@getCalendarOf']);

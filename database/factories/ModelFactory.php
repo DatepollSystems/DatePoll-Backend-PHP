@@ -17,7 +17,7 @@ $factory->define(User::class, function (Faker\Generator $faker) {
   return [
     'title' => $faker->jobTitle,
     'username' => $faker->userName,
-    'firstname'     => $faker->firstName,
+    'firstname' => $faker->firstName,
     'surname' => $faker->lastName,
     'password' => app('hash')->make('12345'),
     'activated' => false,
@@ -28,6 +28,6 @@ $factory->define(User::class, function (Faker\Generator $faker) {
     'birthday' => date('Y-m-d'),
     'join_date' => date('Y-m-d'),
     'activity' => 'aktiv',
-    'bv_member' => 'aktiv'
+    'bv_member' => 'aktiv',
   ];
 });

@@ -2,23 +2,30 @@
 
 namespace App\Console;
 
+use App\Console\Commands\AddAdminUser;
+use App\Console\Commands\DeleteUnusedBroadcastAttachments;
+use App\Console\Commands\DropDatabase;
+use App\Console\Commands\ProcessBroadcastEmailsInInbox;
 use App\Console\Commands\ReQueueNotSentBroadcasts;
+use App\Console\Commands\SetupDatePoll;
+use App\Console\Commands\UpdateDatePollDB;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
-class Kernel extends ConsoleKernel
-{
+class Kernel extends ConsoleKernel {
   /**
    * The Artisan commands provided by your application.
    *
    * @var array
    */
   protected $commands = [
-    'App\Console\Commands\AddAdminUser',
-    'App\Console\Commands\DropTables',
-    'App\Console\Commands\SetupDatePoll',
-    'App\Console\Commands\UpdateDatePollDB',
-    ReQueueNotSentBroadcasts::class
+    AddAdminUser::class,
+    DropDatabase::class,
+    SetupDatePoll::class,
+    UpdateDatePollDB::class,
+    ReQueueNotSentBroadcasts::class,
+    ProcessBroadcastEmailsInInbox::class,
+    DeleteUnusedBroadcastAttachments::class,
   ];
 
   /**
@@ -27,8 +34,8 @@ class Kernel extends ConsoleKernel
    * @param Schedule $schedule
    * @return void
    */
-  protected function schedule(Schedule $schedule)
-  {
-    //
+  protected function schedule(Schedule $schedule) {
+    $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyMinute();
+    $schedule->command(DeleteUnusedBroadcastAttachments::class, ['--force'])->daily();
   }
 }
