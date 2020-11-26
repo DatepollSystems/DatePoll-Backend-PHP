@@ -249,7 +249,7 @@ class BroadcastRepository implements IBroadcastRepository {
     }
 
     $DatePollAddress = $this->settingRepository->getUrl();
-    $backendUrl = $this->settingRepository->getBackendUrl();
+    $frontendUrl = $this->settingRepository->getUrl();
 
     $mAttachments = '';
     $happened = false;
@@ -279,7 +279,7 @@ class BroadcastRepository implements IBroadcastRepository {
 
       $attachment->broadcast_id = $broadcast->id;
       $attachment->save();
-      $mAttachments = $mAttachments . '> <a href="' . $backendUrl . '/attachment/' . $attachment->token . '">' . $attachment->name . '</a><br>';
+      $mAttachments = $mAttachments . '> <a href="' . $frontendUrl . '/download/' . $attachment->token . '">' . $attachment->name . '</a><br>';
     }
 
     if ($happened) {
@@ -337,7 +337,7 @@ class BroadcastRepository implements IBroadcastRepository {
       ->get();
 
     $DatePollAddress = $this->settingRepository->getUrl();
-    $backendUrl = $this->settingRepository->getBackendUrl();
+    $frontendUrl = $this->settingRepository->getUrl();
 
     $mAttachments = '';
     $happened = false;
@@ -346,7 +346,7 @@ class BroadcastRepository implements IBroadcastRepository {
 
       $attachment->broadcast_id = $broadcast->id;
       $attachment->save();
-      $mAttachments = $mAttachments . '> <a href="' . $backendUrl . '/attachment/' . $attachment->token . '">' . $attachment->name . '</a><br>';
+      $mAttachments = $mAttachments . '> <a href="' . $frontendUrl . '/download/' . $attachment->token . '">' . $attachment->name . '</a><br>';
     }
 
     if ($happened) {
