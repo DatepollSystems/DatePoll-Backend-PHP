@@ -434,7 +434,7 @@ class SettingRepository implements ISettingRepository {
    * @param string $settingKey
    * @return Setting
    */
-  private function getSettingValueByKey(string $settingKey): Setting {
+  private function getSettingValueByKey(string $settingKey): ?Setting {
     return Setting::where('key', '=', $settingKey)
       ->first();
   }
