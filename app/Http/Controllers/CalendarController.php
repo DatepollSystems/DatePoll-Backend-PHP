@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Logging;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
 use App\Repositories\Cinema\Movie\IMovieRepository;
@@ -38,6 +37,7 @@ class CalendarController extends Controller {
   protected IEventRepository $eventRepository;
 
   private static string $completeCalendarCacheKey = 'calendar.complete';
+  private static string $personalCalendarCacheKey = 'calendar.personal.';
 
   public function __construct(
     IUserTokenRepository $userTokenRepository,
@@ -67,6 +67,15 @@ class CalendarController extends Controller {
     $tokenObject = $this->userTokenRepository->getUserTokenByTokenAndPurpose($token, 'calendar');
     if ($tokenObject == null) {
       return response()->json(['msg' => 'Provided token is incorrect', 'error_code' => 'token_incorrect'], 401);
+    }
+
+    $cacheKey = CalendarController::$personalCalendarCacheKey . $tokenObject->user_id;
+    if (Cache::has($cacheKey)) {
+      header('Content-type: text/calendar; charset=utf-8');
+      header('Content-Disposition: attachment; filename="calendar.ics"');
+      echo Cache::get($cacheKey);
+
+      return;
     }
 
     $user = $tokenObject->user();
@@ -267,10 +276,10 @@ class CalendarController extends Controller {
         }
       }
     }
-
     $calendarExport->addCalendar($calendar);
+    $stream = $calendarExport->getStream();
 
-    Logging::info('getCalendarOf', 'User | ' . $user->id . ' | ICS personal calendar request');
+    Cache::put($cacheKey, $stream, 60 * 60);
 
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="'. $token . '.ics"');
@@ -295,7 +304,6 @@ class CalendarController extends Controller {
    */
   public function getCompleteCalendar() {
     if (Cache::has(CalendarController::$completeCalendarCacheKey)) {
-      Logging::info('getCompleteCalendar', 'ICS complete calendar request answered from cache');
       header('Content-type: text/calendar; charset=utf-8');
       header('Content-Disposition: attachment; filename="calendar.ics"');
       echo Cache::get(CalendarController::$completeCalendarCacheKey);
@@ -404,7 +412,6 @@ class CalendarController extends Controller {
     $stream = $calendarExport->getStream();
     Cache::put(CalendarController::$completeCalendarCacheKey, $stream, 60 * 60 * 4);
 
-    Logging::info('getCompleteCalendar', 'ICS complete calendar request');
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="calendar.ics"');
     echo $stream;
