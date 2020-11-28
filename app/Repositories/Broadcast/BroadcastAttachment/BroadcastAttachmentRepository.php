@@ -52,7 +52,7 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
     $rAttachments = [];
     $attachments = BroadcastAttachment::where('broadcast_id', '=', null)->get();
     foreach ($attachments as $attachment) {
-      if (strtotime('-' . $olderThanDay . ' day') < strtotime($attachment->created_at)) {
+      if (strtotime('-' . $olderThanDay . ' day') > strtotime($attachment->created_at)) {
         $rAttachments[] = $attachment;
       }
     }
