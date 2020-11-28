@@ -102,11 +102,11 @@ class GroupRepository implements IGroupRepository {
   /**
    * @param int $groupId
    * @param int $userId
-   * @param string $role
+   * @param string|null $role
    * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
-  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, string $role, $userMemberOfGroup = null) {
+  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, ?string $role, $userMemberOfGroup = null) {
     if ($userMemberOfGroup == null) {
       $userMemberOfGroup = new UsersMemberOfGroups([
         'user_id' => $userId,

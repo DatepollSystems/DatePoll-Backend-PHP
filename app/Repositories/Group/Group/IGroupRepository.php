@@ -56,11 +56,11 @@ interface IGroupRepository {
   /**
    * @param int $groupId
    * @param int $userId
-   * @param string $role
+   * @param string|null $role
    * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
-  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, string $role, $userMemberOfGroup = null);
+  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, ?string $role, $userMemberOfGroup = null);
 
   /**
    * @param UsersMemberOfGroups $userMemberOfGroup
