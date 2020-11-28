@@ -16,6 +16,7 @@ use DateInterval;
 use DateTime;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use stdClass;
 
@@ -75,7 +76,10 @@ class EventRepository implements IEventRepository {
       if ($year == null) {
         $events[] = $event;
       } else {
-        if (date('Y', strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date)) == (string)$year) {
+        if (date(
+          'Y',
+          strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date)
+        ) == (string)$year) {
           $events[] = $event;
         }
       }
@@ -124,7 +128,7 @@ class EventRepository implements IEventRepository {
       $event = new Event([
         'name' => $name,
         'forEveryone' => $forEveryone,
-        'description' => $description, ]);
+        'description' => $description,]);
 
       if (! $event->save()) {
         Logging::error('createOrUpdateEvent', 'Could not create (save) event');
@@ -498,33 +502,43 @@ class EventRepository implements IEventRepository {
   public function getOpenEventsForUser(User $user) {
     $events = [];
 
-    $time = time();
-    foreach (Event::where('forEveryone', '=', true)->get() as $event) {
-      if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
-        $events[] = $this->createOpenEventReturnable($event, $user);
-      }
-    }
-    foreach ($user->usersMemberOfGroups() as $userMemberOfGroup) {
-      $group = $userMemberOfGroup->group();
-      foreach ($group->eventsForGroups() as $eventForGroup) {
-        $event = $eventForGroup->event();
-        if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
+    $eventIds = [];
+    $date = date('Y-m-d H:i:s');
+    foreach (DB::table('events')->join('event_dates', 'events.id', '=', 'event_dates.event_id')->where(
+      'event_dates.date',
+      '>',
+      $date
+    )->orderBy('event_dates.date')->addSelect('events.id')->get() as $eventId) {
+      if (! in_array((int)$eventId->id, $eventIds)) {
+        $eventIds[] = (int)$eventId->id;
+
+        $event = $this->getEventById((int)$eventId->id);
+
+        $inGroup = DB::table('events_for_groups')->join(
+          'users_member_of_groups',
+          'events_for_groups.group_id',
+          '=',
+          'users_member_of_groups.group_id'
+        )->where(
+              'events_for_groups.event_id',
+              '=',
+              $event->id
+            )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+
+        $inSubgroup = DB::table('events_for_subgroups')->join(
+          'users_member_of_subgroups',
+          'events_for_subgroups.subgroup_id',
+          '=',
+          'users_member_of_subgroups.subgroup_id'
+        )->where(
+              'events_for_subgroups.event_id',
+              '=',
+              $event->id
+            )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+
+        if ($event->forEveryone || $inGroup || $inSubgroup) {
           $returnableEvent = $this->createOpenEventReturnable($event, $user);
-          if (! in_array($returnableEvent, $events)) {
-            $events[] = $returnableEvent;
-          }
-        }
-      }
-    }
-    foreach ($user->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
-      $subgroup = $userMemberOfSubgroup->subgroup();
-      foreach ($subgroup->eventsForSubgroups() as $eventForSubgroup) {
-        $event = $eventForSubgroup->event();
-        if ($time <= strtotime($this->eventDateRepository->getLastEventDateForEvent($event)->date)) {
-          $returnableEvent = $this->createOpenEventReturnable($event, $user);
-          if (! in_array($returnableEvent, $events)) {
-            $events[] = $returnableEvent;
-          }
+          $events[] = $returnableEvent;
         }
       }
     }
