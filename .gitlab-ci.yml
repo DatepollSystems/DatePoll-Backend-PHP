@@ -5,9 +5,9 @@ cache:
     - vendor/
 
 before_script:
-  - apt-get update -yqq > /dev/null
-  - apt-get install git zip wget -yqq > /dev/null
-  - docker-php-ext-install pdo_mysql pcntl opcache imap > /dev/null
+  - apt-get update -yqq
+  - apt-get install git zip wget -yqq
+  - docker-php-ext-install pdo_mysql pcntl opcache imap
   - wget https://composer.github.io/installer.sig -O - -q | tr -d '\n' > installer.sig
   - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
   - php -r "if (hash_file('SHA384', 'composer-setup.php') === file_get_contents('installer.sig')) { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
