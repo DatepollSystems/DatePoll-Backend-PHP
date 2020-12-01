@@ -4,7 +4,6 @@ namespace App\Repositories\User\UserToken;
 
 use App\Models\User\User;
 use App\Models\User\UserToken;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IUserTokenRepository {
 
@@ -12,22 +11,22 @@ interface IUserTokenRepository {
    * @param User $user
    * @param string $token
    * @param string $purpose
-   * @param string $description
+   * @param string|null $description
    * @return UserToken|null
    */
-  public function createUserToken(User $user, string $token, string $purpose, $description = null);
+  public function createUserToken(User $user, string $token, string $purpose, ?string $description = null): ?UserToken;
 
   /**
    * @param UserToken $userToken
    * @return UserToken|null
    */
-  public function deleteUserToken(UserToken $userToken);
+  public function deleteUserToken(UserToken $userToken): ?UserToken;
 
   /**
    * @param int $length
    * @return string
    */
-  public function generateUniqueRandomToken(int $length);
+  public function generateUniqueRandomToken(int $length): string;
 
   /**
    * @param int $id
@@ -35,21 +34,21 @@ interface IUserTokenRepository {
    * @param string $purpose
    * @return UserToken|null
    */
-  public function getUserTokenByIdAndUserAndPurpose(int $id, User $user, string $purpose);
+  public function getUserTokenByIdAndUserAndPurpose(int $id, User $user, string $purpose): ?UserToken;
 
   /**
    * @param string $token
    * @param string $purpose
    * @return UserToken|null
    */
-  public function getUserTokenByTokenAndPurpose(string $token, string $purpose);
+  public function getUserTokenByTokenAndPurpose(string $token, string $purpose): ?UserToken;
 
   /**
    * @param User $user
    * @param string $purpose
    * @return UserToken|null
    */
-  public function getUserTokenByUserAndPurpose(User $user, string $purpose);
+  public function getUserTokenByUserAndPurpose(User $user, string $purpose): ?UserToken;
 
   /**
    * @param User $user
@@ -57,12 +56,12 @@ interface IUserTokenRepository {
    * @param string $purpose
    * @return UserToken|null
    */
-  public function getUserTokenByUserAndTokenAndPurpose(User $user, string $token, string $purpose);
+  public function getUserTokenByUserAndTokenAndPurpose(User $user, string $token, string $purpose): ?UserToken;
 
   /**
    * @param User $user
    * @param string $purpose
-   * @return Collection<UserToken>|null
+   * @return UserToken[]|null
    */
-  public function getUserTokensByUserAndPurposeOrderedByDate(User $user, string $purpose);
+  public function getUserTokensByUserAndPurposeOrderedByDate(User $user, string $purpose): ?array;
 }

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMultipleClassesDeclarationsInOneFile */
 
 namespace App\Repositories\User\UserSetting;
 
@@ -14,49 +14,94 @@ use App\Models\User\User;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 
 class UserSettingRepository implements IUserSettingRepository {
-  protected $userTokenRepository = null;
+  protected IUserTokenRepository $userTokenRepository;
 
   public function __construct(IUserTokenRepository $userTokenRepository) {
     $this->userTokenRepository = $userTokenRepository;
   }
 
-  public function getShareBirthdayForUser($user): bool {
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getShareBirthdayForUser(User $user): bool {
     return $this->getUserSetting($user, UserSettingKey::SHARE_BIRTHDAY, true);
   }
 
-  public function setShareBirthdayForUser($user, bool $value): bool {
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setShareBirthdayForUser(User $user, bool $value): bool {
     return $this->setUserSetting($user, UserSettingKey::SHARE_BIRTHDAY, $value);
   }
 
-  public function getShowMoviesInCalendarForUser($user): bool {
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getShowMoviesInCalendarForUser(User $user): bool {
     return $this->getUserSetting($user, UserSettingKey::SHOW_MOVIES_IN_CALENDAR, true);
   }
 
-  public function setShowMoviesInCalendarForUser($user, bool $value): bool {
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setShowMoviesInCalendarForUser(User $user, bool $value): bool {
     return $this->setUserSetting($user, UserSettingKey::SHOW_MOVIES_IN_CALENDAR, $value);
   }
 
-  public function getShowEventsInCalendarForUser($user): bool {
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getShowEventsInCalendarForUser(User $user): bool {
     return $this->getUserSetting($user, UserSettingKey::SHOW_EVENTS_IN_CALENDAR, true);
   }
 
-  public function setShowEventsInCalendarForUser($user, bool $value): bool {
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setShowEventsInCalendarForUser(User $user, bool $value): bool {
     return $this->setUserSetting($user, UserSettingKey::SHOW_EVENTS_IN_CALENDAR, $value);
   }
 
-  public function getShowBirthdaysInCalendarForUser($user): bool {
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getShowBirthdaysInCalendarForUser(User $user): bool {
     return $this->getUserSetting($user, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, false);
   }
 
-  public function setShowBirthdaysInCalendarForUser($user, bool $value): bool {
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setShowBirthdaysInCalendarForUser(User $user, bool $value): bool {
     return $this->setUserSetting($user, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR, $value);
   }
 
-  public function getNotifyMeOfNewEventsForUser($user): bool {
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getNotifyMeOfNewEventsForUser(User $user): bool {
     return $this->getUserSetting($user, UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS, false);
   }
 
-  public function setNotifyMeOfNewEventsForUser($user, bool $value): bool {
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setNotifyMeOfNewEventsForUser(User $user, bool $value): bool {
     return $this->setUserSetting($user, UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS, $value);
   }
 
@@ -66,7 +111,7 @@ class UserSettingRepository implements IUserSettingRepository {
    * @param bool $value
    * @return bool
    */
-  private function setUserSetting($user, string $settingKey, bool $value): bool {
+  private function setUserSetting(User $user, string $settingKey, bool $value): bool {
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, $settingKey);
     if ($setting == null) {
       return $this->userTokenRepository->createUserToken($user, $value, $settingKey)->token;
@@ -84,7 +129,7 @@ class UserSettingRepository implements IUserSettingRepository {
    * @param bool $default
    * @return bool
    */
-  private function getUserSetting($user, string $settingKey, bool $default): bool {
+  private function getUserSetting(User $user, string $settingKey, bool $default): bool {
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, $settingKey);
     if ($setting == null) {
       $setting = $this->userTokenRepository->createUserToken($user, $default, $settingKey);

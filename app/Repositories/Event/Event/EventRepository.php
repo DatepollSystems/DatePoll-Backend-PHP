@@ -12,6 +12,7 @@ use App\Repositories\Event\EventDecision\IEventDecisionRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Utils\ArrayHelper;
 use DateInterval;
 use DateTime;
 use Exception;
@@ -49,21 +50,13 @@ class EventRepository implements IEventRepository {
   }
 
   /**
-   * @return string[]
+   * @return int[]
    */
-  public function getYearsOfEvents() {
-    $years = [];
-    foreach ($this->getAllEvents() as $event) {
-      $date = date('Y', strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date));
-      if (! in_array($date, $years)) {
-        $years[] = $date;
-      }
-    }
-    usort($years, function ($a, $b) {
-      return strcmp($a, $b);
-    });
-
-    return $years;
+  public function getYearsOfEvents(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray(
+      DB::table('event_dates')->orderBy('date')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
+      'year'
+    );
   }
 
   /**
@@ -71,28 +64,15 @@ class EventRepository implements IEventRepository {
    * @return Event[]
    */
   public function getEventsOrderedByDate(int $year = null) {
-    $events = [];
-    foreach ($this->getAllEvents() as $event) {
-      if ($year == null) {
-        $events[] = $event;
-      } else {
-        if (date(
-          'Y',
-          strtotime($this->eventDateRepository->getFirstEventDateForEvent($event)->date)
-        ) == (string)$year) {
-          $events[] = $event;
-        }
-      }
+    $query = DB::table('event_dates');
+    if ($year != null) {
+      $query = $query->whereYear('date', '=', $year);
     }
 
-    usort($events, function ($a, $b) {
-      return strcmp(
-        $this->eventDateRepository->getFirstEventDateForEvent($b)->date,
-        $this->eventDateRepository->getFirstEventDateForEvent($a)->date
-      );
-    });
-
-    return $events;
+    return Event::find(ArrayHelper::getPropertyArrayOfObjectArray(
+      $query->orderBy('date')->addSelect('event_id')->get()->toArray(),
+      'event_id'
+    ));
   }
 
   /**
@@ -417,7 +397,7 @@ class EventRepository implements IEventRepository {
         foreach ($group->getUsersOrderedBySurname() as $gUser) {
           $user = $this->eventDecisionRepository->getDecisionForUser($gUser, $event, $anonymous);
           $groupResultUsers[] = $user;
-          if (! in_array($gUser->id, $allUserIds)) {
+          if (! ArrayHelper::inArray($allUserIds, $gUser->id)) {
             $allUsers[] = $user;
             $allUserIds[] = $gUser->id;
           }
@@ -437,7 +417,7 @@ class EventRepository implements IEventRepository {
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
             $subgroupResultUsers[] = $user;
-            if (! in_array($sUser->id, $allUserIds)) {
+            if (! ArrayHelper::inArray($allUserIds, $sUser->id)) {
               $allUsers[] = $user;
               $allUserIds[] = $sUser->id;
             }
@@ -502,44 +482,40 @@ class EventRepository implements IEventRepository {
   public function getOpenEventsForUser(User $user) {
     $events = [];
 
-    $eventIds = [];
     $date = date('Y-m-d H:i:s');
-    foreach (DB::table('events')->join('event_dates', 'events.id', '=', 'event_dates.event_id')->where(
+    $eventIdsResult = DB::table('event_dates')->where(
       'event_dates.date',
       '>',
       $date
-    )->orderBy('event_dates.date')->addSelect('events.id')->get() as $eventId) {
-      if (! in_array((int)$eventId->id, $eventIds)) {
-        $eventIds[] = (int)$eventId->id;
+    )->orderBy('event_dates.date')->addSelect('event_dates.event_id as id')->get()->unique('id')->all();
+    foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'id') as $eventId) {
+      $event = $this->getEventById($eventId);
 
-        $event = $this->getEventById((int)$eventId->id);
-
-        $inGroup = DB::table('events_for_groups')->join(
-          'users_member_of_groups',
-          'events_for_groups.group_id',
+      $inGroup = DB::table('events_for_groups')->join(
+        'users_member_of_groups',
+        'events_for_groups.group_id',
+        '=',
+        'users_member_of_groups.group_id'
+      )->where(
+          'events_for_groups.event_id',
           '=',
-          'users_member_of_groups.group_id'
-        )->where(
-              'events_for_groups.event_id',
-              '=',
-              $event->id
-            )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+          $event->id
+        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
 
-        $inSubgroup = DB::table('events_for_subgroups')->join(
-          'users_member_of_subgroups',
-          'events_for_subgroups.subgroup_id',
+      $inSubgroup = DB::table('events_for_subgroups')->join(
+        'users_member_of_subgroups',
+        'events_for_subgroups.subgroup_id',
+        '=',
+        'users_member_of_subgroups.subgroup_id'
+      )->where(
+          'events_for_subgroups.event_id',
           '=',
-          'users_member_of_subgroups.subgroup_id'
-        )->where(
-              'events_for_subgroups.event_id',
-              '=',
-              $event->id
-            )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+          $event->id
+        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
 
-        if ($event->forEveryone || $inGroup || $inSubgroup) {
-          $returnableEvent = $this->createOpenEventReturnable($event, $user);
-          $events[] = $returnableEvent;
-        }
+      if ($event->forEveryone || $inGroup || $inSubgroup) {
+        $returnableEvent = $this->createOpenEventReturnable($event, $user);
+        $events[] = $returnableEvent;
       }
     }
 

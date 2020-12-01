@@ -17,9 +17,9 @@ interface IEventRepository {
   public function getAllEvents();
 
   /**
-   * @return string[]
+   * @return int[]
    */
-  public function getYearsOfEvents();
+  public function getYearsOfEvents(): array;
 
   /**
    * @param int|null $year
