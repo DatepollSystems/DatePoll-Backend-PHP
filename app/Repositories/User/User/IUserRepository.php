@@ -2,7 +2,6 @@
 
 namespace App\Repositories\User\User;
 
-use App\Models\User\DeletedUser;
 use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,11 +12,6 @@ interface IUserRepository {
    * @return User[]|Collection
    */
   public function getAllUsers();
-
-  /**
-   * @return DeletedUser[]|Collection
-   */
-  public function getDeletedUsers();
 
   /**
    * @return User[]|Collection
@@ -51,94 +45,86 @@ interface IUserRepository {
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
-   * @param string $memberNumber
-   * @param string $internalComment
+   * @param string|null $memberNumber
+   * @param string|null $internalComment
    * @param bool $informationDenied
-   * @param string $bvMember
+   * @param string|null $bvMember
    * @param int $editorId
    * @param User|null $user
    * @return User|null
    * @throws Exception
    */
   public function createOrUpdateUser(
-    $title,
-    $username,
-    $firstname,
-    $surname,
-    $birthday,
-    $joinDate,
-    $streetname,
-    $streetnumber,
-    $zipcode,
-    $location,
-    $activated,
-    $activity,
-    $phoneNumbers,
-    $emailAddresses,
-    $memberNumber,
-    $internalComment,
-    $informationDenied,
-    $bvMember,
+    ?string $title,
+    string $username,
+    string $firstname,
+    string $surname,
+    string $birthday,
+    string $joinDate,
+    string $streetname,
+    string $streetnumber,
+    int $zipcode,
+    string $location,
+    bool $activated,
+    string $activity,
+    array $phoneNumbers,
+    array $emailAddresses,
+    ?string $memberNumber,
+    ?string $internalComment,
+    ?bool $informationDenied,
+    ?string $bvMember,
     int $editorId,
     User $user = null
-  );
+  ): ?User;
 
   /**
    * @param User $user
    * @param string[] $emailAddresses
    * @param int $editorId
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function updateUserEmailAddresses(User $user, $emailAddresses, int $editorId);
+  public function updateUserEmailAddresses(User $user, array $emailAddresses, int $editorId): bool;
 
   /**
-   * @param array $permissions
+   * @param string[]|array $permissions
    * @param User $user
    * @return bool
    */
-  public function createOrUpdatePermissionsForUser($permissions, User $user);
+  public function createOrUpdatePermissionsForUser(array $permissions, User $user): bool;
 
   /**
    * @param User $user
    */
-  public function activateUser(User $user);
-
-  /**
-   * @param User $user
-   * @return bool|null
-   */
-  public function deleteUser(User $user);
-
-  public function deleteAllDeletedUsers();
+  public function activateUser(User $user): void;
 
   /**
    * @return array
    */
-  public function exportAllUsers();
+  public function exportAllUsers(): array;
 
   /**
-   * @return Collection<User>|null
+   * @return User[]
    */
-  public function getAllNotActivatedUsers();
-
-  /**
-   * @param User $user
-   * @param string $notHashedPassword
-   * @return bool
-   */
-  public function changePasswordOfUser(User $user, string $notHashedPassword);
+  public function getAllNotActivatedUsers(): array;
 
   /**
    * @param User $user
    * @param string $password
    * @return bool
    */
-  public function checkPasswordOfUser(User $user, string $password);
+  public function changePasswordOfUser(User $user, string $password): bool;
+
+  /**
+   * @param User $user
+   * @param string $password
+   * @return bool
+   */
+  public function checkPasswordOfUser(User $user, string $password): bool;
 
   /**
    * @param User $user
    * @return array
    */
-  public function getHomepageDataForUser(User $user);
+  public function getHomepageDataForUser(User $user): array;
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ManagementControllers;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Permissions;
+use App\Repositories\User\DeletedUser\IDeletedUserRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use Exception;
@@ -15,10 +16,12 @@ use Illuminate\Validation\ValidationException;
 class UsersController extends Controller {
   protected IUserRepository $userRepository;
   protected IUserChangeRepository $userChangeRepository;
+  protected IDeletedUserRepository $deletedUserRepository;
 
-  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
+  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository, IDeletedUserRepository $deletedUserRepository) {
     $this->userRepository = $userRepository;
     $this->userChangeRepository = $userChangeRepository;
+    $this->deletedUserRepository = $deletedUserRepository;
   }
 
   /**
@@ -55,7 +58,7 @@ class UsersController extends Controller {
   public function getDeletedUsers() {
     $response = [
       'msg' => 'List of deleted users',
-      'users' => $this->userRepository->getDeletedUsers(), ];
+      'users' => $this->deletedUserRepository->getDeletedUsers(), ];
 
     return response()->json($response);
   }
@@ -359,7 +362,7 @@ class UsersController extends Controller {
       return response()->json(['msg' => 'Can not delete yourself'], 400);
     }
 
-    if (! $this->userRepository->deleteUser($user)) {
+    if (! $this->deletedUserRepository->deleteUser($user)) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 
@@ -381,7 +384,7 @@ class UsersController extends Controller {
     }
 
     Logging::info('deleteDeletedUsers', 'Deleting all deleted users... User id - ' . $request->auth->id);
-    $this->userRepository->deleteAllDeletedUsers();
+    $this->deletedUserRepository->deleteAllDeletedUsers();
     Logging::info('deleteDeletedUsers', 'Deleted all deleted users! User id - ' . $request->auth->id);
 
     return response()->json(['msg' => 'Deleted users successfully deleted'], 200);

@@ -42,6 +42,8 @@ use App\Repositories\System\Log\ILogRepository;
 use App\Repositories\System\Log\LogRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\System\Setting\SettingRepository;
+use App\Repositories\User\DeletedUser\DeletedUserRepository;
+use App\Repositories\User\DeletedUser\IDeletedUserRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\User\UserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
@@ -71,6 +73,7 @@ class AppServiceProvider extends ServiceProvider {
     $this->app->bind(IUserTokenRepository::class, UserTokenRepository::class);
     $this->app->bind(IUserSettingRepository::class, UserSettingRepository::class);
     $this->app->bind(IUserChangeRepository::class, UserChangeRepository::class);
+    $this->app->bind(IDeletedUserRepository::class, DeletedUserRepository::class);
 
     /** Group repositories */
     $this->app->bind(IGroupRepository::class, GroupRepository::class);

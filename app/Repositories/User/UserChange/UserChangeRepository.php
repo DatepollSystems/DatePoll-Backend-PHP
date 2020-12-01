@@ -4,7 +4,6 @@ namespace App\Repositories\User\UserChange;
 
 use App\Logging;
 use App\Models\User\UserChange;
-use Illuminate\Database\Eloquent\Collection;
 
 class UserChangeRepository implements IUserChangeRepository {
   /**
@@ -15,7 +14,7 @@ class UserChangeRepository implements IUserChangeRepository {
    * @param string|null $oldValue
    * @return UserChange|null
    */
-  public function createUserChange(string $property, int $userId, int $editorId, string $newValue = null, string $oldValue = null) {
+  public function createUserChange(string $property, int $userId, int $editorId, string $newValue = null, string $oldValue = null): ?UserChange {
     $userChange = new UserChange([
       'property' => $property,
       'old_value' => $oldValue,
@@ -33,17 +32,17 @@ class UserChangeRepository implements IUserChangeRepository {
   }
 
   /**
-   * @return UserChange[]|Collection
+   * @return UserChange[]
    */
-  public function getAllUserChangesOrderedByDate() {
-    return UserChange::orderBy('created_at', 'DESC')->get();
+  public function getAllUserChangesOrderedByDate(): array {
+    return UserChange::orderBy('created_at', 'DESC')->get()->all();
   }
 
   /**
    * @param int $id
    * @return UserChange|null
    */
-  public function getUserChangeById(int $id) {
+  public function getUserChangeById(int $id): ?UserChange {
     return UserChange::find($id);
   }
 
