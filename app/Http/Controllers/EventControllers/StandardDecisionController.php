@@ -41,10 +41,6 @@ class StandardDecisionController extends Controller {
       return response()->json(['msg' => 'Standard decision not found'], 404);
     }
 
-    $standardDecision->view_standard_decisions = [
-      'href' => 'api/v1/avent/administration/standardDecision',
-      'method' => 'GET', ];
-
     return response()->json([
       'msg' => 'Standard decision information',
       'standardDecision' => $standardDecision, ]);
@@ -66,10 +62,6 @@ class StandardDecisionController extends Controller {
     if ($decisionObject == null) {
       return response()->json(['msg' => 'An error occurred during standard decision saving...'], 500);
     }
-
-    $decisionObject->view_standard_decision = [
-      'href' => 'api/v1/avent/administration/standardDecision/' . $decisionObject->id,
-      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Successful created standard decision',

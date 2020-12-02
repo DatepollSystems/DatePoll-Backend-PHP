@@ -5,7 +5,6 @@ namespace App\Models\Groups;
 use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use stdClass;
 
@@ -31,28 +30,28 @@ class Group extends Model {
     'updated_at', ];
 
   /**
-   * @return Collection<Subgroup> | Subgroup[] | null
+   * @return Subgroup[]
    */
-  public function subgroups() {
+  public function subgroups(): array {
     return $this->hasMany('App\Models\Subgroups\Subgroup')
-      ->get();
+      ->get()->all();
   }
 
   /**
-   * @return Collection<Subgroup> | Subgroup[]
+   * @return Subgroup[]
    */
-  public function getSubgroupsOrdered() {
+  public function getSubgroupsOrdered(): array {
     return $this->hasMany('App\Models\Subgroups\Subgroup')
       ->orderBy('orderN')
-      ->get();
+      ->get()->all();
   }
 
   /**
-   * @return Collection<UsersMemberOfGroups> | UsersMemberOfGroups[] | null
+   * @return UsersMemberOfGroups[]
    */
-  public function usersMemberOfGroups() {
+  public function usersMemberOfGroups(): array {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
-      ->get();
+      ->get()->all();
   }
 
   /**
@@ -78,9 +77,9 @@ class Group extends Model {
   }
 
   /**
-   * @return User[] | null
+   * @return User[]
    */
-  public function getUsersOrderedBySurname() {
+  public function getUsersOrderedBySurname(): array {
     $usersMemberOfGroups = $this->usersMemberOfGroups();
     $users = [];
     foreach ($usersMemberOfGroups as $usersMemberOfGroup) {
@@ -94,10 +93,10 @@ class Group extends Model {
   }
 
   /**
-   * @return Collection | EventForGroup[] | null
+   * @return EventForGroup[]
    */
-  public function eventsForGroups() {
+  public function eventsForGroups(): array {
     return $this->hasMany(EventForGroup::class)
-      ->get();
+      ->get()->all();
   }
 }

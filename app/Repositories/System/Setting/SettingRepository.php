@@ -376,7 +376,7 @@ class SettingRepository implements ISettingRepository {
 
       return (bool)$newSetting->value;
     } else {
-      $setting->value = $value;
+      $setting->value = (string) $value;
       $setting->save();
 
       return (bool)$setting->value;
@@ -401,7 +401,7 @@ class SettingRepository implements ISettingRepository {
 
       return (int)$newSetting->value;
     } else {
-      $setting->value = $value;
+      $setting->value = (string) $value;
       $setting->save();
 
       return (int)$setting->value;

@@ -11,24 +11,24 @@ interface IUserSeatReservationRepository {
   /**
    * @return PlaceReservation[]
    */
-  public function getAllPlaceReservationsOrderedByDate();
+  public function getAllPlaceReservationsOrderedByDate(): array;
 
   /**
    * @return PlaceReservation[]
    */
-  public function getUpcomingPlaceReservationsOrderedByDate();
+  public function getUpcomingPlaceReservationsOrderedByDate(): array;
 
   /**
    * @param int $id
    * @return PlaceReservation|null
    */
-  public function getPlaceReservationById(int $id);
+  public function getPlaceReservationById(int $id): ?PlaceReservation;
 
   /**
    * @param int $userId
    * @return PlaceReservation[]
    */
-  public function getUserReservationsByUserId(int $userId);
+  public function getUserReservationsByUserId(int $userId): array;
 
   /**
    * @param string $reason
@@ -52,5 +52,5 @@ interface IUserSeatReservationRepository {
     ?User $user = null,
     ?User $approver = null,
     ?PlaceReservation $placeReservation = null
-  );
+  ): ?PlaceReservation;
 }

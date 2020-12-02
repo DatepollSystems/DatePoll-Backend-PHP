@@ -6,37 +6,33 @@ use App\Logging;
 use App\Models\SeatReservation\Place;
 use App\Models\SeatReservation\PlaceReservation;
 use App\Models\User\User;
+use Illuminate\Support\Facades\DB;
 
 class UserSeatReservationRepository implements IUserSeatReservationRepository {
 
   /**
    * @return PlaceReservation[]
    */
-  public function getAllPlaceReservationsOrderedByDate() {
-    return PlaceReservation::orderBy('start_date')->get();
+  public function getAllPlaceReservationsOrderedByDate(): array {
+    return PlaceReservation::orderBy('start_date')->get()->all();
   }
 
   /**
    * @return PlaceReservation[]
    */
-  public function getUpcomingPlaceReservationsOrderedByDate() {
-    $all = $this->getAllPlaceReservationsOrderedByDate();
-    $reservations = [];
-
-    foreach ($all as $reservation) {
-      if ((time() - (60 * 60 * 24)) < strtotime($reservation->start_date)) {
-        $reservations[] = $reservation;
-      }
-    }
-
-    return $reservations;
+  public function getUpcomingPlaceReservationsOrderedByDate(): array {
+    return DB::table('places_reservations_by_users')->where(
+      'start_date',
+      '>',
+      date('Y-m-d H:i:s')
+    )->orderBy('start_date')->get()->all();
   }
 
   /**
    * @param int $id
    * @return PlaceReservation|null
    */
-  public function getPlaceReservationById(int $id) {
+  public function getPlaceReservationById(int $id): ?PlaceReservation {
     return PlaceReservation::find($id);
   }
 
@@ -44,8 +40,8 @@ class UserSeatReservationRepository implements IUserSeatReservationRepository {
    * @param int $userId
    * @return PlaceReservation[]
    */
-  public function getUserReservationsByUserId(int $userId) {
-    return PlaceReservation::where('user_id', '=', $userId)->get();
+  public function getUserReservationsByUserId(int $userId): array {
+    return PlaceReservation::where('user_id', '=', $userId)->get()->all();
   }
 
   /**
@@ -70,7 +66,7 @@ class UserSeatReservationRepository implements IUserSeatReservationRepository {
     ?User $user = null,
     ?User $approver = null,
     ?PlaceReservation $placeReservation = null
-  ) {
+  ): ?PlaceReservation {
     if ($placeReservation == null && $user != null) {
       $placeReservation = new PlaceReservation(['reason' => $reason, 'description' => $description,
         'start_date' => $startDate, 'end_date' => $endDate,

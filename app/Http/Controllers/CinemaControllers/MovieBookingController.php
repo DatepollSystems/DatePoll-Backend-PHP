@@ -53,10 +53,6 @@ class MovieBookingController extends Controller {
     if ($movieBooking != null) {
       $movie->save();
 
-      $movieBooking->cancel_booking = [
-        'href' => 'api/v1/cinema/booking/' . $movie->id,
-        'method' => 'DELETE', ];
-
       Logging::info('bookTickets', 'Movie booking - ' . $movieBooking->id . ' | Created');
 
       return response()->json([

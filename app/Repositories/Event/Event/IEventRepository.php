@@ -25,7 +25,7 @@ interface IEventRepository {
    * @param int|null $year
    * @return Event[]
    */
-  public function getEventsOrderedByDate(int $year = null);
+  public function getEventsOrderedByDate(int $year = null): array;
 
   /**
    * @param int $id

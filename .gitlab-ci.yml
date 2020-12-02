@@ -5,10 +5,10 @@ cache:
     - vendor/
 
 before_script:
-  - apt-get update -yqq
-  - apt-get install -y git zip wget libc-client-dev libkrb5-dev && rm -r /var/lib/apt/lists/*
-  - docker-php-ext-install pdo_mysql pcntl opcache
-  - docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap
+  - apt-get update -yqq > /dev/null
+  - apt-get install -y git zip wget libc-client-dev libkrb5-dev > /dev/null && rm -r /var/lib/apt/lists/*
+  - docker-php-ext-install pdo_mysql pcntl opcache > /dev/null
+  - docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap > /dev/null
   - wget https://composer.github.io/installer.sig -O - -q | tr -d '\n' > installer.sig
   - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
   - php -r "if (hash_file('SHA384', 'composer-setup.php') === file_get_contents('installer.sig')) { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"

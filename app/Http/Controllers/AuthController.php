@@ -72,7 +72,7 @@ class AuthController extends Controller {
 
       $sessionInformation = $request->input('session_information');
       $stayLoggedIn = $request->input('stay_logged_in');
-      if ($stayLoggedIn != null && $sessionInformation != null) {
+      if ($stayLoggedIn !== null && $sessionInformation != null) {
         if ((bool)$stayLoggedIn) {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
@@ -142,7 +142,7 @@ class AuthController extends Controller {
 
       $sessionInformation = $request->input('session_information');
       $stayLoggedIn = $request->input('stay_logged_in');
-      if ($stayLoggedIn != null && $sessionInformation != null) {
+      if ($stayLoggedIn !== null && $sessionInformation != null) {
         if ((bool)$stayLoggedIn) {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 

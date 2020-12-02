@@ -22,11 +22,6 @@ class MovieYearController extends Controller {
    */
   public function getAll() {
     $years = $this->movieYearRepository->getMovieYearsOrderedByDate();
-    foreach ($years as $year) {
-      $year->view_year = [
-        'href' => 'api/v1/cinema/administration/year/' . $year->id,
-        'method' => 'GET', ];
-    }
 
     return response()->json([
       'msg' => 'List of all years',
@@ -44,10 +39,6 @@ class MovieYearController extends Controller {
     $movieYear = $this->movieYearRepository->createMovieYear($request->input('year'));
 
     if ($movieYear != null) {
-      $movieYear->view_year = [
-        'href' => 'api/v1/cinema/administration/year/' . $movieYear->id,
-        'method' => 'GET', ];
-
       Logging::info('createMovieYear', 'User - ' . $request->auth->id . ' | Created movie year - ' . $movieYear->id);
 
       return response()->json([
@@ -73,10 +64,6 @@ class MovieYearController extends Controller {
       return response()->json(['msg' => 'Movie year not found'], 404);
     }
 
-    $year->view_years = [
-      'href' => 'api/v1/cinema/administration/year',
-      'method' => 'GET', ];
-
     return response()->json([
       'msg' => 'Year information',
       'year' => $year, ]);
@@ -101,10 +88,6 @@ class MovieYearController extends Controller {
     $movieYear = $this->movieYearRepository->updateMovieYear($movieYear, $request->input('year'));
 
     if ($movieYear != null) {
-      $movieYear->view_year = [
-        'href' => 'api/v1/cinema/administration/year/' . $movieYear->id,
-        'method' => 'GET', ];
-
       return response()->json([
         'msg' => 'Year updated',
         'year' => $movieYear, ], 201);

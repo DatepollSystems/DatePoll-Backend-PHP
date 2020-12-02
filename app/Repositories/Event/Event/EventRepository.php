@@ -63,7 +63,7 @@ class EventRepository implements IEventRepository {
    * @param int|null $year
    * @return Event[]
    */
-  public function getEventsOrderedByDate(int $year = null) {
+  public function getEventsOrderedByDate(int $year = null): array {
     $query = DB::table('event_dates');
     if ($year != null) {
       $query = $query->whereYear('date', '=', $year);
@@ -72,7 +72,7 @@ class EventRepository implements IEventRepository {
     return Event::find(ArrayHelper::getPropertyArrayOfObjectArray(
       $query->orderBy('date')->addSelect('event_id')->get()->toArray(),
       'event_id'
-    ));
+    ))->all();
   }
 
   /**
@@ -497,10 +497,10 @@ class EventRepository implements IEventRepository {
         '=',
         'users_member_of_groups.group_id'
       )->where(
-          'events_for_groups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+        'events_for_groups.event_id',
+        '=',
+        $event->id
+      )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
 
       $inSubgroup = DB::table('events_for_subgroups')->join(
         'users_member_of_subgroups',
@@ -508,10 +508,10 @@ class EventRepository implements IEventRepository {
         '=',
         'users_member_of_subgroups.subgroup_id'
       )->where(
-          'events_for_subgroups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+        'events_for_subgroups.event_id',
+        '=',
+        $event->id
+      )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
 
       if ($event->forEveryone || $inGroup || $inSubgroup) {
         $returnableEvent = $this->createOpenEventReturnable($event, $user);
