@@ -22,13 +22,13 @@ interface IUserRepository {
    * @param int $id
    * @return User|null
    */
-  public function getUserById(int $id);
+  public function getUserById(int $id): ?User;
 
   /**
    * @param string $username
    * @return User|null
    */
-  public function getUserByUsername(string $username);
+  public function getUserByUsername(string $username): ?User;
 
   /**
    * @param string|null $title

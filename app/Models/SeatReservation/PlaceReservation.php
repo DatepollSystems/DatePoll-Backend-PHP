@@ -76,8 +76,8 @@ class PlaceReservation extends Model {
    */
   public function getReturnable(): PlaceReservation {
     $returnable = $this;
-    $returnable->user_name = $this->user()->getName();
-    $returnable->approver_name = $this->approver()->getName();
+    $returnable->user_name = $this->user()->getCompleteName();
+    $returnable->approver_name = $this->approver()->getCompleteName();
     $returnable->place_name = $this->place()->name;
 
     return $returnable;

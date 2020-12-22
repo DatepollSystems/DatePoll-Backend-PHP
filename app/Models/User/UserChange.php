@@ -54,8 +54,8 @@ class UserChange extends Model {
    */
   public function getReturnable() {
     $dto = $this;
-    $dto->editor_name = $this->editor()->getName();
-    $dto->user_name = $this->user()->getName();
+    $dto->editor_name = $this->editor()->getCompleteName();
+    $dto->user_name = $this->user()->getCompleteName();
 
     return $dto;
   }

@@ -17,7 +17,7 @@ class DatePollServerRepository implements IDatePollServerRepository {
   /**
    * @return stdClass
    */
-  public function getServerInfo() {
+  public function getServerInfo(): stdClass {
     $dto = new stdClass();
     $dto->version = Versions::getApplicationVersionString();
     $dto->version_number = Versions::getApplicationVersion();

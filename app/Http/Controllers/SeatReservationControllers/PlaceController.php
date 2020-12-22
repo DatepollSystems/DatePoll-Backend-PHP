@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SeatReservationControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\SeatReservation\Place\IPlaceRepository;
@@ -20,10 +21,8 @@ class PlaceController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAll() {
-    $places = $this->placeRepository->getAllPlaces();
-
-    return response()->json(['msg' => 'List of all places', 'places' => $places]);
+  public function getAll(): JsonResponse {
+    return response()->json(['msg' => 'List of all places', 'places' => $this->placeRepository->getAllPlaces()]);
   }
 
   /**
@@ -31,7 +30,7 @@ class PlaceController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|string',
       'x' => 'nullable|numeric',
@@ -57,7 +56,7 @@ class PlaceController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id) {
+  public function update(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|string',
       'x' => 'nullable|numeric',
@@ -83,12 +82,12 @@ class PlaceController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, int $id) {
+  public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
     $place = $this->placeRepository->getPlaceById($id);
     if ($place == null) {
       return response()->json(['msg' => 'Place not found'], 404);

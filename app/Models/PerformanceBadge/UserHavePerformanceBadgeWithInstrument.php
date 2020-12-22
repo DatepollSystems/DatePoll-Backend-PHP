@@ -34,23 +34,44 @@ class UserHavePerformanceBadgeWithInstrument extends Model {
   protected $fillable = ['grade', 'date', 'note', 'user_id', 'performance_badge_id', 'instrument_id', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo | Instrument
+   * @return Instrument | BelongsTo | null
    */
   public function instrument() {
-    return $this->belongsTo('App\Models\PerformanceBadge\Instrument')->first();
+    return $this->belongsTo(Instrument::class)->first();
   }
 
   /**
-   * @return BelongsTo | PerformanceBadge
+   * @return PerformanceBadge | null | BelongsTo
    */
-  public function performanceBadge() {
-    return $this->belongsTo('App\Models\PerformanceBadge\PerformanceBadge')->first();
+  public function performanceBadge(): ?PerformanceBadge {
+    return $this->belongsTo(PerformanceBadge::class)->first();
   }
 
   /**
-   * @return BelongsTo | User
+   * @return User | null | BelongsTo
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+  public function user(): ?User {
+    return $this->belongsTo(User::class)->first();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $date = null;
+    if ($this->date != '1970-01-01') {
+      $date = $this->date;
+    }
+
+    return [
+      'id' => $this->id,
+      'performanceBadge_id' => $this->performance_badge_id,
+      'instrument_id' => $this->instrument_id,
+      'grade' => $this->grade,
+      'note' => $this->note,
+      'performanceBadge_name' => $this->performanceBadge()->name,
+      'instrument_name' => $this->instrument()->name,
+      'date' => $date,
+    ];
   }
 }

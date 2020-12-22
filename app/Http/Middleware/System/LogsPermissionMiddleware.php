@@ -5,14 +5,15 @@ namespace App\Http\Middleware\System;
 use App\Http\AuthenticatedRequest;
 use App\Permissions;
 use Closure;
+use Illuminate\Http\JsonResponse;
 
 class LogsPermissionMiddleware {
   /**
    * @param AuthenticatedRequest $request
    * @param Closure $next
-   * @return mixed
+   * @return JsonResponse
    */
-  public function handle(AuthenticatedRequest $request, Closure $next) {
+  public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse {
     $user = $request->auth;
     if (! ($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) or $user->hasPermission(Permissions::$SYSTEM_ADMINISTRATION) or $user->hasPermission(Permissions::$SYSTEM_LOGS_ADMINISTRATION))) {
       return response()->json([

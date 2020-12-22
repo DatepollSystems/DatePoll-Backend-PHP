@@ -4,54 +4,52 @@ namespace App\Repositories\Group\Group;
 
 use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
-use App\Models\User\User;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IGroupRepository {
   /**
-   * @return Group[]|Collection
+   * @return Group[]
    */
-  public function getAllGroups();
+  public function getAllGroups(): array;
 
   /**
-   * @return Group[]|Collection
+   * @return Group[]
    */
-  public function getAllGroupsOrdered();
+  public function getAllGroupsOrdered(): array;
 
   /**
-   * @return Group[]|Collection
+   * @return Group[]
    */
-  public function getAllGroupsWithSubgroupsOrdered();
+  public function getAllGroupsWithSubgroupsOrdered(): array;
 
   /**
    * @param int $id
    * @return Group|null
    */
-  public function getGroupById(int $id);
+  public function getGroupById(int $id): ?Group;
 
   /**
    * @param string $name
    * @param string $description
    * @param int|null $orderN
    * @param Group|null $group
-   * @return Group | null
+   * @return Group|null
    */
-  public function createOrUpdateGroup(string $name, string $description, $orderN = null, $group = null);
+  public function createOrUpdateGroup(string $name, string $description, ?int $orderN = null, ?Group $group = null): ?Group;
 
   /**
    * @param Group $group
    * @return boolean
    * @throws Exception
    */
-  public function delete($group);
+  public function delete(Group $group): bool;
 
   /**
    * @param int $groupId
    * @param int $userId
-   * @return UsersMemberOfGroups | null
+   * @return UsersMemberOfGroups|null
    */
-  public function getUserMemberOfGroupByGroupIdAndUserId(int $groupId, int $userId);
+  public function getUserMemberOfGroupByGroupIdAndUserId(int $groupId, int $userId): ?UsersMemberOfGroups;
 
   /**
    * @param int $groupId
@@ -60,24 +58,24 @@ interface IGroupRepository {
    * @param UsersMemberOfGroups|null $userMemberOfGroup
    * @return UsersMemberOfGroups|null
    */
-  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, ?string $role, $userMemberOfGroup = null);
+  public function createOrUpdateUserMemberOfGroup(int $groupId, int $userId, ?string $role, ?UsersMemberOfGroups $userMemberOfGroup = null): ?UsersMemberOfGroups;
 
   /**
    * @param UsersMemberOfGroups $userMemberOfGroup
    * @return boolean
    * @throws Exception
    */
-  public function removeUserFromGroup($userMemberOfGroup);
+  public function removeUserFromGroup(UsersMemberOfGroups $userMemberOfGroup): bool;
 
   /**
-   * @param User $user
+   * @param int $userId
    * @return Group[]
    */
-  public function getGroupsWhereUserIsNotIn($user);
+  public function getGroupsWhereUserIsNotIn(int $userId): array;
 
   /**
    * @param Group $group
    * @return Group
    */
-  public function getGroupStatisticsByGroup(Group $group);
+  public function getGroupStatisticsByGroup(Group $group): Group;
 }

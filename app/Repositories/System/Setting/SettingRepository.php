@@ -35,7 +35,7 @@ abstract class CommunityAlertTypes {
 }
 
 use App\Models\System\Setting;
-use App\Models\System\SettingValueType;
+use App\Utils\Converter;
 use App\Versions;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
@@ -277,6 +277,8 @@ class SettingRepository implements ISettingRepository {
     return $this->setIntegerValueByKey(SettingKey::DATABASE_VERSION, $currentDatabaseVersion);
   }
 
+  // -------------------------------------- Base methods --------------------------------------
+
   /**
    * @param string $settingKey
    * @param string $default
@@ -286,7 +288,6 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
         'key' => $settingKey,
         'value' => $default, ]);
 
@@ -308,7 +309,6 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
         'key' => $settingKey,
         'value' => $value, ]);
 
@@ -332,22 +332,17 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
 
     if ($setting == null) {
-      if ($default) {
-        $valueToSave = 'true';
-      } else {
-        $valueToSave = 'false';
-      }
+      $valueToSave = Converter::booleanToString($default);
 
       $newSetting = new Setting([
-        'type' => SettingValueType::BOOLEAN,
         'key' => $settingKey,
         'value' => $valueToSave, ]);
 
       $newSetting->save();
 
-      return (bool)$newSetting->value;
+      return Converter::stringToBoolean($newSetting->value);
     } else {
-      return (bool)$setting->value;
+      return Converter::stringToBoolean($setting->value);
     }
   }
 
@@ -360,26 +355,21 @@ class SettingRepository implements ISettingRepository {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
 
-    if ($setting == null) {
-      if ($value) {
-        $valueToSave = 'true';
-      } else {
-        $valueToSave = 'false';
-      }
+    $valueToSave = Converter::booleanToString($value);
 
+    if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
         'key' => $settingKey,
         'value' => $valueToSave, ]);
 
       $newSetting->save();
 
-      return (bool)$newSetting->value;
+      return Converter::stringToBoolean($newSetting->value);
     } else {
-      $setting->value = (string) $value;
+      $setting->value = $valueToSave;
       $setting->save();
 
-      return (bool)$setting->value;
+      return Converter::stringToBoolean($setting->value);
     }
   }
 
@@ -391,20 +381,22 @@ class SettingRepository implements ISettingRepository {
   private function setIntegerValueByKey(string $settingKey, int $value): int {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
+
+    $valueToSave = Converter::integerToString($value);
+
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::INTEGER,
         'key' => $settingKey,
-        'value' => $value, ]);
+        'value' => $valueToSave, ]);
 
       $newSetting->save();
 
-      return (int)$newSetting->value;
+      return Converter::stringToInteger($newSetting->value);
     } else {
-      $setting->value = (string) $value;
+      $setting->value = $valueToSave;
       $setting->save();
 
-      return (int)$setting->value;
+      return Converter::stringToInteger($setting->value);
     }
   }
 
@@ -418,15 +410,14 @@ class SettingRepository implements ISettingRepository {
 
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::INTEGER,
         'key' => $settingKey,
-        'value' => $default, ]);
+        'value' => Converter::integerToString($default), ]);
 
       $newSetting->save();
 
-      return (int)$newSetting->value;
+      return Converter::stringToInteger($newSetting->value);
     } else {
-      return (int)$setting->value;
+      return Converter::stringToInteger($setting->value);
     }
   }
 

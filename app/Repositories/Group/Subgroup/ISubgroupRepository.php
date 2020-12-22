@@ -5,77 +5,75 @@ namespace App\Repositories\Group\Subgroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use stdClass;
 
 interface ISubgroupRepository {
   /**
-   * @return Subgroup[] | Collection<Subgroup>
+   * @return Subgroup[]
    */
-  public function getAllSubgroupsOrdered();
+  public function getAllSubgroupsOrdered(): array;
 
   /**
    * @param int $id
    * @return Subgroup|null
    */
-  public function getSubgroupById($id);
+  public function getSubgroupById(int $id): ?Subgroup;
 
   /**
    * @param string $name
    * @param string $description
    * @param int $groupId
-   * @param int $orderN
+   * @param int|null $orderN
    * @param Subgroup|null $subgroup
    * @return Subgroup|null
    */
-  public function createOrUpdateSubgroup($name, $description, $groupId, $orderN, $subgroup = null);
+  public function createOrUpdateSubgroup(string $name, string $description, int $groupId, ?int $orderN = null, ?Subgroup $subgroup = null): ?Subgroup;
 
   /**
    * @param Subgroup $subgroup
    * @return boolean
    * @throws Exception
    */
-  public function deleteSubgroup($subgroup);
+  public function deleteSubgroup(Subgroup $subgroup): bool;
 
   /**
    * @param int $subgroupId
    * @param int $userId
    * @return UsersMemberOfSubgroups|null
    */
-  public function getUserMemberOfSubgroupBySubgroupIdAndUserId($subgroupId, $userId);
+  public function getUserMemberOfSubgroupBySubgroupIdAndUserId(int $subgroupId, int $userId): ?UsersMemberOfSubgroups;
 
   /**
    * @param int $subgroupId
    * @param int $userId
-   * @param string $role
+   * @param string|null $role
    * @param UsersMemberOfSubgroups|null $userMemberOfSubgroup
    * @return UsersMemberOfSubgroups|null
    */
-  public function createOrUpdateUserMemberOfSubgroup($subgroupId, $userId, $role, $userMemberOfSubgroup = null);
+  public function createOrUpdateUserMemberOfSubgroup(int $subgroupId, int $userId, ?string $role = null, ?UsersMemberOfSubgroups $userMemberOfSubgroup = null): ?UsersMemberOfSubgroups;
 
   /**
    * @param int $userId
    * @param int $groupId
-   * @return array|UsersMemberOfSubgroups[]
+   * @return UsersMemberOfSubgroups[]
    */
-  public function getUserMemberOfSubgroupsAndInGroups($userId, $groupId);
+  public function getUserMemberOfSubgroupsAndInGroups(int $userId, int $groupId): array;
 
   /**
    * @param UsersMemberOfSubgroups $userMemberOfSubgroup
    * @return boolean
    * @throws Exception
    */
-  public function removeSubgroupForUser($userMemberOfSubgroup);
+  public function removeSubgroupForUser(UsersMemberOfSubgroups $userMemberOfSubgroup): bool;
 
   /**
    * @param int $userId
-   * @return stdClass[]|Subgroup[]
+   * @return Subgroup[]
    */
-  public function getJoinedSubgroupsReturnableByUserId($userId);
+  public function getJoinedSubgroupsReturnableByUserId(int $userId): array;
 
   /**
    * @param int $userId
-   * @return stdClass[]|Subgroup[]
+   * @return Subgroup[]
    */
-  public function getFreeSubgroupsReturnableByUserId($userId);
+  public function getFreeSubgroupsReturnableByUserId(int $userId): array;
 }

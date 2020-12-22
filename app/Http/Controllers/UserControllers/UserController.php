@@ -22,12 +22,12 @@ class UserController extends Controller {
    * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getMyself(AuthenticatedRequest $request) {
+  public function getMyself(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
     return response()->json([
       'msg' => 'Get yourself',
-      'user' => $user->getReturnable(), ], 200);
+      'user' => $user, ], 200);
   }
 
   /**
@@ -35,7 +35,7 @@ class UserController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function updateMyself(AuthenticatedRequest $request) {
+  public function updateMyself(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'title' => 'max:190',
       'streetname' => 'required|max:190|min:1',
@@ -76,14 +76,14 @@ class UserController extends Controller {
 
     return response()->json([
       'msg' => 'User updated',
-      'user' => $user->getReturnable(), ], 201);
+      'user' => $user, ], 201);
   }
 
   /**
    * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function homepage(AuthenticatedRequest $request) {
+  public function homepage(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
     $response = $this->userRepository->getHomepageDataForUser($user);

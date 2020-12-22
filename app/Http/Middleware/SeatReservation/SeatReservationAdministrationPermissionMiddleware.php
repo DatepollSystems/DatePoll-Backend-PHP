@@ -5,14 +5,15 @@ namespace App\Http\Middleware\SeatReservation;
 use App\Http\AuthenticatedRequest;
 use App\Permissions;
 use Closure;
+use Illuminate\Http\JsonResponse;
 
 class SeatReservationAdministrationPermissionMiddleware {
   /**
    * @param AuthenticatedRequest $request
    * @param Closure $next
-   * @return mixed
+   * @return JsonResponse
    */
-  public function handle(AuthenticatedRequest $request, Closure $next) {
+  public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse {
     $user = $request->auth;
     if (! ($user->hasPermission(Permissions::$SEAT_RESERVATION_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
       return response()->json([

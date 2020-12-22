@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\BroadcastControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class BroadcastUserController extends Controller {
   protected IBroadcastRepository $broadcastRepository;
@@ -15,10 +15,10 @@ class BroadcastUserController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getAll(Request $request): JsonResponse {
+  public function getAll(AuthenticatedRequest $request): JsonResponse {
     $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($request->auth->id);
     $toReturnBroadcasts = [];
     foreach ($broadcasts as $broadcast) {
@@ -31,11 +31,11 @@ class BroadcastUserController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, int $id): JsonResponse {
+  public function getSingle(AuthenticatedRequest $request, int $id): JsonResponse {
     $broadcast = $this->broadcastRepository->getBroadcastById($id);
     if ($broadcast == null) {
       return response()->json(['msg' => 'Broadcast not found', 'error_code' => 'not_found'], 404);

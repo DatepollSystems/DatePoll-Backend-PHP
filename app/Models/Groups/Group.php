@@ -2,6 +2,7 @@
 
 namespace App\Models\Groups;
 
+use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
@@ -57,7 +58,7 @@ class Group extends Model {
   /**
    * @return stdClass[]
    */
-  public function getUsersWithRolesOrderedBySurname() {
+  public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
     $users = $this->usersMemberOfGroups();
     foreach ($users as $userS) {
@@ -97,6 +98,14 @@ class Group extends Model {
    */
   public function eventsForGroups(): array {
     return $this->hasMany(EventForGroup::class)
+      ->get()->all();
+  }
+
+  /**
+   * @return BroadcastForGroup[]
+   */
+  public function broadcastsForGroups(): array {
+    return $this->hasMany(BroadcastForGroup::class)
       ->get()->all();
   }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BroadcastControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Models\Broadcasts\BroadcastAttachment;
@@ -36,7 +37,7 @@ class BroadcastController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAll() {
+  public function getAll(): JsonResponse {
     $broadcasts = $this->broadcastRepository->getAllBroadcastsOrderedByDate();
     $toReturnBroadcasts = [];
     foreach ($broadcasts as $broadcast) {
@@ -45,14 +46,14 @@ class BroadcastController extends Controller {
 
     return response()->json([
       'msg' => 'List of all broadcasts',
-      'broadcasts' => $toReturnBroadcasts, ]);
+      'broadcasts' => $toReturnBroadcasts,]);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function getSentReceiptReturnable(int $id) {
+  public function getSentReceiptReturnable(int $id): JsonResponse {
     $broadcast = $this->broadcastRepository->getBroadcastById($id);
     if ($broadcast == null) {
       return response()->json(['msg' => 'Broadcast not found'], 404);
@@ -60,15 +61,15 @@ class BroadcastController extends Controller {
 
     return response()->json([
       'msg' => 'Get broadcast with send receipts',
-      'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast), ]);
+      'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast),]);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'for_everyone' => 'required|boolean',
       'subject' => 'required|max:190|min:1',
@@ -107,16 +108,16 @@ class BroadcastController extends Controller {
 
     return response()->json([
       'msg' => 'Successful created broadcast',
-      'broadcast' => $broadcast, ], 201);
+      'broadcast' => $broadcast,], 201);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, int $id) {
+  public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
     $broadcast = $this->broadcastRepository->getBroadcastById($id);
     if ($broadcast == null) {
       return response()->json(['msg' => 'Broadcast not found'], 404);
@@ -138,18 +139,14 @@ class BroadcastController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function attachmentsUpload(Request $request) {
+  public function attachmentsUpload(Request $request): JsonResponse {
     $this->validate($request, ['files_count' => 'numeric']);
-
     $count = $request->input('files_count');
 
     $files = [];
-
     for ($i = 0; $i < $count; $i++) {
       $file = $request->file('file_' . $i);
-
       $path = $file->store('files');
-
       $fileModel = new BroadcastAttachment(['path' => $path, 'name' => $file->getClientOriginalName(), 'token' => $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken()]);
 
       if (! $fileModel->save()) {
@@ -157,6 +154,7 @@ class BroadcastController extends Controller {
 
         return response()->json(['msg' => 'Could not save files!'], 500);
       }
+
       $files[] = $fileModel;
     }
 
@@ -168,7 +166,7 @@ class BroadcastController extends Controller {
    * @return JsonResponse
    * @throws Exception
    */
-  public function attachmentDelete(int $id) {
+  public function attachmentDelete(int $id): JsonResponse {
     $broadcastAttachment = $this->broadcastAttachmentRepository->getAttachmentById($id);
     if ($broadcastAttachment == null) {
       return response()->json(['msg' => 'Broadcast not found', 'error_code' => 'broadcast_attachment_not_found'], 404);

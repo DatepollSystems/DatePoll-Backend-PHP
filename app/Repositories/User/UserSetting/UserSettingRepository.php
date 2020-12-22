@@ -12,6 +12,7 @@ abstract class UserSettingKey {
 
 use App\Models\User\User;
 use App\Repositories\User\UserToken\IUserTokenRepository;
+use App\Utils\Converter;
 
 class UserSettingRepository implements IUserSettingRepository {
   protected IUserTokenRepository $userTokenRepository;
@@ -112,15 +113,17 @@ class UserSettingRepository implements IUserSettingRepository {
    * @return bool
    */
   private function setUserSetting(User $user, string $settingKey, bool $value): bool {
+    $valueToSave = Converter::booleanToString($value);
+
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, $settingKey);
     if ($setting == null) {
-      return $this->userTokenRepository->createUserToken($user, $value, $settingKey)->token;
+      $setting = $this->userTokenRepository->createUserToken($user, $valueToSave, $settingKey)->token;
     } else {
-      $setting->token = $value;
+      $setting->token = $valueToSave;
       $setting->save();
     }
 
-    return $setting->token;
+    return Converter::stringToBoolean($setting->token);
   }
 
   /**
@@ -132,11 +135,9 @@ class UserSettingRepository implements IUserSettingRepository {
   private function getUserSetting(User $user, string $settingKey, bool $default): bool {
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, $settingKey);
     if ($setting == null) {
-      $setting = $this->userTokenRepository->createUserToken($user, $default, $settingKey);
-
-      return $setting->token;
-    } else {
-      return $setting->token;
+      $setting = $this->userTokenRepository->createUserToken($user, Converter::booleanToString($default), $settingKey);
     }
+
+    return Converter::stringToBoolean($setting->token);
   }
 }

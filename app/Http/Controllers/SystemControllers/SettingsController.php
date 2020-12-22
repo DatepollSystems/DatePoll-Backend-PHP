@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\SystemControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\System\Setting\ISettingRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller {
@@ -17,11 +17,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setCinemaFeatureIsEnabled(Request $request) {
+  public function setCinemaFeatureIsEnabled(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['isEnabled' => 'required|boolean']);
 
     $isEnabled = $request->input('isEnabled');
@@ -36,11 +36,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setEventsFeatureIsEnabled(Request $request) {
+  public function setEventsFeatureIsEnabled(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['isEnabled' => 'required|boolean']);
 
     $isEnabled = $request->input('isEnabled');
@@ -55,11 +55,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setBroadcastFeatureIsEnabled(Request $request) {
+  public function setBroadcastFeatureIsEnabled(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['isEnabled' => 'required|boolean']);
 
     $isEnabled = $request->input('isEnabled');
@@ -74,11 +74,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setCommunityName(Request $request) {
+  public function setCommunityName(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['community_name' => 'required|min:1|max:50']);
 
     $communityName = $request->input('community_name');
@@ -93,11 +93,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setCommunityUrl(Request $request) {
+  public function setCommunityUrl(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['community_url' => 'required|min:1|max:128']);
 
     $communityUrl = $request->input('community_url');
@@ -112,11 +112,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setCommunityDescription(Request $request) {
+  public function setCommunityDescription(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['community_description' => 'required|min:1']);
 
     $communityDescription = $request->input('community_description');
@@ -131,11 +131,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setCommunityImprint(Request $request) {
+  public function setCommunityImprint(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['community_imprint' => 'required|min:1']);
 
     $communityImprint = $request->input('community_imprint');
@@ -150,11 +150,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setCommunityPrivacyPolicy(Request $request) {
+  public function setCommunityPrivacyPolicy(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['community_privacy_policy' => 'required|min:1']);
 
     $communityPrivacyPolicy = $request->input('community_privacy_policy');
@@ -169,11 +169,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setUrl(Request $request) {
+  public function setUrl(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['url' => 'required|min:1|max:128']);
 
     $url = $request->input('url');
@@ -190,18 +190,18 @@ class SettingsController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getOpenWeatherMapKey() {
+  public function getOpenWeatherMapKey(): JsonResponse {
     return response()->json([
       'msg' => 'OpenWeatherMap key',
       'openweathermap_key' => $this->settingRepository->getOpenWeatherMapKey(), ], 200);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setOpenWeatherMapKey(Request $request) {
+  public function setOpenWeatherMapKey(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['openweathermap_key' => 'required|max:50']);
 
     $openWeatherMapKey = $request->input('openweathermap_key');
@@ -218,7 +218,7 @@ class SettingsController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getOpenWeatherMapCinemaCityId() {
+  public function getOpenWeatherMapCinemaCityId(): JsonResponse {
     return response()->json(
       [
         'msg' => 'OpenWeatherMap cinema city id',
@@ -228,11 +228,11 @@ class SettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setOpenWeatherMapCinemaCityId(Request $request) {
+  public function setOpenWeatherMapCinemaCityId(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['openweathermap_cinema_city_id' => 'required|max:50']);
 
     $openWeatherMapCinemaCityId = $request->input('openweathermap_cinema_city_id');
@@ -252,18 +252,18 @@ class SettingsController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAlert() {
+  public function getAlert(): JsonResponse {
     return response()->json([
       'msg' => 'Alert',
       'alert' => $this->settingRepository->getAlert(), ], 200);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setAlert(Request $request) {
+  public function setAlert(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['message' => 'string|min:0|max:190', 'type' => 'required|string|min:1|max:190']);
 
     $alertMessage = $request->input('message');
@@ -273,8 +273,6 @@ class SettingsController extends Controller {
       return response()->json(['msg' => 'Unknown type', 'error_code' => 'unknown_alert_type',
         'possible types' => ['happy', 'normal'], ], 422);
     }
-
-    //return response()->json(['msg' => $aType]);
 
     $alert = $this->settingRepository->setAlert($alertMessage, $aType);
 

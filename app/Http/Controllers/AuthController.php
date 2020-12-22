@@ -29,7 +29,7 @@ class AuthController extends Controller {
    * @param int $userID
    * @return string
    */
-  protected function jwt(int $userID) {
+  protected function jwt(int $userID): string {
     $payload = ['iss' => 'lumen-jwt',// Issuer of the token
       'sub' => $userID,// Subject of the token
       'iat' => time(),// Time when JWT was issued.
@@ -45,10 +45,10 @@ class AuthController extends Controller {
    * Authenticate a user and return the token if the provided credentials are correct.
    *
    * @param Request $request
-   * @return mixed
+   * @return JsonResponse
    * @throws ValidationException
    */
-  public function signin(Request $request) {
+  public function signin(Request $request): JsonResponse {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'password' => 'required|min:6',
@@ -109,7 +109,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function changePasswordAfterSignin(Request $request) {
+  public function changePasswordAfterSignin(Request $request): JsonResponse {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'old_password' => 'required',
@@ -185,7 +185,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function IamLoggedIn(Request $request) {
+  public function IamLoggedIn(Request $request): JsonResponse {
     $this->validate($request, [
       'session_token' => 'required',
       'session_information' => 'required|min:1|max:190', ]);
@@ -216,7 +216,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function sendForgotPasswordEmail(Request $request) {
+  public function sendForgotPasswordEmail(Request $request): JsonResponse {
     $this->validate($request, [
       'username' => 'required|min:1|max:190', ]);
 
@@ -254,7 +254,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function checkForgotPasswordCode(Request $request) {
+  public function checkForgotPasswordCode(Request $request): JsonResponse {
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190', ]);
@@ -304,7 +304,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function resetPasswordAfterForgotPassword(Request $request) {
+  public function resetPasswordAfterForgotPassword(Request $request): JsonResponse {
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190',

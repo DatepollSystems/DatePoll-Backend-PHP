@@ -219,8 +219,7 @@ class UserRepository implements IUserRepository {
     //----Phone numbers manager only deletes changed phone numbers---
     $phoneNumbersWhichHaveNotBeenDeleted = [];
 
-    $OldPhoneNumbers = $user->telephoneNumbers();
-    foreach ($OldPhoneNumbers as $oldPhoneNumber) {
+    foreach ($user->telephoneNumbers() as $oldPhoneNumber) {
       $toDelete = true;
 
       foreach ($phoneNumbers as $phoneNumber) {
@@ -339,8 +338,7 @@ class UserRepository implements IUserRepository {
   public function createOrUpdatePermissionsForUser(array $permissions, User $user): bool {
     $permissionsWhichHaveNotBeenDeleted = [];
 
-    $OldPermissions = $user->permissions();
-    foreach ($OldPermissions as $oldPermission) {
+    foreach ($user->getPermissions() as $oldPermission) {
       $toDelete = true;
 
       foreach ((array)$permissions as $permission) {
@@ -404,7 +402,7 @@ class UserRepository implements IUserRepository {
     $user->save();
 
     dispatch(new SendEmailJob(new ActivateUser(
-      $user->getName(),
+      $user->getCompleteName(),
       $user->username,
       $randomPassword,
       $this->settingRepository
@@ -475,7 +473,7 @@ class UserRepository implements IUserRepository {
       $toReturnUser->Register = $subgroups;
 
       $performanceBadgeForUser = '';
-      foreach ($user->performanceBadges() as $performanceBadge) {
+      foreach ($user->getPerformanceBadges() as $performanceBadge) {
         $performanceBadgeForUser .= $performanceBadge->instrument()->name . ': ' . $performanceBadge->performanceBadge()->name;
         if ($performanceBadge->date != '1970-01-01') {
           $performanceBadgeForUser .= ' am ' . $performanceBadge->date;
@@ -593,7 +591,7 @@ class UserRepository implements IUserRepository {
         ) < $addTimeDate) {
           $birthdayToShow = new stdClass();
 
-          $birthdayToShow->name = $user->getName();
+          $birthdayToShow->name = $user->getCompleteName();
           $birthdayToShow->date = $user->birthday;
 
           $birthdaysToShow[] = $birthdayToShow;

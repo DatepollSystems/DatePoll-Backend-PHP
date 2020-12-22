@@ -1,18 +1,11 @@
-<?php /** @noinspection PhpMultipleClassesDeclarationsInOneFile */
+<?php
 
 namespace App\Models\System;
 
 use Illuminate\Database\Eloquent\Model;
 
-abstract class SettingValueType {
-  const STRING = 'string';
-  const BOOLEAN = 'boolean';
-  const INTEGER = 'integer';
-}
-
 /**
  * @property int $id
- * @property string $type
  * @property string $key
  * @property string $value
  * @property string $created_at
@@ -31,7 +24,6 @@ class Setting extends Model {
    * @var array
    */
   protected $fillable = [
-    'type',
     'key',
     'value',
     'created_at',

@@ -4,6 +4,7 @@ namespace App\Http\Middleware\SeatReservation;
 
 use App\Repositories\System\Setting\ISettingRepository;
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SeatReservationFeatureMiddleware {
@@ -16,9 +17,9 @@ class SeatReservationFeatureMiddleware {
   /**
    * @param Request $request
    * @param Closure $next
-   * @return mixed
+   * @return JsonResponse
    */
-  public function handle(Request $request, Closure $next) {
+  public function handle(Request $request, Closure $next): JsonResponse {
     if (! $this->settingRepository->getSeatReservationEnabled()) {
       return response()->json([
         'msg' => 'The seat reservation feature is disabled on this DatePoll server',

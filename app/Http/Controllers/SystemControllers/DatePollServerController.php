@@ -19,7 +19,7 @@ class DatePollServerController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getServerInfo() {
+  public function getServerInfo(): JsonResponse {
     if (Cache::has(self::$SERVER_INFO_CACHE_KEY)) {
       return response()->json(Cache::get(self::$SERVER_INFO_CACHE_KEY), 200);
     }
