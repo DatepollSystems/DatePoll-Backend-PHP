@@ -117,3 +117,14 @@ ALTER TABLE logs
 ALTER TABLE event_dates ADD date_dt DATETIME;
 UPDATE event_dates SET date_dt = STR_TO_DATE(event_dates.date, '%Y-%c-%d %H:%i:%s');
 ALTER TABLE event_dates DROP date, RENAME COLUMN date_dt TO date;
+
+# 7 to 8
+# -------------------------------------------------------------------------------------------
+DELETE FROM settings WHERE `key` = 'community_happy_alert';
+ALTER TABLE settings DROP COLUMN type;
+UPDATE settings SET value = 'true' WHERE value = '1';
+UPDATE settings SET value = 'false' WHERE value = '0';
+
+UPDATE user_tokens SET token = 'true' WHERE token = '1';
+UPDATE user_tokens SET token = 'false' WHERE token = ' ';
+UPDATE user_tokens SET token = 'false' WHERE token = '0';
