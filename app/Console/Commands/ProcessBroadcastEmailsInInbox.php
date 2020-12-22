@@ -12,6 +12,8 @@ use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
+use App\Utils\StringHelper;
+use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +25,11 @@ class ProcessBroadcastEmailsInInbox extends Command {
   private IBroadcastRepository $broadcastRepository;
   private IBroadcastAttachmentRepository $broadcastAttachmentRepository;
   private IGroupRepository $groupRepository;
+
+  /**
+   * @var string[]
+   */
+  private static array $allKeywords = ['Alle', 'All', 'Mitglieder', 'Everyone'];
 
   protected $signature = 'process-inbox-broadcast-mails';
   protected $description = 'Processes all emails!';
@@ -80,10 +87,13 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
       if ($userHasPermissionToSendBroadcasts != null) {
         if ($this->isBroadcastSubjectValid($subject)) {
-          $textHtml = $mail->textPlain;
-          if (! $this->IsNullOrEmptyString($mail->textHtml)) {
+          $textPlain = $mail->textPlain;
+          $textHtml = $textPlain;
+          if (StringHelper::notNullAndEmpty($mail->textHtml)) {
             $textHtml = $mail->textHtml;
           }
+          $textPlain = Encoding::toUTF8($textPlain);
+          $textHtml = Encoding::toUTF8($textHtml);
 
           $attachmentIds = [];
           foreach ($mail->getAttachments() as $attachment) {
@@ -109,7 +119,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
             $this->broadcastRepository->create(
               $subject,
               $textHtml,
-              $mail->textPlain,
+              $textPlain,
               $userHasPermissionToSendBroadcasts->user_id,
               [],
               [],
@@ -123,7 +133,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
               $this->broadcastRepository->create(
                 $subject,
                 $textHtml,
-                $mail->textPlain,
+                $textPlain,
                 $userHasPermissionToSendBroadcasts->user_id,
                 $groupsIds,
                 [],
@@ -155,7 +165,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
     foreach ($receiverStrings as $receiverGroupName) {
       $foundSomething = false;
       foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
-        if (strtolower(trim($group->name)) == strtolower(trim($receiverGroupName))) {
+        if (StringHelper::toLowerCaseWithTrim($group->name) == StringHelper::toLowerCaseWithTrim($receiverGroupName)) {
           Logging::info('processBroadcastEmails', 'Receiver found: ' . $group->name);
           $groupsIds[] = $group->id;
           $foundSomething = true;
@@ -178,9 +188,8 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
   private function containsSendToAllKeyword(string $subject): bool {
     $receiver = $this->getReceiverString($subject);
-    $keywords = ['Alle', 'All', 'Mitglieder', 'Everyone'];
-    foreach ($keywords as $keyword) {
-      if (str_contains($receiver, $keyword)) {
+    foreach (ProcessBroadcastEmailsInInbox::$allKeywords as $keyword) {
+      if (StringHelper::contains($receiver, $keyword)) {
         return true;
       }
     }
@@ -199,13 +208,13 @@ class ProcessBroadcastEmailsInInbox extends Command {
    */
   private function isBroadcastSubjectValid(string $subject): bool {
     // "[A]T" is the smallest possible valid email subject
-    if (strlen($subject) < 4) {
+    if (StringHelper::length($subject) < 4) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Length < 4');
 
       return false;
     }
     // Invalid: "[[All]] Wow" | "[All] [wow] Test"
-    if (substr_count($subject, '[') > 1 || substr_count($subject, ']') > 1) {
+    if (StringHelper::countSubstring($subject, '[') > 1 || StringHelper::countSubstring($subject, ']') > 1) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Contains two "[" or "]"');
 
       return false;
@@ -218,7 +227,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
     }
 
     // Invalid: "[All]"
-    if (strlen(explode(']', $subject)[1]) < 1) {
+    if (StringHelper::length(explode(']', $subject)[1]) < 1) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. After "]" is not any text');
 
       return false;
@@ -226,7 +235,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     // Invalid: "[]" | "[ ]"
     $receiverString = $this->getReceiverString($subject);
-    if (strlen($receiverString) < 1 || $this->IsNullOrEmptyString($receiverString)) {
+    if (StringHelper::length($receiverString) < 1 || ! StringHelper::notNullAndEmpty($receiverString)) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Nothing between "[" and "]"');
 
       return false;
@@ -244,13 +253,9 @@ class ProcessBroadcastEmailsInInbox extends Command {
     if ($ini == 0) {
       return '';
     }
-    $ini += strlen($start);
+    $ini += StringHelper::length($start);
     $len = strpos($string, $end, $ini) - $ini;
 
     return substr($string, $ini, $len);
-  }
-
-  private function IsNullOrEmptyString($str) {
-    return (! isset($str) || trim($str) === '');
   }
 }
