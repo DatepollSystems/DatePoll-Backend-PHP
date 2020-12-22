@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://gitlab.com/DatePoll/datepoll-backend-php/issues"
   },
-  "homepage": "https://gitlab.com/DatePoll/datepoll-backend-php#readme",
+  "homepage": "https://datepoll.org",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
