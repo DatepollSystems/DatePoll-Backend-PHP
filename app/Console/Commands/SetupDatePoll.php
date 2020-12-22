@@ -23,7 +23,8 @@ class SetupDatePoll extends ACommand {
 
     $this->make('MAIL_DRIVER', 'Please enter the mail driver', 'smtp');
     $this->make('MAIL_HOST', 'Please enter the mail host', 'mail.example.at');
-    $this->make('MAIL_PORT', 'Please enter the mail port', '587');
+    $this->make('MAIL_PORT', 'Please enter the mail (sending) port', '587');
+    $this->make('MAIL_INCOMING_PORT', 'Please enter the mail (receiving) port', '587');
     $this->make('MAIL_ENCRYPTION', 'Please enter the mail encryption', 'tls');
     $this->make('MAIL_USERNAME', 'Please enter the mail username', 'datepoll@mail.example.at');
     $this->make('MAIL_PASSWORD', 'Please enter the mail password', 'super_secret_password');
