@@ -9,7 +9,7 @@ abstract class ArrayHelper {
    * @param mixed $toFind
    * @return bool
    */
-  public static function inArray(array $array, $toFind) {
+  public static function inArray(array $array, $toFind): bool {
     return in_array($toFind, $array);
   }
 
@@ -18,7 +18,15 @@ abstract class ArrayHelper {
    * @param string $propertyName
    * @return array
    */
-  public static function getPropertyArrayOfObjectArray(array $array, string $propertyName) {
+  public static function getPropertyArrayOfObjectArray(array $array, string $propertyName): array {
     return array_column($array, $propertyName);
+  }
+
+  /**
+   * @param array $array
+   * @return int
+   */
+  public static function getCount(array $array): int {
+    return sizeof($array);
   }
 }
