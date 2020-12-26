@@ -49,7 +49,7 @@ abstract class StringHelper {
    * @return bool Returns <code>false</code> if string is null or empty, otherwise <code>true</code>.
    */
   public static function notNullAndEmpty(?string $string): bool {
-    return ! self::trim($string) === '';
+    return ! self::trim($string) === '' && ! self::trim($string) === 'NaN';
   }
 
   /**

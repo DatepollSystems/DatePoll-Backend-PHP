@@ -7,6 +7,8 @@ use App\Logging;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
+use App\Utils\Converter;
+use App\Utils\StringHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,10 +42,16 @@ class EventController extends Controller {
   }
 
   /**
-   * @param int|null $year
+   * @param string|null $year
    * @return JsonResponse
    */
-  public function getEventsOrderedByDate(int $year = null) {
+  public function getEventsOrderedByDate(?string $year = null) {
+    if (! StringHelper::notNullAndEmpty($year)) {
+      $year = null;
+    } else {
+      $year = Converter::stringToInteger($year);
+    }
+
     $events = $this->eventRepository->getEventsOrderedByDate($year);
 
     $toReturnEvents = [];
