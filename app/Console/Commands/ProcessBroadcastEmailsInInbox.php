@@ -12,6 +12,7 @@ use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\System\Setting\ISettingRepository;
 use App\Utils\StringHelper;
 use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
@@ -25,6 +26,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
   private IBroadcastRepository $broadcastRepository;
   private IBroadcastAttachmentRepository $broadcastAttachmentRepository;
   private IGroupRepository $groupRepository;
+  private ISettingRepository $settingsRepository;
 
   /**
    * @var string[]
@@ -34,18 +36,28 @@ class ProcessBroadcastEmailsInInbox extends Command {
   protected $signature = 'process-inbox-broadcast-mails';
   protected $description = 'Processes all emails!';
 
-  public function __construct(IBroadcastRepository $broadcastRepository, IGroupRepository $groupRepository, IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
+  public function __construct(
+    IBroadcastRepository $broadcastRepository,
+    IGroupRepository $groupRepository,
+    IBroadcastAttachmentRepository $broadcastAttachmentRepository,
+    ISettingRepository $settingRepository
+  ) {
     parent::__construct();
 
     $this->broadcastRepository = $broadcastRepository;
     $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
     $this->groupRepository = $groupRepository;
+    $this->settingsRepository = $settingRepository;
   }
 
   /**
    * @throws InvalidParameterException
    */
   public function handle() {
+    if (! $this->settingsRepository->getBroadcastsEnabled()) {
+      return;
+    }
+
     $mailbox = new Mailbox(
       '{' . env('MAIL_HOST') . ':' . env('MAIL_INCOMING_PORT') . '/imap/ssl}INBOX',
       env('MAIL_USERNAME'),
