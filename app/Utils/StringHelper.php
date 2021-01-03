@@ -101,4 +101,36 @@ abstract class StringHelper {
   public static function toUpperCaseWithTrim(?string $string): ?string {
     return self::toUpperCase(self::trim($string));
   }
+
+  /**
+   * @param string|null $string1
+   * @param string|null $string2
+   * @return bool If string1 or string2 is null returns <code>false</code>. If string1 and string2 are null returns
+   *   <code>true</code>. If strings match returns <code>true</code>. Otherwise <code>false</code>.
+   */
+  public static function compareCaseSensitive(?string $string1, ?string $string2): bool {
+    if (! $string1 && ! $string2) {
+      return true;
+    } elseif ((! $string1 && $string2) || ($string1 && ! $string2)) {
+      return false;
+    }
+
+    return strcmp($string1, $string2) === 0;
+  }
+
+  /**
+   * @param string|null $string1
+   * @param string|null $string2
+   * @return bool If string1 or string2 is null returns <code>false</code>. If string1 and string2 are null returns
+   *   <code>true</code>. If strings match returns <code>true</code>. Otherwise <code>false</code>.
+   */
+  public static function compare(?string $string1, ?string $string2): bool {
+    if (! $string1 && ! $string2) {
+      return true;
+    } elseif ((! $string1 && $string2) || ($string1 && ! $string2)) {
+      return false;
+    }
+
+    return strcasecmp($string1, $string2) === 0;
+  }
 }

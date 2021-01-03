@@ -6,10 +6,14 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Class ADatePollMailable
+ * @property string $jobDescription
+ */
 abstract class ADatePollMailable extends Mailable {
   use Queueable, SerializesModels;
 
-  public $jobDescription;
+  public string $jobDescription;
 
   /**
    * Create a new message instance.

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ForgotPassword;
 use App\Models\User\UserCode;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
+use App\Utils\MailSender;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -236,10 +236,10 @@ class AuthController extends Controller {
     $userCode = new UserCode(['code' => $code, 'purpose' => 'forgotPassword', 'user_id' => $user->id]);
 
     if ($userCode->save()) {
-      dispatch(new SendEmailJob(
+      MailSender::sendEmailOnHighQueue(
         new ForgotPassword($user->firstname, $code),
         $user->getEmailAddresses()
-      ))->onQueue('high');
+      );
 
       return response()->json(['msg' => 'Sent'], 200);
     }

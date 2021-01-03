@@ -9,10 +9,10 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Utils\MailSender;
 use DateInterval;
 use DateTime;
 use Exception;
-use Illuminate\Support\Facades\Queue;
 
 /**
  * Class SendEmailJob
@@ -69,12 +69,12 @@ class CreateNewEventEmailsJob extends Job {
 
       if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && ! $user->information_denied && $user->activated) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        Queue::later($time, new SendEmailJob(new NewEvent(
+        MailSender::sendDelayedEmailOnLowQueue(new NewEvent(
           $user->firstname,
           $this->event,
           $this->eventDateRepository,
           $this->settingRepository
-        ), $user->getEmailAddresses()), null, 'low');
+        ), $user->getEmailAddresses(), $time);
       }
     }
   }

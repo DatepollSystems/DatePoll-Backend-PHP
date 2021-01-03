@@ -29,4 +29,12 @@ abstract class ArrayHelper {
   public static function getCount(array $array): int {
     return sizeof($array);
   }
+
+  /**
+   * @param $possibleArray
+   * @return bool
+   */
+  public static function isArray($possibleArray): bool {
+    return is_array($possibleArray);
+  }
 }

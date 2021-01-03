@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Broadcast\Broadcast;
 
-use App\Jobs\SendEmailJob;
+use App\Jobs\SendBroadcastEmailJob;
 use App\Logging;
 use App\Mail\BroadcastMail;
 use App\Models\Broadcasts\Broadcast;
@@ -14,11 +14,11 @@ use App\Models\User\User;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Utils\QueueHandler;
 use DateInterval;
 use DateTime;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Queue;
 use stdClass;
 
 class BroadcastRepository implements IBroadcastRepository {
@@ -48,7 +48,7 @@ class BroadcastRepository implements IBroadcastRepository {
    * @param int $id
    * @return Broadcast | null
    */
-  public function getBroadcastById(int $id) {
+  public function getBroadcastById(int $id): ?Broadcast {
     return Broadcast::find($id);
   }
 
@@ -316,11 +316,9 @@ class BroadcastRepository implements IBroadcastRepository {
           $DatePollAddress,
           $mAttachments
         );
-        $sendEmailJob = new SendEmailJob($broadcastMail, $user->getEmailAddresses());
-        $sendEmailJob->broadcastId = $broadcast->id;
-        $sendEmailJob->userId = $user->id;
+        $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $user->getEmailAddresses(), $user->id, $broadcast->id);
 
-        Queue::later($time, $sendEmailJob, null, 'default');
+        QueueHandler::addDelayedJobToDefaultQueue($sendEmailJob, $time);
       }
     }
 
@@ -372,11 +370,9 @@ class BroadcastRepository implements IBroadcastRepository {
         $DatePollAddress,
         $mAttachments
       );
-      $sendEmailJob = new SendEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses());
-      $sendEmailJob->broadcastId = $broadcast->id;
-      $sendEmailJob->userId = $broadcastUserInfo->user()->id;
+      $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses(), $broadcast->id, $broadcastUserInfo->user()->id);
 
-      Queue::later($time, $sendEmailJob, null, 'default');
+      QueueHandler::addDelayedJobToDefaultQueue($sendEmailJob, $time);
     }
   }
 
