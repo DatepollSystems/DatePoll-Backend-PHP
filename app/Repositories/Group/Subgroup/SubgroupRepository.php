@@ -43,9 +43,10 @@ class SubgroupRepository implements ISubgroupRepository {
       $subgroup->name = $name;
       $subgroup->description = $description;
       $subgroup->group_id = $groupId;
-      $subgroup->orderN = $orderN;
       if ($orderN == null) {
         $subgroup->orderN = 0;
+      } else {
+        $subgroup->orderN = $orderN;
       }
     }
 

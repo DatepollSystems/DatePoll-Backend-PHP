@@ -123,7 +123,7 @@ class User extends Model {
   }
 
   /**
-   * @return array
+   * @return string[]
    */
   public function getEmailAddresses(): array {
     return ArrayHelper::getPropertyArrayOfObjectArray($this->emailAddresses(), 'email');

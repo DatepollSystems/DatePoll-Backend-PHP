@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpParamsInspection */
 
 namespace App\Repositories\Group\Group;
 
@@ -62,9 +62,10 @@ class GroupRepository implements IGroupRepository {
     } else {
       $group->name = $name;
       $group->description = $description;
-      $group->orderN = $orderN;
       if ($orderN == null) {
         $group->orderN = 0;
+      } else {
+        $group->orderN = $orderN;
       }
     }
 

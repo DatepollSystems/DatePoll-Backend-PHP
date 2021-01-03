@@ -2,7 +2,6 @@
 
 namespace App\Repositories\User\User;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
 use App\Models\User\User;
@@ -15,6 +14,7 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Utils\MailSender;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
@@ -50,7 +50,7 @@ class UserRepository implements IUserRepository {
   /**
    * @return User[]
    */
-  public function getAllUsersOrderedBySurname() {
+  public function getAllUsersOrderedBySurname(): array {
     return User::orderBy('surname')
       ->get()->all();
   }
@@ -396,17 +396,16 @@ class UserRepository implements IUserRepository {
   public function activateUser(User $user): void {
     $randomPassword = UserCode::generateCode();
     $user->password = Hash::make($randomPassword . $user->id);
-    ;
     $user->force_password_change = true;
     $user->activated = true;
     $user->save();
 
-    dispatch(new SendEmailJob(new ActivateUser(
+    MailSender::sendEmailOnLowQueue(new ActivateUser(
       $user->getCompleteName(),
       $user->username,
       $randomPassword,
       $this->settingRepository
-    ), $user->getEmailAddresses()))->onQueue('low');
+    ), $user->getEmailAddresses());
   }
 
   /**

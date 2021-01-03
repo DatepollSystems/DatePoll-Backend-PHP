@@ -78,6 +78,25 @@ class SettingsController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
+  public function setBroadcastProcessIncomingEmailsFeatureIsEnabled(AuthenticatedRequest $request): JsonResponse {
+    $this->validate($request, ['isEnabled' => 'required|boolean']);
+
+    $isEnabled = $request->input('isEnabled');
+
+    $this->settingRepository->setBroadcastsProcessIncomingEmailsEnabled($isEnabled);
+
+    Logging::info('setBroadcastsProcessIncomingEmailsEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+
+    return response()->json([
+      'msg' => 'Set broadcast process incoming emails service enabled',
+      'isEnabled' => $isEnabled, ]);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
   public function setCommunityName(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['community_name' => 'required|min:1|max:50']);
 

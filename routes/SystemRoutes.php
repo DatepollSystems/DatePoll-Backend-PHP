@@ -17,6 +17,7 @@ $router->group(['prefix' => 'system'], function () use ($router) {
       $router->post('cinema', ['uses' => 'SystemControllers\SettingsController@setCinemaFeatureIsEnabled']);
       $router->post('events', ['uses' => 'SystemControllers\SettingsController@setEventsFeatureIsEnabled']);
       $router->post('broadcast', ['uses' => 'SystemControllers\SettingsController@setBroadcastFeatureIsEnabled']);
+      $router->post('broadcast/processIncomingEmails', ['uses' => 'SystemControllers\SettingsController@setBroadcastProcessIncomingEmailsFeatureIsEnabled']);
       $router->post('name', ['uses' => 'SystemControllers\SettingsController@setCommunityName']);
       $router->post('communityUrl', ['uses' => 'SystemControllers\SettingsController@setCommunityUrl']);
       $router->post('description', ['uses' => 'SystemControllers\SettingsController@setCommunityDescription']);

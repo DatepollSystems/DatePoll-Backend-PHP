@@ -46,11 +46,11 @@ class SubgroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'description' => 'max:65535',
-      'orderN' => 'integer',
+      'orderN' => 'integer|nullable',
       'group_id' => 'required|integer', ]);
 
     $groupId = $request->input('group_id');
@@ -77,7 +77,7 @@ class SubgroupController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(int $id) {
+  public function getSingle(int $id): JsonResponse {
     $subgroup = $this->subgroupRepository->getSubgroupById($id);
     if ($subgroup == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
@@ -96,11 +96,11 @@ class SubgroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id) {
+  public function update(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'description' => 'max:65535',
-      'orderN' => 'integer',
+      'orderN' => 'integer|nullable',
       'group_id' => 'required|integer', ]);
 
     $subgroup = $this->subgroupRepository->getSubgroupById($id);

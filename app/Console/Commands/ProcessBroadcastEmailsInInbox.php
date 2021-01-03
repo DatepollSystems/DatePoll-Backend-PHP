@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\BroadcastInvalidSubject;
 use App\Mail\BroadcastPermissionDenied;
@@ -13,6 +12,7 @@ use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Utils\MailSender;
 use App\Utils\StringHelper;
 use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
@@ -54,7 +54,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
    * @throws InvalidParameterException
    */
   public function handle() {
-    if (! $this->settingsRepository->getBroadcastsEnabled()) {
+    if (! $this->settingsRepository->getBroadcastsProcessIncomingEmailsEnabled()) {
       return;
     }
 
@@ -84,82 +84,87 @@ class ProcessBroadcastEmailsInInbox extends Command {
     foreach ($mailsIds as $mailId) {
       $mail = $mailbox->getMail($mailId);
       $subject = $mail->subject;
+      $fromAddress = $mail->senderAddress;
       $mailId = $mail->id;
       Logging::info(
         'processBroadcastEmails',
-        'Email to process: "' . $subject . '" from "' . $mail->fromAddress . '"'
+        'Email to process: "' . $subject . '" from "' . $fromAddress . '"'
       );
 
-      $userHasPermissionToSendBroadcasts = DB::table('user_email_addresses')
-        ->join('user_permissions', 'user_email_addresses.user_id', '=', 'user_permissions.user_id')
-        ->where('user_email_addresses.email', '=', $mail->fromAddress)
-        ->where('user_permissions.permission', '=', Permissions::$BROADCASTS_ADMINISTRATION)
-        ->orWhere('user_permissions.permission', '=', Permissions::$ROOT_ADMINISTRATION)
-        ->select('user_permissions.user_id as user_id')->first();
+      if (! StringHelper::compare(env('MAIL_FROM_ADDRESS'), $fromAddress)) {
+        $userHasPermissionToSendBroadcasts = DB::table('user_email_addresses')
+          ->join('user_permissions', 'user_email_addresses.user_id', '=', 'user_permissions.user_id')
+          ->where('user_email_addresses.email', '=', $fromAddress)
+          ->where('user_permissions.permission', '=', Permissions::$BROADCASTS_ADMINISTRATION)
+          ->orWhere('user_permissions.permission', '=', Permissions::$ROOT_ADMINISTRATION)
+          ->select('user_permissions.user_id as user_id')->first();
 
-      if ($userHasPermissionToSendBroadcasts != null) {
-        if ($this->isBroadcastSubjectValid($subject)) {
-          $textPlain = $mail->textPlain;
-          $textHtml = $textPlain;
-          if (StringHelper::notNullAndEmpty($mail->textHtml)) {
-            $textHtml = $mail->textHtml;
-          }
-          $textPlain = Encoding::toUTF8($textPlain);
-          $textHtml = Encoding::toUTF8($textHtml);
+        if ($userHasPermissionToSendBroadcasts != null) {
+          if ($this->isBroadcastSubjectValid($subject)) {
+            $textPlain = $mail->textPlain;
+            $textHtml = $textPlain;
+            if (StringHelper::notNullAndEmpty($mail->textHtml)) {
+              $textHtml = $mail->textHtml;
+            }
+            $textPlain = Encoding::toUTF8($textPlain);
+            $textHtml = Encoding::toUTF8($textHtml);
 
-          $attachmentIds = [];
-          foreach ($mail->getAttachments() as $attachment) {
-            $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
-            $path = 'files/' . $token . '.' . $attachment->fileExtension;
-            $attachmentModel = new BroadcastAttachment(['path' => $path, 'name' => $attachment->name, 'token' => $token]);
-            if (! Storage::put($path, $attachment->getContents()) || ! $attachmentModel->save()) {
-              Logging::error('processBroadcastEmails', 'Could not save attachment!');
-              $this->deleteMail($mailbox, $mailId);
+            $attachmentIds = [];
+            foreach ($mail->getAttachments() as $attachment) {
+              $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
+              $path = 'files/' . $token . '.' . $attachment->fileExtension;
+              $attachmentModel = new BroadcastAttachment(['path' => $path, 'name' => $attachment->name, 'token' => $token]);
+              if (! Storage::put($path, $attachment->getContents()) || ! $attachmentModel->save()) {
+                Logging::error('processBroadcastEmails', 'Could not save attachment!');
+                $this->deleteMail($mailbox, $mailId);
 
-              return;
+                return;
+              }
+
+              $attachmentIds[] = $attachmentModel->id;
             }
 
-            $attachmentIds[] = $attachmentModel->id;
-          }
+            if ($this->containsSendToAllKeyword($subject)) {
+              Logging::info(
+                'processBroadcastEmails',
+                'All keyword detected, sending email to everyone. Creating broadcast...'
+              );
 
-          if ($this->containsSendToAllKeyword($subject)) {
-            Logging::info(
-              'processBroadcastEmails',
-              'All keyword detected, sending email to everyone. Creating broadcast...'
-            );
-
-            $this->broadcastRepository->create(
-              $subject,
-              $textHtml,
-              $textPlain,
-              $userHasPermissionToSendBroadcasts->user_id,
-              [],
-              [],
-              true,
-              $attachmentIds
-            );
-          } else {
-            $groupsIds = $this->getGroupIdsOfSubject($subject, $mail->fromAddress);
-            if ($groupsIds != null) {
-              Logging::info('processBroadcastEmails', 'Creating broadcast...');
               $this->broadcastRepository->create(
                 $subject,
                 $textHtml,
                 $textPlain,
                 $userHasPermissionToSendBroadcasts->user_id,
-                $groupsIds,
                 [],
-                false,
+                [],
+                true,
                 $attachmentIds
               );
+            } else {
+              $groupsIds = $this->getGroupIdsOfSubject($subject, $fromAddress);
+              if ($groupsIds != null) {
+                Logging::info('processBroadcastEmails', 'Creating broadcast...');
+                $this->broadcastRepository->create(
+                  $subject,
+                  $textHtml,
+                  $textPlain,
+                  $userHasPermissionToSendBroadcasts->user_id,
+                  $groupsIds,
+                  [],
+                  false,
+                  $attachmentIds
+                );
+              }
             }
+          } else {
+            MailSender::sendEmailOnHighQueue(new BroadcastInvalidSubject(), $fromAddress);
           }
         } else {
-          dispatch(new SendEmailJob(new BroadcastInvalidSubject(), [$mail->fromAddress]))->onQueue('high');
+          Logging::info('processBroadcastEmails', $fromAddress . ' Permission denied, deleting it. Subject: ' . $subject);
+          MailSender::sendEmailOnHighQueue(new BroadcastPermissionDenied(), $fromAddress);
         }
       } else {
-        Logging::info('processBroadcastEmails', 'Permission denied.');
-        dispatch(new SendEmailJob(new BroadcastPermissionDenied(), [$mail->fromAddress]))->onQueue('high');
+        Logging::info('processBroadcastEmails', 'Got an email from DatePoll and deleting it: ' . $subject);
       }
 
       $this->deleteMail($mailbox, $mailId);
@@ -186,10 +191,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
       if (! $foundSomething) {
         Logging::info('processBroadcastEmails', 'Unknown receiver specified in subject: ' . $receiverGroupName);
-        dispatch(new SendEmailJob(
-          new BroadcastUnknownReceiver($receiverGroupName),
-          [$fromAddress]
-        ))->onQueue('high');
+        MailSender::sendEmailOnHighQueue(new BroadcastUnknownReceiver($receiverGroupName), $fromAddress);
 
         return null;
       }

@@ -9,6 +9,7 @@ abstract class SettingKey {
   const EVENTS_ENABLED = 'events_enabled';
 
   const BROADCASTS_ENABLED = 'broadcasts_enabled';
+  const BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED = 'broadcasts_process_incoming_emails_enabled';
 
   const SEAT_RESERVATION_ENABLED = 'seat_reservation_enabled';
 
@@ -89,8 +90,23 @@ class SettingRepository implements ISettingRepository {
   /**
    * @return bool
    */
+  public function getBroadcastsProcessIncomingEmailsEnabled(): bool {
+    return $this->getBoolValueByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED, false);
+  }
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsProcessIncomingEmailsEnabled(bool $isEnabled): bool {
+    return $this->setBoolValueByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED, $isEnabled);
+  }
+
+  /**
+   * @return bool
+   */
   public function getSeatReservationEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::SEAT_RESERVATION_ENABLED, true);
+    return $this->getBoolValueByKey(SettingKey::SEAT_RESERVATION_ENABLED, false);
   }
 
   /**

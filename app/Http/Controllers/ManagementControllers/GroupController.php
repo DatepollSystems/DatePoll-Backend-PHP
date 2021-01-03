@@ -34,7 +34,7 @@ class GroupController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAll() {
+  public function getAll(): JsonResponse {
     $groups = $this->groupRepository->getAllGroupsWithSubgroupsOrdered();
 
     return response()->json([
@@ -47,10 +47,10 @@ class GroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'orderN' => 'integer',
+      'orderN' => 'integer|nullable',
       'description' => 'max:65535', ]);
 
     $name = $request->input('name');
@@ -96,7 +96,7 @@ class GroupController extends Controller {
   public function update(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'orderN' => 'integer',
+      'orderN' => 'integer|nullable',
       'description' => 'max:65535', ]);
 
     $group = $this->groupRepository->getGroupById($id);
