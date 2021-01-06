@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use JetBrains\PhpStorm\Pure;
+
 abstract class ArrayHelper {
 
   /**
@@ -9,7 +11,8 @@ abstract class ArrayHelper {
    * @param mixed $toFind
    * @return bool
    */
-  public static function inArray(array $array, $toFind): bool {
+  #[Pure]
+  public static function inArray(array $array, mixed $toFind): bool {
     return in_array($toFind, $array);
   }
 
@@ -18,6 +21,7 @@ abstract class ArrayHelper {
    * @param string $propertyName
    * @return array
    */
+  #[Pure]
   public static function getPropertyArrayOfObjectArray(array $array, string $propertyName): array {
     return array_column($array, $propertyName);
   }
@@ -26,6 +30,7 @@ abstract class ArrayHelper {
    * @param array $array
    * @return int
    */
+  #[Pure]
   public static function getCount(array $array): int {
     return sizeof($array);
   }
@@ -34,6 +39,7 @@ abstract class ArrayHelper {
    * @param $possibleArray
    * @return bool
    */
+  #[Pure]
   public static function isArray($possibleArray): bool {
     return is_array($possibleArray);
   }

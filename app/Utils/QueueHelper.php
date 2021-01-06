@@ -7,15 +7,15 @@ use DateTime;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Lumen\Bus\PendingDispatch;
 
-abstract class QueueHandler {
+abstract class QueueHelper {
   public static string $QUEUE_LOW = 'low';
   public static string $QUEUE_DEFAULT = 'default';
   public static string $QUEUE_HIGH = 'high';
 
   /**
    * @param Job $job
-   * @param string $queue . Please use <code>QueueHandler::$QUEUE_LOW</code>, <code>QueueHandler::$QUEUE_DEFAULT</code>
-   *   or <code>QueueHandler::$QUEUE_HIGH</code>.
+   * @param string $queue . Please use <code>QueueHelper::$QUEUE_LOW</code>, <code>QueueHelper::$QUEUE_DEFAULT</code>
+   *   or <code>QueueHelper::$QUEUE_HIGH</code>.
    * @return PendingDispatch
    */
   public static function addJobToQueue(Job $job, string $queue = 'default'): PendingDispatch {
@@ -49,38 +49,38 @@ abstract class QueueHandler {
   /**
    * @param Job $job
    * @param DateTime $time
-   * @param string $queue Please use <code>QueueHandler::$QUEUE_LOW</code>, <code>QueueHandler::$QUEUE_DEFAULT</code>
-   *   or <code>QueueHandler::$QUEUE_HIGH</code>.
-   * @return mixed
+   * @param string $queue Please use <code>QueueHelper::$QUEUE_LOW</code>, <code>QueueHelper::$QUEUE_DEFAULT</code>
+   *   or <code>QueueHelper::$QUEUE_HIGH</code>.
+   * @return void
    */
   public static function addDelayedJobToQueue(Job $job, DateTime $time, string $queue = 'default') {
-    return Queue::later($time, $job, null, $queue);
+    Queue::later($time, $job, null, $queue);
   }
 
   /**
    * @param Job $job
    * @param DateTime $time
-   * @return mixed
+   * @return void
    */
   public static function addDelayedJobToLowQueue(Job $job, DateTime $time) {
-    return self::addDelayedJobToQueue($job, $time, self::$QUEUE_LOW);
+    self::addDelayedJobToQueue($job, $time, self::$QUEUE_LOW);
   }
 
   /**
    * @param Job $job
    * @param DateTime $time
-   * @return mixed
+   * @return void
    */
   public static function addDelayedJobToDefaultQueue(Job $job, DateTime $time) {
-    return self::addDelayedJobToQueue($job, $time, self::$QUEUE_DEFAULT);
+    self::addDelayedJobToQueue($job, $time, self::$QUEUE_DEFAULT);
   }
 
   /**
    * @param Job $job
    * @param DateTime $time
-   * @return mixed
+   * @return void
    */
   public static function addDelayedJobToHighQueue(Job $job, DateTime $time) {
-    return self::addDelayedJobToQueue($job, $time, self::$QUEUE_HIGH);
+    self::addDelayedJobToQueue($job, $time, self::$QUEUE_HIGH);
   }
 }
