@@ -22,5 +22,5 @@ deploy:
     - development
   script:
     - rm ./composer.lock
-    - php composer.phar install -n -v
+    - php composer.phar install -n -v --ignore-platform-reqs
     - ./vendor/bin/phpstan analyse --memory-limit=1G ||  echo 0;
