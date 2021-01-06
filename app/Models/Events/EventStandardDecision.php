@@ -13,11 +13,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $updated_at
  */
 class EventStandardDecision extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events_standard_decisions';
 
   /**

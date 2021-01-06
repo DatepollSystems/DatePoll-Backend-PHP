@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\CinemaControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Cinema\Movie\IMovieRepository;
@@ -12,54 +13,31 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class MovieController extends Controller {
-  protected IMovieRepository $movieRepository;
-  protected IMovieYearRepository $movieYearRepository;
-
-  public function __construct(IMovieRepository $movieRepository, IMovieYearRepository $movieYearRepository) {
-    $this->movieRepository = $movieRepository;
-    $this->movieYearRepository = $movieYearRepository;
+  public function __construct(protected IMovieRepository $movieRepository, protected IMovieYearRepository $movieYearRepository) {
   }
 
   /**
-   * Display a listing of the resource.
-   *
    * @return JsonResponse
    */
-  public function getAll() {
-    $toReturnMovies = [];
-
-    $movies = $this->movieRepository->getAllMoviesOrderedByDate();
-    foreach ($movies as $movie) {
-      $returnable = $movie->getReturnable();
-
-      $returnable->view_movie = [
-        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET', ];
-      $toReturnMovies[] = $returnable;
-    }
-
-    $response = [
+  public function getAll(): JsonResponse {
+    return response()->json([
       'msg' => 'List of all movies',
-      'movies' => $toReturnMovies, ];
-
-    return response()->json($response);
+      'movies' => $this->movieRepository->getAllMoviesOrderedByDate(),]);
   }
 
   /**
-   * Store a newly created resource in storage.
-   *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'date' => 'required|date',
       'trailer_link' => 'required|max:190|min:1',
       'poster_link' => 'required|max:190|min:1',
       'booked_tickets' => 'integer',
-      'movie_year_id' => 'required|integer', ]);
+      'movie_year_id' => 'required|integer',]);
 
     $movieYearId = $request->input('movie_year_id');
 
@@ -74,16 +52,9 @@ class MovieController extends Controller {
     if ($movie != null) {
       Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
 
-      $returnable = $movie->getReturnable();
-      $returnable->view_movie = [
-        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET', ];
-
-      $response = [
+      return response()->json([
         'msg' => 'Movie created',
-        'movie' => $returnable, ];
-
-      return response()->json($response, 201);
+        'movie' => $movie,], 201);
     }
 
     Logging::error('createMovie', 'User - ' . $request->auth->id . ' | Could not create movie');
@@ -92,13 +63,11 @@ class MovieController extends Controller {
   }
 
   /**
-   * Display the specified resource.
-   *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, int $id) {
+  public function getSingle(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('getSingleMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
@@ -106,35 +75,25 @@ class MovieController extends Controller {
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    $returnable = $movie->getAdminReturnable();
-
-    $returnable->view_movies = [
-      'href' => 'api/v1/cinema/administration/movie',
-      'method' => 'GET', ];
-
-    $response = [
+    return response()->json([
       'msg' => 'Movie information',
-      'movie' => $returnable, ];
-
-    return response()->json($response);
+      'movie' => $movie->getAdminReturnable(),]);
   }
 
   /**
-   * Update the specified resource in storage.
-   *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id) {
+  public function update(AuthenticatedRequest $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'date' => 'required|date',
       'trailer_link' => 'required|max:190|min:1',
       'poster_link' => 'required|max:190|min:1',
       'booked_tickets' => 'integer',
-      'movie_year_id' => 'required|integer', ]);
+      'movie_year_id' => 'required|integer',]);
 
     $movieYearId = $request->input('movie_year_id');
 
@@ -154,14 +113,9 @@ class MovieController extends Controller {
     $movie = $this->movieRepository->updateMovie($movie, $request->input('name'), $request->input('date'), $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $movieYearId);
 
     if ($movie != null) {
-      $returnable = $movie->getReturnable();
-      $returnable->view_movie = [
-        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET', ];
-
       return response()->json([
         'msg' => 'Movie updated',
-        'movie' => $returnable, ], 201);
+        'movie' => $movie,], 201);
     }
 
     Logging::error('updateMovie', 'User . ' . $request->auth->id . ' | Could not update movie');
@@ -196,7 +150,7 @@ class MovieController extends Controller {
       'create' => [
         'href' => 'api/v1/cinema/administration/movie',
         'method' => 'POST',
-        'params' => 'name, date, trailer_link, poster_link, booked_tickets, movie_year_id', ], ]);
+        'params' => 'name, date, trailer_link, poster_link, booked_tickets, movie_year_id',],]);
   }
 
   /**
@@ -210,7 +164,7 @@ class MovieController extends Controller {
 
     $response = [
       'msg' => 'List of not shown movies',
-      'movies' => $returnableMovies, ];
+      'movies' => $returnableMovies,];
 
     return response()->json($response);
   }

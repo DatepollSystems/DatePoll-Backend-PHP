@@ -3,7 +3,6 @@
 namespace App\Models\Broadcasts;
 
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,12 +22,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property BroadcastAttachment[] $broadcastAttachment
  */
 class Broadcast extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'broadcasts';
 
   /**
@@ -46,39 +39,39 @@ class Broadcast extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function writer() {
-    return $this->belongsTo('App\Models\User\User', 'writer_user_id')->first();
+  public function writer(): BelongsTo|User {
+    return $this->belongsTo(User::class, 'writer_user_id')->first();
   }
 
   /**
-   * @return Collection | BroadcastForGroup[] | null
+   * @return BroadcastForGroup[]
    */
-  public function broadcastsForGroups() {
-    return $this->hasMany('App\Models\Broadcasts\BroadcastForGroup')
-      ->get();
+  public function broadcastsForGroups(): array {
+    return $this->hasMany(BroadcastForGroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | BroadcastForSubgroup[] | null
+   * @return BroadcastForSubgroup[]
    */
-  public function broadcastsForSubgroups() {
-    return $this->hasMany('App\Models\Broadcasts\BroadcastForSubgroup')
-      ->get();
+  public function broadcastsForSubgroups(): array {
+    return $this->hasMany(BroadcastForSubgroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | BroadcastUserInfo[] | null
+   * @return BroadcastUserInfo[]
    */
-  public function usersInfo() {
-    return $this->hasMany('App\Models\Broadcasts\BroadcastUserInfo')
-      ->get();
+  public function usersInfo(): array {
+    return $this->hasMany(BroadcastUserInfo::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | BroadcastAttachment[] | null
+   * @return BroadcastAttachment[]
    */
-  public function attachments() {
+  public function attachments(): array {
     return $this->hasMany(BroadcastAttachment::class)
-      ->get();
+      ->get()->all();
   }
 }

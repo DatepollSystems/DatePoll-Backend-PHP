@@ -3,7 +3,6 @@
 namespace App\Models\Cinema;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -19,9 +18,9 @@ class MovieYear extends Model {
   protected $fillable = ['year', 'created_at', 'updated_at'];
 
   /**
-   * @return HasMany
+   * @return Movie[]
    */
-  public function movies() {
-    return $this->hasMany('App\Models\Cinema\Movie');
+  public function movies(): array {
+    return $this->hasMany(Movie::class)->get()->all();
   }
 }

@@ -10,10 +10,8 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 
 class UserChangesController extends Controller {
-  protected IUserChangeRepository $userChangeRepository;
 
-  public function __construct(IUserChangeRepository $userChangeRepository) {
-    $this->userChangeRepository = $userChangeRepository;
+  public function __construct(protected IUserChangeRepository $userChangeRepository) {
   }
 
   /**
@@ -22,12 +20,7 @@ class UserChangesController extends Controller {
    * @return JsonResponse
    */
   public function getAllUserChanges(): JsonResponse {
-    $userChanges = [];
-    foreach ($this->userChangeRepository->getAllUserChangesOrderedByDate() as $userChange) {
-      $userChanges[] = $userChange->getReturnable();
-    }
-
-    return response()->json(['msg' => 'User changes', 'user_changes' => $userChanges], 200);
+    return response()->json(['msg' => 'User changes', 'user_changes' => $this->userChangeRepository->getAllUserChangesOrderedByDate()], 200);
   }
 
   /**

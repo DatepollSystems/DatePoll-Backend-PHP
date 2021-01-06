@@ -9,7 +9,7 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
-use App\Utils\MailSender;
+use App\Utils\MailHelper;
 use DateInterval;
 use DateTime;
 use Exception;
@@ -24,12 +24,6 @@ use Exception;
  * @property ISettingRepository $settingRepository
  */
 class CreateNewEventEmailsJob extends Job {
-  private Event $event;
-  private IEventRepository $eventRepository;
-  private IEventDateRepository $eventDateRepository;
-  private IUserSettingRepository $userSettingRepository;
-  private ISettingRepository $settingRepository;
-
   /**
    * Create a new job instance.
    *
@@ -40,18 +34,12 @@ class CreateNewEventEmailsJob extends Job {
    * @param ISettingRepository $settingRepository
    */
   public function __construct(
-    Event $event,
-    IEventRepository $eventRepository,
-    IEventDateRepository $eventDateRepository,
-    IUserSettingRepository $userSettingRepository,
-    ISettingRepository $settingRepository
-  ) {
-    $this->event = $event;
-    $this->eventRepository = $eventRepository;
-    $this->eventDateRepository = $eventDateRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->settingRepository = $settingRepository;
-  }
+    private Event $event,
+    private IEventRepository $eventRepository,
+    private IEventDateRepository $eventDateRepository,
+    private IUserSettingRepository $userSettingRepository,
+    private ISettingRepository $settingRepository
+  ) {  }
 
   /**
    * Execute the job.
@@ -69,7 +57,7 @@ class CreateNewEventEmailsJob extends Job {
 
       if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && ! $user->information_denied && $user->activated) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        MailSender::sendDelayedEmailOnLowQueue(new NewEvent(
+        MailHelper::sendDelayedEmailOnLowQueue(new NewEvent(
           $user->firstname,
           $this->event,
           $this->eventDateRepository,

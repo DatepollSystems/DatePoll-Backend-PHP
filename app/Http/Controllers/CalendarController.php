@@ -150,8 +150,7 @@ class CalendarController extends Controller {
       }
 
       /* -------- Movie worker specific calendar -------------*/
-      $moviesWorker = $user->workerMovies();
-      foreach ($moviesWorker as $movie) {
+      foreach ($user->workerMovies() as $movie) {
         $movieAlreadyInCalendar = false;
         foreach ($movies as $movieB) {
           if ($movieB->id === $movie->id) {

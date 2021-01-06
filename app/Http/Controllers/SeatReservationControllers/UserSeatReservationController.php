@@ -27,26 +27,14 @@ class UserSeatReservationController extends Controller {
    * @return JsonResponse
    */
   public function getAllPlaceReservations(): JsonResponse {
-    $all = $this->userSeatReservationRepository->getAllPlaceReservationsOrderedByDate();
-    $reservations = [];
-    foreach ($all as $reservation) {
-      $reservations[] = $reservation->getReturnable();
-    }
-
-    return response()->json(['msg' => 'All place reservations', 'reservations' => $reservations]);
+    return response()->json(['msg' => 'All place reservations', 'reservations' => $this->userSeatReservationRepository->getAllPlaceReservationsOrderedByDate()]);
   }
 
   /**
    * @return JsonResponse
    */
   public function getUpcomingPlaceReservations(): JsonResponse {
-    $upcoming = $this->userSeatReservationRepository->getUpcomingPlaceReservationsOrderedByDate();
-    $reservations = [];
-    foreach ($upcoming as $reservation) {
-      $reservations[] = $reservation->getReturnable();
-    }
-
-    return response()->json(['msg' => 'Upcoming place reservations', 'reservations' => $reservations]);
+    return response()->json(['msg' => 'Upcoming place reservations', 'reservations' => $this->userSeatReservationRepository->getUpcomingPlaceReservationsOrderedByDate()]);
   }
 
   /**
@@ -54,13 +42,8 @@ class UserSeatReservationController extends Controller {
    * @return JsonResponse
    */
   public function getUserReservations(AuthenticatedRequest $request): JsonResponse {
-    $reservations = [];
-    foreach ($this->userSeatReservationRepository->getUserReservationsByUserId($request->auth->id) as $reservation) {
-      $reservations[] = $reservation->getReturnable();
-    }
-
     return response()->json(['msg' => 'Your reservations',
-      'reservations' => $reservations, ]);
+      'reservations' => $this->userSeatReservationRepository->getUserReservationsByUserId($request->auth->id), ]);
   }
 
   /**

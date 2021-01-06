@@ -3,6 +3,7 @@
 namespace App\Repositories\Broadcast\BroadcastAttachment;
 
 use App\Models\Broadcasts\BroadcastAttachment;
+use App\Utils\Generator;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -65,12 +66,7 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
    */
   public function getUniqueRandomBroadcastAttachmentToken(): string {
     while (true) {
-      $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      $charactersLength = strlen($characters);
-      $randomToken = '';
-      for ($i = 0; $i < 15; $i++) {
-        $randomToken .= $characters[rand(0, $charactersLength - 1)];
-      }
+      $randomToken = Generator::getRandomMixedNumberAndABCToken(15);
 
       if (BroadcastAttachment::where('token', $randomToken)
         ->first() == null) {

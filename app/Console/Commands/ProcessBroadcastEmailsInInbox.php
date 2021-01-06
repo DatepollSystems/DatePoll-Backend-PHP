@@ -12,7 +12,7 @@ use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
-use App\Utils\MailSender;
+use App\Utils\MailHelper;
 use App\Utils\StringHelper;
 use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
@@ -23,11 +23,6 @@ use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\Mailbox;
 
 class ProcessBroadcastEmailsInInbox extends Command {
-  private IBroadcastRepository $broadcastRepository;
-  private IBroadcastAttachmentRepository $broadcastAttachmentRepository;
-  private IGroupRepository $groupRepository;
-  private ISettingRepository $settingsRepository;
-
   /**
    * @var string[]
    */
@@ -37,17 +32,12 @@ class ProcessBroadcastEmailsInInbox extends Command {
   protected $description = 'Processes all emails!';
 
   public function __construct(
-    IBroadcastRepository $broadcastRepository,
-    IGroupRepository $groupRepository,
-    IBroadcastAttachmentRepository $broadcastAttachmentRepository,
-    ISettingRepository $settingRepository
+    private IBroadcastRepository $broadcastRepository,
+    private IGroupRepository $groupRepository,
+    private IBroadcastAttachmentRepository $broadcastAttachmentRepository,
+    private ISettingRepository $settingsRepository
   ) {
     parent::__construct();
-
-    $this->broadcastRepository = $broadcastRepository;
-    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
-    $this->groupRepository = $groupRepository;
-    $this->settingsRepository = $settingRepository;
   }
 
   /**
@@ -157,11 +147,11 @@ class ProcessBroadcastEmailsInInbox extends Command {
               }
             }
           } else {
-            MailSender::sendEmailOnHighQueue(new BroadcastInvalidSubject(), $fromAddress);
+            MailHelper::sendEmailOnHighQueue(new BroadcastInvalidSubject(), $fromAddress);
           }
         } else {
           Logging::info('processBroadcastEmails', $fromAddress . ' Permission denied, deleting it. Subject: ' . $subject);
-          MailSender::sendEmailOnHighQueue(new BroadcastPermissionDenied(), $fromAddress);
+          MailHelper::sendEmailOnHighQueue(new BroadcastPermissionDenied(), $fromAddress);
         }
       } else {
         Logging::info('processBroadcastEmails', 'Got an email from DatePoll and deleting it: ' . $subject);
@@ -191,7 +181,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
       if (! $foundSomething) {
         Logging::info('processBroadcastEmails', 'Unknown receiver specified in subject: ' . $receiverGroupName);
-        MailSender::sendEmailOnHighQueue(new BroadcastUnknownReceiver($receiverGroupName), $fromAddress);
+        MailHelper::sendEmailOnHighQueue(new BroadcastUnknownReceiver($receiverGroupName), $fromAddress);
 
         return null;
       }

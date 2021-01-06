@@ -439,7 +439,7 @@ class SettingRepository implements ISettingRepository {
 
   /**
    * @param string $settingKey
-   * @return Setting
+   * @return Setting|null
    */
   private function getSettingValueByKey(string $settingKey): ?Setting {
     return Setting::where('key', '=', $settingKey)

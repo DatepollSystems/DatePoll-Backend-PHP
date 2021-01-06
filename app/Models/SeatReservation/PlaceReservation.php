@@ -5,7 +5,6 @@ namespace App\Models\SeatReservation;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use stdClass;
 
 /**
  * @property int $id
@@ -24,12 +23,6 @@ use stdClass;
  * @property string $updated_at
  */
 class PlaceReservation extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'places_reservations_by_users';
 
   /**
@@ -50,7 +43,7 @@ class PlaceReservation extends Model {
   /**
    * @return BelongsTo | Place
    */
-  public function place() {
+  public function place(): BelongsTo|Place {
     return $this->belongsTo(Place::class, 'place_id')
       ->first();
   }
@@ -58,7 +51,7 @@ class PlaceReservation extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function user() {
+  public function user(): BelongsTo|User {
     return $this->belongsTo(User::class, 'user_id')
       ->first();
   }
@@ -66,20 +59,19 @@ class PlaceReservation extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function approver() {
+  public function approver(): BelongsTo|User {
     return $this->belongsTo(User::class, 'approver_id')
       ->first();
   }
 
   /**
-   * @return PlaceReservation | stdClass
+   * @return array
    */
-  public function getReturnable(): PlaceReservation {
-    $returnable = $this;
+  public function toArray(): array {
+    $returnable = parent::toArray();
     $returnable->user_name = $this->user()->getCompleteName();
     $returnable->approver_name = $this->approver()->getCompleteName();
     $returnable->place_name = $this->place()->name;
-
     return $returnable;
   }
 }

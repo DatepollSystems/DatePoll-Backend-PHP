@@ -3,7 +3,6 @@
 namespace App\Models\PerformanceBadge;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -19,9 +18,9 @@ class Instrument extends Model {
   protected $fillable = ['name', 'created_at', 'updated_at'];
 
   /**
-   * @return HasMany
+   * @return UserHavePerformanceBadgeWithInstrument[]
    */
-  public function usersHaveBadgesWithInstruments() {
-    return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument');
+  public function usersHaveBadgesWithInstruments(): array {
+    return $this->hasMany(UserHavePerformanceBadgeWithInstrument::class)->get()->all();
   }
 }

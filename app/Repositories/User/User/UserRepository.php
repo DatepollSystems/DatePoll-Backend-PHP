@@ -9,35 +9,20 @@ use App\Models\User\UserCode;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
-use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
-use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
-use App\Repositories\User\UserSetting\IUserSettingRepository;
-use App\Utils\MailSender;
+use App\Utils\Generator;
+use App\Utils\MailHelper;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
 
 class UserRepository implements IUserRepository {
-  protected ISettingRepository $settingRepository;
-  protected IUserSettingRepository $userSettingRepository;
-  protected IUserChangeRepository $userChangeRepository;
-  protected IEventRepository $eventRepository;
-  protected IBroadcastRepository $broadcastRepository;
 
   public function __construct(
-    ISettingRepository $settingRepository,
-    IUserSettingRepository $userSettingRepository,
-    IEventRepository $eventRepository,
-    IBroadcastRepository $broadcastRepository,
-    IUserChangeRepository $userChangeRepository
+    protected ISettingRepository $settingRepository,
+    protected IUserChangeRepository $userChangeRepository
   ) {
-    $this->settingRepository = $settingRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->eventRepository = $eventRepository;
-    $this->broadcastRepository = $broadcastRepository;
-    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -139,7 +124,7 @@ class UserRepository implements IUserRepository {
         'member_number' => $memberNumber,
         'internal_comment' => $internalComment,
         'bv_member' => $bvMember,
-        'password' => 'Null', ]);
+        'password' => 'Null',]);
 
       if (! $user->save()) {
         Logging::error('createOrUpdateUser', 'Could not save user into database!');
@@ -255,7 +240,7 @@ class UserRepository implements IUserRepository {
         $phoneNumberToSave = new UserTelephoneNumber([
           'label' => $phoneNumber['label'],
           'number' => $phoneNumber['number'],
-          'user_id' => $user->id, ]);
+          'user_id' => $user->id,]);
 
         if (! $phoneNumberToSave->save()) {
           Logging::error('createOrUpdateUser', 'Could not save phoneNumberToSave');
@@ -316,7 +301,7 @@ class UserRepository implements IUserRepository {
       if ($toAdd) {
         $emailAddressToSave = new UserEmailAddress([
           'email' => $emailAddress,
-          'user_id' => $user->id, ]);
+          'user_id' => $user->id,]);
 
         if (! $emailAddressToSave->save()) {
           Logging::error('updateUserEmailAddresses', 'Could not save $emailAddressToSave');
@@ -375,7 +360,7 @@ class UserRepository implements IUserRepository {
       if ($toAdd) {
         $permissionToSave = new UserPermission([
           'permission' => $permission,
-          'user_id' => $user->id, ]);
+          'user_id' => $user->id,]);
         if (! $permissionToSave->save()) {
           Logging::error(
             'createOrUpdatePermissionsForUser',
@@ -394,13 +379,13 @@ class UserRepository implements IUserRepository {
    * @param User $user
    */
   public function activateUser(User $user): void {
-    $randomPassword = UserCode::generateCode();
+    $randomPassword = Generator::getRandom6DigitNumber();
     $user->password = Hash::make($randomPassword . $user->id);
     $user->force_password_change = true;
     $user->activated = true;
     $user->save();
 
-    MailSender::sendEmailOnLowQueue(new ActivateUser(
+    MailHelper::sendEmailOnLowQueue(new ActivateUser(
       $user->getCompleteName(),
       $user->username,
       $randomPassword,
@@ -467,7 +452,7 @@ class UserRepository implements IUserRepository {
         }
 
         $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
-          ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
+            ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 
@@ -524,89 +509,5 @@ class UserRepository implements IUserRepository {
     }
 
     return Hash::check($password . $user->id, $user->password);
-  }
-
-  /**
-   * @param User $user
-   * @return array
-   */
-  public function getHomepageDataForUser(User $user): array {
-    $bookingsToShow = [];
-    if ($this->settingRepository->getCinemaEnabled()) {
-      $bookings = $user->moviesBookings();
-      foreach ($bookings as $booking) {
-        $movie = $booking->movie();
-
-        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
-          $bookingToShow = new stdClass();
-          $bookingToShow->movie_id = $movie->id;
-          $bookingToShow->movie_name = $movie->name;
-          $bookingToShow->movie_date = $movie->date;
-          $bookingToShow->amount = $booking->amount;
-
-          if ($movie->worker() == null) {
-            $bookingToShow->worker_id = null;
-            $bookingToShow->worker_name = null;
-          } else {
-            $bookingToShow->worker_id = $movie->worker()->id;
-            $bookingToShow->worker_name = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
-          }
-
-          if ($movie->emergencyWorker() == null) {
-            $bookingToShow->emergency_worker_id = null;
-            $bookingToShow->emergency_worker_name = null;
-          } else {
-            $bookingToShow->emergency_worker_id = $movie->emergencyWorker()->id;
-            $bookingToShow->emergency_worker_name = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
-          }
-
-          $bookingsToShow[] = $bookingToShow;
-        }
-      }
-    }
-
-    $eventsToShow = [];
-    if ($this->settingRepository->getEventsEnabled()) {
-      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
-    }
-
-    $broadcastsToShow = [];
-    if ($this->settingRepository->getBroadcastsEnabled()) {
-      $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
-      foreach ($broadcasts as $broadcast) {
-        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
-      }
-    }
-
-    $users = $this->getAllUsers();
-    $birthdaysToShow = [];
-    foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
-        $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
-        $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
-        if ($remTimeDate < date('m-d', strtotime($user->birthday)) && date(
-          'm-d',
-          strtotime($user->birthday)
-        ) < $addTimeDate) {
-          $birthdayToShow = new stdClass();
-
-          $birthdayToShow->name = $user->getCompleteName();
-          $birthdayToShow->date = $user->birthday;
-
-          $birthdaysToShow[] = $birthdayToShow;
-        }
-      }
-    }
-
-    usort($birthdaysToShow, function ($a, $b) {
-      return strcmp(date('m-d', strtotime($a->date)), date('m-d', strtotime($b->date)));
-    });
-
-    return [
-      'msg' => 'List of your bookings, events, broadcasts and birthdays in the next month',
-      'events' => $eventsToShow,
-      'bookings' => $bookingsToShow,
-      'broadcasts' => $broadcastsToShow,
-      'birthdays' => $birthdaysToShow, ];
   }
 }

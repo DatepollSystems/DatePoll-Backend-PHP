@@ -81,7 +81,7 @@ class MovieRepository implements IMovieRepository {
 
     $returnableMovies = [];
     foreach ($movies as $movie) {
-      $returnable = $movie->getReturnable();
+      $returnable = $movie->toArray();
 
       $movieBookingForYourself = $user->moviesBookings()
         ->where('movie_id', $movie->id)

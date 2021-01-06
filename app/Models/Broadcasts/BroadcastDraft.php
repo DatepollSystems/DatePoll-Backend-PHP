@@ -17,12 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  */
 class BroadcastDraft extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'broadcast_drafts';
 
   /**
@@ -39,7 +33,7 @@ class BroadcastDraft extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function writer() {
-    return $this->belongsTo('App\Models\User\User', 'writer_user_id')->first();
+  public function writer(): BelongsTo|User {
+    return $this->belongsTo(User::class, 'writer_user_id')->first();
   }
 }

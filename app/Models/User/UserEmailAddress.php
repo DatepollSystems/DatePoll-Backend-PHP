@@ -20,9 +20,9 @@ class UserEmailAddress extends Model {
   protected $fillable = ['user_id', 'email', 'created_at', 'updated_at'];
 
   /**
-   * @return BelongsTo
+   * @return BelongsTo|User
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User');
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)->first();
   }
 }

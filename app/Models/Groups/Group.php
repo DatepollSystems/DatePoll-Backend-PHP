@@ -4,6 +4,7 @@ namespace App\Models\Groups;
 
 use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Events\EventForGroup;
+use App\Models\SeatReservation\PlaceReservationNotifyGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
@@ -60,8 +61,7 @@ class Group extends Model {
    */
   public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
-    $users = $this->usersMemberOfGroups();
-    foreach ($users as $userS) {
+    foreach ($this->usersMemberOfGroups() as $userS) {
       $user = new stdClass();
       $user->id = $userS->user_id;
       $user->firstname = $userS->user()->firstname;
@@ -81,9 +81,8 @@ class Group extends Model {
    * @return User[]
    */
   public function getUsersOrderedBySurname(): array {
-    $usersMemberOfGroups = $this->usersMemberOfGroups();
     $users = [];
-    foreach ($usersMemberOfGroups as $usersMemberOfGroup) {
+    foreach ($this->usersMemberOfGroups() as $usersMemberOfGroup) {
       $users[] = $usersMemberOfGroup->user();
     }
     usort($users, function ($a, $b) {
@@ -107,5 +106,13 @@ class Group extends Model {
   public function broadcastsForGroups(): array {
     return $this->hasMany(BroadcastForGroup::class)
       ->get()->all();
+  }
+
+  /**
+   * @return bool
+   */
+  public function hasToBeNotifiedOnPlaceReservation(): bool {
+    return $this->hasMany(PlaceReservationNotifyGroup::class)
+      ->get()->count() > 0;
   }
 }

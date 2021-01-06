@@ -2,10 +2,10 @@
 
 namespace App\Models\Subgroups;
 
+use App\Models\Broadcasts\BroadcastForSubgroup;
 use App\Models\Events\EventForSubgroup;
 use App\Models\Groups\Group;
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use stdClass;
@@ -36,26 +36,25 @@ class Subgroup extends Model {
   /**
    * @return BelongsTo | Group
    */
-  public function group() {
-    return $this->belongsTo('App\Models\Groups\Group')
+  public function group(): BelongsTo|Group {
+    return $this->belongsTo(Group::class)
       ->first();
   }
 
   /**
-   * @return Collection | UsersMemberOfSubgroups[] | null
+   * @return UsersMemberOfSubgroups[]
    */
-  public function usersMemberOfSubgroups() {
-    return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
-      ->get();
+  public function usersMemberOfSubgroups(): array {
+    return $this->hasMany(UsersMemberOfSubgroups::class)
+      ->get()->all();
   }
 
   /**
-   * @return stdClass[]
+   * @return array
    */
-  public function getUsersWithRolesOrderedBySurname() {
+  public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
-    $users = $this->usersMemberOfSubgroups();
-    foreach ($users as $userS) {
+    foreach ($this->usersMemberOfSubgroups() as $userS) {
       $user = new stdClass();
       $user->id = $userS->user_id;
       $user->firstname = $userS->user()->firstname;
@@ -72,12 +71,11 @@ class Subgroup extends Model {
   }
 
   /**
-   * @return User[] | null
+   * @return User[]
    */
-  public function getUsersOrderedBySurname() {
-    $usersMemberOfSubgroups = $this->usersMemberOfSubgroups();
+  public function getUsersOrderedBySurname(): array {
     $users = [];
-    foreach ($usersMemberOfSubgroups as $usersMemberOfSubgroup) {
+    foreach ( $this->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
       $users[] = $usersMemberOfSubgroup->user();
     }
     usort($users, function ($a, $b) {
@@ -88,10 +86,18 @@ class Subgroup extends Model {
   }
 
   /**
-   * @return Collection | EventForSubgroup[] | null
+   * @return EventForSubgroup[]
    */
-  public function eventsForSubgroups() {
+  public function eventsForSubgroups(): array {
     return $this->hasMany(EventForSubgroup::class)
-      ->get();
+      ->get()->all();
+  }
+
+  /**
+   * @return BroadcastForSubgroup[]
+   */
+  public function broadcastsForSubgroups(): array {
+    return $this->hasMany(BroadcastForSubgroup::class)
+      ->get()->all();
   }
 }

@@ -12,12 +12,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $updated_at
  */
 class Setting extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'settings';
 
   /**

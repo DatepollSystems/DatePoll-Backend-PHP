@@ -4,19 +4,18 @@ namespace App\Repositories\System\Log;
 
 use App\Models\System\Log;
 use Exception;
-use Illuminate\Support\Collection;
 
 interface ILogRepository {
   /**
-   * @return Collection<Log>
+   * @return Log[]
    */
-  public function getAllLogsOrderedByDate();
+  public function getAllLogsOrderedByDate(): array;
 
   /**
    * @param int $id
    * @return Log|null
    */
-  public function getLogById(int $id);
+  public function getLogById(int $id): ?Log;
 
   /**
    * @param Log $log
@@ -33,5 +32,5 @@ interface ILogRepository {
    * @param int|null $userId
    * @return Log
    */
-  public function createLog(string $logType, string $message, ?int $userId = null);
+  public function createLog(string $logType, string $message, ?int $userId = null): ?Log;
 }

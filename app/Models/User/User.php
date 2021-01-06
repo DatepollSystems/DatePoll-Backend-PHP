@@ -2,15 +2,18 @@
 
 namespace App\Models\User;
 
+use App\Models\Broadcasts\Broadcast;
+use App\Models\Broadcasts\BroadcastUserInfo;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
+use App\Models\PerformanceBadge\UserHasBadge;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
+use App\Models\SeatReservation\PlaceReservation;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
 use App\Utils\ArrayHelper;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -64,41 +67,21 @@ class User extends Model {
     'activity',];
 
   /**
-   * @return Collection | Movie[] | null
+   * @return string
    */
-  public function emergencyWorkerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')
-      ->get();
+  public function getCompleteName(): string {
+    return $this->firstname . ' ' . $this->surname;
   }
 
   /**
-   * @return Collection | Movie[] | null
+   * @return UserCode[]
    */
-  public function workerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')
-      ->orderBy('date')
-      ->get();
+  public function userCodes(): array {
+    return $this->hasMany(UserCode::class)
+      ->get()->all();
   }
 
-  /**
-   * @return Collection | MoviesBooking[] | null
-   */
-  public function moviesBookings() {
-    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
-      ->orderBy('m.date')
-      ->select('movies_bookings.*')
-      ->where('user_id', $this->id)
-      ->get();
-  }
-
-  /**
-   * @return Collection | UserCode[] | null
-   */
-  public function userCodes() {
-    return $this->hasMany('App\Models\User\UserCode')
-      ->get();
-  }
-
+  // ------------------------------------ Properties ------------------------------------
   /**
    * @return UserTelephoneNumber[]
    */
@@ -129,6 +112,7 @@ class User extends Model {
     return ArrayHelper::getPropertyArrayOfObjectArray($this->emailAddresses(), 'email');
   }
 
+  // ------------------------------------ Groups and subgroups ------------------------------------
   /**
    * @return UsersMemberOfGroups[]
    */
@@ -147,13 +131,14 @@ class User extends Model {
   }
 
   /**
-   * @return Collection | UsersMemberOfSubgroups[] | null
+   * @return UsersMemberOfSubgroups[]
    */
-  public function usersMemberOfSubgroups() {
+  public function usersMemberOfSubgroups(): array {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
-      ->get();
+      ->get()->all();
   }
 
+  // ------------------------------------ Badges ------------------------------------
   /**
    * @return UserHavePerformanceBadgeWithInstrument[]
    */
@@ -163,13 +148,13 @@ class User extends Model {
   }
 
   /**
-   * @return Collection | EventUserVotedForDecision[] | null
+   * @return UserHasBadge[]
    */
-  public function votedForDecisions() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-      ->get();
+  public function getBadges(): array {
+    return $this->hasMany(UserHasBadge::class)->get()->all();
   }
 
+  // ------------------------------------ Permissions ------------------------------------
   /**
    * @return UserPermission[]
    */
@@ -186,11 +171,76 @@ class User extends Model {
     return (UserPermission::where('user_id', '=', $this->id)->where('permission', '=', $permission)->orWhere('permission', '=', 'root.administration')->first() != null);
   }
 
+  // ------------------------------------ Cinema ------------------------------------
   /**
-   * @return string
+   * @return Movie[]
    */
-  public function getCompleteName(): string {
-    return $this->firstname . ' ' . $this->surname;
+  public function emergencyWorkerMovies(): array {
+    return $this->hasMany(Movie::class, 'emergency_worker_id')
+      ->get()->all();
+  }
+
+  /**
+   * @return Movie[]
+   */
+  public function workerMovies(): array {
+    return $this->hasMany(Movie::class, 'worker_id')
+      ->orderBy('date')
+      ->get()->all();
+  }
+
+  /**
+   * @return MoviesBooking[]
+   */
+  public function moviesBookings(): array {
+    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
+      ->orderBy('m.date')
+      ->select('movies_bookings.*')
+      ->where('user_id', $this->id)
+      ->get()->all();
+  }
+
+  // ------------------------------------ Events ------------------------------------
+  /**
+   * @return EventUserVotedForDecision[]
+   */
+  public function votedForDecisions(): array {
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
+      ->get()->all();
+  }
+
+  // ------------------------------------ Broadcasts ------------------------------------
+  /**
+   * @return Broadcast[]
+   */
+  public function writerOfBroadcasts(): array {
+    return $this->hasMany(Broadcast::class, 'writer_user_id')
+      ->get()->all();
+  }
+
+  /**
+   * @return BroadcastUserInfo[]
+   */
+  public function broadcastUserInfos(): array {
+    return $this->hasMany(BroadcastUserInfo::class, 'user_id')
+      ->get()->all();
+  }
+
+  // ------------------------------------ Place reservations ------------------------------------
+  /**
+   * @return PlaceReservation[]
+   */
+  public function approverOfPlaceReservations(): array {
+    return $this->hasMany(PlaceReservation::class, 'approver_id')
+      ->get()->all();
+  }
+
+  /**
+   * @return PlaceReservation[]
+   */
+  public function requestedPlaceReservations(): array {
+    return $this->hasMany(PlaceReservation::class, 'user_id')
+      ->get()->all();
   }
 
   /**

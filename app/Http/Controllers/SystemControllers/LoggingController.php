@@ -11,10 +11,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
 class LoggingController extends Controller {
-  protected ILogRepository $logRepository;
 
-  public function __construct(ILogRepository $logRepository) {
-    $this->logRepository = $logRepository;
+  public function __construct(protected ILogRepository $logRepository) {
   }
 
   /**
@@ -22,17 +20,11 @@ class LoggingController extends Controller {
    * @return JsonResponse
    */
   public function getAllLogs(AuthenticatedRequest $request): JsonResponse {
-    $logs = [];
-
-    foreach ($this->logRepository->getAllLogsOrderedByDate() as $log) {
-      $logs[] = $log->getReturnable();
-    }
-
     Logging::info('getAllLogs', 'User - ' . $request->auth->id . ' | Successful');
 
     return response()->json([
       'msg' => 'All logs',
-      'logs' => $logs, ], 200);
+      'logs' => $this->logRepository->getAllLogsOrderedByDate(),], 200);
   }
 
   /**
@@ -43,13 +35,13 @@ class LoggingController extends Controller {
   public function saveLog(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'type' => 'required|string|min:1|max:190|in:INFO,WARNING,ERROR',
-      'message' => 'required|string|min:1|max:65534', ]);
+      'message' => 'required|string|min:1|max:65534',]);
 
     $log = $this->logRepository->createLog($request->input('type'), $request->input('message'), $request->auth->id);
 
     return response()->json([
       'msg' => 'Log saved',
-      'log' => $log->getReturnable(), ], 201);
+      'log' => $log,], 201);
   }
 
   /**

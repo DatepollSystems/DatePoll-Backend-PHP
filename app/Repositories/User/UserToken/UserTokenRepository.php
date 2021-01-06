@@ -4,6 +4,7 @@ namespace App\Repositories\User\UserToken;
 
 use App\Models\User\User;
 use App\Models\User\UserToken;
+use App\Utils\Generator;
 use Exception;
 
 class UserTokenRepository implements IUserTokenRepository {
@@ -37,8 +38,8 @@ class UserTokenRepository implements IUserTokenRepository {
       if (! $userToken->delete()) {
         return $userToken;
       }
-    } catch (Exception $e) {
-      return $userToken;
+    } catch (Exception) {
+      return null;
     }
 
     return null;
@@ -50,12 +51,7 @@ class UserTokenRepository implements IUserTokenRepository {
    */
   public function generateUniqueRandomToken(int $length): string {
     while (true) {
-      $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      $charactersLength = strlen($characters);
-      $randomToken = '';
-      for ($i = 0; $i < $length; $i++) {
-        $randomToken .= $characters[rand(0, $charactersLength - 1)];
-      }
+      $randomToken = Generator::getRandomMixedNumberAndABCToken($length);
 
       if (UserToken::where('token', $randomToken)
         ->first() == null) {

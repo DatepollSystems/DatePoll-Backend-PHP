@@ -179,8 +179,7 @@ class EventRepository implements IEventRepository {
 
     //-------------------------------- Only delete changed dates --------------------------------------
     $datesWhichHaveNotBeenDeleted = [];
-    $oldDates = $event->getEventDates();
-    foreach ($oldDates as $oldDate) {
+    foreach ($event->getEventDates() as $oldDate) {
       $toDelete = true;
 
       foreach ((array)$dates as $date) {

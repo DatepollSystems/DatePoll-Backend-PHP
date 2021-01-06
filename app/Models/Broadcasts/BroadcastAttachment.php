@@ -16,12 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $updated_at
  */
 class BroadcastAttachment extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'broadcast_attachments';
 
   protected $hidden = ['path'];
@@ -35,12 +29,12 @@ class BroadcastAttachment extends Model {
     'token',
     'broadcast_id',
     'created_at',
-    'updated_at', ];
+    'updated_at',];
 
   /**
    * @return BelongsTo | Broadcast
    */
-  public function broadcast() {
+  public function broadcast(): BelongsTo|Broadcast {
     return $this->belongsTo(Broadcast::class, 'broadcast_id')->first();
   }
 }

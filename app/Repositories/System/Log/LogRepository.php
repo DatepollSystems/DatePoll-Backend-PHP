@@ -4,24 +4,23 @@ namespace App\Repositories\System\Log;
 
 use App\Models\System\Log;
 use Exception;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class LogRepository implements ILogRepository {
 
   /**
-   * @return Collection
+   * @return Log[]
    */
-  public function getAllLogsOrderedByDate() {
+  public function getAllLogsOrderedByDate(): array {
     return Log::orderBy('created_at', 'desc')
-      ->get();
+      ->get()->all();
   }
 
   /**
    * @param int $id
    * @return Log|null
    */
-  public function getLogById(int $id) {
+  public function getLogById(int $id): ?Log {
     return Log::find($id);
   }
 
@@ -45,7 +44,7 @@ class LogRepository implements ILogRepository {
    * @param int|null $userId
    * @return Log
    */
-  public function createLog(string $logType, string $message, ?int $userId = null) {
+  public function createLog(string $logType, string $message, ?int $userId = null): ?Log {
     $log = new Log([
       'type' => $logType,
       'message' => $message,

@@ -7,7 +7,8 @@ use App\Mail\ForgotPassword;
 use App\Models\User\UserCode;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
-use App\Utils\MailSender;
+use App\Utils\Generator;
+use App\Utils\MailHelper;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -232,11 +233,11 @@ class AuthController extends Controller {
         'error_code' => 'no_email_addresses', ], 400);
     }
 
-    $code = UserCode::generateCode();
+    $code = Generator::getRandom6DigitNumber();
     $userCode = new UserCode(['code' => $code, 'purpose' => 'forgotPassword', 'user_id' => $user->id]);
 
     if ($userCode->save()) {
-      MailSender::sendEmailOnHighQueue(
+      MailHelper::sendEmailOnHighQueue(
         new ForgotPassword($user->firstname, $code),
         $user->getEmailAddresses()
       );

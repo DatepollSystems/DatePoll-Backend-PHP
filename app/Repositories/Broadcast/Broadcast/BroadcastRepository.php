@@ -14,7 +14,7 @@ use App\Models\User\User;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
-use App\Utils\QueueHandler;
+use App\Utils\QueueHelper;
 use DateInterval;
 use DateTime;
 use Exception;
@@ -318,7 +318,7 @@ class BroadcastRepository implements IBroadcastRepository {
         );
         $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $user->getEmailAddresses(), $user->id, $broadcast->id);
 
-        QueueHandler::addDelayedJobToDefaultQueue($sendEmailJob, $time);
+        QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
       }
     }
 
@@ -372,7 +372,7 @@ class BroadcastRepository implements IBroadcastRepository {
       );
       $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses(), $broadcast->id, $broadcastUserInfo->user()->id);
 
-      QueueHandler::addDelayedJobToDefaultQueue($sendEmailJob, $time);
+      QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
     }
   }
 

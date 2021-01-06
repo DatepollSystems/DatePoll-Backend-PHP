@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Mail;
  * @property string[] $emailAddresses
  */
 class SendEmailJob extends Job {
-  protected ADatePollMailable $mailable;
-  protected array $emailAddresses;
   protected string $emailAddressesString = '';
 
   /**
@@ -23,10 +21,7 @@ class SendEmailJob extends Job {
    * @param ADatePollMailable $mailable
    * @param string[] $emailAddresses
    */
-  public function __construct(ADatePollMailable $mailable, array $emailAddresses) {
-    $this->mailable = $mailable;
-    $this->emailAddresses = $emailAddresses;
-
+  public function __construct(protected ADatePollMailable $mailable, protected array $emailAddresses) {
     foreach ($this->emailAddresses as $emailAddress) {
       $this->emailAddressesString .= $emailAddress . ', ';
     }

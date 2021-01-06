@@ -22,9 +22,9 @@ class UserToken extends Model {
   protected $fillable = ['user_id', 'token', 'purpose', 'description', 'created_at', 'updated_at'];
 
   /**
-   * @return User|Model|BelongsTo|object
+   * @return User|BelongsTo
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)->first();
   }
 }

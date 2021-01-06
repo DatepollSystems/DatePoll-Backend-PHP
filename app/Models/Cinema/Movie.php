@@ -3,10 +3,10 @@
 namespace App\Models\Cinema;
 
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\ArrayShape;
 use stdClass;
 
 /**
@@ -35,74 +35,76 @@ class Movie extends Model {
   /**
    * @return BelongsTo | User | null
    */
-  public function emergencyWorker() {
-    return $this->belongsTo('App\Models\User\User', 'emergency_worker_id')->first();
+  public function emergencyWorker(): BelongsTo|User|null {
+    return $this->belongsTo(User::class, 'emergency_worker_id')->first();
   }
 
   /**
    * @return BelongsTo | MovieYear | null
    */
-  public function movieYear() {
-    return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
+  public function movieYear(): BelongsTo|MovieYear|null {
+    return $this->belongsTo(MovieYear::class)->first();
   }
 
   /**
    * @return BelongsTo  | User | null
    */
-  public function worker() {
-    return $this->belongsTo('App\Models\User\User', 'worker_id')->first();
+  public function worker(): BelongsTo|User|null {
+    return $this->belongsTo(User::class, 'worker_id')->first();
   }
 
   /**
-   * @return Collection | MoviesBooking[]
+   * @return MoviesBooking[]
    */
-  public function moviesBookings() {
-    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
+  public function moviesBookings(): array {
+    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get()->all();
   }
 
   /**
-   * @return stdClass | Movie
+   * @return array
    */
-  public function getReturnable() {
-    $returnableMovie = new stdClass();
-
-    $returnableMovie->id = $this->id;
-    $returnableMovie->name = $this->name;
-    $returnableMovie->date = $this->date;
-    $returnableMovie->trailer_link = $this->trailerLink;
-    $returnableMovie->poster_link = $this->posterLink;
-    $returnableMovie->booked_tickets = $this->bookedTickets;
-    $returnableMovie->movie_year_id = $this->movie_year_id;
-    $returnableMovie->created_at = $this->created_at;
-    $returnableMovie->updated_at = $this->updated_at;
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string"])]
+  public function toArray(): array {
+    $returnable = [
+      "id" => $this->id,
+      'name' => $this->name,
+      'date' => $this->date,
+      'trailer_link' => $this->trailerLink,
+      'poster_link' => $this->posterLink,
+      'booked_tickets' => $this->bookedTickets,
+      'movie_year_id' => $this->movie_year_id,
+      'created_at' => $this->created_at,
+      'updated_at' => $this->updated_at
+    ];
 
     $worker = $this->worker();
     $emergencyWorker = $this->emergencyWorker();
 
     if ($worker == null) {
-      $returnableMovie->worker_id = null;
-      $returnableMovie->worker_name = null;
+      $returnable->worker_id = null;
+      $returnable->worker_name = null;
     } else {
-      $returnableMovie->worker_id = $worker->id;
-      $returnableMovie->worker_name = $worker->firstname . ' ' . $worker->surname;
+      $returnable->worker_id = $worker->id;
+      $returnable->worker_name = $worker->getCompleteName();
     }
 
     if ($emergencyWorker == null) {
-      $returnableMovie->emergency_worker_id = null;
-      $returnableMovie->emergency_worker_name = null;
+      $returnable->emergency_worker_id = null;
+      $returnable->emergency_worker_name = null;
     } else {
-      $returnableMovie->emergency_worker_id = $emergencyWorker->id;
-      $returnableMovie->emergency_worker_name = $emergencyWorker->firstname . ' ' . $emergencyWorker->surname;
+      $returnable->emergency_worker_id = $emergencyWorker->id;
+      $returnable->emergency_worker_name = $emergencyWorker->getCompleteName();
     }
-
-    return $returnableMovie;
+    return $returnable;
   }
 
   /**
-   * @return stdClass
+   * @return array
+   * @noinspection SqlNoDataSourceInspection SqlResolve
    */
-  public function getAdminReturnable() {
-    $returnableMovie = $this->getReturnable();
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string"])]
+  public function getAdminReturnable(): array {
+    $returnableMovie = $this->toArray();
     $bookings = [];
     foreach ($this->moviesBookings() as $moviesBooking) {
       $booking = new stdClass();

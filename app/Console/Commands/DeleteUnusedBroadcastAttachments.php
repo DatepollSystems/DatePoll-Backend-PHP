@@ -8,15 +8,11 @@ use Exception;
 use Illuminate\Console\Command;
 
 class DeleteUnusedBroadcastAttachments extends Command {
-  private IBroadcastAttachmentRepository $broadcastAttachmentRepository;
-
   protected $signature = 'delete-unused-broadcast-attachments {{--force}}';
   protected $description = 'Deletes broadcast attachments which where uploaded but never used / assigned to a broadcast';
 
-  public function __construct(IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
+  public function __construct(private IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
     parent::__construct();
-
-    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
   }
 
   /**

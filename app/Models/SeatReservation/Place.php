@@ -2,7 +2,6 @@
 
 namespace App\Models\SeatReservation;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -15,12 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property PlaceReservation[] $placeReservations
  */
 class Place extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'places';
 
   /**
@@ -34,10 +27,10 @@ class Place extends Model {
     'updated_at', ];
 
   /**
-   * @return Collection | PlaceReservation[] | null
+   * @return PlaceReservation[]
    */
-  public function placeReservations() {
+  public function placeReservations(): array {
     return $this->hasMany(PlaceReservation::class)
-      ->get();
+      ->get()->all();
   }
 }

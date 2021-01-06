@@ -18,11 +18,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Event $event
  */
 class EventDate extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'event_dates';
 
   /**
@@ -41,8 +36,8 @@ class EventDate extends Model {
   /**
    * @return BelongsTo | Event
    */
-  public function getEvent() {
-    return $this->belongsTo('App\Models\Events\Event', 'event_id')
+  public function getEvent(): BelongsTo|Event {
+    return $this->belongsTo(Event::class, 'event_id')
       ->first();
   }
 }

@@ -19,11 +19,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property User $user
  */
 class EventUserVotedForDecision extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events_users_voted_for';
 
   /**
@@ -41,21 +36,21 @@ class EventUserVotedForDecision extends Model {
    * @return BelongsTo | EventDecision
    */
 
-  public function decision() {
-    return $this->belongsTo('App\Models\Events\EventDecision', 'decision_id')->first();
+  public function decision(): BelongsTo|EventDecision {
+    return $this->belongsTo(EventDecision::class, 'decision_id')->first();
   }
 
   /**
    * @return BelongsTo | Event
    */
-  public function event() {
-    return $this->belongsTo('App\Models\Events\Event')->first();
+  public function event(): BelongsTo|Event {
+    return $this->belongsTo(Event::class)->first();
   }
 
   /**
    * @return BelongsTo | User
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)->first();
   }
 }

@@ -3,8 +3,8 @@
 namespace App\Models\SeatReservation;
 
 use App\Models\Groups\Group;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,12 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $updated_at
  */
 class PlaceReservationNotifyGroup extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'place_reservation_notify_groups';
 
   /**
@@ -31,9 +25,9 @@ class PlaceReservationNotifyGroup extends Model {
     'updated_at', ];
 
   /**
-   * @return Collection | PlaceReservation[] | null
+   * @return Group | BelongsTo
    */
-  public function getGroups() {
-    return $this->hasMany(Group::class)->get();
+  public function group(): Group|BelongsTo {
+    return $this->hasOne(Group::class)->get()->first();
   }
 }

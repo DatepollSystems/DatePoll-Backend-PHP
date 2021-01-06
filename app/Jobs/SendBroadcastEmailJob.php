@@ -17,9 +17,6 @@ use App\Models\Broadcasts\BroadcastUserInfo;
  * @property int broadcastId
  */
 class SendBroadcastEmailJob extends SendEmailJob {
-  protected int $userId;
-  protected int $broadcastId;
-
   /**
    * Create a new job instance.
    *
@@ -28,10 +25,8 @@ class SendBroadcastEmailJob extends SendEmailJob {
    * @param int $userId
    * @param int $broadcastId
    */
-  public function __construct(BroadcastMail $mailable, array $emailAddresses, int $userId, int $broadcastId) {
+  public function __construct(BroadcastMail $mailable, array $emailAddresses, protected int $userId, protected int $broadcastId) {
     parent::__construct($mailable, $emailAddresses);
-    $this->userId = $userId;
-    $this->broadcastId = $broadcastId;
   }
 
   /**

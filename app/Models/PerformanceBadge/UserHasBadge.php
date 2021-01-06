@@ -17,11 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property User $user
  */
 class UserHasBadge extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'users_has_badges';
 
   /**
@@ -38,8 +33,8 @@ class UserHasBadge extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)
       ->first();
   }
 }

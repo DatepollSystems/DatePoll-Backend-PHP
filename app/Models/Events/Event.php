@@ -4,7 +4,6 @@ namespace App\Models\Events;
 
 use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -21,12 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property EventUserVotedForDecision[] $eventsUsersVotedForDecision
  */
 class Event extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events';
 
   /**
@@ -40,28 +33,27 @@ class Event extends Model {
     'updated_at', ];
 
   /**
-   * @return Collection | EventDecision[] | null
+   * @return EventDecision[]
    */
-  public function eventsDecisions() {
-    return $this->hasMany('App\Models\Events\EventDecision', 'event_id')
-      ->get();
+  public function eventsDecisions(): array {
+    return $this->hasMany(EventDecision::class, 'event_id')
+      ->get()->all();
   }
 
   /**
-   * @return Collection | EventForGroup[] | null
+   * @return EventForGroup[]
    */
-  public function eventsForGroups() {
-    return $this->hasMany('App\Models\Events\EventForGroup')
-      ->get();
+  public function eventsForGroups(): array {
+    return $this->hasMany(EventForGroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Group[] | null
+   * @return Group[]
    */
-  public function getGroupsOrdered() {
-    $eventForGroups = $this->eventsForGroups();
+  public function getGroupsOrdered(): array {
     $groups = [];
-    foreach ($eventForGroups as $eventForGroup) {
+    foreach ($this->eventsForGroups() as $eventForGroup) {
       $groups[] = $eventForGroup->group();
     }
     usort($groups, function ($a, $b) {
@@ -72,20 +64,19 @@ class Event extends Model {
   }
 
   /**
-   * @return Collection | EventForSubgroup[] | null
+   * @return EventForSubgroup[]
    */
-  public function eventsForSubgroups() {
-    return $this->hasMany('App\Models\Events\EventForSubgroup')
-      ->get();
+  public function eventsForSubgroups(): array {
+    return $this->hasMany(EventForSubgroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Subgroup[] | null
+   * @return Subgroup[]
    */
-  public function getSubgroupsOrdered() {
-    $eventForSubgroups = $this->eventsForSubgroups();
+  public function getSubgroupsOrdered(): array {
     $subgroups = [];
-    foreach ($eventForSubgroups as $eventForSubgroup) {
+    foreach ($this->eventsForSubgroups() as $eventForSubgroup) {
       $subgroups[] = $eventForSubgroup->subgroup();
     }
     usort($subgroups, function ($a, $b) {
@@ -96,18 +87,18 @@ class Event extends Model {
   }
 
   /**
-   * @return Collection | EventUserVotedForDecision[] | null
+   * @return EventUserVotedForDecision[]
    */
-  public function usersVotedForDecision() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-      ->get();
+  public function usersVotedForDecision(): array {
+    return $this->hasMany(EventUserVotedForDecision::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | EventDate[] | null
+   * @return EventDate[]
    */
-  public function getEventDates() {
-    return $this->hasMany('App\Models\Events\EventDate', 'event_id')
-      ->get();
+  public function getEventDates(): array {
+    return $this->hasMany(EventDate::class, 'event_id')
+      ->get()->all();
   }
 }
