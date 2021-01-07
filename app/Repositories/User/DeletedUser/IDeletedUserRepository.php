@@ -13,7 +13,7 @@ interface IDeletedUserRepository {
 
   /**
    * @param User $user
-   * @return bool|null
+   * @return bool
    */
   public function deleteUser(User $user): bool;
 

@@ -7,13 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Permissions;
 use App\Repositories\User\DeletedUser\IDeletedUserRepository;
+use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 
 class DeletedUsersController extends Controller {
-  protected IDeletedUserRepository $deletedUserRepository;
 
-  public function __construct(IDeletedUserRepository $deletedUserRepository) {
-    $this->deletedUserRepository = $deletedUserRepository;
+  public function __construct(protected IDeletedUserRepository $deletedUserRepository, protected IUserRepository $userRepository) {
   }
 
   /**

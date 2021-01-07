@@ -14,6 +14,7 @@ use App\Models\User\User;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Repositories\User\User\IUserRepository;
 use App\Utils\QueueHelper;
 use DateInterval;
 use DateTime;
@@ -22,18 +23,13 @@ use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 
 class BroadcastRepository implements IBroadcastRepository {
-  protected ISettingRepository $settingRepository;
-  protected IGroupRepository $groupRepository;
-  protected IBroadcastAttachmentRepository $broadcastAttachmentRepository;
 
   public function __construct(
-    ISettingRepository $settingRepository,
-    IGroupRepository $groupRepository,
-    IBroadcastAttachmentRepository $broadcastAttachmentRepository
+    protected ISettingRepository $settingRepository,
+    protected IGroupRepository $groupRepository,
+    protected IBroadcastAttachmentRepository $broadcastAttachmentRepository,
+    protected IUserRepository $userRepository
   ) {
-    $this->settingRepository = $settingRepository;
-    $this->groupRepository = $groupRepository;
-    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
   }
 
   /**
@@ -286,7 +282,7 @@ class BroadcastRepository implements IBroadcastRepository {
       $mAttachments = '================= Anhänge =================<br>' . $mAttachments . '========================================<br>';
     }
 
-    $writer = User::find($writerId);
+    $writer = $this->userRepository->getUserById($writerId);
     $writerEmailAddress = null;
     if ($writer->hasEmailAddresses()) {
       $writerEmailAddress = $writer->getEmailAddresses()[0];
@@ -311,7 +307,7 @@ class BroadcastRepository implements IBroadcastRepository {
           $subject,
           $body,
           $bodyHTML,
-          $writer->getName(),
+          $writer->getCompleteName(),
           $writerEmailAddress,
           $DatePollAddress,
           $mAttachments

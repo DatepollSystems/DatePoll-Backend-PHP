@@ -25,9 +25,9 @@ class PlaceReservationNotifyGroup extends Model {
     'updated_at', ];
 
   /**
-   * @return Group | BelongsTo
+   * @return Group|BelongsTo
    */
-  public function group(): Group|BelongsTo {
-    return $this->hasOne(Group::class)->get()->first();
+  public function group(): BelongsTo|Group {
+    return $this->belongsTo(Group::class)->first();
   }
 }

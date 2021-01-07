@@ -36,11 +36,11 @@ abstract class ArrayHelper {
   }
 
   /**
-   * @param $possibleArray
+   * @param mixed $possibleArray
    * @return bool
    */
   #[Pure]
-  public static function isArray($possibleArray): bool {
+  public static function isArray(mixed $possibleArray): bool {
     return is_array($possibleArray);
   }
 }

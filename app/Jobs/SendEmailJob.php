@@ -6,18 +6,10 @@ use App\Logging;
 use App\Mail\ADatePollMailable;
 use Illuminate\Support\Facades\Mail;
 
-/**
- * Class SendEmailJob
- * @package App\Jobs
- * @property ADatePollMailable $mailable
- * @property string[] $emailAddresses
- */
 class SendEmailJob extends Job {
   protected string $emailAddressesString = '';
 
   /**
-   * Create a new job instance.
-   *
    * @param ADatePollMailable $mailable
    * @param string[] $emailAddresses
    */

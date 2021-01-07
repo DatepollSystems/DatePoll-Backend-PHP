@@ -169,7 +169,7 @@ class GroupRepository implements IGroupRepository {
         $joinYears[] = $joinYear;
       }
     }
-    $group->users_only_in_this_group = $users_only_in_this_group;
+    $group['users_only_in_this_group'] = $users_only_in_this_group;
 
     $users_grouped_by_join_year = [];
     foreach ($joinYears as $joinYear) {
@@ -191,7 +191,7 @@ class GroupRepository implements IGroupRepository {
       $year->users = $userToAdd;
       $users_grouped_by_join_year[] = $year;
     }
-    $group->users_grouped_by_join_year = $users_grouped_by_join_year;
+    $group['users_grouped_by_join_year'] = $users_grouped_by_join_year;
 
     return $group;
   }

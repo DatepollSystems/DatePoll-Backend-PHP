@@ -6,25 +6,16 @@ use App\Logging;
 use App\Mail\ADatePollMailable;
 use App\Mail\BroadcastMail;
 use App\Models\Broadcasts\BroadcastUserInfo;
+use JetBrains\PhpStorm\Pure;
 
-/**
- * Class SendEmailJob
- * @package App\Jobs
- * @property ADatePollMailable $mailable
- * @property string[] $emailAddresses
- * @property string $emailAddressesString
- * @property int userId
- * @property int broadcastId
- */
 class SendBroadcastEmailJob extends SendEmailJob {
   /**
-   * Create a new job instance.
-   *
    * @param BroadcastMail $mailable
    * @param string[] $emailAddresses
    * @param int $userId
    * @param int $broadcastId
    */
+  #[Pure]
   public function __construct(BroadcastMail $mailable, array $emailAddresses, protected int $userId, protected int $broadcastId) {
     parent::__construct($mailable, $emailAddresses);
   }

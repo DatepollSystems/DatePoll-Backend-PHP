@@ -7,6 +7,7 @@ use App\Mail\ForgotPassword;
 use App\Models\User\UserCode;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
+use App\Utils\Converter;
 use App\Utils\Generator;
 use App\Utils\MailHelper;
 use Firebase\JWT\JWT;
@@ -238,7 +239,7 @@ class AuthController extends Controller {
 
     if ($userCode->save()) {
       MailHelper::sendEmailOnHighQueue(
-        new ForgotPassword($user->firstname, $code),
+        new ForgotPassword($user->firstname, Converter::integerToString($code)),
         $user->getEmailAddresses()
       );
 

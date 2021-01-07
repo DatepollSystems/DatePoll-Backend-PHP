@@ -9,11 +9,11 @@ interface IUserChangeRepository {
    * @param string $property
    * @param int $userId
    * @param int $editorId
-   * @param string|null $newValue
-   * @param string|null $oldValue
+   * @param string|int|bool|null $newValue
+   * @param string|int|bool|null $oldValue
    * @return UserChange|null
    */
-  public function createUserChange(string $property, int $userId, int $editorId, string $newValue = null, string $oldValue = null): ?UserChange;
+  public function createUserChange(string $property, int $userId, int $editorId, string|int|bool|null $newValue = null, string|int|bool|null $oldValue = null): ?UserChange;
 
   /**
    * @return UserChange[]
@@ -30,14 +30,14 @@ interface IUserChangeRepository {
    * @param string $property
    * @param int $userId
    * @param int $editorId
-   * @param string|null $newValue
-   * @param string|null $oldValue
+   * @param string|int|bool|null $newValue
+   * @param string|int|bool|null $oldValue
    */
   public function checkForPropertyChange(
     string $property,
     int $userId,
     int $editorId,
-    ?string $newValue,
-    ?string $oldValue
+    string|int|bool|null $newValue,
+    string|int|bool|null $oldValue
   );
 }

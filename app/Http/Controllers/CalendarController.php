@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
 use App\Repositories\Cinema\Movie\IMovieRepository;
+use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
@@ -28,42 +29,28 @@ use Jsvrcek\ICS\Model\Relationship\Organizer;
 use Jsvrcek\ICS\Utility\Formatter;
 
 class CalendarController extends Controller {
-  protected IUserTokenRepository $userTokenRepository;
-  protected ISettingRepository $settingRepository;
-  protected IUserRepository $userRepository;
-  protected IUserSettingRepository $userSettingRepository;
-  protected IEventDateRepository $eventDateRepository;
-  protected IMovieRepository $movieRepository;
-  protected IEventRepository $eventRepository;
-
   private static string $completeCalendarCacheKey = 'calendar.complete';
   private static string $personalCalendarCacheKey = 'calendar.personal.';
 
   public function __construct(
-    IUserTokenRepository $userTokenRepository,
-    ISettingRepository $settingRepository,
-    IUserRepository $userRepository,
-    IUserSettingRepository $userSettingRepository,
-    IEventDateRepository $eventDateRepository,
-    IMovieRepository $movieRepository,
-    IEventRepository $eventRepository
+    protected IUserTokenRepository $userTokenRepository,
+    protected ISettingRepository $settingRepository,
+    protected IUserRepository $userRepository,
+    protected IUserSettingRepository $userSettingRepository,
+    protected IEventDateRepository $eventDateRepository,
+    protected IMovieRepository $movieRepository,
+    protected IEventRepository $eventRepository,
+    protected IMovieBookingRepository $movieBookingRepository
   ) {
-    $this->userTokenRepository = $userTokenRepository;
-    $this->settingRepository = $settingRepository;
-    $this->userRepository = $userRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->eventDateRepository = $eventDateRepository;
-    $this->movieRepository = $movieRepository;
-    $this->eventRepository = $eventRepository;
   }
 
   /**
    * @param string $token
-   * @return JsonResponse|void
+   * @return JsonResponse|null
    * @throws Exception
    * @throws CalendarEventException
    */
-  public function getCalendarOf(string $token) {
+  public function getCalendarOf(string $token): ?JsonResponse {
     $tokenObject = $this->userTokenRepository->getUserTokenByTokenAndPurpose($token, 'calendar');
     if ($tokenObject == null) {
       return response()->json(['msg' => 'Provided token is incorrect', 'error_code' => 'token_incorrect'], 401);
@@ -75,7 +62,7 @@ class CalendarController extends Controller {
       header('Content-Disposition: attachment; filename="calendar.ics"');
       echo Cache::get($cacheKey);
 
-      return;
+      return null;
     }
 
     $user = $tokenObject->user();
@@ -102,14 +89,7 @@ class CalendarController extends Controller {
 
     if ($this->settingRepository->getCinemaEnabled() && $this->userSettingRepository->getShowMoviesInCalendarForUser($user)) {
       /* -------- Movie booking specific calendar -------------*/
-      $movies = [];
-      $movieBookings = MoviesBooking::where('user_id', $user->id)
-        ->get();
-      foreach ($movieBookings as $movieBooking) {
-        $movie = $movieBooking->movie();
-        $movie->booked_tickets_for_yourself = $movieBooking->amount;
-        $movies[] = $movie;
-      }
+      $movies = $this->movieBookingRepository->getMoviesWhereUserBookedTickets($user->id);
 
       foreach ($movies as $movie) {
         $geo = new Geo();
@@ -124,7 +104,7 @@ class CalendarController extends Controller {
         $movieEvent->setStart(new DateTime($movie->date . 'T20:30:00'))
           ->setEnd(new DateTime($movie->date . 'T23:59:59'))
           ->setSummary($movie->name)
-          ->setDescription('Reservierte Karten: ' . $movie->booked_tickets_for_yourself)
+          ->setDescription('Reservierte Karten: ' . $movie->getBookedTicketsForUser($user->id))
           ->setUrl($movie->trailerLink)
           ->setGeo($geo)
           ->setSequence(1)
@@ -133,13 +113,10 @@ class CalendarController extends Controller {
           ->addLocation($location)
           ->setUid('movie' . $movie->id);
 
-        $worker = $movie->worker();
-        if ($worker != null) {
-          $name = $worker->firstname . ' ' . $worker->surname;
-
+        if ($movie->worker_name != null) {
           $organizer = new Organizer(new Formatter());
-          $organizer->setValue($worker->email)
-            ->setName($name)
+          $organizer->setValue($movie->worker_id)
+            ->setName($movie->worker()->getCompleteName())
             ->setLanguage('de');
           $movieEvent->setOrganizer($organizer);
         } else {
@@ -180,13 +157,10 @@ class CalendarController extends Controller {
             ->addLocation($location)
             ->setUid('movie' . $movie->id);
 
-          $worker = $movie->worker();
-          if ($worker != null) {
-            $name = $worker->firstname . ' ' . $worker->surname;
-
+          if ($movie->worker_name != null) {
             $organizer = new Organizer(new Formatter());
-            $organizer->setValue($worker->email)
-              ->setName($name)
+            $organizer->setValue($movie->worker_id)
+              ->setName($movie->worker()->getCompleteName())
               ->setLanguage('de');
             $movieEvent->setOrganizer($organizer);
           } else {
@@ -307,7 +281,7 @@ class CalendarController extends Controller {
       header('Content-Disposition: attachment; filename="calendar.ics"');
       echo Cache::get(CalendarController::$completeCalendarCacheKey);
 
-      return;
+      return null;
     }
 
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());

@@ -112,7 +112,6 @@ class Group extends Model {
    * @return bool
    */
   public function hasToBeNotifiedOnPlaceReservation(): bool {
-    return $this->hasMany(PlaceReservationNotifyGroup::class)
-      ->get()->count() > 0;
+    return $this->hasMany(PlaceReservationNotifyGroup::class)->count() > 0;
   }
 }

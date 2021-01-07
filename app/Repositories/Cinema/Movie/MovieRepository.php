@@ -3,7 +3,7 @@
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
-use App\Models\User\User;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 class MovieRepository implements IMovieRepository {
@@ -33,7 +33,7 @@ class MovieRepository implements IMovieRepository {
       'trailerLink' => $trailerLink,
       'posterLink' => $posterLink,
       'bookedTickets' => $bookedTickets,
-      'movie_year_id' => $movieYearId, ]);
+      'movie_year_id' => $movieYearId,]);
 
     if ($movie->save()) {
       return $movie;
@@ -65,11 +65,21 @@ class MovieRepository implements IMovieRepository {
     }
   }
 
+  /**
+   * @param Movie $movie
+   * @return bool
+   * @throws Exception
+   */
   public function deleteMovie(Movie $movie): bool {
     return $movie->delete();
   }
 
-  public function getNotShownMoviesForUser(User $user): array {
+  /**
+   * @param int $userId
+   * @return array
+   */
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string", 'booked_tickets_for_yourself' => 'int'])]
+  public function getNotShownMoviesForUser(int $userId): array {
     $allMovies = $this->getAllMoviesOrderedByDate();
     $movies = [];
 
@@ -82,20 +92,7 @@ class MovieRepository implements IMovieRepository {
     $returnableMovies = [];
     foreach ($movies as $movie) {
       $returnable = $movie->toArray();
-
-      $movieBookingForYourself = $user->moviesBookings()
-        ->where('movie_id', $movie->id)
-        ->first();
-
-      if ($movieBookingForYourself == null) {
-        $returnable->booked_tickets_for_yourself = 0;
-      } else {
-        $returnable->booked_tickets_for_yourself = $movieBookingForYourself['amount'];
-      }
-
-      $returnable->view_movie = [
-        'href' => 'api/v1/cinema/administration/movie/' . $movie->id,
-        'method' => 'GET', ];
+      $returnable['booked_tickets_for_yourself'] = $movie->getBookedTicketsForUser($userId);
       $returnableMovies[] = $returnable;
     }
 

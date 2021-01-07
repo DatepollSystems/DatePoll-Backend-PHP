@@ -3,7 +3,6 @@
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
-use App\Models\User\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -50,8 +49,9 @@ interface IMovieRepository {
   public function deleteMovie(Movie $movie): bool;
 
   /**
-   * @param User $user
+   * @param int $userId
    * @return array
    */
-  public function getNotShownMoviesForUser(User $user): array;
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string", 'booked_tickets_for_yourself' => 'int'])]
+  public function getNotShownMoviesForUser(int $userId): array;
 }

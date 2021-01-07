@@ -53,8 +53,8 @@ class UserChange extends Model {
    */
   public function toArray(): array {
     $returnable =  parent::toArray();
-    $returnable->editor_name = $this->editor()->getCompleteName();
-    $returnable->user_name = $this->user()->getCompleteName();
+    $returnable['editor_name'] = $this->editor()->getCompleteName();
+    $returnable['user_name'] = $this->user()->getCompleteName();
     return $returnable;
   }
 }

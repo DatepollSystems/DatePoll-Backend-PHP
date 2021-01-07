@@ -9,7 +9,6 @@ use App\Repositories\Cinema\Movie\IMovieRepository;
 use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class MovieController extends Controller {
@@ -124,14 +123,12 @@ class MovieController extends Controller {
   }
 
   /**
-   * Remove the specified resource from storage.
-   *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, int $id) {
+  public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       Logging::warning('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Movie not found');
@@ -154,18 +151,12 @@ class MovieController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getNotShownMovies(Request $request) {
-    $user = $request->auth;
-
-    $returnableMovies = $this->movieRepository->getNotShownMoviesForUser($user);
-
-    $response = [
+  public function getNotShownMovies(AuthenticatedRequest $request): JsonResponse {
+ return response()->json([
       'msg' => 'List of not shown movies',
-      'movies' => $returnableMovies,];
-
-    return response()->json($response);
+      'movies' =>  $this->movieRepository->getNotShownMoviesForUser($request->auth->id),]);
   }
 }

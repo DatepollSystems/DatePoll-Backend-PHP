@@ -42,6 +42,7 @@ class Log extends Model {
    */
   public function toArray(): array {
     $returnable = parent::toArray();
-    $returnable->user_name = $this->user()->getCompleteName();
+    $returnable['user_name'] = $this->user()?->getCompleteName();
+    return $returnable;
   }
 }

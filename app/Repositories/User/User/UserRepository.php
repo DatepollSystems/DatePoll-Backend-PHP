@@ -5,7 +5,6 @@ namespace App\Repositories\User\User;
 use App\Logging;
 use App\Mail\ActivateUser;
 use App\Models\User\User;
-use App\Models\User\UserCode;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
@@ -143,30 +142,12 @@ class UserRepository implements IUserRepository {
       $this->userChangeRepository->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
       $this->userChangeRepository->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
       $this->userChangeRepository->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
-      $this->userChangeRepository->checkForPropertyChange(
-        'internal_comment',
-        $user->id,
-        $editorId,
-        $internalComment,
-        $user->internal_comment
-      );
+      $this->userChangeRepository->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment, $user->internal_comment);
       $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
-      // Don't use checkForPropertyChange function because these values aren't strings
-      if ($user->zipcode != $zipcode) {
-        $this->userChangeRepository->createUserChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
-      }
-      if ($user->activated != $activated) {
-        $this->userChangeRepository->createUserChange('activated', $user->id, $editorId, $activated, $user->activated);
-      }
-      if ($user->information_denied != $informationDenied) {
-        $this->userChangeRepository->createUserChange(
-          'informationDenied',
-          $user->id,
-          $editorId,
-          $informationDenied,
-          $user->information_denied
-        );
-      }
+      $this->userChangeRepository->checkForPropertyChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
+      $this->userChangeRepository->checkForPropertyChange('activated', $user->id, $editorId, $activated, $user->activated);
+      $this->userChangeRepository->checkForPropertyChange('informationDenied', $user->id, $editorId, $informationDenied, $user->information_denied);
+
 
       $user->username = $username;
       $user->title = $title;

@@ -23,14 +23,14 @@ interface IEventDateRepository {
 
   /**
    * @param Event $event
-   * @param double $x
-   * @param double $y
-   * @param string $date
-   * @param string $location
-   * @param string $description
+   * @param float|null $x
+   * @param float|null $y
+   * @param string|null $date
+   * @param string|null $location
+   * @param string|null $description
    * @return null | EventDate
    */
-  public function createEventDate(Event $event, $x, $y, $date, $location, $description);
+  public function createEventDate(Event $event, ?float $x, ?float $y, ?string $date, ?string $location, ?string $description): ?EventDate;
 
   /**
    * @param Event $event

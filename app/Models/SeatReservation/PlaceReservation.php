@@ -69,9 +69,9 @@ class PlaceReservation extends Model {
    */
   public function toArray(): array {
     $returnable = parent::toArray();
-    $returnable->user_name = $this->user()->getCompleteName();
-    $returnable->approver_name = $this->approver()->getCompleteName();
-    $returnable->place_name = $this->place()->name;
+    $returnable['user_name'] = $this->user()->getCompleteName();
+    $returnable['approver_name'] = $this->approver()->getCompleteName();
+    $returnable['place_name'] = $this->place()->name;
     return $returnable;
   }
 }

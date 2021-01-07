@@ -27,6 +27,11 @@ use stdClass;
  * @property MoviesBooking[] $moviesBookings
  */
 class Movie extends Model {
+  private static string $workerIdProperty = 'worker_id';
+  private static string $workerNameProperty = 'worker_name';
+  private static string $emergencyWorkerIdProperty = 'emergency_worker_id';
+  private static string $emergencyWorkerNameProperty = 'emergency_worker_name';
+
   /**
    * @var array
    */
@@ -57,13 +62,29 @@ class Movie extends Model {
    * @return MoviesBooking[]
    */
   public function moviesBookings(): array {
-    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get()->all();
+    return $this->hasMany(MoviesBooking::class)->get()->all();
+  }
+
+  /**
+   * @param int $userId
+   * @return int
+   */
+  public function getBookedTicketsForUser(int $userId): int {
+    $movieBookingForYourself = MoviesBooking::where('movie_id', $this->id)->where('user_id',$userId)->first();
+
+    if ($movieBookingForYourself == null) {
+      return 0;
+    } else {
+      return $movieBookingForYourself->amount;
+    }
   }
 
   /**
    * @return array
    */
-  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string"])]
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
+    'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string",
+    'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int', 'emergency_worker_name' => 'string'])]
   public function toArray(): array {
     $returnable = [
       "id" => $this->id,
@@ -81,19 +102,19 @@ class Movie extends Model {
     $emergencyWorker = $this->emergencyWorker();
 
     if ($worker == null) {
-      $returnable->worker_id = null;
-      $returnable->worker_name = null;
+      $returnable[$this::$workerIdProperty] = null;
+      $returnable[$this::$workerNameProperty] = null;
     } else {
-      $returnable->worker_id = $worker->id;
-      $returnable->worker_name = $worker->getCompleteName();
+      $returnable[$this::$workerIdProperty] = $worker->id;
+      $returnable[$this::$workerNameProperty] = $worker->getCompleteName();
     }
 
     if ($emergencyWorker == null) {
-      $returnable->emergency_worker_id = null;
-      $returnable->emergency_worker_name = null;
+      $returnable[$this::$emergencyWorkerIdProperty] = null;
+      $returnable[$this::$emergencyWorkerNameProperty] = null;
     } else {
-      $returnable->emergency_worker_id = $emergencyWorker->id;
-      $returnable->emergency_worker_name = $emergencyWorker->getCompleteName();
+      $returnable[$this::$emergencyWorkerIdProperty] = $emergencyWorker->id;
+      $returnable[$this::$emergencyWorkerNameProperty] = $emergencyWorker->getCompleteName();
     }
     return $returnable;
   }
@@ -102,7 +123,10 @@ class Movie extends Model {
    * @return array
    * @noinspection SqlNoDataSourceInspection SqlResolve
    */
-  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string"])]
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
+    'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string",
+    'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int',
+    'emergency_worker_name' => 'string', 'bookings' => 'array'])]
   public function getAdminReturnable(): array {
     $returnableMovie = $this->toArray();
     $bookings = [];
@@ -129,7 +153,7 @@ class Movie extends Model {
       $bookings[] = $booking;
     }
 
-    $returnableMovie->bookings = $bookings;
+    $returnableMovie['bookings'] = $bookings;
 
     return $returnableMovie;
   }

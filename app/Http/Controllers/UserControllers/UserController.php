@@ -64,10 +64,7 @@ class UserController extends Controller {
     $this->userChangeRepository->checkForPropertyChange('streetname', $user->id, $user->id, $streetname, $user->streetname);
     $this->userChangeRepository->checkForPropertyChange('streetnumber', $user->id, $user->id, $streetnumber, $user->streetnumber);
     $this->userChangeRepository->checkForPropertyChange('location', $user->id, $user->id, $location, $user->location);
-    // Don't use checkForPropertyChange function because these values aren't strings
-    if ($user->zipcode != $zipcode) {
-      $this->userChangeRepository->createUserChange('zipcode', $user->id, $user->id, $zipcode, $user->zipcode);
-    }
+    $this->userChangeRepository->checkForPropertyChange('zipcode', $user->id, $user->id, $zipcode, $user->zipcode);
 
     $user->title = $title;
     $user->streetname = $streetname;

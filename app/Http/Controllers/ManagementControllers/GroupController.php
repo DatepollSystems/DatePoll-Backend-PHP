@@ -14,21 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller {
-  protected IGroupRepository $groupRepository;
-  protected ISubgroupRepository $subgroupRepository;
-  protected IUserRepository $userRepository;
-  protected IUserChangeRepository $userChangeRepository;
-
   public function __construct(
-    IGroupRepository $groupRepository,
-    IUserRepository $userRepository,
-    ISubgroupRepository $subgroupRepository,
-    IUserChangeRepository $userChangeRepository
+    protected IGroupRepository $groupRepository,
+    protected IUserRepository $userRepository,
+    protected ISubgroupRepository $subgroupRepository,
+    protected IUserChangeRepository $userChangeRepository
   ) {
-    $this->groupRepository = $groupRepository;
-    $this->userRepository = $userRepository;
-    $this->subgroupRepository = $subgroupRepository;
-    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -80,7 +71,7 @@ class GroupController extends Controller {
 
     $group = $this->groupRepository->getGroupStatisticsByGroup($group);
     $group->subgroups = $group->getSubgroupsOrdered();
-    $group->users = $group->getUsersWithRolesOrderedBySurname();
+    $group['users'] = $group->getUsersWithRolesOrderedBySurname();
 
     return response()->json([
       'msg' => 'Group information',
