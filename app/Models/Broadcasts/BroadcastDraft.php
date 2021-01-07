@@ -36,4 +36,13 @@ class BroadcastDraft extends Model {
   public function writer(): BelongsTo|User {
     return $this->belongsTo(User::class, 'writer_user_id')->first();
   }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['writer_name'] = $this->writer()->getCompleteName();
+    return $returnable;
+  }
 }

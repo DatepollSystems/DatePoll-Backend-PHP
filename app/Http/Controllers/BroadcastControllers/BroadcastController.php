@@ -38,15 +38,9 @@ class BroadcastController extends Controller {
    * @return JsonResponse
    */
   public function getAll(): JsonResponse {
-    $broadcasts = $this->broadcastRepository->getAllBroadcastsOrderedByDate();
-    $toReturnBroadcasts = [];
-    foreach ($broadcasts as $broadcast) {
-      $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
-    }
-
     return response()->json([
       'msg' => 'List of all broadcasts',
-      'broadcasts' => $toReturnBroadcasts,]);
+      'broadcasts' => $this->broadcastRepository->getAllBroadcastsOrderedByDate(),]);
   }
 
   /**
@@ -61,7 +55,7 @@ class BroadcastController extends Controller {
 
     return response()->json([
       'msg' => 'Get broadcast with send receipts',
-      'broadcast' => $this->broadcastRepository->getBroadcastSentReceiptReturnable($broadcast),]);
+      'broadcast' => $broadcast->toArrayWithBodyHTMLAndUserInfo(),]);
   }
 
   /**

@@ -6,48 +6,26 @@ use App\Logging;
 use App\Models\Broadcasts\BroadcastDraft;
 use App\Repositories\User\User\IUserRepository;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use stdClass;
 
 class BroadcastDraftRepository implements IBroadcastDraftRepository {
-  protected $userRepository = null;
 
-  public function __construct(IUserRepository $userRepository) {
-    $this->userRepository = $userRepository;
+  public function __construct(protected IUserRepository $userRepository) {
   }
 
   /**
-   * @return BroadcastDraft[]|Collection
+   * @return BroadcastDraft[]
    */
-  public function getAllBroadcastDraftsOrderedByDate() {
+  public function getAllBroadcastDraftsOrderedByDate(): array {
     return BroadcastDraft::orderBy('updated_at', 'DESC')
-      ->get();
+      ->get()->all();
   }
 
   /**
    * @param int $id
    * @return BroadcastDraft | null
    */
-  public function getBroadcastDraftById(int $id) {
+  public function getBroadcastDraftById(int $id): ?BroadcastDraft {
     return BroadcastDraft::find($id);
-  }
-
-  /**
-   * @param BroadcastDraft $draft
-   * @return stdClass
-   */
-  public function getBroadcastDraftReturnable(BroadcastDraft $draft): stdClass {
-    $toReturnDraft = new stdClass();
-    $toReturnDraft->id = $draft->id;
-    $toReturnDraft->subject = $draft->subject;
-    $toReturnDraft->body = $draft->body;
-    $toReturnDraft->bodyHTML = $draft->bodyHTML;
-    $toReturnDraft->writer_name = $draft->writer()->getCompleteName();
-    $toReturnDraft->writer_user_id = $draft->writer_user_id;
-    $toReturnDraft->created_at = $draft->created_at;
-    $toReturnDraft->updated_at = $draft->updated_at;
-
-    return $toReturnDraft;
   }
 
   /**
@@ -64,7 +42,7 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository {
     string $body,
     int $writerId,
     BroadcastDraft $draft = null
-  ) {
+  ): ?BroadcastDraft {
     if ($draft == null) {
       $draft = new BroadcastDraft([
         'subject' => $subject,
@@ -88,10 +66,10 @@ class BroadcastDraftRepository implements IBroadcastDraftRepository {
 
   /**
    * @param BroadcastDraft $draft
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function delete(BroadcastDraft $draft) {
+  public function delete(BroadcastDraft $draft): bool {
     return $draft->delete();
   }
 }

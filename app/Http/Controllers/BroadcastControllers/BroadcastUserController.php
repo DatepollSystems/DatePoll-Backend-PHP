@@ -19,15 +19,9 @@ class BroadcastUserController extends Controller {
    * @return JsonResponse
    */
   public function getAll(AuthenticatedRequest $request): JsonResponse {
-    $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($request->auth->id);
-    $toReturnBroadcasts = [];
-    foreach ($broadcasts as $broadcast) {
-      $toReturnBroadcasts[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
-    }
-
     return response()->json([
       'msg' => 'List of all broadcasts',
-      'broadcasts' => $toReturnBroadcasts, ]);
+      'broadcasts' => $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($request->auth->id), ]);
   }
 
   /**
@@ -47,7 +41,7 @@ class BroadcastUserController extends Controller {
 
     return response()->json([
       'msg' => 'Information for broadcast',
-      'broadcast' => $this->broadcastRepository->getBroadcastUserReturnable($broadcast),
+      'broadcast' => $broadcast->toArrayWithBodyHTML(),
     ]);
   }
 }

@@ -15,12 +15,11 @@ use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepositor
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
+use App\Utils\ArrayHelper;
 use App\Utils\QueueHelper;
 use DateInterval;
 use DateTime;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use stdClass;
 
 class BroadcastRepository implements IBroadcastRepository {
 
@@ -33,11 +32,11 @@ class BroadcastRepository implements IBroadcastRepository {
   }
 
   /**
-   * @return Broadcast[]|Collection<Broadcast>
+   * @return Broadcast[]
    */
-  public function getAllBroadcastsOrderedByDate() {
+  public function getAllBroadcastsOrderedByDate(): array {
     return Broadcast::orderBy('created_at', 'DESC')
-      ->get();
+      ->get()->all();
   }
 
   /**
@@ -46,96 +45,6 @@ class BroadcastRepository implements IBroadcastRepository {
    */
   public function getBroadcastById(int $id): ?Broadcast {
     return Broadcast::find($id);
-  }
-
-  /**
-   * @param Broadcast $broadcast
-   * @return stdClass | Broadcast
-   */
-  public function getBroadcastUserReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = $this->getBroadcastReturnable($broadcast);
-    $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
-
-    return $toReturnBroadcast;
-  }
-
-  /**
-   * @param Broadcast $broadcast
-   * @return stdClass | Broadcast
-   */
-  public function getBroadcastReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = new stdClass();
-    $toReturnBroadcast->id = $broadcast->id;
-    $toReturnBroadcast->subject = $broadcast->subject;
-    $toReturnBroadcast->body = $broadcast->body;
-    $toReturnBroadcast->writer_name = $broadcast->writer()->getCompleteName();
-    $toReturnBroadcast->writer_user_id = $broadcast->writer_user_id;
-    $toReturnBroadcast->for_everyone = $broadcast->forEveryone;
-    $toReturnBroadcast->created_at = $broadcast->created_at;
-    $toReturnBroadcast->updated_at = $broadcast->updated_at;
-
-    $toReturnGroups = [];
-    $groups = $broadcast->broadcastsForGroups();
-    foreach ($groups as $group) {
-      $group = $group->group();
-      $toReturnGroup = new stdClass();
-      $toReturnGroup->id = $group->id;
-      $toReturnGroup->name = $group->name;
-      $toReturnGroups[] = $toReturnGroup;
-    }
-    $toReturnBroadcast->groups = $toReturnGroups;
-
-    $toReturnSubgroups = [];
-    $subgroups = $broadcast->broadcastsForSubgroups();
-    foreach ($subgroups as $subgroup) {
-      $subgroup = $subgroup->subgroup();
-      $toReturnSubgroup = new stdClass();
-      $toReturnSubgroup->id = $subgroup->id;
-      $toReturnSubgroup->name = $subgroup->name;
-      $toReturnSubgroup->group_id = $subgroup->group_id;
-      $toReturnSubgroup->group_name = $subgroup->group()->name;
-      $toReturnSubgroups[] = $toReturnSubgroup;
-    }
-    $toReturnBroadcast->subgroups = $toReturnSubgroups;
-
-    $toReturnAttachments = [];
-    $attachments = $broadcast->attachments();
-    foreach ($attachments as $attachment) {
-      $toReturnAttachments[] = $attachment;
-    }
-    $toReturnBroadcast->attachments = $toReturnAttachments;
-
-    return $toReturnBroadcast;
-  }
-
-  /**
-   * @param Broadcast $broadcast
-   * @return Broadcast|stdClass
-   */
-  public function getBroadcastSentReceiptReturnable(Broadcast $broadcast) {
-    $toReturnBroadcast = $this->getBroadcastReturnable($broadcast);
-
-    $toReturnBroadcast->bodyHTML = $broadcast->bodyHTML;
-
-    $userInfos = [];
-    foreach (BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)
-      ->orderBy('sent')
-      ->get() as $userInfo) {
-      $userInfoDTO = new stdClass();
-      $userInfoDTO->id = $userInfo->id;
-      $userInfoDTO->broadcast_id = $userInfo->broadcast_id;
-      $userInfoDTO->user_id = $userInfo->user_id;
-      $userInfoDTO->user_name = $userInfo->user()->firstname . ' ' . $userInfo->user()->surname;
-      $userInfoDTO->sent = $userInfo->sent;
-      $userInfoDTO->created_at = $userInfo->created_at;
-      $userInfoDTO->updated_at = $userInfo->updated_at;
-
-      $userInfos[] = $userInfoDTO;
-    }
-
-    $toReturnBroadcast->users_info = $userInfos;
-
-    return $toReturnBroadcast;
   }
 
   /**
@@ -159,7 +68,7 @@ class BroadcastRepository implements IBroadcastRepository {
     array $subgroups,
     bool $forEveryone,
     array $attachments
-  ) {
+  ): ?Broadcast {
     $broadcast = new Broadcast([
       'subject' => $subject,
       'bodyHTML' => $bodyHTML,
@@ -374,10 +283,10 @@ class BroadcastRepository implements IBroadcastRepository {
 
   /**
    * @param Broadcast $broadcast
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function delete(Broadcast $broadcast) {
+  public function delete(Broadcast $broadcast): bool {
     $broadcastAttachments = $broadcast->attachments();
     foreach ($broadcastAttachments as $attachment) {
       if (! $this->broadcastAttachmentRepository->deleteAttachment($attachment)) {
@@ -395,24 +304,15 @@ class BroadcastRepository implements IBroadcastRepository {
    * @param int $limit
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1) {
+  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1): array {
+    $query = BroadcastUserInfo::where('user_id', '=', $userId)
+      ->orderBy('created_at', 'DESC');
     if ($limit != -1) {
-      $broadcastUserInfos = BroadcastUserInfo::where('user_id', '=', $userId)
-        ->orderBy('created_at', 'DESC')
-        ->limit($limit)
-        ->get();
-    } else {
-      $broadcastUserInfos = BroadcastUserInfo::where('user_id', '=', $userId)
-        ->orderBy('created_at', 'DESC')
-        ->get();
+      $query = $query->limit($limit);
     }
 
-    $broadcasts = [];
-    foreach ($broadcastUserInfos as $broadcastUserInfo) {
-      $broadcasts[] = $broadcastUserInfo->broadcast();
-    }
+    return Broadcast::find(ArrayHelper::getPropertyArrayOfObjectArray($query->get()->all(), 'broadcast_id'))->all();
 
-    return $broadcasts;
   }
 
   /**
@@ -420,12 +320,10 @@ class BroadcastRepository implements IBroadcastRepository {
    * @param int $broadcastId
    * @return bool
    */
-  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId) {
-    $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $userId)
-      ->where('broadcast_id', '=', $broadcastId)
-      ->orderBy('created_at', 'DESC')
-      ->first();
-
-    return $broadcastUserInfo != null;
+  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId): bool {
+    return BroadcastUserInfo::where('user_id', '=', $userId)
+        ->where('broadcast_id', '=', $broadcastId)
+        ->orderBy('created_at', 'DESC')
+        ->first() != null;
   }
 }

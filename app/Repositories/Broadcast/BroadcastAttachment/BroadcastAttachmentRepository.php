@@ -5,7 +5,6 @@ namespace App\Repositories\Broadcast\BroadcastAttachment;
 use App\Models\Broadcasts\BroadcastAttachment;
 use App\Utils\Generator;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
@@ -14,32 +13,32 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
    * @param int $id
    * @return null|BroadcastAttachment
    */
-  public function getAttachmentById(int $id) {
+  public function getAttachmentById(int $id): ?BroadcastAttachment {
     return BroadcastAttachment::find($id);
   }
 
   /**
    * @param int $broadcastId
-   * @return BroadcastAttachment[]|Collection<BroadcastAttachment>
+   * @return BroadcastAttachment[]
    */
-  public function getAttachmentsByBroadcastId(int $broadcastId) {
-    return BroadcastAttachment::where('broadcast_id', '=', $broadcastId)->get();
+  public function getAttachmentsByBroadcastId(int $broadcastId): array {
+    return BroadcastAttachment::where('broadcast_id', '=', $broadcastId)->get()->all();
   }
 
   /**
    * @param string $token
    * @return null|BroadcastAttachment
    */
-  public function getAttachmentByToken(string $token) {
+  public function getAttachmentByToken(string $token): ?BroadcastAttachment {
     return BroadcastAttachment::where('token', '=', $token)->first();
   }
 
   /**
    * @param BroadcastAttachment $attachment
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deleteAttachment(BroadcastAttachment $attachment) {
+  public function deleteAttachment(BroadcastAttachment $attachment): bool {
     Storage::delete($attachment->path);
 
     return $attachment->delete();

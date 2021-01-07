@@ -4,39 +4,19 @@ namespace App\Repositories\Broadcast\Broadcast;
 
 use App\Models\Broadcasts\Broadcast;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use stdClass;
 
 interface IBroadcastRepository {
 
   /**
-   * @return Broadcast[]|Collection<Broadcast>
+   * @return Broadcast[]
    */
-  public function getAllBroadcastsOrderedByDate();
+  public function getAllBroadcastsOrderedByDate(): array;
 
   /**
    * @param int $id
    * @return Broadcast | null
    */
-  public function getBroadcastById(int $id);
-
-  /**
-   * @param Broadcast $broadcast
-   * @return stdClass | Broadcast
-   */
-  public function getBroadcastUserReturnable(Broadcast $broadcast);
-
-  /**
-   * @param Broadcast $broadcast
-   * @return stdClass | Broadcast
-   */
-  public function getBroadcastReturnable(Broadcast $broadcast);
-
-  /**
-   * @param Broadcast $broadcast
-   * @return Broadcast|stdClass
-   */
-  public function getBroadcastSentReceiptReturnable(Broadcast $broadcast);
+  public function getBroadcastById(int $id): ?Broadcast;
 
   /**
    * @param string $subject
@@ -58,7 +38,7 @@ interface IBroadcastRepository {
     array $subgroups,
     bool $forEveryone,
     array $attachments
-  );
+  ): ?Broadcast;
 
   /**
    * @param Broadcast $broadcast
@@ -68,22 +48,22 @@ interface IBroadcastRepository {
 
   /**
    * @param Broadcast $broadcast
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function delete(Broadcast $broadcast);
+  public function delete(Broadcast $broadcast): bool;
 
   /**
    * @param int $userId
    * @param int $limit
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1);
+  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1): array;
 
   /**
    * @param int $userId
    * @param int $broadcastId
    * @return bool
    */
-  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId);
+  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId): bool;
 }

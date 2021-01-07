@@ -129,10 +129,7 @@ class UserController extends Controller {
 
     $broadcastsToShow = [];
     if ($this->settingRepository->getBroadcastsEnabled()) {
-      $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
-      foreach ($broadcasts as $broadcast) {
-        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
-      }
+      $broadcastsToShow = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
     }
 
     $users = $this->userRepository->getAllUsers();

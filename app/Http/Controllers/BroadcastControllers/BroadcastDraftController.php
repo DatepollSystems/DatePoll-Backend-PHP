@@ -21,15 +21,9 @@ class BroadcastDraftController extends Controller {
    * @return JsonResponse
    */
   public function getAll(): JsonResponse {
-    $drafts = $this->draftRepository->getAllBroadcastDraftsOrderedByDate();
-    $toReturnDrafts = [];
-    foreach ($drafts as $draft) {
-      $toReturnDrafts[] = $this->draftRepository->getBroadcastDraftReturnable($draft);
-    }
-
     return response()->json([
       'msg' => 'List of all broadcast drafts',
-      'drafts' => $toReturnDrafts, ]);
+      'drafts' => $this->draftRepository->getAllBroadcastDraftsOrderedByDate(), ]);
   }
 
   /**
@@ -44,7 +38,7 @@ class BroadcastDraftController extends Controller {
 
     return response()->json([
       'msg' => 'Get broadcast draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ]);
+      'draft' => $draft, ]);
   }
 
   /**
@@ -70,7 +64,7 @@ class BroadcastDraftController extends Controller {
 
     return response()->json([
       'msg' => 'Successful created draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ], 201);
+      'draft' => $draft, ], 201);
   }
 
   /**
@@ -102,7 +96,7 @@ class BroadcastDraftController extends Controller {
 
     return response()->json([
       'msg' => 'Successful updated draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ], 201);
+      'draft' => $draft, ], 201);
   }
 
   /**

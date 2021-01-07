@@ -42,4 +42,13 @@ class BroadcastUserInfo extends Model {
   public function user(): BelongsTo|User {
     return $this->belongsTo(User::class)->first();
   }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['user_name'] = $this->user()->getCompleteName();
+    return $returnable;
+  }
 }

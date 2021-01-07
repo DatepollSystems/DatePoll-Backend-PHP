@@ -22,24 +22,13 @@ use Illuminate\Support\Facades\Queue;
 use stdClass;
 
 class EventRepository implements IEventRepository {
-  protected IEventDateRepository $eventDateRepository;
-  protected IEventDecisionRepository $eventDecisionRepository;
-  protected IUserSettingRepository $userSettingRepository;
-  protected ISettingRepository $settingRepository;
-  protected IGroupRepository $groupRepository;
-
   public function __construct(
-    IEventDateRepository $eventDateRepository,
-    IEventDecisionRepository $eventDecisionRepository,
-    IUserSettingRepository $userSettingRepository,
-    ISettingRepository $settingRepository,
-    IGroupRepository $groupRepository
+    protected IEventDateRepository $eventDateRepository,
+    protected IEventDecisionRepository $eventDecisionRepository,
+    protected IUserSettingRepository $userSettingRepository,
+    protected ISettingRepository $settingRepository,
+    protected IGroupRepository $groupRepository
   ) {
-    $this->eventDateRepository = $eventDateRepository;
-    $this->eventDecisionRepository = $eventDecisionRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->settingRepository = $settingRepository;
-    $this->groupRepository = $groupRepository;
   }
 
   /**
