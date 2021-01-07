@@ -10,6 +10,7 @@ use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
+use App\Utils\Converter;
 use App\Utils\Generator;
 use App\Utils\MailHelper;
 use Exception;
@@ -369,7 +370,7 @@ class UserRepository implements IUserRepository {
     MailHelper::sendEmailOnLowQueue(new ActivateUser(
       $user->getCompleteName(),
       $user->username,
-      $randomPassword,
+      Converter::integerToString($randomPassword),
       $this->settingRepository
     ), $user->getEmailAddresses());
   }

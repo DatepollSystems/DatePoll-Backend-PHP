@@ -4,19 +4,18 @@ namespace App\Repositories\User\User;
 
 use App\Models\User\User;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IUserRepository {
 
   /**
-   * @return User[]|Collection
+   * @return User[]
    */
-  public function getAllUsers();
+  public function getAllUsers(): array;
 
   /**
-   * @return User[]|Collection
+   * @return User[]
    */
-  public function getAllUsersOrderedBySurname();
+  public function getAllUsersOrderedBySurname(): array;
 
   /**
    * @param int $id

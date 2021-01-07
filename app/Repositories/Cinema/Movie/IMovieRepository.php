@@ -4,19 +4,18 @@ namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IMovieRepository {
   /**
    * @param int $id
    * @return Movie|null
    */
-  public function getMovieById(int $id);
+  public function getMovieById(int $id): ?Movie;
 
   /**
-   * @return Movie[] | Collection
+   * @return Movie[]
    */
-  public function getAllMoviesOrderedByDate();
+  public function getAllMoviesOrderedByDate(): array;
 
   /**
    * @param string $name
@@ -27,7 +26,7 @@ interface IMovieRepository {
    * @param int $movieYearId
    * @return Movie|null
    */
-  public function createMovie(string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId);
+  public function createMovie(string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId): ?Movie;
 
   /**
    * @param Movie $movie
@@ -39,7 +38,7 @@ interface IMovieRepository {
    * @param int $movieYearId
    * @return Movie|null
    */
-  public function updateMovie(Movie $movie, string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId);
+  public function updateMovie(Movie $movie, string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId): ?Movie;
 
   /**
    * @param Movie $movie
@@ -52,6 +51,5 @@ interface IMovieRepository {
    * @param int $userId
    * @return array
    */
-  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string", 'booked_tickets_for_yourself' => 'int'])]
   public function getNotShownMoviesForUser(int $userId): array;
 }

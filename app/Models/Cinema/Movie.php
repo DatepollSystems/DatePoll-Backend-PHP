@@ -13,7 +13,9 @@ use stdClass;
  * @property int $id
  * @property int $movie_year_id
  * @property int|null $worker_id
+ * @property string|null $worker_name
  * @property int|null $emergency_worker_id
+ * @property string|null $emergency_worker_name
  * @property string $name
  * @property string $date
  * @property string $trailerLink

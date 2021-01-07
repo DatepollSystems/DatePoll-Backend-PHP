@@ -12,6 +12,7 @@ use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
+use App\Utils\Converter;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -47,8 +48,8 @@ class CalendarController extends Controller {
   /**
    * @param string $token
    * @return JsonResponse|null
-   * @throws Exception
    * @throws CalendarEventException
+   * @throws Exception
    */
   public function getCalendarOf(string $token): ?JsonResponse {
     $tokenObject = $this->userTokenRepository->getUserTokenByTokenAndPurpose($token, 'calendar');
@@ -159,7 +160,7 @@ class CalendarController extends Controller {
 
           if ($movie->worker_name != null) {
             $organizer = new Organizer(new Formatter());
-            $organizer->setValue($movie->worker_id)
+            $organizer->setValue(Converter::integerToString($movie->worker_id))
               ->setName($movie->worker()->getCompleteName())
               ->setLanguage('de');
             $movieEvent->setOrganizer($organizer);
@@ -257,6 +258,8 @@ class CalendarController extends Controller {
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="'. $token . '.ics"');
     echo $calendarExport->getStream();
+
+    return null;
   }
 
   /**

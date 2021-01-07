@@ -5,6 +5,7 @@ namespace App\Repositories\Group\Group;
 use App\Logging;
 use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
+use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -144,6 +145,7 @@ class GroupRepository implements IGroupRepository {
   /**
    * @param Group $group
    * @return Group
+   * @throws Exception
    */
   public function getGroupStatisticsByGroup(Group $group): Group {
     $usersInGroups = $group->usersMemberOfGroups();
@@ -164,7 +166,7 @@ class GroupRepository implements IGroupRepository {
         $users_only_in_this_group[] = $userR;
       }
 
-      $joinYear = date_format($user->created_at, 'Y');
+      $joinYear = date_format(new DateTime($user->created_at), 'Y');
       if (! in_array($joinYear, $joinYears)) {
         $joinYears[] = $joinYear;
       }
@@ -177,7 +179,7 @@ class GroupRepository implements IGroupRepository {
       $year->year = $joinYear;
       $userToAdd = [];
       foreach ($usersInGroups as $user) {
-        $userJoinYear = date_format($user->created_at, 'Y');
+        $userJoinYear = date_format(new DateTime($user->created_at), 'Y');
         if (str_contains($joinYear, $userJoinYear)) {
           $userD = $user->user();
           $userR = new stdClass();
