@@ -116,7 +116,7 @@ class CalendarController extends Controller {
 
         if ($movie->worker_name != null) {
           $organizer = new Organizer(new Formatter());
-          $organizer->setValue($movie->worker_id)
+          $organizer->setValue(Converter::integerToString($movie->worker_id))
             ->setName($movie->worker()->getCompleteName())
             ->setLanguage('de');
           $movieEvent->setOrganizer($organizer);
