@@ -56,7 +56,7 @@ abstract class StringHelper {
    */
   #[Pure]
   public static function notNullAndEmpty(?string $string): bool {
-    return ((! self::trim($string) == '') && (! self::trim($string) == 'NaN'));
+    return (! self::trim($string) == '' && ! self::trim($string) == 'NaN');
   }
 
   /**

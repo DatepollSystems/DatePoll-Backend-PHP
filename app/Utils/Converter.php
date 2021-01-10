@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use Exception;
 use JetBrains\PhpStorm\Pure;
 
 abstract class Converter {
@@ -40,5 +41,18 @@ abstract class Converter {
   #[Pure]
   public static function stringToInteger(string $string): int {
     return intval($string);
+  }
+
+  /**
+   * @param int $integer
+   * @return bool
+   * @throws Exception
+   */
+  public static function integerToBoolean(int $integer): bool {
+    if ($integer != 0 && $integer != 1) {
+      throw new Exception('Integer is not 0 or 1');
+    }
+
+    return (bool) $integer;
   }
 }
