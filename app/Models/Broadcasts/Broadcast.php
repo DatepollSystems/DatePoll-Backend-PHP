@@ -90,22 +90,18 @@ class Broadcast extends Model {
     $toReturnGroups = [];
     foreach ($this->broadcastsForGroups() as $group) {
       $group = $group->group();
-      $toReturnGroup = new stdClass();
-      $toReturnGroup->id = $group->id;
-      $toReturnGroup->name = $group->name;
-      $toReturnGroups[] = $toReturnGroup;
+      $toReturnGroups[] = [
+        'id' => $group->id,
+        'name' => $group->name
+      ];;
     }
     $returnable['groups'] = $toReturnGroups;
 
     $toReturnSubgroups = [];
     foreach ($this->broadcastsForSubgroups() as $subgroup) {
       $subgroup = $subgroup->subgroup();
-      $toReturnSubgroup = new stdClass();
-      $toReturnSubgroup->id = $subgroup->id;
-      $toReturnSubgroup->name = $subgroup->name;
-      $toReturnSubgroup->group_id = $subgroup->group_id;
-      $toReturnSubgroup->group_name = $subgroup->group()->name;
-      $toReturnSubgroups[] = $toReturnSubgroup;
+      $toReturnSubgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'group_id' => $subgroup->group_id,
+                              'group_name' => $subgroup->group()->name];
     }
     $returnable['subgroups'] = $toReturnSubgroups;
 

@@ -26,10 +26,10 @@ class LogRepository implements ILogRepository {
 
   /**
    * @param Log $log
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deleteLogByLog(Log $log): ?bool {
+  public function deleteLogByLog(Log $log): bool {
     return $log->delete();
   }
 
@@ -42,7 +42,7 @@ class LogRepository implements ILogRepository {
    * @param string $logType
    * @param string $message
    * @param int|null $userId
-   * @return Log
+   * @return Log|null
    */
   public function createLog(string $logType, string $message, ?int $userId = null): ?Log {
     $log = new Log([

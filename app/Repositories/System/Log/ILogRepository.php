@@ -22,7 +22,7 @@ interface ILogRepository {
    * @return bool
    * @throws Exception
    */
-  public function deleteLogByLog(Log $log);
+  public function deleteLogByLog(Log $log): bool;
 
   public function deleteAllLogs();
 
@@ -30,7 +30,7 @@ interface ILogRepository {
    * @param string $logType
    * @param string $message
    * @param int|null $userId
-   * @return Log
+   * @return Log|null
    */
   public function createLog(string $logType, string $message, ?int $userId = null): ?Log;
 }
