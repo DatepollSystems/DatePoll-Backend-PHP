@@ -25,18 +25,14 @@ use Exception;
  */
 class CreateNewEventEmailsJob extends Job {
   /**
-   * Create a new job instance.
-   *
    * @param Event $event
    * @param IEventRepository $eventRepository
-   * @param IEventDateRepository $eventDateRepository
    * @param IUserSettingRepository $userSettingRepository
    * @param ISettingRepository $settingRepository
    */
   public function __construct(
     private Event $event,
     private IEventRepository $eventRepository,
-    private IEventDateRepository $eventDateRepository,
     private IUserSettingRepository $userSettingRepository,
     private ISettingRepository $settingRepository
   ) {  }
@@ -60,7 +56,6 @@ class CreateNewEventEmailsJob extends Job {
         MailHelper::sendDelayedEmailOnLowQueue(new NewEvent(
           $user->firstname,
           $this->event,
-          $this->eventDateRepository,
           $this->settingRepository
         ), $user->getEmailAddresses(), $time);
       }

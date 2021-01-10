@@ -7,23 +7,15 @@ use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Models\User\User;
 use Exception;
-use stdClass;
+use JetBrains\PhpStorm\ArrayShape;
 
 class EventDecisionRepository implements IEventDecisionRepository {
   /**
-   * @param int $id
-   * @return EventDecision
-   */
-  public function getEventDecisionById(int $id) {
-    return EventDecision::find($id);
-  }
-
-  /**
    * @param EventDecision $decision
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deleteEventDecision(EventDecision $decision) {
+  public function deleteEventDecision(EventDecision $decision): bool {
     return $decision->delete();
   }
 
@@ -33,15 +25,15 @@ class EventDecisionRepository implements IEventDecisionRepository {
    * @param bool $showInCalendar
    * @param string $color
    * @param EventDecision|null $eventDecision
-   * @return EventDecision
+   * @return EventDecision|null
    */
-  public function createOrUpdateEventDecision(Event $event, string $decision, bool $showInCalendar, string $color, EventDecision $eventDecision = null) {
+  public function createOrUpdateEventDecision(Event $event, string $decision, bool $showInCalendar, string $color, EventDecision $eventDecision = null): ?EventDecision {
     if ($eventDecision == null) {
       $eventDecision = new EventDecision([
         'event_id' => $event->id,
         'decision' => $decision,
         'showInCalendar' => $showInCalendar,
-        'color' => $color, ]);
+        'color' => $color,]);
     } else {
       $eventDecision->decision = $decision;
       $eventDecision->showInCalendar = $showInCalendar;
@@ -55,46 +47,31 @@ class EventDecisionRepository implements IEventDecisionRepository {
    * @param User $user
    * @param Event $event
    * @param bool $anonymous
-   * @return stdClass
+   * @return array
    */
-  public function getDecisionForUser(User $user, Event $event, $anonymous = true) {
-    $userToSave = new stdClass();
+  #[ArrayShape(['id' => "int|null", 'firstname' => "null|string", 'surname' => "null|string",
+                'decisionId' => "mixed", 'decision' => "mixed",
+                'additional_information' => "mixed"])]
+  public function getDecisionForUser(User $user, Event $event, $anonymous = true): array {
+    $id = null;
+    $firstname = null;
+    $surname = null;
+    $additionalInformation = null;
+
     if (! $anonymous) {
-      $userToSave->id = $user->id;
-      $userToSave->firstname = $user->firstname;
-      $userToSave->surname = $user->surname;
-    } else {
-      $userToSave->id = null;
-      $userToSave->firstname = null;
-      $userToSave->surname = null;
+      $id = $user->id;
+      $firstname = $user->firstname;
+      $surname = $user->surname;
     }
 
     $decision = EventUserVotedForDecision::where('user_id', $user->id)
       ->where('event_id', $event->id)
       ->first();
-    $userToSave->additional_information = null;
-    if ($decision == null) {
-      $userToSave->decisionId = null;
-      $userToSave->decision = null;
-    } else {
-      $userToSave->decisionId = $decision->decision()->id;
-      $userToSave->decision = $decision->decision()->decision;
-      if (! $anonymous) {
-        $userToSave->additional_information = $decision->additionalInformation;
-      }
+    if ($decision != null && ! $anonymous) {
+      $additionalInformation = $decision->additionalInformation;
     }
 
-    return $userToSave;
-  }
-
-  /**
-   * @param int $eventId
-   * @param int $userId
-   * @return null|EventUserVotedForDecision
-   */
-  public function getEventUserVotedForDecisionByEventIdAndUserId(int $eventId, int $userId) {
-    return EventUserVotedForDecision::where('event_id', $eventId)
-      ->where('user_id', $userId)
-      ->first();
+    return ['id' => $id, 'firstname' => $firstname, 'surname' => $surname, 'decisionId' => $decision?->decision_id,
+            'decision' => $decision?->decision()->decision, 'additional_information' => $additionalInformation];
   }
 }

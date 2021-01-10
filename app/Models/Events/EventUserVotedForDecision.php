@@ -5,6 +5,7 @@ namespace App\Models\Events;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use JetBrains\PhpStorm\ArrayShape;
 
 /**
  * @property int $id
@@ -52,5 +53,30 @@ class EventUserVotedForDecision extends Model {
    */
   public function user(): BelongsTo|User {
     return $this->belongsTo(User::class)->first();
+  }
+
+  /**
+   * @return array
+   */
+  #[ArrayShape(['id' => "int",
+                                    'decision' => "string",
+                                    'event_id' => "int",
+                                    'show_in_calendar' => "bool",
+                                    'color' => "string",
+                                    'created_at' => "string",
+                                    'updated_at' => "string",
+                                    'additional_information' => "string"])]
+  public function toArray(): array {
+    $decision = $this->decision();
+    return [
+      'id' => $decision->id,
+      'decision' => $decision->decision,
+      'event_id' => $this->event_id,
+      'show_in_calendar' => $decision->showInCalendar,
+      'color' => $decision->color,
+      'created_at' => $decision->created_at,
+      'updated_at' => $decision->updated_at,
+      'additional_information' => $this->additionalInformation
+    ];
   }
 }

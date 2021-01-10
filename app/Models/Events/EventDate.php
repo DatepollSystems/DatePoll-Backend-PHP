@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class EventDate extends Model {
   protected $table = 'event_dates';
+  protected $hidden = ['event_id', 'created_at', 'updated_at'];
 
   /**
    * @var array

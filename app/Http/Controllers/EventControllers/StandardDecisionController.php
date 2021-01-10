@@ -9,32 +9,26 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class StandardDecisionController extends Controller {
-  protected IEventStandardDecisionRepository $eventStandardDecisionRepository;
-
   /**
-   * StandardDecisionController constructor.
    * @param IEventStandardDecisionRepository $eventStandardDecisionRepository
    */
-  public function __construct(IEventStandardDecisionRepository $eventStandardDecisionRepository) {
-    $this->eventStandardDecisionRepository = $eventStandardDecisionRepository;
+  public function __construct(protected IEventStandardDecisionRepository $eventStandardDecisionRepository) {
   }
 
   /**
    * @return JsonResponse
    */
-  public function getAll() {
-    $standardDecisions = $this->eventStandardDecisionRepository->getAllStandardDecisionsOrderedByName();
-
+  public function getAll(): JsonResponse {
     return response()->json([
       'msg' => 'List of all standard decisions',
-      'standardDecisions' => $standardDecisions, ]);
+      'standardDecisions' => $this->eventStandardDecisionRepository->getAllStandardDecisionsOrderedByName(), ]);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(int $id) {
+  public function getSingle(int $id): JsonResponse {
     $standardDecision = $this->eventStandardDecisionRepository->getStandardDecisionById($id);
 
     if ($standardDecision == null) {
@@ -51,7 +45,7 @@ class StandardDecisionController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, ['decision' => 'required|max:190|min:1', 'show_in_calendar' => 'required|boolean', 'color' => 'required|min:1|max:7']);
 
     $decision = $request->input('decision');
@@ -72,14 +66,8 @@ class StandardDecisionController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function delete(int $id) {
-    $standardDecision = $this->eventStandardDecisionRepository->getStandardDecisionById($id);
-
-    if ($standardDecision == null) {
-      return response()->json(['msg' => 'Standard decision not found'], 404);
-    }
-
-    if (! $this->eventStandardDecisionRepository->deleteStandardDecision($standardDecision->id)) {
+  public function delete(int $id): JsonResponse {
+    if (! $this->eventStandardDecisionRepository->deleteStandardDecision($id)) {
       return response()->json(['msg' => 'Deletion failed'], 500);
     }
 

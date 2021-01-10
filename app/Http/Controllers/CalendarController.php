@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\Event;
 use App\Repositories\Cinema\Movie\IMovieRepository;
 use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
 use App\Repositories\Event\Event\IEventRepository;
-use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
@@ -38,7 +36,6 @@ class CalendarController extends Controller {
     protected ISettingRepository $settingRepository,
     protected IUserRepository $userRepository,
     protected IUserSettingRepository $userSettingRepository,
-    protected IEventDateRepository $eventDateRepository,
     protected IMovieRepository $movieRepository,
     protected IEventRepository $eventRepository,
     protected IMovieBookingRepository $movieBookingRepository
@@ -189,11 +186,11 @@ class CalendarController extends Controller {
       }
 
       foreach ($events as $event) {
-        $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
+        $startDate = $event->getFirstEventDate();
 
         $eventEvent = new CalendarEvent();
         $eventEvent->setStart(new DateTime($startDate->date))
-          ->setEnd(new DateTime($this->eventDateRepository->getLastEventDateForEvent($event)->date))
+          ->setEnd(new DateTime($event->getLastEventDate()->date))
           ->setSummary($event->name)
           ->setSequence(1)
           ->setStatus('CONFIRMED')
@@ -267,7 +264,7 @@ class CalendarController extends Controller {
    * @return string
    * @throws Exception
    */
-  private function updateDate(string $dateString) {
+  private function updateDate(string $dateString): string {
     $suppliedDate = new DateTime($dateString);
     $currentYear = (int)(new DateTime())->format('Y');
 
@@ -337,7 +334,7 @@ class CalendarController extends Controller {
 
     if ($this->settingRepository->getEventsEnabled()) {
       foreach ($this->eventRepository->getAllEvents() as $event) {
-        $startDate = $this->eventDateRepository->getFirstEventDateForEvent($event);
+        $startDate = $event->getFirstEventDate();
 
         $geo = new Geo();
         $geo->setLatitude($startDate->x);
@@ -349,7 +346,7 @@ class CalendarController extends Controller {
 
         $eventEvent = new CalendarEvent();
         $eventEvent->setStart(new DateTime($startDate->date))
-          ->setEnd(new DateTime($this->eventDateRepository->getLastEventDateForEvent($event)->date))
+          ->setEnd(new DateTime($event->getLastEventDate()->date))
           ->setSummary($event->name)
           ->setSequence(1)
           ->setStatus('CONFIRMED')

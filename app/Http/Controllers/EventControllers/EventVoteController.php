@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\EventControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
@@ -12,20 +13,15 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class EventVoteController extends Controller {
-  protected IEventRepository $eventRepository;
-  protected IUserRepository $userRepository;
-
-  public function __construct(IEventRepository $eventRepository, IUserRepository $userRepository) {
-    $this->eventRepository = $eventRepository;
-    $this->userRepository = $userRepository;
+  public function __construct(protected IEventRepository $eventRepository, protected IUserRepository $userRepository) {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function vote(Request $request) {
+  public function vote(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'decision_id' => 'required|integer',
       'event_id' => 'required|integer',
@@ -52,8 +48,8 @@ class EventVoteController extends Controller {
     // Check if user is in a group for this event
     $allowedToVote = false;
     foreach ($this->eventRepository->getOpenEventsForUser($user) as $openEvent) {
-      if ($eventId === $openEvent->id) {
-        if ($openEvent->already_voted) {
+      if ($eventId === $openEvent['id']) {
+        if ($openEvent['already_voted']) {
           return response()->json([
             'msg' => 'User already voted for event',
             'error_code' => 'already_voted', ], 400);
@@ -83,17 +79,17 @@ class EventVoteController extends Controller {
     return response()->json(
       [
         'msg' => 'Voting saved',
-        'user_decision' => $this->eventRepository->getUserDecisionReturnable($eventUserVotedForDecision), ],
+        'user_decision' => $eventUserVotedForDecision, ],
       200
     );
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function removeVoting(Request $request, int $id) {
+  public function removeVoting(AuthenticatedRequest $request, int $id): JsonResponse {
     if ($this->eventRepository->getEventById($id) == null) {
       return response()->json([
         'msg' => 'Event not found',
@@ -125,7 +121,7 @@ class EventVoteController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function voteForUsers(Request $request, int $id) {
+  public function voteForUsers(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'decision_id' => 'required|integer',
       'additional_information' => 'nullable|string|max:128|min:1',
@@ -180,7 +176,7 @@ class EventVoteController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function cancelVotingForUsers(Request $request, int $id) {
+  public function cancelVotingForUsers(Request $request, int $id): JsonResponse {
     $this->validate($request, ['user_ids' => 'array']);
 
     $event = $this->eventRepository->getEventById($id);

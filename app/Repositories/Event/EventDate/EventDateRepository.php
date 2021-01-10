@@ -7,23 +7,12 @@ use App\Models\Events\EventDate;
 use Exception;
 
 class EventDateRepository implements IEventDateRepository {
-
-  /**
-   * @param Event $event
-   * @return mixed | EventDate[]
-   */
-  public function getEventDatesOrderedByDateForEvent(Event $event) {
-    return EventDate::where('event_id', '=', $event->id)
-      ->orderBy('date')
-      ->get();
-  }
-
   /**
    * @param EventDate $eventDate
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deleteEventDate(EventDate $eventDate) {
+  public function deleteEventDate(EventDate $eventDate): bool {
     return $eventDate->delete();
   }
 
@@ -46,25 +35,5 @@ class EventDateRepository implements IEventDateRepository {
       'description' => $description, ]);
 
     return $eventDate->save() ? $eventDate : null;
-  }
-
-  /**
-   * @param Event $event
-   * @return EventDate | null
-   */
-  public function getFirstEventDateForEvent(Event $event) {
-    return EventDate::where('event_id', '=', $event->id)
-      ->orderBy('date', 'ASC')
-      ->first();
-  }
-
-  /**
-   * @param Event $event
-   * @return EventDate | null
-   */
-  public function getLastEventDateForEvent(Event $event) {
-    return EventDate::where('event_id', '=', $event->id)
-      ->latest('date')
-      ->first();
   }
 }

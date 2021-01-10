@@ -7,19 +7,12 @@ use App\Models\Events\EventDate;
 use Exception;
 
 interface IEventDateRepository {
-
-  /**
-   * @param Event $event
-   * @return mixed | EventDate[]
-   */
-  public function getEventDatesOrderedByDateForEvent(Event $event);
-
   /**
    * @param EventDate $eventDate
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deleteEventDate(EventDate $eventDate);
+  public function deleteEventDate(EventDate $eventDate): bool;
 
   /**
    * @param Event $event
@@ -31,16 +24,4 @@ interface IEventDateRepository {
    * @return null | EventDate
    */
   public function createEventDate(Event $event, ?float $x, ?float $y, ?string $date, ?string $location, ?string $description): ?EventDate;
-
-  /**
-   * @param Event $event
-   * @return EventDate | null
-   */
-  public function getFirstEventDateForEvent(Event $event);
-
-  /**
-   * @param Event $event
-   * @return EventDate | null
-   */
-  public function getLastEventDateForEvent(Event $event);
 }

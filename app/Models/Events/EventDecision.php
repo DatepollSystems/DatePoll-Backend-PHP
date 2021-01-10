@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EventDecision extends Model {
   protected $table = 'events_decisions';
 
+  protected $hidden = ['showInCalendar', 'event_id', 'created_at', 'updated_at'];
+
   /**
    * @var array
    */
@@ -42,5 +44,14 @@ class EventDecision extends Model {
    */
   public function eventsUsersVotedFor(): array {
     return $this->hasMany(EventUserVotedForDecision::class, 'decision_id')->get()->all();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['show_in_calendar'] = $this->showInCalendar;
+    return $returnable;
   }
 }

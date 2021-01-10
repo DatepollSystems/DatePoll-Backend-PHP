@@ -3,22 +3,21 @@
 namespace App\Repositories\Event\EventStandardDecision;
 
 use App\Models\Events\EventStandardDecision;
-use Illuminate\Support\Collection;
 
 class EventStandardDecisionRepository implements IEventStandardDecisionRepository {
   /**
-   * @return Collection<EventStandardDecision>
+   * @return EventStandardDecision[]
    */
-  public function getAllStandardDecisionsOrderedByName() {
+  public function getAllStandardDecisionsOrderedByName(): array {
     return EventStandardDecision::orderBy('decision')
-      ->get();
+      ->get()->all();
   }
 
   /**
    * @param int $id
    * @return EventStandardDecision | null
    */
-  public function getStandardDecisionById(int $id) {
+  public function getStandardDecisionById(int $id): ?EventStandardDecision {
     return EventStandardDecision::find($id);
   }
 
@@ -28,7 +27,7 @@ class EventStandardDecisionRepository implements IEventStandardDecisionRepositor
    * @param string $color
    * @return EventStandardDecision|null
    */
-  public function createStandardDecision($decision, $showInCalendar, $color) {
+  public function createStandardDecision(string $decision, bool $showInCalendar, string $color): ?EventStandardDecision {
     $standardDecision = new EventStandardDecision([
       'decision' => $decision,
       'showInCalendar' => $showInCalendar,
@@ -42,10 +41,10 @@ class EventStandardDecisionRepository implements IEventStandardDecisionRepositor
   }
 
   /**
-   * @param int $id
-   * @return int
+   * @param int $standardDecisionId
+   * @return bool
    */
-  public function deleteStandardDecision(int $id) {
-    return EventStandardDecision::destroy($id);
+  public function deleteStandardDecision(int $standardDecisionId): bool {
+    return (EventStandardDecision::destroy($standardDecisionId) > 0);
   }
 }

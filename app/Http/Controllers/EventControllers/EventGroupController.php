@@ -3,33 +3,38 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Events\Event;
 use App\Models\Events\EventForGroup;
 use App\Models\Events\EventForSubgroup;
 use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
+use App\Repositories\Event\Event\IEventRepository;
+use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\Group\Subgroup\ISubgroupRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class EventGroupController extends Controller {
+  public function __construct(protected IEventRepository $eventRepository, protected IGroupRepository $groupRepository, protected ISubgroupRepository $subgroupRepository) {
+  }
+
   /**
    * @param Request $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function addGroupToEvent(Request $request) {
+  public function addGroupToEvent(Request $request): JsonResponse {
     $this->validate($request, [
       'group_id' => 'required|integer',
-      'event_id' => 'required|integer', ]);
+      'event_id' => 'required|integer',]);
 
     $groupId = $request->input('group_id');
-    if (Group::find($groupId) == null) {
+    if ($this->groupRepository->getGroupById($groupId) == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
     $eventId = $request->input('event_id');
-    if (Event::find($eventId) == null) {
+    if ($this->eventRepository->getEventById($eventId) == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
@@ -40,7 +45,7 @@ class EventGroupController extends Controller {
 
     $eventForGroup = new EventForGroup([
       'group_id' => $groupId,
-      'event_id' => $eventId, ]);
+      'event_id' => $eventId,]);
 
     if (! $eventForGroup->save()) {
       return response()->json(['msg' => 'Could not add group to event'], 500);
@@ -54,19 +59,18 @@ class EventGroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function addSubgroupToEvent(Request $request) {
+  public function addSubgroupToEvent(Request $request): JsonResponse {
     $this->validate($request, [
       'subgroup_id' => 'required|integer',
-      'event_id' => 'required|integer', ]);
+      'event_id' => 'required|integer',]);
 
     $subgroupId = $request->input('subgroup_id');
-    $subgroup = Subgroup::find($subgroupId);
-    if ($subgroup == null) {
+    if ($this->subgroupRepository->getSubgroupById($subgroupId) == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
     $eventId = $request->input('event_id');
-    if (Event::find($eventId) == null) {
+    if ($this->eventRepository->getEventById($eventId) == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
@@ -77,7 +81,7 @@ class EventGroupController extends Controller {
 
     $eventForSubgroup = new EventForSubgroup([
       'event_id' => $eventId,
-      'subgroup_id' => $subgroupId, ]);
+      'subgroup_id' => $subgroupId,]);
 
     if (! $eventForSubgroup->save()) {
       return response()->json(['msg' => 'Could not add subgroup to event'], 500);
@@ -91,18 +95,18 @@ class EventGroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function removeGroupFromEvent(Request $request) {
+  public function removeGroupFromEvent(Request $request): JsonResponse {
     $this->validate($request, [
       'group_id' => 'required|integer',
-      'event_id' => 'required|integer', ]);
+      'event_id' => 'required|integer',]);
 
     $groupId = $request->input('group_id');
-    if (Group::find($groupId) == null) {
+    if ($this->groupRepository->getGroupById($groupId) == null) {
       return response()->json(['msg' => 'Group not found'], 404);
     }
 
     $eventId = $request->input('event_id');
-    if (Event::find($eventId) == null) {
+    if ($this->eventRepository->getEventById($eventId) == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
@@ -123,19 +127,18 @@ class EventGroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function removeSubgroupFromEvent(Request $request) {
+  public function removeSubgroupFromEvent(Request $request): JsonResponse {
     $this->validate($request, [
       'subgroup_id' => 'required|integer',
-      'event_id' => 'required|integer', ]);
+      'event_id' => 'required|integer',]);
 
     $subgroupId = $request->input('subgroup_id');
-    $subgroup = Subgroup::find($subgroupId);
-    if ($subgroup == null) {
+    if ($this->subgroupRepository->getSubgroupById($subgroupId) == null) {
       return response()->json(['msg' => 'Subgroup not found'], 404);
     }
 
     $eventId = $request->input('event_id');
-    if (Event::find($eventId) == null) {
+    if ($this->eventRepository->getEventById($eventId) == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
 
@@ -155,8 +158,8 @@ class EventGroupController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function groupJoined(int $id) {
-    $event = Event::find($id);
+  public function groupJoined(int $id): JsonResponse {
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
@@ -171,15 +174,15 @@ class EventGroupController extends Controller {
 
     return response()->json([
       'msg' => 'List of joined groups',
-      'groups' => $groupsToReturn, ], 200);
+      'groups' => $groupsToReturn,], 200);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function groupFree(int $id) {
-    $event = Event::find($id);
+  public function groupFree(int $id): JsonResponse {
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
@@ -203,15 +206,15 @@ class EventGroupController extends Controller {
 
     return response()->json([
       'msg' => 'List of free groups',
-      'groups' => $groupsToReturn, ], 200);
+      'groups' => $groupsToReturn,], 200);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function subgroupJoined(int $id) {
-    $event = Event::find($id);
+  public function subgroupJoined(int $id): JsonResponse {
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
@@ -227,15 +230,15 @@ class EventGroupController extends Controller {
 
     return response()->json([
       'msg' => 'List of joined subgroups',
-      'subgroups' => $subgroupsToReturn, ], 200);
+      'subgroups' => $subgroupsToReturn,], 200);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function subgroupFree(int $id) {
-    $event = Event::find($id);
+  public function subgroupFree(int $id): JsonResponse {
+    $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);
     }
@@ -260,6 +263,6 @@ class EventGroupController extends Controller {
 
     return response()->json([
       'msg' => 'List of free subgroups',
-      'subgroups' => $subgroupsToReturn, ], 200);
+      'subgroups' => $subgroupsToReturn,], 200);
   }
 }
