@@ -3,7 +3,10 @@
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
+use App\Utils\ArrayHelper;
+use App\Utils\DateHelper;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
 
 class MovieRepository implements IMovieRepository {
@@ -16,11 +19,37 @@ class MovieRepository implements IMovieRepository {
   }
 
   /**
+   * @return int[]
+   */
+  public function getYearsOfMovies(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray(
+      DB::table('movies')->orderBy('date')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
+      'year'
+    );
+  }
+
+  /**
+   * @param int|null $year
    * @return Movie[]
    */
-  public function getAllMoviesOrderedByDate(): array {
-    return Movie::orderBy('date')
-      ->get()->all();
+  public function getAllMoviesOrderedByDate(int $year = null): array {
+    if ($year != null) {
+      return Movie::whereYear('date', '=', $year)->orderBy('date')->get()->all();
+    }
+
+    return Movie::orderBy('date')->get()->all();
+  }
+
+  /**
+   * @param string $date
+   * @return Movie[]
+   */
+  private function getMoviesAfterDate(string $date): array {
+    return Movie::where(
+      'date',
+      '>',
+      $date
+    )->orderBy('date')->get()->all();
   }
 
   /**
@@ -29,7 +58,7 @@ class MovieRepository implements IMovieRepository {
    * @param string $trailerLink
    * @param string $posterLink
    * @param int $bookedTickets
-   * @param int $movieYearId
+   * @param int $maximalTickets
    * @return Movie|null
    */
   public function createMovie(
@@ -37,8 +66,8 @@ class MovieRepository implements IMovieRepository {
     string $date,
     string $trailerLink,
     string $posterLink,
-    int $bookedTickets,
-    int $movieYearId
+    int $bookedTickets = 0,
+    int $maximalTickets = 20
   ): ?Movie {
     $movie = new Movie([
       'name' => $name,
@@ -46,7 +75,7 @@ class MovieRepository implements IMovieRepository {
       'trailerLink' => $trailerLink,
       'posterLink' => $posterLink,
       'bookedTickets' => $bookedTickets,
-      'movie_year_id' => $movieYearId,]);
+      'maximalTickets' => $maximalTickets,]);
 
     if ($movie->save()) {
       return $movie;
@@ -79,7 +108,7 @@ class MovieRepository implements IMovieRepository {
     $movie->trailerLink = $trailerLink;
     $movie->posterLink = $posterLink;
     $movie->bookedTickets = $bookedTickets;
-    $movie->movie_year_id = $movieYearId;
+    $movie->maximalTickets = $movieYearId;
 
     if ($movie->save()) {
       return $movie;
@@ -103,17 +132,10 @@ class MovieRepository implements IMovieRepository {
    */
   #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string", 'booked_tickets_for_yourself' => 'int'])]
   public function getNotShownMoviesForUser(int $userId): array {
-    $allMovies = $this->getAllMoviesOrderedByDate();
-    $movies = [];
-
-    foreach ($allMovies as $movie) {
-      if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
-        $movies[] = $movie;
-      }
-    }
+    $date = DateHelper::addDayToDateFormatted(DateHelper::getCurrentDateFormatted(), 1);
 
     $returnableMovies = [];
-    foreach ($movies as $movie) {
+    foreach ($this->getMoviesAfterDate($date) as $movie) {
       $returnable = $movie->toArray();
       $returnable['booked_tickets_for_yourself'] = $movie->getBookedTicketsForUser($userId);
       $returnableMovies[] = $returnable;

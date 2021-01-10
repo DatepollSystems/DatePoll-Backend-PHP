@@ -11,7 +11,6 @@ use stdClass;
 
 /**
  * @property int $id
- * @property int $movie_year_id
  * @property int|null $worker_id
  * @property string|null $worker_name
  * @property int|null $emergency_worker_id
@@ -21,10 +20,10 @@ use stdClass;
  * @property string $trailerLink
  * @property string $posterLink
  * @property int $bookedTickets
+ * @property int $maximalTickets
  * @property string $created_at
  * @property string $updated_at
  * @property User $emergencyWorker
- * @property MovieYear $movieYear
  * @property User $worker
  * @property MoviesBooking[] $moviesBookings
  */
@@ -37,20 +36,13 @@ class Movie extends Model {
   /**
    * @var array
    */
-  protected $fillable = ['movie_year_id', 'worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'created_at', 'updated_at'];
+  protected $fillable = ['worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'maximalTickets', 'created_at', 'updated_at'];
 
   /**
    * @return BelongsTo | User | null
    */
   public function emergencyWorker(): BelongsTo|User|null {
     return $this->belongsTo(User::class, 'emergency_worker_id')->first();
-  }
-
-  /**
-   * @return BelongsTo | MovieYear | null
-   */
-  public function movieYear(): BelongsTo|MovieYear|null {
-    return $this->belongsTo(MovieYear::class)->first();
   }
 
   /**
@@ -85,7 +77,7 @@ class Movie extends Model {
    * @return array
    */
   #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
-    'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string",
+    'poster_link' => "string", 'booked_tickets' => "int", 'maximal_tickets' => "int", 'created_at' => "string",
     'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int', 'emergency_worker_name' => 'string'])]
   public function toArray(): array {
     $returnable = [
@@ -95,7 +87,7 @@ class Movie extends Model {
       'trailer_link' => $this->trailerLink,
       'poster_link' => $this->posterLink,
       'booked_tickets' => $this->bookedTickets,
-      'movie_year_id' => $this->movie_year_id,
+      'maximal_tickets' => $this->maximalTickets,
       'created_at' => $this->created_at,
       'updated_at' => $this->updated_at
     ];
@@ -154,6 +146,10 @@ class Movie extends Model {
 
       $bookings[] = $booking;
     }
+
+    usort($bookings, function ($a, $b) {
+      return strcmp($b->amount, $a->amount);
+    });
 
     $returnableMovie['bookings'] = $bookings;
 

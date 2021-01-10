@@ -14,8 +14,6 @@ use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
 use App\Repositories\Cinema\MovieBooking\MovieBookingRepository;
 use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
 use App\Repositories\Cinema\MovieWorker\MovieWorkerRepository;
-use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
-use App\Repositories\Cinema\MovieYear\MovieYearRepository;
 use App\Repositories\Event\Event\EventRepository;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\EventDateRepository;
@@ -65,7 +63,6 @@ class AppServiceProvider extends ServiceProvider {
     /** Cinema repositories */
     $this->app->bind(IMovieRepository::class, MovieRepository::class);
     $this->app->bind(IMovieWorkerRepository::class, MovieWorkerRepository::class);
-    $this->app->bind(IMovieYearRepository::class, MovieYearRepository::class);
     $this->app->bind(IMovieBookingRepository::class, MovieBookingRepository::class);
 
     /** User repositories */

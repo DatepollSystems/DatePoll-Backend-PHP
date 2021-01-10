@@ -6,22 +6,49 @@ use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Cinema\Movie\IMovieRepository;
-use App\Repositories\Cinema\MovieYear\IMovieYearRepository;
+use App\Utils\Converter;
+use App\Utils\StringHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class MovieController extends Controller {
-  public function __construct(protected IMovieRepository $movieRepository, protected IMovieYearRepository $movieYearRepository) {
+  private static string $YEARS_CACHE_KEY = 'movie.years';
+
+  public function __construct(protected IMovieRepository $movieRepository) {
   }
 
   /**
    * @return JsonResponse
    */
-  public function getAll(): JsonResponse {
+  public function getYearsOfMovies(): JsonResponse {
+    if (Cache::has(self::$YEARS_CACHE_KEY)) {
+      $years = Cache::get(self::$YEARS_CACHE_KEY);
+    } else {
+      $years = $this->movieRepository->getYearsOfMovies();
+      // Time to live 3 hours
+      Cache::put(self::$YEARS_CACHE_KEY, $years, 3 * 60 * 60);
+    }
+
+    return response()->json(['msg' => 'List of all years', 'years' => $years]);
+  }
+
+  /**
+   * @param string|null $year
+   * @return JsonResponse
+   */
+  public function getMoviesOrderedByDate(?string $year = null): JsonResponse {
+    if (! StringHelper::notNull($year)) {
+      $year = null;
+    } else {
+      $year = Converter::stringToInteger($year);
+    }
+
     return response()->json([
       'msg' => 'List of all movies',
-      'movies' => $this->movieRepository->getAllMoviesOrderedByDate(),]);
+      'movies' => $this->movieRepository->getAllMoviesOrderedByDate($year),
+      'year' => $year]);
   }
 
   /**
@@ -35,30 +62,23 @@ class MovieController extends Controller {
       'date' => 'required|date',
       'trailer_link' => 'required|max:190|min:1',
       'poster_link' => 'required|max:190|min:1',
-      'booked_tickets' => 'integer',
-      'movie_year_id' => 'required|integer',]);
+      'booked_tickets' => 'integer|nullable',
+      'maximal_tickets' => 'integer|nullable']);
 
-    $movieYearId = $request->input('movie_year_id');
+    $movie = $this->movieRepository->createMovie($request->input('name'), $request->input('date'),
+      $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'),
+      $request->input('maximal_tickets'));
 
-    if (! $this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
-      Logging::warning('createMovie', 'User - ' . $request->auth->id . ' | Tried to create new movie with non-existing movie_year_id - ' . $movieYearId);
-
-      return response()->json(['msg' => 'Movie year does not exist'], 404);
+    if ($movie == null) {
+      Logging::error('createMovie', 'User - ' . $request->auth->id . ' | Could not create movie');
+      return response()->json(['msg' => 'An error occurred during movie creating!'], 500);
     }
+    Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
+    Cache::forget(self::$YEARS_CACHE_KEY);
 
-    $movie = $this->movieRepository->createMovie($request->input('name'), $request->input('date'), $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $movieYearId);
-
-    if ($movie != null) {
-      Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
-
-      return response()->json([
-        'msg' => 'Movie created',
-        'movie' => $movie,], 201);
-    }
-
-    Logging::error('createMovie', 'User - ' . $request->auth->id . ' | Could not create movie');
-
-    return response()->json(['msg' => 'An error occurred during movie creating!'], 500);
+    return response()->json([
+      'msg' => 'Movie created',
+      'movie' => $movie,], 201);
   }
 
   /**
@@ -91,10 +111,8 @@ class MovieController extends Controller {
       'date' => 'required|date',
       'trailer_link' => 'required|max:190|min:1',
       'poster_link' => 'required|max:190|min:1',
-      'booked_tickets' => 'integer',
-      'movie_year_id' => 'required|integer',]);
-
-    $movieYearId = $request->input('movie_year_id');
+      'booked_tickets' => 'integer|nullable',
+      'maximal_tickets' => 'nullable|integer',]);
 
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
@@ -103,23 +121,19 @@ class MovieController extends Controller {
       return response()->json(['msg' => 'Movie does not exist'], 404);
     }
 
-    if (! $this->movieYearRepository->checkIfMovieYearExistsById($movieYearId)) {
-      Logging::warning('updateMovie', 'User - ' . $request->auth->id . ' | Tried to update movie with non-existing movie_year_id - ' . $movieYearId);
+    $movie = $this->movieRepository->updateMovie($movie, $request->input('name'), $request->input('date'),
+      $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $request->input('maximal_tickets'));
 
-      return response()->json(['msg' => 'Movie year does not exist'], 404);
+    if ($movie == null) {
+      Logging::error('updateMovie', 'User . ' . $request->auth->id . ' | Could not update movie');
+      return response()->json(['msg' => 'An error occurred during movie saving'], 500);
     }
+    Logging::info('updateMovie', 'User - ' . $request->auth->id . ' | Movie updated - ' . $movie->id);
+    Cache::forget(self::$YEARS_CACHE_KEY);
 
-    $movie = $this->movieRepository->updateMovie($movie, $request->input('name'), $request->input('date'), $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $movieYearId);
-
-    if ($movie != null) {
-      return response()->json([
-        'msg' => 'Movie updated',
-        'movie' => $movie,], 201);
-    }
-
-    Logging::error('updateMovie', 'User . ' . $request->auth->id . ' | Could not update movie');
-
-    return response()->json(['msg' => 'An error occurred during movie saving'], 500);
+    return response()->json([
+      'msg' => 'Movie updated',
+      'movie' => $movie,], 201);
   }
 
   /**
@@ -155,8 +169,8 @@ class MovieController extends Controller {
    * @return JsonResponse
    */
   public function getNotShownMovies(AuthenticatedRequest $request): JsonResponse {
- return response()->json([
+    return response()->json([
       'msg' => 'List of not shown movies',
-      'movies' =>  $this->movieRepository->getNotShownMoviesForUser($request->auth->id),]);
+      'movies' => $this->movieRepository->getNotShownMoviesForUser($request->auth->id),]);
   }
 }

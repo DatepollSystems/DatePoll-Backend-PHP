@@ -128,3 +128,9 @@ UPDATE settings SET value = 'false' WHERE value = '0';
 UPDATE user_tokens SET token = 'true' WHERE token = '1';
 UPDATE user_tokens SET token = 'false' WHERE token = ' ';
 UPDATE user_tokens SET token = 'false' WHERE token = '0';
+
+ALTER TABLE movies DROP FOREIGN KEY movies_movie_year_id_foreign;
+ALTER TABLE movies DROP KEY movies_movie_year_id_foreign;
+ALTER TABLE movies DROP movie_year_id;
+ALTER TABLE movies ADD maximalTickets INT NOT NULL DEFAULT 20;
+DROP TABLE movie_years;

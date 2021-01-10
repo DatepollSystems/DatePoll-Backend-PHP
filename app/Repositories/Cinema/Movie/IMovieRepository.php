@@ -13,9 +13,15 @@ interface IMovieRepository {
   public function getMovieById(int $id): ?Movie;
 
   /**
+   * @return int[]
+   */
+  public function getYearsOfMovies(): array;
+
+  /**
+   * @param int|null $year
    * @return Movie[]
    */
-  public function getAllMoviesOrderedByDate(): array;
+  public function getAllMoviesOrderedByDate(int $year = null): array;
 
   /**
    * @param string $name
@@ -23,10 +29,17 @@ interface IMovieRepository {
    * @param string $trailerLink
    * @param string $posterLink
    * @param int $bookedTickets
-   * @param int $movieYearId
+   * @param int $maximalTickets
    * @return Movie|null
    */
-  public function createMovie(string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId): ?Movie;
+  public function createMovie(
+    string $name,
+    string $date,
+    string $trailerLink,
+    string $posterLink,
+    int $bookedTickets = 0,
+    int $maximalTickets = 20
+  ): ?Movie;
 
   /**
    * @param Movie $movie
@@ -38,7 +51,15 @@ interface IMovieRepository {
    * @param int $movieYearId
    * @return Movie|null
    */
-  public function updateMovie(Movie $movie, string $name, string $date, string $trailerLink, string $posterLink, int $bookedTickets, int $movieYearId): ?Movie;
+  public function updateMovie(
+    Movie $movie,
+    string $name,
+    string $date,
+    string $trailerLink,
+    string $posterLink,
+    int $bookedTickets,
+    int $movieYearId
+  ): ?Movie;
 
   /**
    * @param Movie $movie
