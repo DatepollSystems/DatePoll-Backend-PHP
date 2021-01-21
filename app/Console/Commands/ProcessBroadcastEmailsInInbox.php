@@ -16,6 +16,7 @@ use App\Repositories\System\Setting\ISettingRepository;
 use App\Utils\ArrayHelper;
 use App\Utils\MailHelper;
 use App\Utils\StringHelper;
+use Exception;
 use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,7 @@ use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
 use PhpImap\IncomingMail;
 use PhpImap\Mailbox;
+use RuntimeException;
 
 class ProcessBroadcastEmailsInInbox extends Command {
   /**
@@ -58,6 +60,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
   /**
    * @throws InvalidParameterException
+   * @throws Exception
    */
   public function handle(): void {
     if (! $this->settingsRepository->getBroadcastsProcessIncomingEmailsEnabled() || ! $this->settingsRepository->getBroadcastsEnabled()) {
@@ -98,7 +101,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
         case self::$actionCancelProcessing:
           return;
         default:
-          throw new Exception('Unknown action encountered: ' . $response);
+          throw new RuntimeException('Unknown action encountered: ' . $response);
       }
     }
   }

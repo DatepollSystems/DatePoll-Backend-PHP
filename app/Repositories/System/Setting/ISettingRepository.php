@@ -2,6 +2,7 @@
 
 namespace App\Repositories\System\Setting;
 
+use Exception;
 use stdClass;
 
 interface ISettingRepository {
