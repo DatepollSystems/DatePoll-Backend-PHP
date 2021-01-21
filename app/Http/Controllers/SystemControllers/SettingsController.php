@@ -6,6 +6,7 @@ use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Utils\ArrayHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
@@ -90,6 +91,59 @@ class SettingsController extends Controller {
     return response()->json([
       'msg' => 'Set broadcast process incoming emails service enabled',
       'isEnabled' => $isEnabled, ]);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingIsEnabled(AuthenticatedRequest $request): JsonResponse {
+    $this->validate($request, ['isEnabled' => 'required|boolean']);
+
+    $isEnabled = $request->input('isEnabled');
+
+    $this->settingRepository->setBroadcastsProcessIncomingEmailsForwardingEnabled($isEnabled);
+
+    Logging::info('setBroadcastsProcessIncomingEmailsForwardingEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+
+    return response()->json([
+      'msg' => 'Set broadcast process incoming emails forwarding service enabled',
+      'isEnabled' => $isEnabled, ]);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEmailAddresses(AuthenticatedRequest $request): JsonResponse {
+    $this->validate($request, ['email_addresses' => 'array', 'email_addresses.*' => 'required|max:190',]);
+
+    $emailAddresses = $request->input('email_addresses');
+    if (! ArrayHelper::isArray($emailAddresses)) {
+      $emailAddresses = [];
+    }
+
+    $emailAddresses = $this->settingRepository->setBroadcastsProcessIncomingEmailsForwardingEmailAddresses($emailAddresses);
+
+    Logging::info('setBroadcastsProcessIncomingEmailsForwardingEnabled', 'User - ' . $request->auth->id . ' | Changed');
+
+    return response()->json([
+      'msg' => 'Set broadcast process incoming emails forwarding email addresses set ',
+      'email_addresses' => $emailAddresses, ]);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  public function getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(): JsonResponse {
+    return response()->json(
+      [
+        'msg' => 'Broadcast process incoming mails forwarding email addresses',
+        'email_addresses' => $this->settingRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(), ],
+      200
+    );
   }
 
   /**

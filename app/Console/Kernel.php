@@ -35,7 +35,7 @@ class Kernel extends ConsoleKernel {
    * @return void
    */
   protected function schedule(Schedule $schedule) {
-    $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyMinute();
+    $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyFourMinutes();
     $schedule->command(DeleteUnusedBroadcastAttachments::class, ['--force'])->daily();
   }
 }

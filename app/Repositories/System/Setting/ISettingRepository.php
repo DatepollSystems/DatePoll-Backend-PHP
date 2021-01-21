@@ -52,6 +52,29 @@ interface ISettingRepository {
   /**
    * @return bool
    */
+  public function getBroadcastsProcessIncomingEmailsForwardingEnabled(): bool;
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEnabled(bool $isEnabled): bool;
+
+  /**
+   * @return string[]
+   */
+  public function getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(): array;
+
+  /**
+   * @param string[] $emailAddresses
+   * @return string[]
+   * @throws Exception
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEmailAddresses(array $emailAddresses): array;
+
+  /**
+   * @return bool
+   */
   public function getSeatReservationEnabled(): bool;
 
   /**
