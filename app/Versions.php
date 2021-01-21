@@ -11,14 +11,14 @@ class Versions {
   /**
    * @return string
    */
-  public static function getApplicationVersionString() : string {
+  public static function getApplicationVersionString(): string {
     return Versions::$application_version_string;
   }
 
   /**
    * @return int
    */
-  public static function getApplicationVersion() : int {
+  public static function getApplicationVersion(): int {
     return Versions::$application_version;
   }
 

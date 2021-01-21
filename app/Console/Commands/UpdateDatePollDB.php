@@ -94,6 +94,13 @@ class UpdateDatePollDB extends ACommand {
             return;
           }
           break;
+        case 8:
+          if (! $this->migrateDatabaseVersionFrom7To8()) {
+            $this->error('Migration failed!');
+
+            return;
+          }
+          break;
       }
 
       $this->comment('Saving new database version');
@@ -109,11 +116,55 @@ class UpdateDatePollDB extends ACommand {
     $this->info('Database update finished!');
   }
 
+  private function migrateDatabaseVersionFrom7To8(): bool {
+    $this->comment('Running migration from 7 to 8');
+
+    $this->comment('Fixing settings table...');
+    try {
+      $this->runDbStatement('DELETE FROM settings WHERE `key` = \'community_happy_alert\';');
+      $this->runDbStatement('ALTER TABLE settings DROP COLUMN type;');
+      $this->runDbStatement('UPDATE settings SET value = \'true\' WHERE value = \'1\';');
+      $this->runDbStatement('UPDATE settings SET value = \'false\' WHERE value = \'0\';');
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Fixing user_tokens table...');
+    try {
+      $this->runDbStatement("UPDATE user_tokens SET token = 'true' WHERE token = '1';");
+      $this->runDbStatement("UPDATE user_tokens SET token = 'false' WHERE token = ' ';");
+      $this->runDbStatement("UPDATE user_tokens SET token = 'false' WHERE token = '0';");
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Removing movie years table and add maximal tickets');
+    try {
+      $this->runDbStatement("ALTER TABLE movies DROP FOREIGN KEY movies_movie_year_id_foreign;");
+      $this->runDbStatement("ALTER TABLE movies DROP KEY movies_movie_year_id_foreign;");
+      $this->runDbStatement("ALTER TABLE movies DROP movie_year_id;");
+      $this->runDbStatement("DROP TABLE movie_years;");
+      $this->runDbStatement("ALTER TABLE movies ADD maximalTickets INT NOT NULL DEFAULT 20;");
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Adding locations to places table and removing old notify groups table');
+    try {
+      $this->runDbStatement("ALTER TABLE places ADD location VARCHAR(191);");
+      $this->runDbStatement("DROP TABLE place_reservation_notify_groups;");
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Running migration from 7 to 8 finished!');
+    return true;
+  }
+
   /**
    * @return bool
    */
   private function migrateDatabaseVersionFrom6To7(): bool {
-    $version = '6To7';
     $this->comment('Running migration from 6 to 7');
 
     $this->comment('Altering table dates migrate date from varchar to date');
@@ -126,7 +177,6 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->comment('Running migration from 6 to 7 finished!');
-
     return true;
   }
 
@@ -134,7 +184,6 @@ class UpdateDatePollDB extends ACommand {
    * @return bool
    */
   private function migrateDatabaseVersionFrom5To6(): bool {
-    $version = '5To6';
     $this->comment('Running migration from 5 to 6');
 
     $this->comment('Altering table logs adding user id foreign key');
@@ -154,7 +203,6 @@ class UpdateDatePollDB extends ACommand {
    * @return bool
    */
   private function migrateDatabaseVersionFrom4To5(): bool {
-    $version = '4To5';
     $this->comment('Running migration from 4 to 5');
 
     $this->comment('Altering table movies drop worker foreign keys...');
@@ -200,7 +248,6 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->comment('Running migration from 4 to 5 finished!');
-
     return true;
   }
 
@@ -225,7 +272,6 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->comment('Running migration from 3 to 4 finished!');
-
     return true;
   }
 
@@ -271,7 +317,6 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->comment('Running migration from 2 to 3 finished!');
-
     return true;
   }
 
@@ -296,7 +341,6 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->comment('Running migration from 1 to 2 finished!');
-
     return true;
   }
 
@@ -331,7 +375,6 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->comment('Running migration from 0 to 1 finished!');
-
     return true;
   }
 

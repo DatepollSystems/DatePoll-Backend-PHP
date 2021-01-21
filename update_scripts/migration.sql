@@ -1,7 +1,9 @@
+# noinspection SqlResolveForFile
+
 # Migrations are handled via the datepoll-update-db command.
 # Execute it with docker-compose exec datepoll-php php /backend/artisan datepoll-update-db
 #
-# THIS IS ONLY FOR OVERVIEW reasons! Only execute this MySQL command if you know what you are doing!
+# THIS FILE EXISTS ONLY FOR DEVELOPMENT reasons! Only execute SQL commands if you know what you are doing!
 
 # 0.1.1 to 0.2.0
 # -------------------------------------------------------------------------------------------
@@ -17,7 +19,7 @@ ALTER TABLE users
 # 0.3.1 to 0.4.0
 # -------------------------------------------------------------------------------------------
 -- Add location field to events
-ALTER TABLE events
+ALTER TABLE `events`
     ADD location VARCHAR(191);
 
 -- Add showInCalendar field to standard decisions and set true as default value
@@ -100,7 +102,7 @@ UPDATE users
 SET bv_member = ''
 where bv_member = '0';
 
-ALTER TABLE groups
+ALTER TABLE `groups`
     ADD orderN INT NOT NULL DEFAULT 0;
 ALTER TABLE subgroups
     ADD orderN INT NOT NULL DEFAULT 0;
@@ -132,5 +134,7 @@ UPDATE user_tokens SET token = 'false' WHERE token = '0';
 ALTER TABLE movies DROP FOREIGN KEY movies_movie_year_id_foreign;
 ALTER TABLE movies DROP KEY movies_movie_year_id_foreign;
 ALTER TABLE movies DROP movie_year_id;
-ALTER TABLE movies ADD maximalTickets INT NOT NULL DEFAULT 20;
 DROP TABLE movie_years;
+
+ALTER TABLE places ADD location VARCHAR(191);
+DROP TABLE place_reservation_notify_groups;
