@@ -32,7 +32,7 @@ abstract class ArrayHelper {
    */
   #[Pure]
   public static function getCount(array $array): int {
-    return sizeof($array);
+    return count($array);
   }
 
   /**
@@ -43,4 +43,16 @@ abstract class ArrayHelper {
   public static function isArray(mixed $possibleArray): bool {
     return is_array($possibleArray);
   }
+
+//  /**
+//   * @param array $array
+//   * @param mixed $toAdd
+//   * @return mixed
+//   */
+//  #[Pure]
+//  public static function addToArrayIfNotInIt(array $array, mixed $toAdd): mixed {
+//    if (! self::inArray($array, $toAdd)) {
+//      return $toAdd;
+//    }
+//  }
 }

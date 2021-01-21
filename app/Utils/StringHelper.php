@@ -125,7 +125,9 @@ abstract class StringHelper {
   public static function compareCaseSensitive(?string $string1, ?string $string2): bool {
     if (! $string1 && ! $string2) {
       return true;
-    } elseif ((! $string1 && $string2) || ($string1 && ! $string2)) {
+    }
+
+    if ((! $string1 && $string2) || ($string1 && ! $string2)) {
       return false;
     }
 
@@ -142,10 +144,21 @@ abstract class StringHelper {
   public static function compare(?string $string1, ?string $string2): bool {
     if (! $string1 && ! $string2) {
       return true;
-    } elseif ((! $string1 && $string2) || ($string1 && ! $string2)) {
+    }
+
+    if ((! $string1 && $string2) || ($string1 && ! $string2)) {
       return false;
     }
 
     return strcasecmp($string1, $string2) === 0;
+  }
+
+  /**
+   * @param string $string
+   * @param string $char
+   * @return bool
+   */
+  public static function startsWithCharacter(string $string, string $char): bool {
+    return str_starts_with($string, $char);
   }
 }
