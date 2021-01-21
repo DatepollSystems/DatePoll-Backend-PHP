@@ -301,7 +301,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     // Invalid: "[]" | "[ ]"
     $receiverString = $this->getReceiverString($subject);
-    if (StringHelper::length($receiverString) < 1 || ! StringHelper::notNullAndEmpty($receiverString)) {
+    if (StringHelper::length($receiverString) < 1) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Nothing between "[" and "]"');
 
       return false;
