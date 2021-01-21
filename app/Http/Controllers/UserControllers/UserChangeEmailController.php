@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\UserControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserChangeEmailController extends Controller {
@@ -17,12 +17,12 @@ class UserChangeEmailController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    * @throws Exception
    */
-  public function changeEmailAddresses(Request $request) {
+  public function changeEmailAddresses(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['email_addresses' => 'required|array']);
 
     $user = $request->auth;
@@ -35,6 +35,6 @@ class UserChangeEmailController extends Controller {
 
     return response()->json([
       'msg' => 'All email addresses saved',
-      'user' => $user->getReturnable(), ], 200);
+      'user' => $user, ], 200);
   }
 }

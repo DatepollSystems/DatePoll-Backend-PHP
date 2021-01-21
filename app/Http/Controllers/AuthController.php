@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ForgotPassword;
 use App\Models\User\UserCode;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
+use App\Utils\Converter;
+use App\Utils\Generator;
+use App\Utils\MailHelper;
 use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,7 +31,7 @@ class AuthController extends Controller {
    * @param int $userID
    * @return string
    */
-  protected function jwt(int $userID) {
+  protected function jwt(int $userID): string {
     $payload = ['iss' => 'lumen-jwt',// Issuer of the token
       'sub' => $userID,// Subject of the token
       'iat' => time(),// Time when JWT was issued.
@@ -45,10 +47,10 @@ class AuthController extends Controller {
    * Authenticate a user and return the token if the provided credentials are correct.
    *
    * @param Request $request
-   * @return mixed
+   * @return JsonResponse
    * @throws ValidationException
    */
-  public function signin(Request $request) {
+  public function signin(Request $request): JsonResponse {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'password' => 'required|min:6',
@@ -72,7 +74,7 @@ class AuthController extends Controller {
 
       $sessionInformation = $request->input('session_information');
       $stayLoggedIn = $request->input('stay_logged_in');
-      if ($stayLoggedIn != null && $sessionInformation != null) {
+      if ($stayLoggedIn !== null && $sessionInformation != null) {
         if ((bool)$stayLoggedIn) {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
@@ -109,7 +111,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function changePasswordAfterSignin(Request $request) {
+  public function changePasswordAfterSignin(Request $request): JsonResponse {
     $this->validate($request, [
       'username' => 'required|min:1|max:190',
       'old_password' => 'required',
@@ -142,7 +144,7 @@ class AuthController extends Controller {
 
       $sessionInformation = $request->input('session_information');
       $stayLoggedIn = $request->input('stay_logged_in');
-      if ($stayLoggedIn != null && $sessionInformation != null) {
+      if ($stayLoggedIn !== null && $sessionInformation != null) {
         if ((bool)$stayLoggedIn) {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
@@ -185,7 +187,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function IamLoggedIn(Request $request) {
+  public function IamLoggedIn(Request $request): JsonResponse {
     $this->validate($request, [
       'session_token' => 'required',
       'session_information' => 'required|min:1|max:190', ]);
@@ -216,7 +218,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function sendForgotPasswordEmail(Request $request) {
+  public function sendForgotPasswordEmail(Request $request): JsonResponse {
     $this->validate($request, [
       'username' => 'required|min:1|max:190', ]);
 
@@ -232,14 +234,14 @@ class AuthController extends Controller {
         'error_code' => 'no_email_addresses', ], 400);
     }
 
-    $code = UserCode::generateCode();
+    $code = Generator::getRandom6DigitNumber();
     $userCode = new UserCode(['code' => $code, 'purpose' => 'forgotPassword', 'user_id' => $user->id]);
 
     if ($userCode->save()) {
-      dispatch(new SendEmailJob(
-        new ForgotPassword($user->firstname, $code),
+      MailHelper::sendEmailOnHighQueue(
+        new ForgotPassword($user->firstname, Converter::integerToString($code)),
         $user->getEmailAddresses()
-      ))->onQueue('high');
+      );
 
       return response()->json(['msg' => 'Sent'], 200);
     }
@@ -254,7 +256,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function checkForgotPasswordCode(Request $request) {
+  public function checkForgotPasswordCode(Request $request): JsonResponse {
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190', ]);
@@ -304,7 +306,7 @@ class AuthController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function resetPasswordAfterForgotPassword(Request $request) {
+  public function resetPasswordAfterForgotPassword(Request $request): JsonResponse {
     $this->validate($request, [
       'code' => 'required|digits:6',
       'username' => 'required|min:1|max:190',

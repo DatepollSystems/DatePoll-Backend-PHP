@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\UserControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserChangePasswordController extends Controller {
@@ -16,11 +16,11 @@ class UserChangePasswordController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function checkOldPassword(Request $request) {
+  public function checkOldPassword(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['password' => 'required|min:6']);
 
     $user = $request->auth;
@@ -33,11 +33,11 @@ class UserChangePasswordController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function changePassword(Request $request) {
+  public function changePassword(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['old_password' => 'required', 'new_password' => 'required|min:6']);
 
     $user = $request->auth;

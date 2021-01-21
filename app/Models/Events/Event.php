@@ -4,8 +4,8 @@ namespace App\Models\Events;
 
 use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -21,13 +21,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property EventUserVotedForDecision[] $eventsUsersVotedForDecision
  */
 class Event extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events';
+
+  protected $hidden = ['forEveryone'];
 
   /**
    * @var array
@@ -37,31 +33,30 @@ class Event extends Model {
     'description',
     'forEveryone',
     'created_at',
-    'updated_at', ];
+    'updated_at',];
 
   /**
-   * @return Collection | EventDecision[] | null
+   * @return EventDecision[]
    */
-  public function eventsDecisions() {
-    return $this->hasMany('App\Models\Events\EventDecision', 'event_id')
-      ->get();
+  public function eventsDecisions(): array {
+    return $this->hasMany(EventDecision::class, 'event_id')
+      ->get()->all();
   }
 
   /**
-   * @return Collection | EventForGroup[] | null
+   * @return EventForGroup[]
    */
-  public function eventsForGroups() {
-    return $this->hasMany('App\Models\Events\EventForGroup')
-      ->get();
+  public function eventsForGroups(): array {
+    return $this->hasMany(EventForGroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Group[] | null
+   * @return Group[]
    */
-  public function getGroupsOrdered() {
-    $eventForGroups = $this->eventsForGroups();
+  public function getGroupsOrdered(): array {
     $groups = [];
-    foreach ($eventForGroups as $eventForGroup) {
+    foreach ($this->eventsForGroups() as $eventForGroup) {
       $groups[] = $eventForGroup->group();
     }
     usort($groups, function ($a, $b) {
@@ -72,20 +67,19 @@ class Event extends Model {
   }
 
   /**
-   * @return Collection | EventForSubgroup[] | null
+   * @return EventForSubgroup[]
    */
-  public function eventsForSubgroups() {
-    return $this->hasMany('App\Models\Events\EventForSubgroup')
-      ->get();
+  public function eventsForSubgroups(): array {
+    return $this->hasMany(EventForSubgroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Subgroup[] | null
+   * @return Subgroup[]
    */
-  public function getSubgroupsOrdered() {
-    $eventForSubgroups = $this->eventsForSubgroups();
+  public function getSubgroupsOrdered(): array {
     $subgroups = [];
-    foreach ($eventForSubgroups as $eventForSubgroup) {
+    foreach ($this->eventsForSubgroups() as $eventForSubgroup) {
       $subgroups[] = $eventForSubgroup->subgroup();
     }
     usort($subgroups, function ($a, $b) {
@@ -96,18 +90,89 @@ class Event extends Model {
   }
 
   /**
-   * @return Collection | EventUserVotedForDecision[] | null
+   * @return HasMany
    */
-  public function usersVotedForDecision() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-      ->get();
+  private function usersVotedForDecision(): HasMany {
+    return $this->hasMany(EventUserVotedForDecision::class);
   }
 
   /**
-   * @return Collection | EventDate[] | null
+   * @return EventUserVotedForDecision[]
    */
-  public function getEventDates() {
-    return $this->hasMany('App\Models\Events\EventDate', 'event_id')
-      ->get();
+  public function getUsersVotedForDecision(): array {
+    return $this->usersVotedForDecision()
+      ->get()->all();
+  }
+
+
+  private function eventDates(): HasMany {
+    return $this->hasMany(EventDate::class);
+  }
+
+  /**
+   * @return EventDate[]
+   */
+  public function getEventDates(): array {
+    return $this->eventDates()
+      ->get()->all();
+  }
+
+  /**
+   * @return EventDate[]
+   */
+  public function getEventDatesOrderedByDate(): array {
+    return $this->eventDates()->orderBy('date')->get()->all();
+  }
+
+  /**
+   * @return EventDate|HasMany
+   */
+  public function getFirstEventDate(): EventDate|HasMany {
+    return $this->eventDates()->orderBy('date', 'ASC')->first();
+  }
+
+  /**
+   * @return EventDate|HasMany
+   */
+  public function getLastEventDate(): EventDate|HasMany {
+    return $this->eventDates()->latest('date')->first();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['for_everyone'] = $this->forEveryone;
+
+    $returnable['decisions'] = $this->eventsDecisions();
+    $returnable['dates'] = $this->getEventDatesOrderedByDate();
+
+    $startDate = $this->getFirstEventDate();
+    $endDate = $this->getLastEventDate();
+
+    if ($startDate != null) {
+      $startDate = $startDate->date;
+    }
+    $returnable['start_date'] = $startDate;
+
+    if ($endDate != null) {
+      $endDate = $endDate->date;
+    }
+    $returnable['end_date'] = $endDate;
+
+    return $returnable;
+  }
+
+  /**
+   * @param int $userId
+   * @return array
+   */
+  public function toArrayWithUserDecisionByUserId(int $userId): array {
+    $returnable = $this->toArray();
+    $eventUserVotedFor = $this->usersVotedForDecision()->where('user_id', $userId)->first();
+    $returnable['already_voted'] = ($eventUserVotedFor != null);
+    $returnable['user_decision'] = $eventUserVotedFor;
+    return $returnable;
   }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\ManagementControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
-use App\Logging;
 use App\Permissions;
 use App\Repositories\User\User\IUserRepository;
-use App\Repositories\User\UserChange\IUserChangeRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,11 +13,9 @@ use Illuminate\Validation\ValidationException;
 
 class UsersController extends Controller {
   protected IUserRepository $userRepository;
-  protected IUserChangeRepository $userChangeRepository;
 
-  public function __construct(IUserRepository $userRepository, IUserChangeRepository $userChangeRepository) {
+  public function __construct(IUserRepository $userRepository) {
     $this->userRepository = $userRepository;
-    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
@@ -26,36 +23,10 @@ class UsersController extends Controller {
    *
    * @return JsonResponse
    */
-  public function getAll() {
-    $toReturnUsers = [];
-
-    $users = $this->userRepository->getAllUsersOrderedBySurname();
-    foreach ($users as $user) {
-      $toReturnUser = $user->getReturnable();
-
-      $toReturnUser->view_user = [
-        'href' => 'api/v1/management/users/' . $user->id,
-        'method' => 'GET', ];
-
-      $toReturnUsers[] = $toReturnUser;
-    }
-
+  public function getAll(): JsonResponse {
     $response = [
       'msg' => 'List of all users',
-      'users' => $toReturnUsers, ];
-
-    return response()->json($response);
-  }
-
-  /**
-   * Display a listing of the resource.
-   *
-   * @return JsonResponse
-   */
-  public function getDeletedUsers() {
-    $response = [
-      'msg' => 'List of deleted users',
-      'users' => $this->userRepository->getDeletedUsers(), ];
+      'users' => $this->userRepository->getAllUsersOrderedBySurname(),];
 
     return response()->json($response);
   }
@@ -63,12 +34,12 @@ class UsersController extends Controller {
   /**
    * Store a newly created resource in storage.
    *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    * @throws Exception
    */
-  public function create(Request $request) {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'title' => 'max:190',
       'username' => 'required|min:1|max:190',
@@ -88,7 +59,7 @@ class UsersController extends Controller {
       'member_number' => 'max:190',
       'phone_numbers' => 'array',
       'permissions' => 'array',
-      'email_addresses' => 'array', ]);
+      'email_addresses' => 'array',]);
 
     $title = $request->input('title');
     $username = $request->input('username');
@@ -113,7 +84,7 @@ class UsersController extends Controller {
     if ($this->userRepository->getUserByUsername($username) != null) {
       return response()->json([
         'msg' => 'The username is already used',
-        'error_code' => 'username_already_used', ], 400);
+        'error_code' => 'username_already_used',], 400);
     }
 
     $user = $this->userRepository->createOrUpdateUser(
@@ -152,14 +123,9 @@ class UsersController extends Controller {
       $this->userRepository->activateUser($user);
     }
 
-    $userToShow = $user->getReturnable();
-    $userToShow->view_user = [
-      'href' => 'api/v1/management/users/' . $user->id,
-      'method' => 'GET', ];
-
     $response = [
       'msg' => 'User successful created',
-      'user' => $userToShow, ];
+      'user' => $user,];
 
     return response()->json($response, 201);
   }
@@ -170,35 +136,27 @@ class UsersController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(int $id) {
+  public function getSingle(int $id): JsonResponse {
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    $userToShow = $user->getReturnable();
-
-    $userToShow->view_users = [
-      'href' => 'api/v1/management/users',
-      'method' => 'GET', ];
-
-    $response = [
+    return response()->json([
       'msg' => 'User information',
-      'user' => $userToShow, ];
-
-    return response()->json($response);
+      'user' => $user,]);
   }
 
   /**
    * Update the specified resource in storage.
    *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    * @throws Exception
    */
-  public function update(Request $request, int $id) {
+  public function update(AuthenticatedRequest $request, int $id): JsonResponse {
     $this->validate($request, [
       'title' => 'max:190',
       'username' => 'required|min:1|max:190',
@@ -218,13 +176,13 @@ class UsersController extends Controller {
       'internal_comment' => 'string|nullable',
       'email_addresses' => 'array',
       'phone_numbers' => 'array',
-      'permissions' => 'array', ]);
+      'permissions' => 'array',]);
 
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json([
         'msg' => 'User not found',
-        'error_code' => 'user_not_found', ], 404);
+        'error_code' => 'user_not_found',], 404);
     }
 
     $username = $request->input('username');
@@ -233,7 +191,7 @@ class UsersController extends Controller {
       if ($this->userRepository->getUserByUsername($username) != null) {
         return response()->json([
           'msg' => 'The username is already used',
-          'error_code' => 'username_already_used', ], 400);
+          'error_code' => 'username_already_used',], 400);
       }
     }
 
@@ -297,16 +255,9 @@ class UsersController extends Controller {
       $this->userRepository->activateUser($user);
     }
 
-    $userToShow = $user->getReturnable();
-    $userToShow->view_user = [
-      'href' => 'api/v1/management/users/' . $user->id,
-      'method' => 'GET', ];
-
-    $response = [
+    return response()->json([
       'msg' => 'User updated',
-      'user' => $userToShow, ];
-
-    return response()->json($response, 200);
+      'user' => $user,], 200);
   }
 
   /**
@@ -315,9 +266,9 @@ class UsersController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function changePassword(Request $request, int $id) {
+  public function changePassword(Request $request, int $id): JsonResponse {
     $this->validate($request, [
-      'password' => 'required|min:6', ]);
+      'password' => 'required|min:6',]);
 
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
@@ -330,61 +281,7 @@ class UsersController extends Controller {
 
     return response()->json([
       'msg' => 'Saved password from user successfully',
-      'user' => $user->getReturnable(), ], 200);
-  }
-
-  /**
-   * Remove the specified resource from storage.
-   *
-   * @param Request $request
-   * @param int $id
-   * @return JsonResponse
-   */
-  public function delete(Request $request, int $id) {
-    if (! ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
-      return response()->json([
-        'msg' => 'Permission denied',
-        'error_code' => 'permissions_denied',
-        'needed_permissions' => [
-          Permissions::$ROOT_ADMINISTRATION,
-          Permissions::$MANAGEMENT_EXTRA_USER_DELETE, ], ], 403);
-    }
-
-    $user = $this->userRepository->getUserById($id);
-    if ($user == null) {
-      return response()->json(['msg' => 'User not found'], 404);
-    }
-
-    if ($request->auth->id == $id) {
-      return response()->json(['msg' => 'Can not delete yourself'], 400);
-    }
-
-    if (! $this->userRepository->deleteUser($user)) {
-      return response()->json(['msg' => 'Deletion failed'], 500);
-    }
-
-    return response()->json(['msg' => 'User deleted'], 200);
-  }
-
-  /**
-   * @param Request $request
-   * @return JsonResponse
-   */
-  public function deleteAllDeletedUsers(Request $request) {
-    if (! ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
-      return response()->json([
-        'msg' => 'Permission denied',
-        'error_code' => 'permissions_denied',
-        'needed_permissions' => [
-          Permissions::$ROOT_ADMINISTRATION,
-          Permissions::$MANAGEMENT_EXTRA_USER_DELETE, ], ], 403);
-    }
-
-    Logging::info('deleteDeletedUsers', 'Deleting all deleted users... User id - ' . $request->auth->id);
-    $this->userRepository->deleteAllDeletedUsers();
-    Logging::info('deleteDeletedUsers', 'Deleted all deleted users! User id - ' . $request->auth->id);
-
-    return response()->json(['msg' => 'Deleted users successfully deleted'], 200);
+      'user' => $user,], 200);
   }
 
   /**
@@ -392,12 +289,12 @@ class UsersController extends Controller {
    *
    * @return JsonResponse
    */
-  public function export() {
+  public function export(): JsonResponse {
     $toReturnUsers = $this->userRepository->exportAllUsers();
 
     return response()->json([
       'msg' => 'List of users to export',
-      'users' => $toReturnUsers, ], 200);
+      'users' => $toReturnUsers,], 200);
   }
 
   /**
@@ -405,7 +302,7 @@ class UsersController extends Controller {
    *
    * @return JsonResponse
    */
-  public function activateAll() {
+  public function activateAll(): JsonResponse {
     $users = $this->userRepository->getAllNotActivatedUsers();
 
     foreach ($users as $user) {
@@ -415,47 +312,5 @@ class UsersController extends Controller {
     }
 
     return response()->json(['msg' => 'All users have been activated and will receive a mail'], 200);
-  }
-
-  /**
-   * Returns all changes to users
-   *
-   * @return JsonResponse
-   */
-  public function getAllUserChanges() {
-    $userChanges = [];
-    foreach ($this->userChangeRepository->getAllUserChangesOrderedByDate() as $userChange) {
-      $userChanges[] = $userChange->getReturnable();
-    }
-
-    return response()->json(['msg' => 'User changes', 'user_changes' => $userChanges], 200);
-  }
-
-  /**
-   * @param Request $request
-   * @param int $id
-   * @return JsonResponse
-   * @throws Exception
-   */
-  public function deleteUserChange(Request $request, int $id) {
-    if (! ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
-      return response()->json([
-        'msg' => 'Permission denied',
-        'error_code' => 'permissions_denied',
-        'needed_permissions' => [
-          Permissions::$ROOT_ADMINISTRATION,
-          Permissions::$MANAGEMENT_EXTRA_USER_DELETE, ], ], 403);
-    }
-
-    $userChange = $this->userChangeRepository->getUserChangeById($id);
-    if ($userChange == null) {
-      return response()->json(['msg' => 'User change not found'], 404);
-    }
-
-    if (! $userChange->delete()) {
-      return response()->json(['msg' => 'Could not delete user change'], 500);
-    }
-
-    return response()->json(['msg' => 'Successfully delete user change']);
   }
 }

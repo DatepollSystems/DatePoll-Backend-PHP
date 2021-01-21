@@ -3,106 +3,126 @@
 namespace App\Models\Cinema;
 
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\ArrayShape;
 use stdClass;
 
 /**
  * @property int $id
- * @property int $movie_year_id
  * @property int|null $worker_id
+ * @property string|null $worker_name
  * @property int|null $emergency_worker_id
+ * @property string|null $emergency_worker_name
  * @property string $name
  * @property string $date
  * @property string $trailerLink
  * @property string $posterLink
  * @property int $bookedTickets
+ * @property int $maximalTickets
  * @property string $created_at
  * @property string $updated_at
  * @property User $emergencyWorker
- * @property MovieYear $movieYear
  * @property User $worker
  * @property MoviesBooking[] $moviesBookings
  */
 class Movie extends Model {
+  private static string $workerIdProperty = 'worker_id';
+  private static string $workerNameProperty = 'worker_name';
+  private static string $emergencyWorkerIdProperty = 'emergency_worker_id';
+  private static string $emergencyWorkerNameProperty = 'emergency_worker_name';
+
   /**
    * @var array
    */
-  protected $fillable = ['movie_year_id', 'worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'created_at', 'updated_at'];
+  protected $fillable = ['worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'maximalTickets', 'created_at', 'updated_at'];
 
   /**
    * @return BelongsTo | User | null
    */
-  public function emergencyWorker() {
-    return $this->belongsTo('App\Models\User\User', 'emergency_worker_id')->first();
-  }
-
-  /**
-   * @return BelongsTo | MovieYear | null
-   */
-  public function movieYear() {
-    return $this->belongsTo('App\Models\Cinema\MovieYear')->first();
+  public function emergencyWorker(): BelongsTo|User|null {
+    return $this->belongsTo(User::class, 'emergency_worker_id')->first();
   }
 
   /**
    * @return BelongsTo  | User | null
    */
-  public function worker() {
-    return $this->belongsTo('App\Models\User\User', 'worker_id')->first();
+  public function worker(): BelongsTo|User|null {
+    return $this->belongsTo(User::class, 'worker_id')->first();
   }
 
   /**
-   * @return Collection | MoviesBooking[]
+   * @return MoviesBooking[]
    */
-  public function moviesBookings() {
-    return $this->hasMany('App\Models\Cinema\MoviesBooking')->get();
+  public function moviesBookings(): array {
+    return $this->hasMany(MoviesBooking::class)->get()->all();
   }
 
   /**
-   * @return stdClass | Movie
+   * @param int $userId
+   * @return int
    */
-  public function getReturnable() {
-    $returnableMovie = new stdClass();
+  public function getBookedTicketsForUser(int $userId): int {
+    $movieBookingForYourself = MoviesBooking::where('movie_id', $this->id)->where('user_id',$userId)->first();
 
-    $returnableMovie->id = $this->id;
-    $returnableMovie->name = $this->name;
-    $returnableMovie->date = $this->date;
-    $returnableMovie->trailer_link = $this->trailerLink;
-    $returnableMovie->poster_link = $this->posterLink;
-    $returnableMovie->booked_tickets = $this->bookedTickets;
-    $returnableMovie->movie_year_id = $this->movie_year_id;
-    $returnableMovie->created_at = $this->created_at;
-    $returnableMovie->updated_at = $this->updated_at;
+    if ($movieBookingForYourself == null) {
+      return 0;
+    } else {
+      return $movieBookingForYourself->amount;
+    }
+  }
+
+  /**
+   * @return array
+   */
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
+    'poster_link' => "string", 'booked_tickets' => "int", 'maximal_tickets' => "int", 'created_at' => "string",
+    'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int', 'emergency_worker_name' => 'string'])]
+  public function toArray(): array {
+    $returnable = [
+      "id" => $this->id,
+      'name' => $this->name,
+      'date' => $this->date,
+      'trailer_link' => $this->trailerLink,
+      'poster_link' => $this->posterLink,
+      'booked_tickets' => $this->bookedTickets,
+      'maximal_tickets' => $this->maximalTickets,
+      'created_at' => $this->created_at,
+      'updated_at' => $this->updated_at
+    ];
 
     $worker = $this->worker();
     $emergencyWorker = $this->emergencyWorker();
 
     if ($worker == null) {
-      $returnableMovie->worker_id = null;
-      $returnableMovie->worker_name = null;
+      $returnable[$this::$workerIdProperty] = null;
+      $returnable[$this::$workerNameProperty] = null;
     } else {
-      $returnableMovie->worker_id = $worker->id;
-      $returnableMovie->worker_name = $worker->firstname . ' ' . $worker->surname;
+      $returnable[$this::$workerIdProperty] = $worker->id;
+      $returnable[$this::$workerNameProperty] = $worker->getCompleteName();
     }
 
     if ($emergencyWorker == null) {
-      $returnableMovie->emergency_worker_id = null;
-      $returnableMovie->emergency_worker_name = null;
+      $returnable[$this::$emergencyWorkerIdProperty] = null;
+      $returnable[$this::$emergencyWorkerNameProperty] = null;
     } else {
-      $returnableMovie->emergency_worker_id = $emergencyWorker->id;
-      $returnableMovie->emergency_worker_name = $emergencyWorker->firstname . ' ' . $emergencyWorker->surname;
+      $returnable[$this::$emergencyWorkerIdProperty] = $emergencyWorker->id;
+      $returnable[$this::$emergencyWorkerNameProperty] = $emergencyWorker->getCompleteName();
     }
-
-    return $returnableMovie;
+    return $returnable;
   }
 
   /**
-   * @return stdClass
+   * @return array
+   * @noinspection SqlNoDataSourceInspection SqlResolve
    */
-  public function getAdminReturnable() {
-    $returnableMovie = $this->getReturnable();
+  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
+    'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string",
+    'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int',
+    'emergency_worker_name' => 'string', 'bookings' => 'array'])]
+  public function getAdminReturnable(): array {
+    $returnableMovie = $this->toArray();
     $bookings = [];
     foreach ($this->moviesBookings() as $moviesBooking) {
       $booking = new stdClass();
@@ -127,7 +147,11 @@ class Movie extends Model {
       $bookings[] = $booking;
     }
 
-    $returnableMovie->bookings = $bookings;
+    usort($bookings, function ($a, $b) {
+      return strcmp($b->amount, $a->amount);
+    });
+
+    $returnableMovie['bookings'] = $bookings;
 
     return $returnableMovie;
   }

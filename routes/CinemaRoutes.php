@@ -24,21 +24,16 @@ $router->group(['prefix' => 'cinema', 'middleware' => [CinemaFeatureMiddleware::
       'middleware' => [CinemaPermissionMiddleware::class], ],
     function () use ($router) {
       /** Movie routes */
-      $router->get('movie', ['uses' => 'CinemaControllers\MovieController@getAll']);
+      $router->get('movie', ['uses' => 'CinemaControllers\MovieController@getMoviesOrderedByDate']);
+      $router->get('movie/years', ['uses' => 'CinemaControllers\MovieController@getYearsOfMovies']);
+      $router->get('movie/{year}', ['uses' => 'CinemaControllers\MovieController@getMoviesOrderedByDate']);
       $router->post('movie', ['uses' => 'CinemaControllers\MovieController@create']);
-      $router->get('movie/{id}', ['uses' => 'CinemaControllers\MovieController@getSingle']);
+      $router->get('single/{id}', ['uses' => 'CinemaControllers\MovieController@getSingle']);
       $router->put('movie/{id}', ['uses' => 'CinemaControllers\MovieController@update']);
       $router->delete('movie/{id}', ['uses' => 'CinemaControllers\MovieController@delete']);
 
       $router->post('movie/{id}/bookForUsers', ['uses' => 'CinemaControllers\MovieBookingController@bookForUsers']);
       $router->post('movie/{id}/cancelBookingForUsers', ['uses' => 'CinemaControllers\MovieBookingController@cancelBookingForUsers']);
-
-      /** Year routes */
-      $router->get('year', ['uses' => 'CinemaControllers\MovieYearController@getAll']);
-      $router->post('year', ['uses' => 'CinemaControllers\MovieYearController@create']);
-      $router->get('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@getSingle']);
-      $router->put('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@update']);
-      $router->delete('year/{id}', ['uses' => 'CinemaControllers\MovieYearController@delete']);
     }
   );
 });

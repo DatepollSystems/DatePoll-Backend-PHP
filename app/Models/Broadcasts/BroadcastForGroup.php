@@ -16,11 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Group $group
  */
 class BroadcastForGroup extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'broadcasts_for_groups';
 
   /**
@@ -35,14 +30,14 @@ class BroadcastForGroup extends Model {
   /**
    * @return BelongsTo | Broadcast
    */
-  public function broadcast() {
-    return $this->belongsTo('App\Models\Broadcasts\Broadcast')->first();
+  public function broadcast(): BelongsTo|Broadcast {
+    return $this->belongsTo(Broadcast::class)->first();
   }
 
   /**
    * @return BelongsTo | Group
    */
-  public function group() {
-    return $this->belongsTo('App\Models\Groups\Group')->first();
+  public function group(): BelongsTo|Group {
+    return $this->belongsTo(Group::class)->first();
   }
 }

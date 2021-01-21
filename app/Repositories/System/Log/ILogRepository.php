@@ -4,26 +4,25 @@ namespace App\Repositories\System\Log;
 
 use App\Models\System\Log;
 use Exception;
-use Illuminate\Support\Collection;
 
 interface ILogRepository {
   /**
-   * @return Collection<Log>
+   * @return Log[]
    */
-  public function getAllLogsOrderedByDate();
+  public function getAllLogsOrderedByDate(): array;
 
   /**
    * @param int $id
    * @return Log|null
    */
-  public function getLogById(int $id);
+  public function getLogById(int $id): ?Log;
 
   /**
    * @param Log $log
    * @return bool
    * @throws Exception
    */
-  public function deleteLogByLog(Log $log);
+  public function deleteLogByLog(Log $log): bool;
 
   public function deleteAllLogs();
 
@@ -31,7 +30,7 @@ interface ILogRepository {
    * @param string $logType
    * @param string $message
    * @param int|null $userId
-   * @return Log
+   * @return Log|null
    */
-  public function createLog(string $logType, string $message, ?int $userId = null);
+  public function createLog(string $logType, string $message, ?int $userId = null): ?Log;
 }

@@ -4,7 +4,6 @@ namespace App\Repositories\SeatReservation\Place;
 
 use App\Models\SeatReservation\Place;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IPlaceRepository {
 
@@ -12,26 +11,27 @@ interface IPlaceRepository {
    * @param int $id
    * @return Place|null
    */
-  public function getPlaceById(int $id);
+  public function getPlaceById(int $id): ?Place;
 
   /**
-   * @return Place[]|Collection
+   * @return Place[]
    */
-  public function getAllPlaces();
+  public function getAllPlaces(): array;
 
   /**
    * @param string $name
+   * @param string|null $location
    * @param double $x
    * @param double $y
    * @param Place|null $place
    * @return Place|null
    */
-  public function createOrUpdatePlace(string $name, float $x, float $y, Place $place = null);
+  public function createOrUpdatePlace(string $name, ?string $location, float $x, float $y, Place $place = null): ?Place;
 
   /**
    * @param Place $place
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deletePlace(Place $place);
+  public function deletePlace(Place $place): bool;
 }

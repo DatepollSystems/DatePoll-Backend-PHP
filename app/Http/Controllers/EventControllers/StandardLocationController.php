@@ -18,28 +18,19 @@ class StandardLocationController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAll() {
+  public function getAll(): JsonResponse {
     $standardLocations = $this->eventStandardLocationRepository->getAllStandardLocationsOrderedByName();
-
-    $toReturn = [];
-    foreach ($standardLocations as $standardLocation) {
-      $standardLocation->view_standard_location = [
-        'href' => 'api/v1/avent/administration/standardLocation/' . $standardLocation->id,
-        'method' => 'GET', ];
-
-      $toReturn[] = $standardLocation;
-    }
 
     return response()->json([
       'msg' => 'List of all standard locations',
-      'standardLocations' => $toReturn, ]);
+      'standardLocations' => $standardLocations, ]);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(int $id) {
+  public function getSingle(int $id): JsonResponse {
     $standardLocation = $this->eventStandardLocationRepository->getStandardLocationById($id);
 
     if ($standardLocation == null) {
@@ -47,10 +38,6 @@ class StandardLocationController extends Controller {
         'msg' => 'Standard location not found',
         'error_code' => 'standard_location_not_found', ], 404);
     }
-
-    $standardLocation->view_standard_locations = [
-      'href' => 'api/v1/avent/administration/standardLocation',
-      'method' => 'GET', ];
 
     return response()->json([
       'msg' => 'Standard location information',
@@ -62,7 +49,7 @@ class StandardLocationController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|min:1|max:190',
       'x' => 'numeric|nullable',
@@ -80,10 +67,6 @@ class StandardLocationController extends Controller {
       return response()->json(['msg' => 'An error occurred during standard decision saving...'], 500);
     }
 
-    $standardLocation->view_standard_location = [
-      'href' => 'api/v1/avent/administration/standardLocation/' . $standardLocation->id,
-      'method' => 'GET', ];
-
     return response()->json([
       'msg' => 'Successful created standard location',
       'standardLocation' => $standardLocation, ], 201);
@@ -93,14 +76,8 @@ class StandardLocationController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function delete(int $id) {
-    /*
-     * Success is an integer because laravel returns the count of deleted objects. If the count is 0 there wasn't a
-     * standard location found with this id and therefore not deleted
-    */
-    $success = $this->eventStandardLocationRepository->deleteStandardLocation($id);
-
-    if ($success == 0) {
+  public function delete(int $id): JsonResponse {
+    if (! $this->eventStandardLocationRepository->deleteStandardLocation($id)) {
       return response()->json(['msg' => 'Standard location not found', 'error_code' => 'standard_location_not_found'], 404);
     }
 

@@ -4,7 +4,9 @@ namespace App\Http\Middleware\Broadcasts;
 
 use App\Repositories\System\Setting\ISettingRepository;
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class BroadcastsFeatureMiddleware {
   protected ISettingRepository $settingRepository;
@@ -16,9 +18,9 @@ class BroadcastsFeatureMiddleware {
   /**
    * @param Request $request
    * @param Closure $next
-   * @return mixed
+   * @return JsonResponse|Response
    */
-  public function handle(Request $request, Closure $next) {
+  public function handle(Request $request, Closure $next): JsonResponse|Response {
     if (! $this->settingRepository->getBroadcastsEnabled()) {
       return response()->json([
         'msg' => 'The broadcast feature is disabled on this DatePoll server',

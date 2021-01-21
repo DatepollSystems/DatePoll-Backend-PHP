@@ -6,7 +6,6 @@ use App\LogTypes;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use stdClass;
 
 /**
  * @property int $id
@@ -17,11 +16,6 @@ use stdClass;
  * @property string $updated_at
  */
 class Log extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'logs';
 
   /**
@@ -35,23 +29,20 @@ class Log extends Model {
     'updated_at', ];
 
   /**
-   * @return BelongsTo | User | null
+   * @return User|BelongsTo|null
    */
-  public function user() {
+  public function user(): User|BelongsTo|null {
     return $this->belongsTo(User::class, 'user_id')
       ->first();
   }
 
+
   /**
-   * @return Log | stdClass
+   * @return array
    */
-  public function getReturnable() {
-    $returnable = $this;
-
-    if ($this->user_id != null) {
-      $returnable->user_name = $this->user()->getName();
-    }
-
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['user_name'] = $this->user()?->getCompleteName();
     return $returnable;
   }
 }

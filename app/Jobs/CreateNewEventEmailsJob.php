@@ -9,10 +9,10 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Utils\MailHelper;
 use DateInterval;
 use DateTime;
 use Exception;
-use Illuminate\Support\Facades\Queue;
 
 /**
  * Class SendEmailJob
@@ -24,34 +24,18 @@ use Illuminate\Support\Facades\Queue;
  * @property ISettingRepository $settingRepository
  */
 class CreateNewEventEmailsJob extends Job {
-  private Event $event;
-  private IEventRepository $eventRepository;
-  private IEventDateRepository $eventDateRepository;
-  private IUserSettingRepository $userSettingRepository;
-  private ISettingRepository $settingRepository;
-
   /**
-   * Create a new job instance.
-   *
    * @param Event $event
    * @param IEventRepository $eventRepository
-   * @param IEventDateRepository $eventDateRepository
    * @param IUserSettingRepository $userSettingRepository
    * @param ISettingRepository $settingRepository
    */
   public function __construct(
-    Event $event,
-    IEventRepository $eventRepository,
-    IEventDateRepository $eventDateRepository,
-    IUserSettingRepository $userSettingRepository,
-    ISettingRepository $settingRepository
-  ) {
-    $this->event = $event;
-    $this->eventRepository = $eventRepository;
-    $this->eventDateRepository = $eventDateRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->settingRepository = $settingRepository;
-  }
+    private Event $event,
+    private IEventRepository $eventRepository,
+    private IUserSettingRepository $userSettingRepository,
+    private ISettingRepository $settingRepository
+  ) {  }
 
   /**
    * Execute the job.
@@ -69,12 +53,11 @@ class CreateNewEventEmailsJob extends Job {
 
       if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && ! $user->information_denied && $user->activated) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
-        Queue::later($time, new SendEmailJob(new NewEvent(
+        MailHelper::sendDelayedEmailOnLowQueue(new NewEvent(
           $user->firstname,
           $this->event,
-          $this->eventDateRepository,
           $this->settingRepository
-        ), $user->getEmailAddresses()), null, 'low');
+        ), $user->getEmailAddresses(), $time);
       }
     }
   }

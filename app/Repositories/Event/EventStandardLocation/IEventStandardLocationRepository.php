@@ -3,32 +3,31 @@
 namespace App\Repositories\Event\EventStandardLocation;
 
 use App\Models\Events\EventStandardLocation;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IEventStandardLocationRepository {
   /**
-   * @return Collection<EventStandardLocation>
+   * @return EventStandardLocation[]
    */
-  public function getAllStandardLocationsOrderedByName();
+  public function getAllStandardLocationsOrderedByName(): array;
 
   /**
    * @param int $id
    * @return EventStandardLocation | null
    */
-  public function getStandardLocationById(int $id);
+  public function getStandardLocationById(int $id): ?EventStandardLocation;
 
   /**
    * @param string $name
-   * @param string $location
-   * @param double $x
-   * @param double $y
+   * @param string|null $location
+   * @param string|null $x
+   * @param string|null $y
    * @return EventStandardLocation|null
    */
-  public function createStandardLocation($name, $location, $x, $y);
+  public function createStandardLocation(string $name, ?string $location, ?string $x, ?string $y): ?EventStandardLocation;
 
   /**
-   * @param int $id
-   * @return int
+   * @param int $standardLocationId
+   * @return bool
    */
-  public function deleteStandardLocation(int $id);
+  public function deleteStandardLocation(int $standardLocationId): bool;
 }

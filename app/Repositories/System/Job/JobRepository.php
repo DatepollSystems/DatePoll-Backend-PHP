@@ -2,10 +2,14 @@
 
 namespace App\Repositories\System\Job;
 
+use App\Jobs\Job;
 use Illuminate\Support\Facades\DB;
 
 class JobRepository implements IJobRepository {
-  public function getUndoneJobs() {
-    return DB::table('jobs')->orderBy('failed_at', 'DESC')->get();
+  /**
+   * @return Job[]
+   */
+  public function getUndoneJobs(): array {
+    return DB::table('jobs')->orderBy('failed_at', 'DESC')->get()->all();
   }
 }

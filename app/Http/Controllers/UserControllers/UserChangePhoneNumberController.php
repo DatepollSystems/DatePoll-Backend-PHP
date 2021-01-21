@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\UserControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Models\User\UserTelephoneNumber;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserChangePhoneNumberController extends Controller {
@@ -17,11 +17,11 @@ class UserChangePhoneNumberController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function addPhoneNumber(Request $request) {
+  public function addPhoneNumber(AuthenticatedRequest $request): JsonResponse {
     $this->validate(
       $request,
       ['label' => 'required|string|min:1|max:190', 'number' => 'required|string|min:1|max:190']
@@ -50,11 +50,11 @@ class UserChangePhoneNumberController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function removePhoneNumber(Request $request, int $id) {
+  public function removePhoneNumber(AuthenticatedRequest $request, int $id): JsonResponse {
     $phoneNumber = UserTelephoneNumber::find($id);
     if ($phoneNumber == null) {
       return response()->json(['msg' => 'Phone number not found', 'error_code' => 'phone_number_not_found'], 404);

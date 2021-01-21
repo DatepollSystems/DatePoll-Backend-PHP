@@ -19,14 +19,10 @@ class CreateMoviesTable extends Migration {
       $table->string('posterLink', '512')->nullable(true);
 
       $table->integer('bookedTickets')->nullable(false)->default(0);
+      $table->integer('maximalTickets')->nullable(false)->default(20);
 
-      $table->integer('movie_year_id')->unsigned();
       $table->integer('worker_id')->unsigned()->nullable(true);
       $table->integer('emergency_worker_id')->unsigned()->nullable(true);
-
-      $table->foreign('movie_year_id')
-        ->references('id')->on('movie_years')
-        ->onDelete('cascade');
 
       $table->foreign('worker_id')
         ->references('id')->on('users');

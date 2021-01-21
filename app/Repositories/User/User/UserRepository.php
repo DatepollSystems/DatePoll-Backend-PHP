@@ -2,74 +2,49 @@
 
 namespace App\Repositories\User\User;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\ActivateUser;
-use App\Models\User\DeletedUser;
 use App\Models\User\User;
-use App\Models\User\UserCode;
 use App\Models\User\UserEmailAddress;
 use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
-use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
-use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
-use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Utils\Converter;
+use App\Utils\Generator;
+use App\Utils\MailHelper;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
 
 class UserRepository implements IUserRepository {
-  protected $settingRepository = null;
-  protected $userSettingRepository = null;
-  protected $userChangeRepository = null;
-  protected $eventRepository = null;
-  protected $broadcastRepository = null;
 
   public function __construct(
-    ISettingRepository $settingRepository,
-    IUserSettingRepository $userSettingRepository,
-    IEventRepository $eventRepository,
-    IBroadcastRepository $broadcastRepository,
-    IUserChangeRepository $userChangeRepository
+    protected ISettingRepository $settingRepository,
+    protected IUserChangeRepository $userChangeRepository
   ) {
-    $this->settingRepository = $settingRepository;
-    $this->userSettingRepository = $userSettingRepository;
-    $this->eventRepository = $eventRepository;
-    $this->broadcastRepository = $broadcastRepository;
-    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
-   * @return User[]|Collection
+   * @return User[]
    */
-  public function getAllUsers() {
-    return User::all();
+  public function getAllUsers(): array {
+    return User::all()->all();
   }
 
   /**
-   * @return DeletedUser[]|Collection
+   * @return User[]
    */
-  public function getDeletedUsers() {
-    return DeletedUser::all();
-  }
-
-  /**
-   * @return User[]|Collection
-   */
-  public function getAllUsersOrderedBySurname() {
+  public function getAllUsersOrderedBySurname(): array {
     return User::orderBy('surname')
-      ->get();
+      ->get()->all();
   }
 
   /**
    * @param int $id
    * @return User|null
    */
-  public function getUserById(int $id) {
+  public function getUserById(int $id): ?User {
     return User::find($id);
   }
 
@@ -77,7 +52,7 @@ class UserRepository implements IUserRepository {
    * @param string $username
    * @return User|null
    */
-  public function getUserByUsername(string $username) {
+  public function getUserByUsername(string $username): ?User {
     return User::where('username', $username)
       ->first();
   }
@@ -97,37 +72,37 @@ class UserRepository implements IUserRepository {
    * @param string $activity
    * @param array $phoneNumbers
    * @param string[] $emailAddresses
-   * @param string $memberNumber
-   * @param string $internalComment
+   * @param string|null $memberNumber
+   * @param string|null $internalComment
    * @param bool $informationDenied
-   * @param string $bvMember
+   * @param string|null $bvMember
    * @param int $editorId
    * @param User|null $user
    * @return User|null
    * @throws Exception
    */
   public function createOrUpdateUser(
-    $title,
-    $username,
-    $firstname,
-    $surname,
-    $birthday,
-    $joinDate,
-    $streetname,
-    $streetnumber,
-    $zipcode,
-    $location,
-    $activated,
-    $activity,
-    $phoneNumbers,
-    $emailAddresses,
-    $memberNumber,
-    $internalComment,
-    $informationDenied,
-    $bvMember,
+    ?string $title,
+    string $username,
+    string $firstname,
+    string $surname,
+    string $birthday,
+    string $joinDate,
+    string $streetname,
+    string $streetnumber,
+    int $zipcode,
+    string $location,
+    bool $activated,
+    string $activity,
+    array $phoneNumbers,
+    array $emailAddresses,
+    ?string $memberNumber,
+    ?string $internalComment,
+    ?bool $informationDenied,
+    ?string $bvMember,
     int $editorId,
     User $user = null
-  ) {
+  ): ?User {
     if ($bvMember == null) {
       $bvMember = '';
     }
@@ -149,7 +124,7 @@ class UserRepository implements IUserRepository {
         'member_number' => $memberNumber,
         'internal_comment' => $internalComment,
         'bv_member' => $bvMember,
-        'password' => 'Null', ]);
+        'password' => 'Null',]);
 
       if (! $user->save()) {
         Logging::error('createOrUpdateUser', 'Could not save user into database!');
@@ -168,30 +143,12 @@ class UserRepository implements IUserRepository {
       $this->userChangeRepository->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
       $this->userChangeRepository->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
       $this->userChangeRepository->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
-      $this->userChangeRepository->checkForPropertyChange(
-        'internal_comment',
-        $user->id,
-        $editorId,
-        $internalComment,
-        $user->internal_comment
-      );
+      $this->userChangeRepository->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment, $user->internal_comment);
       $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
-      // Don't use checkForPropertyChange function because these values aren't strings
-      if ($user->zipcode != $zipcode) {
-        $this->userChangeRepository->createUserChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
-      }
-      if ($user->activated != $activated) {
-        $this->userChangeRepository->createUserChange('activated', $user->id, $editorId, $activated, $user->activated);
-      }
-      if ($user->information_denied != $informationDenied) {
-        $this->userChangeRepository->createUserChange(
-          'informationDenied',
-          $user->id,
-          $editorId,
-          $informationDenied,
-          $user->information_denied
-        );
-      }
+      $this->userChangeRepository->checkForPropertyChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
+      $this->userChangeRepository->checkForPropertyChange('activated', $user->id, $editorId, $activated, $user->activated);
+      $this->userChangeRepository->checkForPropertyChange('informationDenied', $user->id, $editorId, $informationDenied, $user->information_denied);
+
 
       $user->username = $username;
       $user->title = $title;
@@ -229,11 +186,10 @@ class UserRepository implements IUserRepository {
     //----Phone numbers manager only deletes changed phone numbers---
     $phoneNumbersWhichHaveNotBeenDeleted = [];
 
-    $OldPhoneNumbers = $user->telephoneNumbers();
-    foreach ($OldPhoneNumbers as $oldPhoneNumber) {
+    foreach ($user->telephoneNumbers() as $oldPhoneNumber) {
       $toDelete = true;
 
-      foreach ((array)$phoneNumbers as $phoneNumber) {
+      foreach ($phoneNumbers as $phoneNumber) {
         if ($oldPhoneNumber['label'] == $phoneNumber['label'] and $oldPhoneNumber['number'] == $phoneNumber['number']) {
           $toDelete = false;
           $phoneNumbersWhichHaveNotBeenDeleted[] = $phoneNumber;
@@ -252,7 +208,7 @@ class UserRepository implements IUserRepository {
       }
     }
 
-    foreach ((array)$phoneNumbers as $phoneNumber) {
+    foreach ($phoneNumbers as $phoneNumber) {
       $toAdd = true;
 
       foreach ($phoneNumbersWhichHaveNotBeenDeleted as $phoneNumberWhichHasNotBeenDeleted) {
@@ -266,7 +222,7 @@ class UserRepository implements IUserRepository {
         $phoneNumberToSave = new UserTelephoneNumber([
           'label' => $phoneNumber['label'],
           'number' => $phoneNumber['number'],
-          'user_id' => $user->id, ]);
+          'user_id' => $user->id,]);
 
         if (! $phoneNumberToSave->save()) {
           Logging::error('createOrUpdateUser', 'Could not save phoneNumberToSave');
@@ -286,10 +242,10 @@ class UserRepository implements IUserRepository {
    * @param User $user
    * @param string[] $emailAddresses
    * @param int $editorId
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function updateUserEmailAddresses(User $user, $emailAddresses, int $editorId) {
+  public function updateUserEmailAddresses(User $user, array $emailAddresses, int $editorId): bool {
     $emailAddressesWhichHaveNotBeenDeleted = [];
 
     $OldEmailAddresses = $user->emailAddresses();
@@ -309,7 +265,7 @@ class UserRepository implements IUserRepository {
         if (! $oldEmailAddress->delete()) {
           Logging::error('updateUserEmailAddresses', 'Could not delete emailAddressToDeleteObject');
 
-          return null;
+          return false;
         }
       }
     }
@@ -327,12 +283,12 @@ class UserRepository implements IUserRepository {
       if ($toAdd) {
         $emailAddressToSave = new UserEmailAddress([
           'email' => $emailAddress,
-          'user_id' => $user->id, ]);
+          'user_id' => $user->id,]);
 
         if (! $emailAddressToSave->save()) {
           Logging::error('updateUserEmailAddresses', 'Could not save $emailAddressToSave');
 
-          return null;
+          return false;
         }
         $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, $emailAddress, null);
       }
@@ -342,15 +298,14 @@ class UserRepository implements IUserRepository {
   }
 
   /**
-   * @param array $permissions
+   * @param string[]|array $permissions
    * @param User $user
    * @return bool
    */
-  public function createOrUpdatePermissionsForUser($permissions, User $user) {
+  public function createOrUpdatePermissionsForUser(array $permissions, User $user): bool {
     $permissionsWhichHaveNotBeenDeleted = [];
 
-    $OldPermissions = $user->permissions();
-    foreach ($OldPermissions as $oldPermission) {
+    foreach ($user->getPermissions() as $oldPermission) {
       $toDelete = true;
 
       foreach ((array)$permissions as $permission) {
@@ -374,10 +329,7 @@ class UserRepository implements IUserRepository {
       }
     }
 
-    if ($permissions == null) {
-      return true;
-    }
-    foreach ((array)$permissions as $permission) {
+    foreach ($permissions as $permission) {
       $toAdd = true;
 
       foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
@@ -390,7 +342,7 @@ class UserRepository implements IUserRepository {
       if ($toAdd) {
         $permissionToSave = new UserPermission([
           'permission' => $permission,
-          'user_id' => $user->id, ]);
+          'user_id' => $user->id,]);
         if (! $permissionToSave->save()) {
           Logging::error(
             'createOrUpdatePermissionsForUser',
@@ -408,57 +360,25 @@ class UserRepository implements IUserRepository {
   /**
    * @param User $user
    */
-  public function activateUser(User $user) {
-    $randomPassword = UserCode::generateCode();
-    $user->password = app('hash')->make($randomPassword . $user->id);
-    ;
+  public function activateUser(User $user): void {
+    $randomPassword = Generator::getRandom6DigitNumber();
+    $user->password = Hash::make($randomPassword . $user->id);
     $user->force_password_change = true;
     $user->activated = true;
     $user->save();
 
-    dispatch(new SendEmailJob(new ActivateUser(
-      $user->getName(),
+    MailHelper::sendEmailOnLowQueue(new ActivateUser(
+      $user->getCompleteName(),
       $user->username,
-      $randomPassword,
+      Converter::integerToString($randomPassword),
       $this->settingRepository
-    ), $user->getEmailAddresses()))->onQueue('low');
-  }
-
-  /**
-   * @param User $user
-   * @return bool|null
-   */
-  public function deleteUser(User $user) {
-    $deletedUser = new DeletedUser([
-      'firstname' => $user->firstname,
-      'surname' => $user->surname,
-      'join_date' => $user->join_date,
-      'internal_comment' => $user->internal_comment, ]);
-
-    if ($deletedUser->save()) {
-      try {
-        return $user->delete();
-      } catch (Exception $e) {
-        Logging::error('deleteUser', 'Exception: ' . $e->getMessage());
-
-        return false;
-      }
-    } else {
-      Logging::error('deleteUser', 'Could not create deleted user - : ' . $user->id);
-
-      return false;
-    }
-  }
-
-  public function deleteAllDeletedUsers() {
-    DB::table('users_deleted')
-      ->delete();
+    ), $user->getEmailAddresses());
   }
 
   /**
    * @return array
    */
-  public function exportAllUsers() {
+  public function exportAllUsers(): array {
     $toReturnUsers = [];
 
     $users = $this->getAllUsersOrderedBySurname();
@@ -514,12 +434,12 @@ class UserRepository implements IUserRepository {
         }
 
         $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
-          ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
+            ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 
       $performanceBadgeForUser = '';
-      foreach ($user->performanceBadges() as $performanceBadge) {
+      foreach ($user->getPerformanceBadges() as $performanceBadge) {
         $performanceBadgeForUser .= $performanceBadge->instrument()->name . ': ' . $performanceBadge->performanceBadge()->name;
         if ($performanceBadge->date != '1970-01-01') {
           $performanceBadgeForUser .= ' am ' . $performanceBadge->date;
@@ -538,20 +458,20 @@ class UserRepository implements IUserRepository {
   }
 
   /**
-   * @return Collection<User>|null
+   * @return User[]
    */
-  public function getAllNotActivatedUsers() {
+  public function getAllNotActivatedUsers(): array {
     return User::where('activated', 0)
-      ->get();
+      ->get()->all();
   }
 
   /**
    * @param User $user
-   * @param string $notHashedPassword
+   * @param string $password
    * @return bool
    */
-  public function changePasswordOfUser(User $user, string $notHashedPassword) {
-    $user->password = app('hash')->make($notHashedPassword . $user->id);
+  public function changePasswordOfUser(User $user, string $password): bool {
+    $user->password = Hash::make($password . $user->id);
 
     return $user->save();
   }
@@ -561,91 +481,15 @@ class UserRepository implements IUserRepository {
    * @param string $password
    * @return bool
    */
-  public function checkPasswordOfUser(User $user, string $password) {
+  public function checkPasswordOfUser(User $user, string $password): bool {
+    if (Hash::needsRehash($user->password)) {
+      if (! $this->changePasswordOfUser($user, $password)) {
+        Logging::error('checkPasswordOfUser', 'Password need rehash. Could not change password.');
+
+        return false;
+      }
+    }
+
     return Hash::check($password . $user->id, $user->password);
-  }
-
-  /**
-   * @param User $user
-   * @return array
-   */
-  public function getHomepageDataForUser(User $user) {
-    $bookingsToShow = [];
-    if ($this->settingRepository->getCinemaEnabled()) {
-      $bookings = $user->moviesBookings();
-      foreach ($bookings as $booking) {
-        $movie = $booking->movie();
-
-        if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
-          $bookingToShow = new stdClass();
-          $bookingToShow->movie_id = $movie->id;
-          $bookingToShow->movie_name = $movie->name;
-          $bookingToShow->movie_date = $movie->date;
-          $bookingToShow->amount = $booking->amount;
-
-          if ($movie->worker() == null) {
-            $bookingToShow->worker_id = null;
-            $bookingToShow->worker_name = null;
-          } else {
-            $bookingToShow->worker_id = $movie->worker()->id;
-            $bookingToShow->worker_name = $movie->worker()->firstname . ' ' . $movie->worker()->surname;
-          }
-
-          if ($movie->emergencyWorker() == null) {
-            $bookingToShow->emergency_worker_id = null;
-            $bookingToShow->emergency_worker_name = null;
-          } else {
-            $bookingToShow->emergency_worker_id = $movie->emergencyWorker()->id;
-            $bookingToShow->emergency_worker_name = $movie->emergencyWorker()->firstname . ' ' . $movie->emergencyWorker()->surname;
-          }
-
-          $bookingsToShow[] = $bookingToShow;
-        }
-      }
-    }
-
-    $eventsToShow = [];
-    if ($this->settingRepository->getEventsEnabled()) {
-      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
-    }
-
-    $broadcastsToShow = [];
-    if ($this->settingRepository->getBroadcastsEnabled()) {
-      $broadcasts = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
-      foreach ($broadcasts as $broadcast) {
-        $broadcastsToShow[] = $this->broadcastRepository->getBroadcastReturnable($broadcast);
-      }
-    }
-
-    $users = $this->getAllUsers();
-    $birthdaysToShow = [];
-    foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
-        $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
-        $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
-        if ($remTimeDate < date('m-d', strtotime($user->birthday)) && date(
-          'm-d',
-          strtotime($user->birthday)
-        ) < $addTimeDate) {
-          $birthdayToShow = new stdClass();
-
-          $birthdayToShow->name = $user->getName();
-          $birthdayToShow->date = $user->birthday;
-
-          $birthdaysToShow[] = $birthdayToShow;
-        }
-      }
-    }
-
-    usort($birthdaysToShow, function ($a, $b) {
-      return strcmp(date('m-d', strtotime($a->date)), date('m-d', strtotime($b->date)));
-    });
-
-    return [
-      'msg' => 'List of your bookings, events, broadcasts and birthdays in the next month',
-      'events' => $eventsToShow,
-      'bookings' => $bookingsToShow,
-      'broadcasts' => $broadcastsToShow,
-      'birthdays' => $birthdaysToShow, ];
   }
 }

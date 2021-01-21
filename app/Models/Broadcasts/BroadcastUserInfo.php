@@ -17,11 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property User $user
  */
 class BroadcastUserInfo extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'broadcasts_users_info';
 
   /**
@@ -37,14 +32,23 @@ class BroadcastUserInfo extends Model {
   /**
    * @return BelongsTo | Broadcast
    */
-  public function broadcast() {
-    return $this->belongsTo('App\Models\Broadcasts\Broadcast')->first();
+  public function broadcast(): BelongsTo|Broadcast {
+    return $this->belongsTo(Broadcast::class)->first();
   }
 
   /**
    * @return BelongsTo | User
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)->first();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['user_name'] = $this->user()->getCompleteName();
+    return $returnable;
   }
 }

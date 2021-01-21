@@ -25,14 +25,14 @@ class UsersMemberOfSubgroups extends Model {
   /**
    * @return BelongsTo | Subgroup
    */
-  public function subgroup() {
-    return $this->belongsTo('App\Models\Subgroups\Subgroup')->first();
+  public function subgroup(): BelongsTo|Subgroup {
+    return $this->belongsTo(Subgroup::class)->first();
   }
 
   /**
    * @return BelongsTo | User
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)->first();
   }
 }

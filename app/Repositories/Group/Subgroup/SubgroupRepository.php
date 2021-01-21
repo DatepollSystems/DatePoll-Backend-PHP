@@ -6,23 +6,21 @@ use App\Logging;
 use App\Models\Subgroups\Subgroup;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
-use stdClass;
 
 class SubgroupRepository implements ISubgroupRepository {
   /**
-   * @return Subgroup[] | Collection<Subgroup>
+   * @return Subgroup[]
    */
-  public function getAllSubgroupsOrdered() {
+  public function getAllSubgroupsOrdered(): array {
     return Subgroup::orderBy('orderN')
-      ->get();
+      ->get()->all();
   }
 
   /**
    * @param int $id
    * @return Subgroup|null
    */
-  public function getSubgroupById($id) {
+  public function getSubgroupById(int $id): ?Subgroup {
     return Subgroup::find($id);
   }
 
@@ -30,11 +28,11 @@ class SubgroupRepository implements ISubgroupRepository {
    * @param string $name
    * @param string $description
    * @param int $groupId
-   * @param int $orderN
+   * @param int|null $orderN
    * @param Subgroup|null $subgroup
    * @return Subgroup|null
    */
-  public function createOrUpdateSubgroup($name, $description, $groupId, $orderN, $subgroup = null) {
+  public function createOrUpdateSubgroup(string $name, string $description, int $groupId, ?int $orderN = null, ?Subgroup $subgroup = null): ?Subgroup {
     if ($subgroup == null) {
       $subgroup = new Subgroup([
         'name' => $name,
@@ -45,9 +43,10 @@ class SubgroupRepository implements ISubgroupRepository {
       $subgroup->name = $name;
       $subgroup->description = $description;
       $subgroup->group_id = $groupId;
-      $subgroup->orderN = $orderN;
       if ($orderN == null) {
         $subgroup->orderN = 0;
+      } else {
+        $subgroup->orderN = $orderN;
       }
     }
 
@@ -65,7 +64,7 @@ class SubgroupRepository implements ISubgroupRepository {
    * @return boolean
    * @throws Exception
    */
-  public function deleteSubgroup($subgroup) {
+  public function deleteSubgroup(Subgroup $subgroup): bool {
     return $subgroup->delete();
   }
 
@@ -74,7 +73,7 @@ class SubgroupRepository implements ISubgroupRepository {
    * @param int $userId
    * @return UsersMemberOfSubgroups|null
    */
-  public function getUserMemberOfSubgroupBySubgroupIdAndUserId($subgroupId, $userId) {
+  public function getUserMemberOfSubgroupBySubgroupIdAndUserId(int $subgroupId, int $userId): ?UsersMemberOfSubgroups {
     return UsersMemberOfSubgroups::where('user_id', $userId)
       ->where('subgroup_id', $subgroupId)
       ->first();
@@ -83,11 +82,11 @@ class SubgroupRepository implements ISubgroupRepository {
   /**
    * @param int $subgroupId
    * @param int $userId
-   * @param string $role
+   * @param string|null $role
    * @param UsersMemberOfSubgroups|null $userMemberOfSubgroup
    * @return UsersMemberOfSubgroups|null
    */
-  public function createOrUpdateUserMemberOfSubgroup($subgroupId, $userId, $role, $userMemberOfSubgroup = null) {
+  public function createOrUpdateUserMemberOfSubgroup(int $subgroupId, int $userId, ?string $role = null, ?UsersMemberOfSubgroups $userMemberOfSubgroup = null): ?UsersMemberOfSubgroups {
     if ($userMemberOfSubgroup == null) {
       $userMemberOfSubgroup = new UsersMemberOfSubgroups([
         'user_id' => $userId,
@@ -109,15 +108,14 @@ class SubgroupRepository implements ISubgroupRepository {
   /**
    * @param int $userId
    * @param int $groupId
-   * @return array|UsersMemberOfSubgroups[]
+   * @return UsersMemberOfSubgroups[]
    */
-  public function getUserMemberOfSubgroupsAndInGroups($userId, $groupId) {
+  public function getUserMemberOfSubgroupsAndInGroups(int $userId, int $groupId): array {
     $userMemberOfSubgroups = [];
-    $userMemberOfSubgroupsS = UsersMemberOfSubgroups::where('user_id', $userId)
-      ->get();
-    foreach ($userMemberOfSubgroupsS as $userMemberOfSubgroupI) {
-      if ($userMemberOfSubgroupI->subgroup()->group_id = $groupId) {
-        $userMemberOfSubgroups[] = $userMemberOfSubgroupI;
+    foreach (UsersMemberOfSubgroups::where('user_id', $userId)
+      ->get()->all() as $userMemberOfSubgroup) {
+      if ($userMemberOfSubgroup->subgroup()->group_id = $groupId) {
+        $userMemberOfSubgroups[] = $userMemberOfSubgroup;
       }
     }
 
@@ -129,20 +127,18 @@ class SubgroupRepository implements ISubgroupRepository {
    * @return boolean
    * @throws Exception
    */
-  public function removeSubgroupForUser($userMemberOfSubgroup) {
+  public function removeSubgroupForUser(UsersMemberOfSubgroups $userMemberOfSubgroup): bool {
     return $userMemberOfSubgroup->delete();
   }
 
   /**
    * @param int $userId
-   * @return stdClass[]|Subgroup[]
+   * @return Subgroup[]
    */
-  public function getJoinedSubgroupsReturnableByUserId($userId) {
+  public function getJoinedSubgroupsReturnableByUserId(int $userId): array {
     $subgroupsToReturn = [];
-    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userId)
-      ->get();
-
-    foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
+    foreach (UsersMemberOfSubgroups::where('user_id', $userId)
+      ->get()->all() as $userMemberOfSubgroup) {
       $subgroup = $userMemberOfSubgroup->subgroup();
 
       $subgroup['group_name'] = $subgroup->group()->name;
@@ -155,16 +151,14 @@ class SubgroupRepository implements ISubgroupRepository {
 
   /**
    * @param int $userId
-   * @return stdClass[]|Subgroup[]
+   * @return Subgroup[]
    */
-  public function getFreeSubgroupsReturnableByUserId($userId) {
-    $allSubgroups = $this->getAllSubgroupsOrdered();
+  public function getFreeSubgroupsReturnableByUserId(int $userId): array {
     $subgroupsToReturn = [];
-    $userMemberOfSubgroups = UsersMemberOfSubgroups::where('user_id', $userId)
-      ->get();
-    foreach ($allSubgroups as $subgroup) {
+    foreach ($this->getAllSubgroupsOrdered() as $subgroup) {
       $isInSubgroup = false;
-      foreach ($userMemberOfSubgroups as $userMemberOfSubgroup) {
+      foreach (UsersMemberOfSubgroups::where('user_id', $userId)
+        ->get()->all() as $userMemberOfSubgroup) {
         if ($userMemberOfSubgroup->subgroup_id == $subgroup->id) {
           $isInSubgroup = true;
           break;

@@ -10,14 +10,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $afterYears
  * @property string $created_at
  * @property string $updated_at
- * @property UserHavePerformanceBadgeWithInstrument[] $userHavePerformanceBadgeWithInstrument
  */
 class Badge extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'badges';
 
   /**

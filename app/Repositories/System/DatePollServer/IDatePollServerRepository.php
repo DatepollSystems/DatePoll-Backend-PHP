@@ -8,5 +8,5 @@ interface IDatePollServerRepository {
   /**
    * @return stdClass
    */
-  public function getServerInfo();
+  public function getServerInfo(): stdClass;
 }

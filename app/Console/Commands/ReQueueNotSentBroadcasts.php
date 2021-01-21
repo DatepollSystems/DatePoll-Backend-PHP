@@ -1,18 +1,15 @@
 <?php namespace App\Console\Commands;
 
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
+use App\Utils\Converter;
 use Exception;
 
 class ReQueueNotSentBroadcasts extends ACommand {
-  protected IBroadcastRepository $broadcastRepository;
-
   protected $signature = 'requeue-broadcast';
   protected $description = 'Adds not sent broadcasts to queue again. (after accidentally restarting the docker network during email sending)';
 
-  public function __construct(IBroadcastRepository $broadcastRepository) {
+  public function __construct(private IBroadcastRepository $broadcastRepository) {
     parent::__construct();
-
-    $this->broadcastRepository = $broadcastRepository;
   }
 
   /**
@@ -20,7 +17,7 @@ class ReQueueNotSentBroadcasts extends ACommand {
    * @throws Exception
    */
   public function handle() {
-    $broadcastId = (int)$this->askStringQuestion('Please enter a broadcast id', null);
+    $broadcastId = Converter::stringToInteger($this->askStringQuestion('Please enter a broadcast id', null));
 
     $broadcast = $this->broadcastRepository->getBroadcastById($broadcastId);
     if ($broadcast == null) {

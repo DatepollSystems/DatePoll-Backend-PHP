@@ -13,15 +13,22 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $updated_at
  */
 class EventStandardDecision extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events_standard_decisions';
+
+  protected $hidden = ['showInCalendar'];
 
   /**
    * @var array
    */
   protected $fillable = ['decision', 'showInCalendar', 'color', 'created_at', 'updated_at'];
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['show_in_calendar'] = $this->showInCalendar;
+
+    return $returnable;
+  }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\UserControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
@@ -18,10 +18,10 @@ class UserTokenController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getCalendarToken(Request $request) {
+  public function getCalendarToken(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
     $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
@@ -40,11 +40,11 @@ class UserTokenController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws Exception
    */
-  public function resetCalendarToken(Request $request) {
+  public function resetCalendarToken(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
     $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
@@ -59,10 +59,10 @@ class UserTokenController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getAllSessions(Request $request) {
+  public function getAllSessions(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
     $sessionsToReturn = [];
@@ -81,11 +81,11 @@ class UserTokenController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function logoutCurrentSession(Request $request) {
+  public function logoutCurrentSession(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, ['session_token' => 'required']);
 
     $user = $request->auth;
@@ -107,11 +107,11 @@ class UserTokenController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function removeSession(Request $request, int $id) {
+  public function removeSession(AuthenticatedRequest $request, int $id): JsonResponse {
     $user = $request->auth;
 
     $session = $this->userTokenRepository->getUserTokenByIdAndUserAndPurpose($id, $user, 'stayLoggedIn');

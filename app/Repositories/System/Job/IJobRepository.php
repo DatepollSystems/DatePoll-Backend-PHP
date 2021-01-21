@@ -2,11 +2,11 @@
 
 namespace App\Repositories\System\Job;
 
-use Illuminate\Support\Collection;
+use App\Jobs\Job;
 
 interface IJobRepository {
   /**
-   * @return Collection
+   * @return Job[]
    */
-  public function getUndoneJobs();
+  public function getUndoneJobs(): array;
 }

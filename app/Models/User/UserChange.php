@@ -4,7 +4,6 @@ namespace App\Models\User;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use stdClass;
 
 /**
  * @property int $id
@@ -36,7 +35,7 @@ class UserChange extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function user() {
+  public function user(): BelongsTo|User {
     return $this->belongsTo(User::class, 'user_id')
       ->first();
   }
@@ -44,19 +43,18 @@ class UserChange extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function editor() {
+  public function editor(): BelongsTo|User {
     return $this->belongsTo(User::class, 'editor_id')
       ->first();
   }
 
   /**
-   * @return UserChange | stdClass
+   * @return array
    */
-  public function getReturnable() {
-    $dto = $this;
-    $dto->editor_name = $this->editor()->getName();
-    $dto->user_name = $this->user()->getName();
-
-    return $dto;
+  public function toArray(): array {
+    $returnable =  parent::toArray();
+    $returnable['editor_name'] = $this->editor()->getCompleteName();
+    $returnable['user_name'] = $this->user()->getCompleteName();
+    return $returnable;
   }
 }

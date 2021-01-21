@@ -3,7 +3,6 @@
 namespace App\Models\Broadcasts;
 
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,13 +22,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property BroadcastAttachment[] $broadcastAttachment
  */
 class Broadcast extends Model {
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'broadcasts';
+
+  // Hide it and manual add for_everyone in toArray()
+  protected $hidden = ['forEveryone', 'bodyHTML'];
 
   /**
    * @var array
@@ -41,44 +37,100 @@ class Broadcast extends Model {
     'writer_user_id',
     'forEveryone',
     'created_at',
-    'updated_at', ];
+    'updated_at',];
 
   /**
    * @return BelongsTo | User
    */
-  public function writer() {
-    return $this->belongsTo('App\Models\User\User', 'writer_user_id')->first();
+  public function writer(): BelongsTo|User {
+    return $this->belongsTo(User::class, 'writer_user_id')->first();
   }
 
   /**
-   * @return Collection | BroadcastForGroup[] | null
+   * @return BroadcastForGroup[]
    */
-  public function broadcastsForGroups() {
-    return $this->hasMany('App\Models\Broadcasts\BroadcastForGroup')
-      ->get();
+  public function broadcastsForGroups(): array {
+    return $this->hasMany(BroadcastForGroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | BroadcastForSubgroup[] | null
+   * @return BroadcastForSubgroup[]
    */
-  public function broadcastsForSubgroups() {
-    return $this->hasMany('App\Models\Broadcasts\BroadcastForSubgroup')
-      ->get();
+  public function broadcastsForSubgroups(): array {
+    return $this->hasMany(BroadcastForSubgroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | BroadcastUserInfo[] | null
+   * @return BroadcastUserInfo[]
    */
-  public function usersInfo() {
-    return $this->hasMany('App\Models\Broadcasts\BroadcastUserInfo')
-      ->get();
+  public function usersInfo(): array {
+    return $this->hasMany(BroadcastUserInfo::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | BroadcastAttachment[] | null
+   * @return BroadcastAttachment[]
    */
-  public function attachments() {
+  public function attachments(): array {
     return $this->hasMany(BroadcastAttachment::class)
-      ->get();
+      ->get()->all();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+
+    $returnable['writer_name'] = $this->writer()->getCompleteName();
+    $returnable['for_everyone'] = $this->forEveryone;
+
+    $toReturnGroups = [];
+    foreach ($this->broadcastsForGroups() as $group) {
+      $group = $group->group();
+      $toReturnGroups[] = [
+        'id' => $group->id,
+        'name' => $group->name
+      ];;
+    }
+    $returnable['groups'] = $toReturnGroups;
+
+    $toReturnSubgroups = [];
+    foreach ($this->broadcastsForSubgroups() as $subgroup) {
+      $subgroup = $subgroup->subgroup();
+      $toReturnSubgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'group_id' => $subgroup->group_id,
+                              'group_name' => $subgroup->group()->name];
+    }
+    $returnable['subgroups'] = $toReturnSubgroups;
+
+    $toReturnAttachments = [];
+    foreach ($this->attachments() as $attachment) {
+      $toReturnAttachments[] = $attachment;
+    }
+    $returnable['attachments'] = $toReturnAttachments;
+
+    return $returnable;
+  }
+
+  /**
+   * @return array
+   */
+  public function toArrayWithBodyHTML(): array {
+    $returnable = $this::toArray();
+    $returnable['bodyHTML'] = $this->bodyHTML;
+    return $returnable;
+  }
+
+  /**
+   * @return array
+   */
+  public function toArrayWithBodyHTMLAndUserInfo(): array {
+    $returnable = $this::toArrayWithBodyHTML();
+    $returnable['users_info'] = BroadcastUserInfo::where('broadcast_id', '=', $this->id)
+      ->orderBy('sent')
+      ->get()->all();
+    return $returnable;
   }
 }

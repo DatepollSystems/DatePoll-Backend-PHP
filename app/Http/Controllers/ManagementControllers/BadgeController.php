@@ -230,7 +230,7 @@ class BadgeController extends Controller {
 
     $cacheKey = 'year.badges.' . $year;
 
-    if (Cache::has($cacheKey) && false) {
+    if (Cache::has($cacheKey)) {
       return response()->json(['msg' => 'Current year badges',
         'users' => Cache::get($cacheKey), ]);
     }

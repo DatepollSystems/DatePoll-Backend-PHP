@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\SeatReservationControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Models\SeatReservation\PlaceReservationState;
 use App\Permissions;
 use App\Repositories\SeatReservation\Place\IPlaceRepository;
 use App\Repositories\SeatReservation\UserSeatReservation\IUserSeatReservationRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserSeatReservationController extends Controller {
@@ -26,49 +26,32 @@ class UserSeatReservationController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAllPlaceReservations() {
-    $all = $this->userSeatReservationRepository->getAllPlaceReservationsOrderedByDate();
-    $reservations = [];
-    foreach ($all as $reservation) {
-      $reservations[] = $reservation->getReturnable();
-    }
-
-    return response()->json(['msg' => 'All place reservations', 'reservations' => $reservations]);
+  public function getAllPlaceReservations(): JsonResponse {
+    return response()->json(['msg' => 'All place reservations', 'reservations' => $this->userSeatReservationRepository->getAllPlaceReservationsOrderedByDate()]);
   }
 
   /**
    * @return JsonResponse
    */
-  public function getUpcomingPlaceReservations() {
-    $upcoming = $this->userSeatReservationRepository->getUpcomingPlaceReservationsOrderedByDate();
-    $reservations = [];
-    foreach ($upcoming as $reservation) {
-      $reservations[] = $reservation->getReturnable();
-    }
-
-    return response()->json(['msg' => 'Upcoming place reservations', 'reservations' => $reservations]);
+  public function getUpcomingPlaceReservations(): JsonResponse {
+    return response()->json(['msg' => 'Upcoming place reservations', 'reservations' => $this->userSeatReservationRepository->getUpcomingPlaceReservationsOrderedByDate()]);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getUserReservations(Request $request) {
-    $reservations = [];
-    foreach ($this->userSeatReservationRepository->getUserReservationsByUserId($request->auth->id) as $reservation) {
-      $reservations[] = $reservation->getReturnable();
-    }
-
+  public function getUserReservations(AuthenticatedRequest $request): JsonResponse {
     return response()->json(['msg' => 'Your reservations',
-      'reservations' => $reservations, ]);
+      'reservations' => $this->userSeatReservationRepository->getUserReservationsByUserId($request->auth->id), ]);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'reason' => 'required|string|min:1|max:190',
       'description' => 'nullable|string|max:190',
@@ -104,12 +87,12 @@ class UserSeatReservationController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id) {
+  public function update(AuthenticatedRequest $request, int $id): JsonResponse {
     $this->validate($request, [
       'reason' => 'required|string|min:1|max:190',
       'description' => 'nullable|string|max:190',

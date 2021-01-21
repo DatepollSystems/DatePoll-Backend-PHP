@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\SendEmailJob;
 use App\Logging;
 use App\Mail\BroadcastInvalidSubject;
+use App\Mail\BroadcastMail;
 use App\Mail\BroadcastPermissionDenied;
 use App\Mail\BroadcastUnknownReceiver;
 use App\Models\Broadcasts\BroadcastAttachment;
@@ -12,33 +12,61 @@ use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\System\Setting\ISettingRepository;
+use App\Utils\ArrayHelper;
+use App\Utils\MailHelper;
+use App\Utils\StringHelper;
+use Exception;
+use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use JetBrains\PhpStorm\Pure;
 use PhpImap\Exceptions\ConnectionException;
 use PhpImap\Exceptions\InvalidParameterException;
+use PhpImap\IncomingMail;
 use PhpImap\Mailbox;
+use RuntimeException;
 
 class ProcessBroadcastEmailsInInbox extends Command {
-  private IBroadcastRepository $broadcastRepository;
-  private IBroadcastAttachmentRepository $broadcastAttachmentRepository;
-  private IGroupRepository $groupRepository;
+  /**
+   * @var string[]
+   */
+  private static array $allKeywords = ['Alle', 'All', 'Mitglieder', 'Everyone'];
+
+  private static string $actionDelete = 'delete';
+  private static string $actionCancelProcessing = 'cancelProcessing';
+
+  /**
+   * Block list with sender email addresses which should be ignored
+   * Add DatePoll from address to array in constructor.
+   * @var string[]
+   */
+  private array $senderBlockList = ['mailer-daemon@mail.itkfm.at'];
 
   protected $signature = 'process-inbox-broadcast-mails';
   protected $description = 'Processes all emails!';
 
-  public function __construct(IBroadcastRepository $broadcastRepository, IGroupRepository $groupRepository, IBroadcastAttachmentRepository $broadcastAttachmentRepository) {
+  public function __construct(
+    private IBroadcastRepository $broadcastRepository,
+    private IGroupRepository $groupRepository,
+    private IBroadcastAttachmentRepository $broadcastAttachmentRepository,
+    private ISettingRepository $settingsRepository
+  ) {
     parent::__construct();
 
-    $this->broadcastRepository = $broadcastRepository;
-    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
-    $this->groupRepository = $groupRepository;
+    $this->senderBlockList[] = StringHelper::toLowerCase(env('MAIL_FROM_ADDRESS'));
   }
 
   /**
    * @throws InvalidParameterException
+   * @throws Exception
    */
-  public function handle() {
+  public function handle(): void {
+    if (! $this->settingsRepository->getBroadcastsProcessIncomingEmailsEnabled() || ! $this->settingsRepository->getBroadcastsEnabled()) {
+      return;
+    }
+
     $mailbox = new Mailbox(
       '{' . env('MAIL_HOST') . ':' . env('MAIL_INCOMING_PORT') . '/imap/ssl}INBOX',
       env('MAIL_USERNAME'),
@@ -58,96 +86,142 @@ class ProcessBroadcastEmailsInInbox extends Command {
     // If $mailsIds is empty, no emails could be found
     if (! $mailsIds) {
       return;
-    } else {
-      Logging::info('processBroadcastEmails', 'Emails found to process');
     }
+
+    Logging::info('processBroadcastEmails', 'Emails found to process');
 
     foreach ($mailsIds as $mailId) {
       $mail = $mailbox->getMail($mailId);
-      $subject = $mail->subject;
-      $mailId = $mail->id;
-      Logging::info(
-        'processBroadcastEmails',
-        'Email to process: "' . $subject . '" from "' . $mail->fromAddress . '"'
-      );
 
-      $userHasPermissionToSendBroadcasts = DB::table('user_email_addresses')
-        ->join('user_permissions', 'user_email_addresses.user_id', '=', 'user_permissions.user_id')
-        ->where('user_email_addresses.email', '=', $mail->fromAddress)
-        ->where('user_permissions.permission', '=', Permissions::$BROADCASTS_ADMINISTRATION)
-        ->orWhere('user_permissions.permission', '=', Permissions::$ROOT_ADMINISTRATION)
-        ->select('user_permissions.user_id as user_id')->first();
-
-      if ($userHasPermissionToSendBroadcasts != null) {
-        if ($this->isBroadcastSubjectValid($subject)) {
-          $textHtml = $mail->textPlain;
-          if (! $this->IsNullOrEmptyString($mail->textHtml)) {
-            $textHtml = $mail->textHtml;
-          }
-
-          $attachmentIds = [];
-          foreach ($mail->getAttachments() as $attachment) {
-            $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
-            $path = 'files/' . $token . '.' . $attachment->fileExtension;
-            $attachmentModel = new BroadcastAttachment(['path' => $path, 'name' => $attachment->name, 'token' => $token]);
-            if (! Storage::put($path, $attachment->getContents()) || ! $attachmentModel->save()) {
-              Logging::error('processBroadcastEmails', 'Could not save attachment!');
-              $this->deleteMail($mailbox, $mailId);
-
-              return;
-            }
-
-            $attachmentIds[] = $attachmentModel->id;
-          }
-
-          if ($this->containsSendToAllKeyword($subject)) {
-            Logging::info(
-              'processBroadcastEmails',
-              'All keyword detected, sending email to everyone. Creating broadcast...'
-            );
-
-            $this->broadcastRepository->create(
-              $subject,
-              $textHtml,
-              $mail->textPlain,
-              $userHasPermissionToSendBroadcasts->user_id,
-              [],
-              [],
-              true,
-              $attachmentIds
-            );
-          } else {
-            $groupsIds = $this->getGroupIdsOfSubject($subject, $mail->fromAddress);
-            if ($groupsIds != null) {
-              Logging::info('processBroadcastEmails', 'Creating broadcast...');
-              $this->broadcastRepository->create(
-                $subject,
-                $textHtml,
-                $mail->textPlain,
-                $userHasPermissionToSendBroadcasts->user_id,
-                $groupsIds,
-                [],
-                false,
-                $attachmentIds
-              );
-            }
-          }
-        } else {
-          dispatch(new SendEmailJob(new BroadcastInvalidSubject(), [$mail->fromAddress]))->onQueue('high');
-        }
-      } else {
-        Logging::info('processBroadcastEmails', 'Permission denied.');
-        dispatch(new SendEmailJob(new BroadcastPermissionDenied(), [$mail->fromAddress]))->onQueue('high');
+      $response = $this->processEmail($mail);
+      switch ($response) {
+        case self::$actionDelete:
+          $mailbox->deleteMail($mailId);
+          break;
+        case self::$actionCancelProcessing:
+          return;
+        default:
+          throw new RuntimeException('Unknown action encountered: ' . $response);
       }
-
-      $this->deleteMail($mailbox, $mailId);
     }
   }
 
-  private function deleteMail(Mailbox $mailbox, int $mailId) {
-    $mailbox->deleteMail($mailId);
+  /**
+   * @param IncomingMail $mail
+   * @return string
+   */
+  private function processEmail(IncomingMail $mail): string {
+    $subject = $mail->subject;
+    $fromAddress = $mail->senderAddress;
+    Logging::info(
+      'processBroadcastEmails',
+      'Email to process: "' . $subject . '" from "' . $fromAddress . '"'
+    );
+
+    // Check if from address is in block list
+    if (ArrayHelper::inArray($this->senderBlockList, StringHelper::toLowerCase($fromAddress))) {
+      Logging::info('processBroadcastEmails', 'Got an email from DatePoll and deleting it: [' . $subject . ']');
+      return self::$actionDelete;
+    }
+
+    if (!$this->isBroadcastSubjectValid($subject)) {
+      if ($this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEnabled()) {
+        Logging::info('processBroadcastEmails', 'Forwarding email to community major...');
+
+        $textPlain = $mail->textPlain;
+        $textHtml = $textPlain;
+        if (StringHelper::notNullAndEmpty($mail->textHtml)) {
+          $textHtml = $mail->textHtml;
+        }
+        $textPlain = Encoding::toUTF8($textPlain);
+        $textHtml = Encoding::toUTF8($textHtml);
+
+        $broadcastMail = new BroadcastMail(
+          $subject,
+          $textPlain,
+          $textHtml,
+          $mail->senderName,
+          $fromAddress,
+          $this->settingsRepository->getUrl(),
+          ''
+        );
+        MailHelper::sendEmailOnHighQueue($broadcastMail, $this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses());
+        return self::$actionDelete;
+      }
+
+      Logging::info('processBroadcastEmails', $fromAddress . ' Subject not valid. Subject: [' . $subject . ']');
+      MailHelper::sendEmailOnHighQueue(new BroadcastInvalidSubject(), $fromAddress);
+      return self::$actionDelete;
+    }
+
+    $userHasPermissionToSendBroadcasts = DB::table('user_email_addresses')
+      ->join('user_permissions', 'user_email_addresses.user_id', '=', 'user_permissions.user_id')
+      ->where('user_email_addresses.email', '=', $fromAddress)
+      ->where('user_permissions.permission', '=', Permissions::$BROADCASTS_ADMINISTRATION)
+      ->orWhere('user_permissions.permission', '=', Permissions::$ROOT_ADMINISTRATION)
+      ->select('user_permissions.user_id as user_id')->first();
+
+    if ($userHasPermissionToSendBroadcasts == null) {
+      Logging::info('processBroadcastEmails',
+        $fromAddress . ' Permission denied, deleting it. Subject: [' . $subject . ']');
+      MailHelper::sendEmailOnHighQueue(new BroadcastPermissionDenied(), $fromAddress);
+      return self::$actionDelete;
+    }
+
+    $textPlain = $mail->textPlain;
+    $textHtml = $textPlain;
+    if (StringHelper::notNullAndEmpty($mail->textHtml)) {
+      $textHtml = $mail->textHtml;
+    }
+    $textPlain = Encoding::toUTF8($textPlain);
+    $textHtml = Encoding::toUTF8($textHtml);
+
+    $attachmentIds = [];
+    foreach ($mail->getAttachments() as $attachment) {
+      $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
+      $path = 'files/' . $token . '.' . $attachment->fileExtension;
+      $attachmentModel = new BroadcastAttachment(['path' => $path, 'name' => $attachment->name, 'token' => $token]);
+      if (! $attachmentModel->save() || ! Storage::put($path, $attachment->getContents())) {
+        Logging::error('processBroadcastEmails', 'Could not save attachment!');
+        return self::$actionCancelProcessing;
+      }
+
+      $attachmentIds[] = $attachmentModel->id;
+    }
+
+    $forEveryone = $this->containsSendToAllKeyword($subject);
+    $groupsIds = [];
+    if (! $forEveryone) {
+      $groupsIds = $this->getGroupIdsOfSubject($subject, $fromAddress);
+      if ($groupsIds == null) {
+        return self::$actionDelete;
+      }
+    }
+
+    Logging::info(
+      'processBroadcastEmails',
+      'Sending email. Creating broadcast... Subject: [' . $subject . ']'
+    );
+
+    $this->broadcastRepository->create(
+      $subject,
+      $textHtml,
+      $textPlain,
+      $userHasPermissionToSendBroadcasts->user_id,
+      $groupsIds,
+      [],
+      $forEveryone,
+      $attachmentIds
+    );
+
+    return self::$actionDelete;
   }
 
+  /**
+   * @param string $subject
+   * @param string $fromAddress
+   * @return array|null
+   */
   private function getGroupIdsOfSubject(string $subject, string $fromAddress): ?array {
     $groupsIds = [];
     $receiverStrings = explode(',', $this->getReceiverString($subject));
@@ -155,7 +229,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
     foreach ($receiverStrings as $receiverGroupName) {
       $foundSomething = false;
       foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
-        if (strtolower(trim($group->name)) == strtolower(trim($receiverGroupName))) {
+        if (StringHelper::toLowerCaseWithTrim($group->name) == StringHelper::toLowerCaseWithTrim($receiverGroupName)) {
           Logging::info('processBroadcastEmails', 'Receiver found: ' . $group->name);
           $groupsIds[] = $group->id;
           $foundSomething = true;
@@ -164,10 +238,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
       if (! $foundSomething) {
         Logging::info('processBroadcastEmails', 'Unknown receiver specified in subject: ' . $receiverGroupName);
-        dispatch(new SendEmailJob(
-          new BroadcastUnknownReceiver($receiverGroupName),
-          [$fromAddress]
-        ))->onQueue('high');
+        MailHelper::sendEmailOnHighQueue(new BroadcastUnknownReceiver($receiverGroupName), $fromAddress);
 
         return null;
       }
@@ -176,11 +247,15 @@ class ProcessBroadcastEmailsInInbox extends Command {
     return $groupsIds;
   }
 
+  /**
+   * @param string $subject
+   * @return bool
+   */
+  #[Pure]
   private function containsSendToAllKeyword(string $subject): bool {
     $receiver = $this->getReceiverString($subject);
-    $keywords = ['Alle', 'All', 'Mitglieder', 'Everyone'];
-    foreach ($keywords as $keyword) {
-      if (str_contains($receiver, $keyword)) {
+    foreach (self::$allKeywords as $keyword) {
+      if (StringHelper::contains($receiver, $keyword)) {
         return true;
       }
     }
@@ -199,26 +274,26 @@ class ProcessBroadcastEmailsInInbox extends Command {
    */
   private function isBroadcastSubjectValid(string $subject): bool {
     // "[A]T" is the smallest possible valid email subject
-    if (strlen($subject) < 4) {
+    if (StringHelper::length($subject) < 4) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Length < 4');
 
       return false;
     }
     // Invalid: "[[All]] Wow" | "[All] [wow] Test"
-    if (substr_count($subject, '[') > 1 || substr_count($subject, ']') > 1) {
+    if (StringHelper::countSubstring($subject, '[') > 1 || StringHelper::countSubstring($subject, ']') > 1) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Contains two "[" or "]"');
 
       return false;
     }
 
-    if (substr($subject, 0, 1) != '[') {
+    if (!StringHelper::startsWithCharacter($subject, '[')) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Does not start with "["');
 
       return false;
     }
 
     // Invalid: "[All]"
-    if (strlen(explode(']', $subject)[1]) < 1) {
+    if (StringHelper::length(explode(']', $subject)[1]) < 1) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. After "]" is not any text');
 
       return false;
@@ -226,7 +301,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     // Invalid: "[]" | "[ ]"
     $receiverString = $this->getReceiverString($subject);
-    if (strlen($receiverString) < 1 || $this->IsNullOrEmptyString($receiverString)) {
+    if (StringHelper::length($receiverString) < 1 || ! StringHelper::notNullAndEmpty($receiverString)) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Nothing between "[" and "]"');
 
       return false;
@@ -235,6 +310,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
     return true;
   }
 
+  #[Pure]
   private function getReceiverString(string $string): string {
     $start = '[';
     $end = ']';
@@ -244,13 +320,9 @@ class ProcessBroadcastEmailsInInbox extends Command {
     if ($ini == 0) {
       return '';
     }
-    $ini += strlen($start);
+    $ini += StringHelper::length($start);
     $len = strpos($string, $end, $ini) - $ini;
 
     return substr($string, $ini, $len);
-  }
-
-  private function IsNullOrEmptyString($str) {
-    return (! isset($str) || trim($str) === '');
   }
 }

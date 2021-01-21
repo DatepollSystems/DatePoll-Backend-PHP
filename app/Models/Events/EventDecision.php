@@ -2,7 +2,6 @@
 
 namespace App\Models\Events;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,12 +17,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property EventUserVotedForDecision[] $eventsUsersVotedFor
  */
 class EventDecision extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events_decisions';
+
+  protected $hidden = ['showInCalendar', 'event_id', 'created_at', 'updated_at'];
 
   /**
    * @var array
@@ -37,16 +33,25 @@ class EventDecision extends Model {
     'updated_at', ];
 
   /**
-   * @return BelongsTo | Event | null
+   * @return BelongsTo | Event
    */
-  public function event() {
-    return $this->belongsTo('App\Models\Events\Event')->first();
+  public function event(): BelongsTo|Event {
+    return $this->belongsTo(Event::class)->first();
   }
 
   /**
-   * @return Collection
+   * @return EventUserVotedForDecision[]
    */
-  public function eventsUsersVotedFor() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision', 'decision_id')->get();
+  public function eventsUsersVotedFor(): array {
+    return $this->hasMany(EventUserVotedForDecision::class, 'decision_id')->get()->all();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $returnable = parent::toArray();
+    $returnable['show_in_calendar'] = $this->showInCalendar;
+    return $returnable;
   }
 }

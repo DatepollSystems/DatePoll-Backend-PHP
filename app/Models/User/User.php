@@ -2,15 +2,21 @@
 
 namespace App\Models\User;
 
+use App\Models\Broadcasts\Broadcast;
+use App\Models\Broadcasts\BroadcastUserInfo;
 use App\Models\Cinema\Movie;
 use App\Models\Cinema\MoviesBooking;
 use App\Models\Events\EventUserVotedForDecision;
+use App\Models\Groups\Group;
 use App\Models\Groups\UsersMemberOfGroups;
+use App\Models\PerformanceBadge\UserHasBadge;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
+use App\Models\SeatReservation\PlaceReservation;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
-use Illuminate\Database\Eloquent\Collection;
+use App\Permissions;
+use App\Utils\ArrayHelper;
 use Illuminate\Database\Eloquent\Model;
-use stdClass;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -60,207 +66,216 @@ class User extends Model {
     'created_at',
     'updated_at',
     'activated',
-    'activity', ];
+    'activity',];
 
   /**
-   * @return Collection | Movie[] | null
+   * @return string
    */
-  public function emergencyWorkerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'emergency_worker_id')
-      ->get();
+  public function getCompleteName(): string {
+    return $this->firstname . ' ' . $this->surname;
   }
 
   /**
-   * @return Collection | Movie[] | null
+   * @return UserCode[]
    */
-  public function workerMovies() {
-    return $this->hasMany('App\Models\Cinema\Movie', 'worker_id')
-      ->orderBy('date')
-      ->get();
+  public function userCodes(): array {
+    return $this->hasMany(UserCode::class)
+      ->get()->all();
+  }
+
+  // ------------------------------------ Properties ------------------------------------
+  /**
+   * @return UserTelephoneNumber[]
+   */
+  public function telephoneNumbers(): array {
+    return $this->hasMany(UserTelephoneNumber::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | MoviesBooking[] | null
+   * @return UserEmailAddress[]
    */
-  public function moviesBookings() {
-    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
-      ->orderBy('m.date')
-      ->select('movies_bookings.*')
-      ->where('user_id', $this->id)
-      ->get();
-  }
-
-  /**
-   * @return Collection | UserCode[] | null
-   */
-  public function userCodes() {
-    return $this->hasMany('App\Models\User\UserCode')
-      ->get();
-  }
-
-  /**
-   * @return Collection | UserTelephoneNumber[] | null
-   */
-  public function telephoneNumbers() {
-    return $this->hasMany('App\Models\User\UserTelephoneNumber')
-      ->get();
-  }
-
-  /**
-   * @return Collection | UserEmailAddress[] | null
-   */
-  public function emailAddresses() {
-    return $this->hasMany('App\Models\User\UserEmailAddress')
-      ->get();
+  public function emailAddresses(): array {
+    return $this->hasMany(UserEmailAddress::class)
+      ->get()->all();
   }
 
   /**
    * @return bool
    */
-  public function hasEmailAddresses() {
-    return (sizeof($this->emailAddresses()) > 0);
+  public function hasEmailAddresses(): bool {
+    return (ArrayHelper::getCount($this->emailAddresses()) > 0);
   }
 
   /**
-   * @return array
+   * @return string[]
    */
-  public function getEmailAddresses() {
-    $emailAddresses = [];
-    foreach ($this->emailAddresses() as $emailAddressObject) {
-      $emailAddresses[] = $emailAddressObject['email'];
-    }
-
-    return $emailAddresses;
+  public function getEmailAddresses(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray($this->emailAddresses(), 'email');
   }
 
+  // ------------------------------------ Groups and subgroups ------------------------------------
   /**
-   * @return Collection | UsersMemberOfGroups[] | null
+   * @return UsersMemberOfGroups[]
    */
-  public function usersMemberOfGroups() {
+  public function usersMemberOfGroups(): array {
     return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
-      ->get();
+      ->get()->all();
   }
 
   /**
-   * @return Collection | UsersMemberOfSubgroups[] | null
+   * @return Group[]
    */
-  public function usersMemberOfSubgroups() {
+  public function getGroups(): array {
+    return array_map(function ($group) {
+      return $group->group();
+    }, $this->usersMemberOfGroups());
+  }
+
+  /**
+   * @return UsersMemberOfSubgroups[]
+   */
+  public function usersMemberOfSubgroups(): array {
     return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
-      ->get();
+      ->get()->all();
+  }
+
+  // ------------------------------------ Badges ------------------------------------
+  /**
+   * @return UserHavePerformanceBadgeWithInstrument[]
+   */
+  public function getPerformanceBadges(): array {
+    return $this->hasMany(UserHavePerformanceBadgeWithInstrument::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection | UserHavePerformanceBadgeWithInstrument[] | null
+   * @return UserHasBadge[]
    */
-  public function performanceBadges() {
-    return $this->hasMany('App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument')
-      ->get();
+  public function getBadges(): array {
+    return $this->hasMany(UserHasBadge::class)->get()->all();
   }
 
+  // ------------------------------------ Permissions ------------------------------------
   /**
-   * @return Collection | EventUserVotedForDecision[] | null
+   * @return UserPermission[]
    */
-  public function votedForDecisions() {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
-      ->get();
-  }
-
-  /**
-   * @return Collection | UserPermission[] | null
-   */
-  public function permissions() {
-    return $this->hasMany('App\Models\User\UserPermission')
-      ->get();
+  public function getPermissions(): array {
+    return $this->hasMany(UserPermission::class)
+      ->get()->all();
   }
 
   /**
    * @param string $permission
    * @return bool
    */
-  public function hasPermission(string $permission) {
-    if ($this->permissions()
-      ->where('permission', '=', 'root.administration')
-      ->first() != null) {
+  public function hasPermission(string $permission): bool {
+    if (DB::table('user_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where('user_id', '=', $this->id)->count() > 0) {
       return true;
     }
 
-    if ($this->permissions()
-      ->where('permission', '=', $permission)
-      ->first() != null) {
-      return true;
-    }
+    return (DB::table('user_permissions')->where('permission', '=', $permission)->where('user_id', '=', $this->id)->count() > 0);
+  }
 
-    return false;
+  // ------------------------------------ Cinema ------------------------------------
+  /**
+   * @return Movie[]
+   */
+  public function emergencyWorkerMovies(): array {
+    return $this->hasMany(Movie::class, 'emergency_worker_id')
+      ->get()->all();
   }
 
   /**
-   * @return string
+   * @return Movie[]
    */
-  public function getName(): string {
-    return $this->firstname . ' ' . $this->surname;
+  public function workerMovies(): array {
+    return $this->hasMany(Movie::class, 'worker_id')
+      ->orderBy('date')
+      ->get()->all();
   }
 
   /**
-   * Returns a DTO object for the user
-   *
-   * @return stdClass
+   * @return MoviesBooking[]
    */
-  public function getReturnable() {
-    $returnableUser = new stdClass();
+  public function moviesBookings(): array {
+    return MoviesBooking::join('movies as m', 'm.id', '=', 'movies_bookings.movie_id')
+      ->orderBy('m.date')
+      ->select('movies_bookings.*')
+      ->where('user_id', $this->id)
+      ->get()->all();
+  }
 
-    $returnableUser->id = $this->id;
-    $returnableUser->title = $this->title;
-    $returnableUser->firstname = $this->firstname;
-    $returnableUser->surname = $this->surname;
-    $returnableUser->username = $this->username;
-    $returnableUser->birthday = $this->birthday;
-    $returnableUser->join_date = $this->join_date;
-    $returnableUser->streetname = $this->streetname;
-    $returnableUser->streetnumber = $this->streetnumber;
-    $returnableUser->zipcode = $this->zipcode;
-    $returnableUser->location = $this->location;
-    $returnableUser->activated = $this->activated;
-    $returnableUser->activity = $this->activity;
-    $returnableUser->member_number = $this->member_number;
-    $returnableUser->internal_comment = $this->internal_comment;
-    $returnableUser->information_denied = $this->information_denied;
-    $returnableUser->bv_member = $this->bv_member;
-    $returnableUser->force_password_change = $this->force_password_change;
-    $returnableUser->phone_numbers = $this->telephoneNumbers();
-    $returnableUser->email_addresses = $this->getEmailAddresses();
+  // ------------------------------------ Events ------------------------------------
+  /**
+   * @return EventUserVotedForDecision[]
+   */
+  public function votedForDecisions(): array {
+    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
+      ->get()->all();
+  }
 
-    $permissions = [];
-    if ($this->permissions() != null) {
-      foreach ($this->permissions() as $permission) {
-        $permissions[] = $permission->permission;
-      }
-    }
+  // ------------------------------------ Broadcasts ------------------------------------
+  /**
+   * @return Broadcast[]
+   */
+  public function writerOfBroadcasts(): array {
+    return $this->hasMany(Broadcast::class, 'writer_user_id')
+      ->get()->all();
+  }
 
-    $returnableUser->permissions = $permissions;
+  /**
+   * @return BroadcastUserInfo[]
+   */
+  public function broadcastUserInfos(): array {
+    return $this->hasMany(BroadcastUserInfo::class, 'user_id')
+      ->get()->all();
+  }
 
-    $performanceBadgesToReturn = [];
+  // ------------------------------------ Place reservations ------------------------------------
+  /**
+   * @return PlaceReservation[]
+   */
+  public function approverOfPlaceReservations(): array {
+    return $this->hasMany(PlaceReservation::class, 'approver_id')
+      ->get()->all();
+  }
 
-    $userHasPerformanceBadgesWithInstruments = $this->performanceBadges();
-    foreach ($userHasPerformanceBadgesWithInstruments as $performanceBadgeWithInstrument) {
-      $performanceBadgeToReturn = new stdClass();
-      $performanceBadgeToReturn->id = $performanceBadgeWithInstrument->id;
-      $performanceBadgeToReturn->performance_badge_id = $performanceBadgeWithInstrument->performance_badge_id;
-      $performanceBadgeToReturn->instrument_id = $performanceBadgeWithInstrument->instrument_id;
-      $performanceBadgeToReturn->grade = $performanceBadgeWithInstrument->grade;
-      $performanceBadgeToReturn->note = $performanceBadgeWithInstrument->note;
-      if ($performanceBadgeWithInstrument->date != '1970-01-01') {
-        $performanceBadgeToReturn->date = $performanceBadgeWithInstrument->date;
-      } else {
-        $performanceBadgeToReturn->date = null;
-      }
-      $performanceBadgeToReturn->performance_badge_name = $performanceBadgeWithInstrument->performanceBadge()->name;
-      $performanceBadgeToReturn->instrument_name = $performanceBadgeWithInstrument->instrument()->name;
+  /**
+   * @return PlaceReservation[]
+   */
+  public function requestedPlaceReservations(): array {
+    return $this->hasMany(PlaceReservation::class, 'user_id')
+      ->get()->all();
+  }
 
-      $performanceBadgesToReturn[] = $performanceBadgeToReturn;
-    }
-
-    $returnableUser->performance_badges = $performanceBadgesToReturn;
-
-    return $returnableUser;
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    return [
+      'id' => $this->id,
+      'title' => $this->title,
+      'firstname' => $this->firstname,
+      'surname' => $this->surname,
+      'username' => $this->username,
+      'birthday' => $this->birthday,
+      'join_date' => $this->join_date,
+      'streetname' => $this->streetname,
+      'streetnumber' => $this->streetnumber,
+      'zipcode' => $this->zipcode,
+      'location' => $this->location,
+      'activated' => $this->activated,
+      'activity' => $this->activity,
+      'member_number' => $this->member_number,
+      'internal_comment' => $this->internal_comment,
+      'information_denied' => $this->information_denied,
+      'bv_member' => $this->bv_member,
+      'force_password_change' => $this->force_password_change,
+      'phone_numbers' => $this->telephoneNumbers(),
+      'email_addresses' => $this->getEmailAddresses(),
+      'permissions' => ArrayHelper::getPropertyArrayOfObjectArray($this->getPermissions(), 'permission'),
+      'performance_badges' => $this->getPerformanceBadges(),
+    ];
   }
 }

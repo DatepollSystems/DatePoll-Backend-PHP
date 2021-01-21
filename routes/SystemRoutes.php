@@ -7,6 +7,7 @@ use App\Http\Middleware\System\LogsPermissionMiddleware;
 $router->group(['prefix' => 'settings'], function () use ($router) {
   $router->get('openweathermap/key', ['uses' => 'SystemControllers\SettingsController@getOpenWeatherMapKey']);
   $router->get('openweathermap/cinemaCityId', ['uses' => 'SystemControllers\SettingsController@getOpenWeatherMapCinemaCityId']);
+  $router->get('broadcast/forwardIncomingEmailsEmailAddresses', ['uses' => 'SystemControllers\SettingsController@getBroadcastsProcessIncomingEmailsForwardingEmailAddresses']);
   $router->get('alert', ['uses' => 'SystemControllers\SettingsController@getAlert']);
 });
 
@@ -17,6 +18,9 @@ $router->group(['prefix' => 'system'], function () use ($router) {
       $router->post('cinema', ['uses' => 'SystemControllers\SettingsController@setCinemaFeatureIsEnabled']);
       $router->post('events', ['uses' => 'SystemControllers\SettingsController@setEventsFeatureIsEnabled']);
       $router->post('broadcast', ['uses' => 'SystemControllers\SettingsController@setBroadcastFeatureIsEnabled']);
+      $router->post('broadcast/processIncomingEmails', ['uses' => 'SystemControllers\SettingsController@setBroadcastProcessIncomingEmailsFeatureIsEnabled']);
+      $router->post('broadcast/forwardIncomingEmails', ['uses' => 'SystemControllers\SettingsController@setBroadcastsProcessIncomingEmailsForwardingIsEnabled']);
+      $router->post('broadcast/forwardIncomingEmailsEmailAddresses', ['uses' => 'SystemControllers\SettingsController@setBroadcastsProcessIncomingEmailsForwardingEmailAddresses']);
       $router->post('name', ['uses' => 'SystemControllers\SettingsController@setCommunityName']);
       $router->post('communityUrl', ['uses' => 'SystemControllers\SettingsController@setCommunityUrl']);
       $router->post('description', ['uses' => 'SystemControllers\SettingsController@setCommunityDescription']);

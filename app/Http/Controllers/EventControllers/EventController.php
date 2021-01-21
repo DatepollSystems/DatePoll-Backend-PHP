@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\EventControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
+use App\Utils\Converter;
+use App\Utils\StringHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,7 +30,7 @@ class EventController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getYearsOfEvents() {
+  public function getYearsOfEvents(): JsonResponse {
     if (Cache::has(self::$YEARS_CACHE_KEY)) {
       $years = Cache::get(self::$YEARS_CACHE_KEY);
     } else {
@@ -40,28 +43,27 @@ class EventController extends Controller {
   }
 
   /**
-   * @param int|null $year
+   * @param string|null $year
    * @return JsonResponse
    */
-  public function getEventsOrderedByDate(int $year = null) {
-    $events = $this->eventRepository->getEventsOrderedByDate($year);
-
-    $toReturnEvents = [];
-    foreach ($events as $event) {
-      $toReturnEvents[] = $this->eventRepository->getReturnable($event);
+  public function getEventsOrderedByDate(?string $year = null): JsonResponse {
+    if (! StringHelper::notNullAndEmpty($year)) {
+      $year = null;
+    } else {
+      $year = Converter::stringToInteger($year);
     }
 
     return response()->json([
       'msg' => 'List of all events of this year',
-      'events' => $toReturnEvents, ]);
+      'events' => $this->eventRepository->getEventsOrderedByDate($year), ]);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(Request $request, int $id) {
+  public function getSingle(AuthenticatedRequest $request, int $id): JsonResponse {
     $event = $this->eventRepository->getEventById($id);
 
     if ($event == null) {
@@ -72,7 +74,7 @@ class EventController extends Controller {
     $anonymous = ! ($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
       $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
       $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS));
-    $anonymousString = true === (bool)$anonymous ? 'true' : 'false';
+    $anonymousString = Converter::booleanToString($anonymous);
 
     $cacheKey = 'events.results.anonymous.' . $anonymousString . '.' . $id;
     if (Cache::has($cacheKey)) {
@@ -84,8 +86,8 @@ class EventController extends Controller {
     }
     Logging::info('getSingleEvent', 'Generating ' . $cacheKey . ' and saving to cache');
 
-    $toReturnEvent = $this->eventRepository->getReturnable($event);
-    $toReturnEvent->resultGroups = $this->eventRepository->getResultsForEvent($event, $anonymous);
+    $toReturnEvent = $event->toArray();
+    $toReturnEvent['resultGroups'] = $this->eventRepository->getResultsForEvent($event, $anonymous);
 
     // Time to live 5 minutes
     Cache::put($cacheKey, $toReturnEvent, 60 * 5);
@@ -101,7 +103,7 @@ class EventController extends Controller {
    * @throws ValidationException
    * @throws Exception
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'forEveryone' => 'required|boolean',
@@ -124,17 +126,15 @@ class EventController extends Controller {
     $dates = $request->input('dates');
 
     $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates);
-
-    $returnable = $this->eventRepository->getReturnable($event);
-    $returnable->view_event = [
-      'href' => 'api/v1/avent/administration/avent/' . $event->id,
-      'method' => 'GET', ];
+    if ($event == null) {
+      return response()->json(['msg' => 'An error occurred during event creating.'], 500);
+    }
 
     Cache::forget(self::$YEARS_CACHE_KEY);
 
     return response()->json([
       'msg' => 'Successful created event',
-      'event' => $returnable, ], 201);
+      'event' => $event, ], 201);
   }
 
   /**
@@ -144,7 +144,7 @@ class EventController extends Controller {
    * @throws ValidationException
    * @throws Exception
    */
-  public function update(Request $request, int $id) {
+  public function update(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'forEveryone' => 'required|boolean',
@@ -174,15 +174,13 @@ class EventController extends Controller {
     $dates = $request->input('dates');
 
     $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates, $event);
-
-    $returnable = $this->eventRepository->getReturnable($event);
-    $returnable->view_event = [
-      'href' => 'api/v1/avent/administration/avent/' . $event->id,
-      'method' => 'GET', ];
+    if ($event == null) {
+      return response()->json(['msg' => 'An error occurred during event updating.'], 500);
+    }
 
     return response()->json([
       'msg' => 'Successful updated event',
-      'event' => $returnable, ], 200);
+      'event' => $event, ], 200);
   }
 
   /**
@@ -190,7 +188,7 @@ class EventController extends Controller {
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(int $id) {
+  public function delete(int $id): JsonResponse {
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
       return response()->json(['msg' => 'Event not found'], 404);

@@ -2,63 +2,55 @@
 
 namespace App\Http\Controllers\SystemControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\System\Log\ILogRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class LoggingController extends Controller {
-  protected ILogRepository $logRepository;
 
-  public function __construct(ILogRepository $logRepository) {
-    $this->logRepository = $logRepository;
+  public function __construct(protected ILogRepository $logRepository) {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getAllLogs(Request $request) {
-    $logs = [];
-
-    foreach ($this->logRepository->getAllLogsOrderedByDate() as $log) {
-      $logs[] = $log->getReturnable();
-    }
-
+  public function getAllLogs(AuthenticatedRequest $request): JsonResponse {
     Logging::info('getAllLogs', 'User - ' . $request->auth->id . ' | Successful');
 
     return response()->json([
       'msg' => 'All logs',
-      'logs' => $logs, ], 200);
+      'logs' => $this->logRepository->getAllLogsOrderedByDate(),], 200);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function saveLog(Request $request) {
+  public function saveLog(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'type' => 'required|string|min:1|max:190|in:INFO,WARNING,ERROR',
-      'message' => 'required|string|min:1|max:65534', ]);
+      'message' => 'required|string|min:1|max:65534',]);
 
     $log = $this->logRepository->createLog($request->input('type'), $request->input('message'), $request->auth->id);
 
     return response()->json([
       'msg' => 'Log saved',
-      'log' => $log->getReturnable(), ], 201);
+      'log' => $log,], 201);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function deleteLog(Request $request, int $id) {
+  public function deleteLog(AuthenticatedRequest $request, int $id): JsonResponse {
     $log = $this->logRepository->getLogById($id);
     if ($log == null) {
       return response()->json(['msg' => 'Log not found'], 404);
@@ -74,10 +66,10 @@ class LoggingController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function deleteAllLogs(Request $request) {
+  public function deleteAllLogs(AuthenticatedRequest $request): JsonResponse {
     $this->logRepository->deleteAllLogs();
 
     Logging::info('deleteAllLogs', 'User - ' . $request->auth->id . ' | Successful');

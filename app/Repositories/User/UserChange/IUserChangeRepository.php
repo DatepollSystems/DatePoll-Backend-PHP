@@ -3,48 +3,41 @@
 namespace App\Repositories\User\UserChange;
 
 use App\Models\User\UserChange;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IUserChangeRepository {
   /**
    * @param string $property
    * @param int $userId
    * @param int $editorId
-   * @param string|null $newValue
-   * @param string|null $oldValue
+   * @param string|int|bool|null $newValue
+   * @param string|int|bool|null $oldValue
    * @return UserChange|null
    */
-  public function createUserChange(
-    string $property,
-    int $userId,
-    int $editorId,
-    string $newValue = null,
-    string $oldValue = null
-  );
+  public function createUserChange(string $property, int $userId, int $editorId, string|int|bool|null $newValue = null, string|int|bool|null $oldValue = null): ?UserChange;
 
   /**
-   * @return UserChange[]|Collection
+   * @return UserChange[]
    */
-  public function getAllUserChangesOrderedByDate();
+  public function getAllUserChangesOrderedByDate(): array;
 
   /**
    * @param int $id
    * @return UserChange|null
    */
-  public function getUserChangeById(int $id);
+  public function getUserChangeById(int $id): ?UserChange;
 
   /**
    * @param string $property
    * @param int $userId
    * @param int $editorId
-   * @param string $newValue
-   * @param string $oldValue
+   * @param string|int|bool|null $newValue
+   * @param string|int|bool|null $oldValue
    */
   public function checkForPropertyChange(
     string $property,
     int $userId,
     int $editorId,
-    string $newValue,
-    string $oldValue
+    string|int|bool|null $newValue,
+    string|int|bool|null $oldValue
   );
 }

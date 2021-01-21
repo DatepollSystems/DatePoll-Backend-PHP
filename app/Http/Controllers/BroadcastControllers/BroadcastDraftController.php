@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\BroadcastControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Broadcast\BroadcastDraft\IBroadcastDraftRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class BroadcastDraftController extends Controller {
@@ -20,23 +20,17 @@ class BroadcastDraftController extends Controller {
   /**
    * @return JsonResponse
    */
-  public function getAll() {
-    $drafts = $this->draftRepository->getAllBroadcastDraftsOrderedByDate();
-    $toReturnDrafts = [];
-    foreach ($drafts as $draft) {
-      $toReturnDrafts[] = $this->draftRepository->getBroadcastDraftReturnable($draft);
-    }
-
+  public function getAll(): JsonResponse {
     return response()->json([
       'msg' => 'List of all broadcast drafts',
-      'drafts' => $toReturnDrafts, ]);
+      'drafts' => $this->draftRepository->getAllBroadcastDraftsOrderedByDate(), ]);
   }
 
   /**
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(int $id) {
+  public function getSingle(int $id): JsonResponse {
     $draft = $this->draftRepository->getBroadcastDraftById($id);
     if ($draft == null) {
       return response()->json(['msg' => 'Draft not found'], 404);
@@ -44,15 +38,15 @@ class BroadcastDraftController extends Controller {
 
     return response()->json([
       'msg' => 'Get broadcast draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ]);
+      'draft' => $draft, ]);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'subject' => 'required|max:190|min:1',
       'bodyHTML' => 'required|string',
@@ -70,16 +64,16 @@ class BroadcastDraftController extends Controller {
 
     return response()->json([
       'msg' => 'Successful created draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ], 201);
+      'draft' => $draft, ], 201);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id) {
+  public function update(AuthenticatedRequest $request, int $id): JsonResponse {
     $this->validate($request, [
       'subject' => 'required|max:190|min:1',
       'bodyHTML' => 'required|string',
@@ -102,16 +96,16 @@ class BroadcastDraftController extends Controller {
 
     return response()->json([
       'msg' => 'Successful updated draft',
-      'draft' => $this->draftRepository->getBroadcastDraftReturnable($draft), ], 201);
+      'draft' => $draft, ], 201);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(Request $request, int $id) {
+  public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
     $draft = $this->draftRepository->getBroadcastDraftById($id);
     if ($draft == null) {
       return response()->json(['msg' => 'Draft not found'], 404);

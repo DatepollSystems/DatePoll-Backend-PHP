@@ -14,11 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $updated_at
  */
 class EventStandardLocation extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events_standard_locations';
 
   /**

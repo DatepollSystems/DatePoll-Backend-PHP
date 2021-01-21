@@ -5,7 +5,6 @@ namespace App\Repositories\SeatReservation\Place;
 use App\Logging;
 use App\Models\SeatReservation\Place;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 
 class PlaceRepository implements IPlaceRepository {
 
@@ -13,29 +12,31 @@ class PlaceRepository implements IPlaceRepository {
    * @param int $id
    * @return Place|null
    */
-  public function getPlaceById(int $id) {
+  public function getPlaceById(int $id): ?Place {
     return Place::find($id);
   }
 
   /**
-   * @return Place[]|Collection
+   * @return Place[]
    */
-  public function getAllPlaces() {
-    return Place::all();
+  public function getAllPlaces(): array {
+    return Place::all()->all();
   }
 
   /**
    * @param string $name
+   * @param string|null $location
    * @param double $x
    * @param double $y
    * @param Place|null $place
    * @return Place|null
    */
-  public function createOrUpdatePlace(string $name, float $x, float $y, Place $place = null) {
+  public function createOrUpdatePlace(string $name, ?string $location, float $x, float $y, Place $place = null): ?Place {
     if ($place == null) {
-      $place = new Place(['name' => $name, 'x' => $x, 'y' => $y]);
+      $place = new Place(['name' => $name, 'location' => $location, 'x' => $x, 'y' => $y]);
     } else {
       $place->name = $name;
+      $place->location = $location;
       $place->x = $x;
       $place->y = $y;
     }
@@ -51,10 +52,10 @@ class PlaceRepository implements IPlaceRepository {
 
   /**
    * @param Place $place
-   * @return bool|null
+   * @return bool
    * @throws Exception
    */
-  public function deletePlace(Place $place) {
+  public function deletePlace(Place $place): bool {
     return $place->delete();
   }
 }

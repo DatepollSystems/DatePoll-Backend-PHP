@@ -9,64 +9,64 @@ interface IUserSettingRepository {
    * @param User $user
    * @return bool
    */
-  public function getShareBirthdayForUser($user): bool;
+  public function getShareBirthdayForUser(User $user): bool;
 
   /**
    * @param User $user
    * @param bool $value
    * @return bool
    */
-  public function setShareBirthdayForUser($user, bool $value): bool;
+  public function setShareBirthdayForUser(User $user, bool $value): bool;
 
   /**
    * @param User $user
    * @return bool
    */
-  public function getShowMoviesInCalendarForUser($user): bool;
-
-  /**
-   * @param User $user
-   * @param bool $value
-   * @return bool
-   */
-  public function setShowMoviesInCalendarForUser($user, bool $value): bool;
-
-  /**
-   * @param User $user
-   * @return bool
-   */
-  public function getShowEventsInCalendarForUser($user): bool;
+  public function getShowMoviesInCalendarForUser(User $user): bool;
 
   /**
    * @param User $user
    * @param bool $value
    * @return bool
    */
-  public function setShowEventsInCalendarForUser($user, bool $value): bool;
+  public function setShowMoviesInCalendarForUser(User $user, bool $value): bool;
 
   /**
    * @param User $user
    * @return bool
    */
-  public function getShowBirthdaysInCalendarForUser($user): bool;
-
-  /**
-   * @param User $user
-   * @param bool $value
-   * @return bool
-   */
-  public function setShowBirthdaysInCalendarForUser($user, bool $value): bool;
-
-  /**
-   * @param User $user
-   * @return bool
-   */
-  public function getNotifyMeOfNewEventsForUser($user): bool;
+  public function getShowEventsInCalendarForUser(User $user): bool;
 
   /**
    * @param User $user
    * @param bool $value
    * @return bool
    */
-  public function setNotifyMeOfNewEventsForUser($user, bool $value): bool;
+  public function setShowEventsInCalendarForUser(User $user, bool $value): bool;
+
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getShowBirthdaysInCalendarForUser(User $user): bool;
+
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setShowBirthdaysInCalendarForUser(User $user, bool $value): bool;
+
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function getNotifyMeOfNewEventsForUser(User $user): bool;
+
+  /**
+   * @param User $user
+   * @param bool $value
+   * @return bool
+   */
+  public function setNotifyMeOfNewEventsForUser(User $user, bool $value): bool;
 }

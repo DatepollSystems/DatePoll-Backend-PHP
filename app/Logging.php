@@ -5,9 +5,9 @@ namespace App;
 use App\Repositories\System\Log\LogRepository;
 
 abstract class LogTypes {
-  const INFO = 'INFO';
-  const WARNING = 'WARNING';
-  const ERROR = 'ERROR';
+  public const INFO = 'INFO';
+  public const WARNING = 'WARNING';
+  public const ERROR = 'ERROR';
 }
 
 class Logging {

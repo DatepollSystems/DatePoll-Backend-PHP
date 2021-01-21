@@ -9,6 +9,9 @@ abstract class SettingKey {
   const EVENTS_ENABLED = 'events_enabled';
 
   const BROADCASTS_ENABLED = 'broadcasts_enabled';
+  const BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED = 'broadcasts_process_incoming_emails_enabled';
+  const BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_ENABLED = 'broadcasts_process_incoming_emails_forwarding_enabled';
+  const BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_EMAIL_ADDRESSES = 'broadcasts_process_incoming_emails_forwarding_email_addresses';
 
   const SEAT_RESERVATION_ENABLED = 'seat_reservation_enabled';
 
@@ -35,12 +38,16 @@ abstract class CommunityAlertTypes {
 }
 
 use App\Models\System\Setting;
-use App\Models\System\SettingValueType;
+use App\Utils\ArrayHelper;
+use App\Utils\Converter;
+use App\Utils\StringHelper;
 use App\Versions;
+use Exception;
 use Illuminate\Support\Facades\Cache;
 use stdClass;
 
 class SettingRepository implements ISettingRepository {
+
   /**
    * @return bool
    */
@@ -89,8 +96,57 @@ class SettingRepository implements ISettingRepository {
   /**
    * @return bool
    */
+  public function getBroadcastsProcessIncomingEmailsEnabled(): bool {
+    return $this->getBoolValueByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED, false);
+  }
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsProcessIncomingEmailsEnabled(bool $isEnabled): bool {
+    return $this->setBoolValueByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED, $isEnabled);
+  }
+
+  /**
+   * @return bool
+   */
+  public function getBroadcastsProcessIncomingEmailsForwardingEnabled(): bool {
+    return $this->getBoolValueByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_ENABLED, true);
+  }
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEnabled(bool $isEnabled): bool {
+    return $this->setBoolValueByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_ENABLED, $isEnabled);
+  }
+
+  /**
+   * @return string[]
+   */
+  public function getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(): array {
+    return $this->getStringArrayValuesByKey(SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_EMAIL_ADDRESSES);
+  }
+
+  /**
+   * @param string[] $emailAddresses
+   * @return string[]
+   * @throws Exception
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEmailAddresses(array $emailAddresses): array {
+    return $this->setStringArrayValueByKey(
+      SettingKey::BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_EMAIL_ADDRESSES,
+      $emailAddresses
+    );
+  }
+
+  /**
+   * @return bool
+   */
   public function getSeatReservationEnabled(): bool {
-    return $this->getBoolValueByKey(SettingKey::SEAT_RESERVATION_ENABLED, true);
+    return $this->getBoolValueByKey(SettingKey::SEAT_RESERVATION_ENABLED, false);
   }
 
   /**
@@ -113,7 +169,7 @@ class SettingRepository implements ISettingRepository {
    */
   public function getBackendUrl(): string {
     $url = $this->getUrl();
-    if (str_contains($url, 'localhost')) {
+    if (StringHelper::contains($url, 'localhost')) {
       return 'http://localhost:9130';
     } else {
       $urlWithoutPort = explode(':', $url);
@@ -277,6 +333,8 @@ class SettingRepository implements ISettingRepository {
     return $this->setIntegerValueByKey(SettingKey::DATABASE_VERSION, $currentDatabaseVersion);
   }
 
+  // -------------------------------------- Base methods --------------------------------------
+
   /**
    * @param string $settingKey
    * @param string $default
@@ -286,9 +344,8 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
         'key' => $settingKey,
-        'value' => $default, ]);
+        'value' => $default,]);
 
       $newSetting->save();
 
@@ -308,9 +365,8 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
         'key' => $settingKey,
-        'value' => $value, ]);
+        'value' => $value,]);
 
       $newSetting->save();
 
@@ -332,22 +388,17 @@ class SettingRepository implements ISettingRepository {
     $setting = $this->getSettingValueByKey($settingKey);
 
     if ($setting == null) {
-      if ($default) {
-        $valueToSave = 'true';
-      } else {
-        $valueToSave = 'false';
-      }
+      $valueToSave = Converter::booleanToString($default);
 
       $newSetting = new Setting([
-        'type' => SettingValueType::BOOLEAN,
         'key' => $settingKey,
-        'value' => $valueToSave, ]);
+        'value' => $valueToSave,]);
 
       $newSetting->save();
 
-      return (bool)$newSetting->value;
+      return Converter::stringToBoolean($newSetting->value);
     } else {
-      return (bool)$setting->value;
+      return Converter::stringToBoolean($setting->value);
     }
   }
 
@@ -360,26 +411,21 @@ class SettingRepository implements ISettingRepository {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
 
-    if ($setting == null) {
-      if ($value) {
-        $valueToSave = 'true';
-      } else {
-        $valueToSave = 'false';
-      }
+    $valueToSave = Converter::booleanToString($value);
 
+    if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::STRING,
         'key' => $settingKey,
-        'value' => $valueToSave, ]);
+        'value' => $valueToSave,]);
 
       $newSetting->save();
 
-      return (bool)$newSetting->value;
+      return Converter::stringToBoolean($newSetting->value);
     } else {
-      $setting->value = $value;
+      $setting->value = $valueToSave;
       $setting->save();
 
-      return (bool)$setting->value;
+      return Converter::stringToBoolean($setting->value);
     }
   }
 
@@ -391,20 +437,22 @@ class SettingRepository implements ISettingRepository {
   private function setIntegerValueByKey(string $settingKey, int $value): int {
     Cache::forget('server.info');
     $setting = $this->getSettingValueByKey($settingKey);
+
+    $valueToSave = Converter::integerToString($value);
+
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::INTEGER,
         'key' => $settingKey,
-        'value' => $value, ]);
+        'value' => $valueToSave,]);
 
       $newSetting->save();
 
-      return (int)$newSetting->value;
+      return Converter::stringToInteger($newSetting->value);
     } else {
-      $setting->value = $value;
+      $setting->value = $valueToSave;
       $setting->save();
 
-      return (int)$setting->value;
+      return Converter::stringToInteger($setting->value);
     }
   }
 
@@ -418,21 +466,76 @@ class SettingRepository implements ISettingRepository {
 
     if ($setting == null) {
       $newSetting = new Setting([
-        'type' => SettingValueType::INTEGER,
         'key' => $settingKey,
-        'value' => $default, ]);
+        'value' => Converter::integerToString($default),]);
 
       $newSetting->save();
 
-      return (int)$newSetting->value;
+      return Converter::stringToInteger($newSetting->value);
     } else {
-      return (int)$setting->value;
+      return Converter::stringToInteger($setting->value);
     }
   }
 
   /**
    * @param string $settingKey
-   * @return Setting
+   * @param string[] $array
+   * @return string[]
+   * @throws Exception
+   */
+  private function setStringArrayValueByKey(string $settingKey, array $array): array {
+    $oldArray = $this->getStringArrayByKey($settingKey);
+
+    foreach ($array as $string) {
+      $in = false;
+
+      foreach ($oldArray as $oldString) {
+        if (StringHelper::compareCaseSensitive($oldString->value, $string)) {
+          $in = true;
+          break;
+        }
+      }
+      if (! $in) {
+        $setting = new Setting(['key' => $settingKey, 'value' => $string]);
+        $setting->save();
+      }
+    }
+
+    foreach ($oldArray as $oldString) {
+      $in = false;
+      foreach ($array as $string) {
+        if (StringHelper::compareCaseSensitive($oldString->value, $string)) {
+          $in = true;
+          break;
+        }
+      }
+      if (! $in) {
+        $oldString->delete();
+      }
+    }
+
+    return $this->getStringArrayValuesByKey($settingKey);
+  }
+
+  /**
+   * @param string $settingKey
+   * @return array
+   */
+  private function getStringArrayValuesByKey(string $settingKey): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray(Setting::where('key', '=', $settingKey)->get()->all(), 'value');
+  }
+
+  /**
+   * @param string $settingKey
+   * @return Setting[]
+   */
+  private function getStringArrayByKey(string $settingKey): array {
+    return Setting::where('key', '=', $settingKey)->get()->all();
+  }
+
+  /**
+   * @param string $settingKey
+   * @return Setting|null
    */
   private function getSettingValueByKey(string $settingKey): ?Setting {
     return Setting::where('key', '=', $settingKey)

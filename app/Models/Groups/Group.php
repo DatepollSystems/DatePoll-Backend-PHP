@@ -2,10 +2,10 @@
 
 namespace App\Models\Groups;
 
+use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use stdClass;
 
@@ -31,37 +31,36 @@ class Group extends Model {
     'updated_at', ];
 
   /**
-   * @return Collection<Subgroup> | Subgroup[] | null
+   * @return Subgroup[]
    */
-  public function subgroups() {
-    return $this->hasMany('App\Models\Subgroups\Subgroup')
-      ->get();
+  public function subgroups(): array {
+    return $this->hasMany(Subgroup::class)
+      ->get()->all();
   }
 
   /**
-   * @return Collection<Subgroup> | Subgroup[]
+   * @return Subgroup[]
    */
-  public function getSubgroupsOrdered() {
-    return $this->hasMany('App\Models\Subgroups\Subgroup')
+  public function getSubgroupsOrdered(): array {
+    return $this->hasMany(Subgroup::class)
       ->orderBy('orderN')
-      ->get();
+      ->get()->all();
   }
 
   /**
-   * @return Collection<UsersMemberOfGroups> | UsersMemberOfGroups[] | null
+   * @return UsersMemberOfGroups[]
    */
-  public function usersMemberOfGroups() {
-    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
-      ->get();
+  public function usersMemberOfGroups(): array {
+    return $this->hasMany(UsersMemberOfGroups::class)
+      ->get()->all();
   }
 
   /**
    * @return stdClass[]
    */
-  public function getUsersWithRolesOrderedBySurname() {
+  public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
-    $users = $this->usersMemberOfGroups();
-    foreach ($users as $userS) {
+    foreach ($this->usersMemberOfGroups() as $userS) {
       $user = new stdClass();
       $user->id = $userS->user_id;
       $user->firstname = $userS->user()->firstname;
@@ -70,7 +69,7 @@ class Group extends Model {
 
       $rUsers[] = $user;
     }
-    usort($rUsers, function ($a, $b) {
+    usort($rUsers, static function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
 
@@ -78,15 +77,14 @@ class Group extends Model {
   }
 
   /**
-   * @return User[] | null
+   * @return User[]
    */
-  public function getUsersOrderedBySurname() {
-    $usersMemberOfGroups = $this->usersMemberOfGroups();
+  public function getUsersOrderedBySurname(): array {
     $users = [];
-    foreach ($usersMemberOfGroups as $usersMemberOfGroup) {
+    foreach ($this->usersMemberOfGroups() as $usersMemberOfGroup) {
       $users[] = $usersMemberOfGroup->user();
     }
-    usort($users, function ($a, $b) {
+    usort($users, static function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
 
@@ -94,10 +92,18 @@ class Group extends Model {
   }
 
   /**
-   * @return Collection | EventForGroup[] | null
+   * @return EventForGroup[]
    */
-  public function eventsForGroups() {
+  public function eventsForGroups(): array {
     return $this->hasMany(EventForGroup::class)
-      ->get();
+      ->get()->all();
+  }
+
+  /**
+   * @return BroadcastForGroup[]
+   */
+  public function broadcastsForGroups(): array {
+    return $this->hasMany(BroadcastForGroup::class)
+      ->get()->all();
   }
 }

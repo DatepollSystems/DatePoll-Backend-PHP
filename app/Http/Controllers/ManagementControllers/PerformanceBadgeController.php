@@ -11,7 +11,6 @@ use App\Repositories\User\UserChange\IUserChangeRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use stdClass;
 
 class PerformanceBadgeController extends Controller {
   protected IUserRepository $userRepository;
@@ -225,35 +224,14 @@ class PerformanceBadgeController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function performanceBadgesForUser(int $id) {
+  public function performanceBadgesForUser(int $id): JsonResponse {
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
-    $performanceBadgesToReturn = [];
-
-    $userHasPerformanceBadgesWithInstruments = $user->performanceBadges();
-    foreach ($userHasPerformanceBadgesWithInstruments as $performanceBadgeWithInstrument) {
-      $performanceBadgeToReturn = new stdClass();
-      $performanceBadgeToReturn->id = $performanceBadgeWithInstrument->id;
-      $performanceBadgeToReturn->performanceBadge_id = $performanceBadgeWithInstrument->performance_badge_id;
-      $performanceBadgeToReturn->instrument_id = $performanceBadgeWithInstrument->instrument_id;
-      $performanceBadgeToReturn->grade = $performanceBadgeWithInstrument->grade;
-      $performanceBadgeToReturn->note = $performanceBadgeWithInstrument->note;
-      if ($performanceBadgeWithInstrument->date != '1970-01-01') {
-        $performanceBadgeToReturn->date = $performanceBadgeWithInstrument->date;
-      } else {
-        $performanceBadgeToReturn->date = null;
-      }
-      $performanceBadgeToReturn->performanceBadge_name = $performanceBadgeWithInstrument->performanceBadge()->name;
-      $performanceBadgeToReturn->instrument_name = $performanceBadgeWithInstrument->instrument()->name;
-
-      $performanceBadgesToReturn[] = $performanceBadgeToReturn;
-    }
-
     return response()->json([
       'msg' => 'List of all performance badges for user ' . $user->id,
-      'performanceBadges' => $performanceBadgesToReturn, ], 200);
+      'performanceBadges' => $user->getPerformanceBadges(), ], 200);
   }
 }

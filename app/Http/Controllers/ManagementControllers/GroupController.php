@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\ManagementControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
@@ -13,27 +14,18 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller {
-  protected IGroupRepository $groupRepository;
-  protected ISubgroupRepository $subgroupRepository;
-  protected IUserRepository $userRepository;
-  protected IUserChangeRepository $userChangeRepository;
-
   public function __construct(
-    IGroupRepository $groupRepository,
-    IUserRepository $userRepository,
-    ISubgroupRepository $subgroupRepository,
-    IUserChangeRepository $userChangeRepository
+    protected IGroupRepository $groupRepository,
+    protected IUserRepository $userRepository,
+    protected ISubgroupRepository $subgroupRepository,
+    protected IUserChangeRepository $userChangeRepository
   ) {
-    $this->groupRepository = $groupRepository;
-    $this->userRepository = $userRepository;
-    $this->subgroupRepository = $subgroupRepository;
-    $this->userChangeRepository = $userChangeRepository;
   }
 
   /**
    * @return JsonResponse
    */
-  public function getAll() {
+  public function getAll(): JsonResponse {
     $groups = $this->groupRepository->getAllGroupsWithSubgroupsOrdered();
 
     return response()->json([
@@ -46,10 +38,10 @@ class GroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'orderN' => 'integer',
+      'orderN' => 'integer|nullable',
       'description' => 'max:65535', ]);
 
     $name = $request->input('name');
@@ -71,7 +63,7 @@ class GroupController extends Controller {
    * @param int $id
    * @return JsonResponse
    */
-  public function getSingle(int $id) {
+  public function getSingle(int $id): JsonResponse {
     $group = $this->groupRepository->getGroupById($id);
     if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
@@ -79,7 +71,7 @@ class GroupController extends Controller {
 
     $group = $this->groupRepository->getGroupStatisticsByGroup($group);
     $group->subgroups = $group->getSubgroupsOrdered();
-    $group->users = $group->getUsersWithRolesOrderedBySurname();
+    $group['users'] = $group->getUsersWithRolesOrderedBySurname();
 
     return response()->json([
       'msg' => 'Group information',
@@ -92,10 +84,10 @@ class GroupController extends Controller {
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id) {
+  public function update(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
-      'orderN' => 'integer',
+      'orderN' => 'integer|nullable',
       'description' => 'max:65535', ]);
 
     $group = $this->groupRepository->getGroupById($id);
@@ -123,7 +115,7 @@ class GroupController extends Controller {
    * @return JsonResponse
    * @throws Exception
    */
-  public function delete(int $id) {
+  public function delete(int $id): JsonResponse {
     $group = $this->groupRepository->getGroupById($id);
     if ($group == null) {
       return response()->json(['msg' => 'Group not found'], 404);
@@ -137,11 +129,11 @@ class GroupController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function addUser(Request $request) {
+  public function addUser(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'group_id' => 'required|integer',
@@ -179,12 +171,12 @@ class GroupController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    * @throws Exception
    */
-  public function removeUser(Request $request) {
+  public function removeUser(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'group_id' => 'required|integer', ]);
@@ -227,11 +219,11 @@ class GroupController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function updateUser(Request $request) {
+  public function updateUser(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'group_id' => 'required|integer',
@@ -241,7 +233,7 @@ class GroupController extends Controller {
     $groupID = $request->input('group_id');
     $role = $request->input('role');
 
-    if ($this->userRepository->getUserById($userID)) {
+    if ($this->userRepository->getUserById($userID) == null) {
       return response()->json(['msg' => 'User not found'], 404);
     }
 
@@ -264,6 +256,8 @@ class GroupController extends Controller {
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }
 
+    $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, $userMemberOfGroup->role, $userMemberOfGroup->role);
+
     return response()->json([
       'msg' => 'Successfully updated user in group',
       'userMemberOfGroup' => $userMemberOfGroup, ], 200);
@@ -273,7 +267,7 @@ class GroupController extends Controller {
    * @param int $userID
    * @return JsonResponse
    */
-  public function joined(int $userID) {
+  public function joined(int $userID): JsonResponse {
     $user = $this->userRepository->getUserById($userID);
     if ($user == null) {
       return response()->json([
@@ -281,23 +275,16 @@ class GroupController extends Controller {
         'error_code' => 'user_not_found', ], 404);
     }
 
-    $groupsToReturn = [];
-    $userMemberOfGroups = $user->usersMemberOfGroups();
-    foreach ($userMemberOfGroups as $userMemberOfGroup) {
-      $group = $userMemberOfGroup->group();
-      $groupsToReturn[] = $group;
-    }
-
     return response()->json([
       'msg' => 'List of joined groups',
-      'groups' => $groupsToReturn, ], 200);
+      'groups' => $user->getGroups(), ], 200);
   }
 
   /**
    * @param int $userID
    * @return JsonResponse
    */
-  public function free(int $userID) {
+  public function free(int $userID): JsonResponse {
     $user = $this->userRepository->getUserById($userID);
     if ($user == null) {
       return response()->json([
@@ -305,10 +292,8 @@ class GroupController extends Controller {
         'error_code' => 'user_not_found', ], 404);
     }
 
-    $groupsToReturn = $this->groupRepository->getGroupsWhereUserIsNotIn($user);
-
     return response()->json([
       'msg' => 'List of free groups',
-      'groups' => $groupsToReturn, ], 200);
+      'groups' => $this->groupRepository->getGroupsWhereUserIsNotIn($user->id), ], 200);
   }
 }

@@ -8,16 +8,14 @@ use Illuminate\Support\Facades\DB;
 use stdClass;
 
 class DatePollServerRepository implements IDatePollServerRepository {
-  protected ISettingRepository $settingRepository;
 
-  public function __construct(ISettingRepository $settingRepository) {
-    $this->settingRepository = $settingRepository;
+  public function __construct(protected ISettingRepository $settingRepository) {
   }
 
   /**
    * @return stdClass
    */
-  public function getServerInfo() {
+  public function getServerInfo(): stdClass {
     $dto = new stdClass();
     $dto->version = Versions::getApplicationVersionString();
     $dto->version_number = Versions::getApplicationVersion();
@@ -44,6 +42,8 @@ class DatePollServerRepository implements IDatePollServerRepository {
     $dto->movies_workers_count = $movies_workers_count + DB::table('movies')->where('emergency_worker_id', '!=', null)->count();
 
     $dto->broadcasts_enabled = $this->settingRepository->getBroadcastsEnabled();
+    $dto->broadcasts_process_incoming_mails_enabled = $this->settingRepository->getBroadcastsProcessIncomingEmailsEnabled();
+    $dto->broadcasts_process_incoming_mails_forwarding_enabled = $this->settingRepository->getBroadcastsProcessIncomingEmailsForwardingEnabled();
     $dto->broadcasts_count = DB::table('broadcasts')->count();
     $dto->broadcasts_sent_count = DB::table('broadcasts_users_info')->count();
 

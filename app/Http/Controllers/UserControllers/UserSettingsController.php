@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\UserControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Repositories\User\UserSetting\UserSettingKey;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class UserSettingsController extends Controller {
@@ -21,97 +21,97 @@ class UserSettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getShareBirthday(Request $request) {
+  public function getShareBirthday(AuthenticatedRequest $request): JsonResponse {
     return $this->getValueRequest($request, UserSettingKey::SHARE_BIRTHDAY);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setShareBirthday(Request $request) {
+  public function setShareBirthday(AuthenticatedRequest $request): JsonResponse {
     return $this->setValueRequest($request, UserSettingKey::SHARE_BIRTHDAY);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getShowMoviesInCalendar(Request $request) {
+  public function getShowMoviesInCalendar(AuthenticatedRequest $request): JsonResponse {
     return $this->getValueRequest($request, UserSettingKey::SHOW_MOVIES_IN_CALENDAR);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setShowMoviesInCalendar(Request $request) {
+  public function setShowMoviesInCalendar(AuthenticatedRequest $request): JsonResponse {
     return $this->setValueRequest($request, UserSettingKey::SHOW_MOVIES_IN_CALENDAR);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getShowEventsInCalendar(Request $request) {
+  public function getShowEventsInCalendar(AuthenticatedRequest $request): JsonResponse {
     return $this->getValueRequest($request, UserSettingKey::SHOW_EVENTS_IN_CALENDAR);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setShowEventsInCalendar(Request $request) {
+  public function setShowEventsInCalendar(AuthenticatedRequest $request): JsonResponse {
     return $this->setValueRequest($request, UserSettingKey::SHOW_EVENTS_IN_CALENDAR);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getShowBirthdaysInCalendar(Request $request) {
+  public function getShowBirthdaysInCalendar(AuthenticatedRequest $request): JsonResponse {
     return $this->getValueRequest($request, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setShowBirthdaysInCalendar(Request $request) {
+  public function setShowBirthdaysInCalendar(AuthenticatedRequest $request): JsonResponse {
     return $this->setValueRequest($request, UserSettingKey::SHOW_BIRTHDAYS_IN_CALENDAR);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getNotifyMeOfNewEvents(Request $request) {
+  public function getNotifyMeOfNewEvents(AuthenticatedRequest $request): JsonResponse {
     return $this->getValueRequest($request, UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function setNotifyMeOfNewEvents(Request $request) {
+  public function setNotifyMeOfNewEvents(AuthenticatedRequest $request): JsonResponse {
     return $this->setValueRequest($request, UserSettingKey::NOTIFY_ME_OF_NEW_EVENTS);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param string $settingKey
    * @return JsonResponse
    * @throws ValidationException
    */
-  private function setValueRequest(Request $request, string $settingKey) {
+  private function setValueRequest(AuthenticatedRequest $request, string $settingKey): JsonResponse {
     $this->validate($request, ['setting_value' => 'required|boolean']);
 
     $user = $this->userRepository->getUserById($request->auth->id);
@@ -146,11 +146,11 @@ class UserSettingsController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param string $settingKey
    * @return JsonResponse
    */
-  private function getValueRequest(Request $request, string $settingKey) {
+  private function getValueRequest(AuthenticatedRequest $request, string $settingKey): JsonResponse {
     $user = $this->userRepository->getUserById($request->auth->id);
 
     switch ($settingKey) {

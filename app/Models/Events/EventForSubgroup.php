@@ -16,11 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Subgroup $subgroup
  */
 class EventForSubgroup extends Model {
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
   protected $table = 'events_for_subgroups';
 
   /**
@@ -35,14 +30,14 @@ class EventForSubgroup extends Model {
   /**
    * @return BelongsTo | Event
    */
-  public function event() {
-    return $this->belongsTo('App\Models\Events\Event')->first();
+  public function event(): BelongsTo|Event {
+    return $this->belongsTo(Event::class)->first();
   }
 
   /**
    * @return BelongsTo | Subgroup
    */
-  public function subgroup() {
-    return $this->belongsTo('App\Models\Subgroups\Subgroup')->first();
+  public function subgroup(): BelongsTo|Subgroup {
+    return $this->belongsTo(Subgroup::class)->first();
   }
 }

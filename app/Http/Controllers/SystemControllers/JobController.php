@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\SystemControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\System\Job\IJobRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class JobController extends Controller {
   protected IJobRepository $jobRepository;
@@ -16,10 +16,10 @@ class JobController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getUndoneJobs(Request $request) {
+  public function getUndoneJobs(AuthenticatedRequest $request): JsonResponse {
     $jobs = $this->jobRepository->getUndoneJobs();
 
     Logging::info('getFailedJobs', 'User - ' . $request->auth->id . ' | Successful');

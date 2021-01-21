@@ -2,6 +2,7 @@
 
 namespace App\Repositories\System\Setting;
 
+use Exception;
 use stdClass;
 
 interface ISettingRepository {
@@ -14,7 +15,7 @@ interface ISettingRepository {
    * @param bool $isEnabled
    * @return bool
    */
-  public function setCinemaEnabled(bool $isEnabled);
+  public function setCinemaEnabled(bool $isEnabled): bool;
 
   /**
    * @return bool
@@ -37,6 +38,40 @@ interface ISettingRepository {
    * @return bool
    */
   public function setBroadcastsEnabled(bool $isEnabled): bool;
+
+  /**
+   * @return bool
+   */
+  public function getBroadcastsProcessIncomingEmailsEnabled(): bool;
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsProcessIncomingEmailsEnabled(bool $isEnabled): bool;
+
+  /**
+   * @return bool
+   */
+  public function getBroadcastsProcessIncomingEmailsForwardingEnabled(): bool;
+
+  /**
+   * @param bool $isEnabled
+   * @return bool
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEnabled(bool $isEnabled): bool;
+
+  /**
+   * @return string[]
+   */
+  public function getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(): array;
+
+  /**
+   * @param string[] $emailAddresses
+   * @return string[]
+   * @throws Exception
+   */
+  public function setBroadcastsProcessIncomingEmailsForwardingEmailAddresses(array $emailAddresses): array;
 
   /**
    * @return bool

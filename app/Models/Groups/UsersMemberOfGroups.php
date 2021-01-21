@@ -25,14 +25,14 @@ class UsersMemberOfGroups extends Model {
   /**
    * @return BelongsTo | Group
    */
-  public function group() {
-    return $this->belongsTo('App\Models\Groups\Group')->first();
+  public function group(): BelongsTo|Group {
+    return $this->belongsTo(Group::class)->first();
   }
 
   /**
    * @return BelongsTo | User
    */
-  public function user() {
-    return $this->belongsTo('App\Models\User\User')->first();
+  public function user(): BelongsTo|User {
+    return $this->belongsTo(User::class)->first();
   }
 }

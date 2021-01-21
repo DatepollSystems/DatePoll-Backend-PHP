@@ -3,19 +3,18 @@
 namespace App\Repositories\Event\EventStandardDecision;
 
 use App\Models\Events\EventStandardDecision;
-use Illuminate\Database\Eloquent\Collection;
 
 interface IEventStandardDecisionRepository {
   /**
-   * @return Collection<EventStandardDecision>
+   * @return EventStandardDecision[]
    */
-  public function getAllStandardDecisionsOrderedByName();
+  public function getAllStandardDecisionsOrderedByName(): array;
 
   /**
    * @param int $id
    * @return EventStandardDecision | null
    */
-  public function getStandardDecisionById(int $id);
+  public function getStandardDecisionById(int $id): ?EventStandardDecision;
 
   /**
    * @param string $decision
@@ -23,11 +22,11 @@ interface IEventStandardDecisionRepository {
    * @param string $color
    * @return EventStandardDecision|null
    */
-  public function createStandardDecision($decision, $showInCalendar, $color);
+  public function createStandardDecision(string $decision, bool $showInCalendar, string $color): ?EventStandardDecision;
 
   /**
-   * @param int $id
-   * @return int
+   * @param int $standardDecisionId
+   * @return bool
    */
-  public function deleteStandardDecision(int $id);
+  public function deleteStandardDecision(int $standardDecisionId): bool;
 }
