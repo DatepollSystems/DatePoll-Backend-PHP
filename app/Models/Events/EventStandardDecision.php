@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 class EventStandardDecision extends Model {
   protected $table = 'events_standard_decisions';
 
-  protected $hidden = 'showInCalendar';
+  protected $hidden = ['showInCalendar'];
 
   /**
    * @var array

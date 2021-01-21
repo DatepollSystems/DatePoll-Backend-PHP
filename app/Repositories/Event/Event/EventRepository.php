@@ -420,6 +420,6 @@ class EventRepository implements IEventRepository {
    * @return array
    */
   public function getPotentialVotersForEvent(Event $event): array {
-    return $this->getResultsForEvent($event, false)->allUsers;
+    return $this->getResultsForEvent($event, false)['allUsers'];
   }
 }
