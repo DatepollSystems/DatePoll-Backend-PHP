@@ -77,7 +77,7 @@ class PlaceReservation extends Model {
 }
 
 abstract class PlaceReservationState {
-  const WAITING = 'WAITING';
-  const APPROVED = 'APPROVED';
-  const REJECTED = 'REJECTED';
+  public const WAITING = 'WAITING';
+  public const APPROVED = 'APPROVED';
+  public const REJECTED = 'REJECTED';
 }

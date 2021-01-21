@@ -33,15 +33,17 @@ class PlaceController extends Controller {
   public function create(Request $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|string',
+      'location' => 'string|nullable|max:190',
       'x' => 'nullable|numeric',
       'y' => 'nullable|numeric',
     ]);
 
     $name = $request->input('name');
+    $location = $request->input('location');
     $x = $request->input('x');
     $y = $request->input('y');
 
-    $place = $this->placeRepository->createOrUpdatePlace($name, $x, $y);
+    $place = $this->placeRepository->createOrUpdatePlace($name, $location, $x, $y);
 
     if ($place == null) {
       return response()->json(['msg' => 'Could not create place'], 500);
@@ -59,11 +61,13 @@ class PlaceController extends Controller {
   public function update(Request $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|string',
+      'location' => 'string|nullable|max:190',
       'x' => 'nullable|numeric',
       'y' => 'nullable|numeric',
     ]);
 
     $name = $request->input('name');
+    $location = $request->input('location');
     $x = $request->input('x');
     $y = $request->input('y');
 
@@ -72,7 +76,7 @@ class PlaceController extends Controller {
       return response()->json(['msg' => 'Place not found!'], 404);
     }
 
-    $place = $this->placeRepository->createOrUpdatePlace($name, $x, $y);
+    $place = $this->placeRepository->createOrUpdatePlace($name, $location, $x, $y);
 
     if ($place == null) {
       return response()->json(['msg' => 'Could not update place'], 500);

@@ -20,12 +20,13 @@ interface IPlaceRepository {
 
   /**
    * @param string $name
+   * @param string|null $location
    * @param double $x
    * @param double $y
    * @param Place|null $place
    * @return Place|null
    */
-  public function createOrUpdatePlace(string $name, float $x, float $y, Place $place = null): ?Place;
+  public function createOrUpdatePlace(string $name, ?string $location, float $x, float $y, Place $place = null): ?Place;
 
   /**
    * @param Place $place

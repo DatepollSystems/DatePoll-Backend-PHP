@@ -25,16 +25,18 @@ class PlaceRepository implements IPlaceRepository {
 
   /**
    * @param string $name
+   * @param string|null $location
    * @param double $x
    * @param double $y
    * @param Place|null $place
    * @return Place|null
    */
-  public function createOrUpdatePlace(string $name, float $x, float $y, Place $place = null): ?Place {
+  public function createOrUpdatePlace(string $name, ?string $location, float $x, float $y, Place $place = null): ?Place {
     if ($place == null) {
-      $place = new Place(['name' => $name, 'x' => $x, 'y' => $y]);
+      $place = new Place(['name' => $name, 'location' => $location, 'x' => $x, 'y' => $y]);
     } else {
       $place->name = $name;
+      $place->location = $location;
       $place->x = $x;
       $place->y = $y;
     }
