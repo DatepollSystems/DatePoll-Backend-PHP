@@ -15,8 +15,8 @@ use App\Models\SeatReservation\PlaceReservation;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
 use App\Permissions;
 use App\Utils\ArrayHelper;
-use App\Utils\StringHelper;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -170,23 +170,11 @@ class User extends Model {
    * @return bool
    */
   public function hasPermission(string $permission): bool {
-    $permissions = $this->getPermissions();
-
-    if (ArrayHelper::getCount($permissions) < 1) {
-      return false;
-    }
-
-    if (ArrayHelper::inArray(ArrayHelper::getPropertyArrayOfObjectArray($permissions, 'permission'), Permissions::$ROOT_ADMINISTRATION)) {
+    if (DB::table('user_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where('user_id', '=', $this->id)->count() > 0) {
       return true;
     }
 
-    foreach ($permissions as $permissionO) {
-      if (StringHelper::compareCaseSensitive($permissionO->permission, $permission)) {
-        return true;
-      }
-    }
-
-    return false;
+    return (DB::table('user_permissions')->where('permission', '=', $permission)->where('user_id', '=', $this->id)->count() > 0);
   }
 
   // ------------------------------------ Cinema ------------------------------------
