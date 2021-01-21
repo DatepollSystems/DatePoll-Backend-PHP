@@ -122,7 +122,7 @@ class UpdateDatePollDB extends ACommand {
     $this->comment('Fixing settings table...');
     try {
       $this->runDbStatement('DELETE FROM settings WHERE `key` = \'community_happy_alert\';');
-      $this->runDbStatement('ALTER TABLE settings DROP COLUMN type;');
+      $this->runDbStatement('ALTER TABLE settings DROP COLUMN IF EXISTS type;');
       $this->runDbStatement('UPDATE settings SET value = \'true\' WHERE value = \'1\';');
       $this->runDbStatement('UPDATE settings SET value = \'false\' WHERE value = \'0\';');
     } catch (Exception $exception) {

@@ -123,7 +123,7 @@ ALTER TABLE event_dates DROP date, RENAME COLUMN date_dt TO date;
 # 7 to 8
 # -------------------------------------------------------------------------------------------
 DELETE FROM settings WHERE `key` = 'community_happy_alert';
-ALTER TABLE settings DROP COLUMN type;
+ALTER TABLE settings DROP COLUMN IF EXISTS type;
 UPDATE settings SET value = 'true' WHERE value = '1';
 UPDATE settings SET value = 'false' WHERE value = '0';
 
