@@ -13,7 +13,9 @@ use App\Models\PerformanceBadge\UserHasBadge;
 use App\Models\PerformanceBadge\UserHavePerformanceBadgeWithInstrument;
 use App\Models\SeatReservation\PlaceReservation;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
+use App\Permissions;
 use App\Utils\ArrayHelper;
+use App\Utils\StringHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -168,7 +170,23 @@ class User extends Model {
    * @return bool
    */
   public function hasPermission(string $permission): bool {
-    return (UserPermission::where('user_id', '=', $this->id)->where('permission', '=', $permission)->orWhere('permission', '=', 'root.administration')->first() != null);
+    $permissions = $this->getPermissions();
+
+    if (ArrayHelper::getCount($permissions) < 1) {
+      return false;
+    }
+
+    if (ArrayHelper::inArray(ArrayHelper::getPropertyArrayOfObjectArray($permissions, 'permission'), Permissions::$ROOT_ADMINISTRATION)) {
+      return true;
+    }
+
+    foreach ($permissions as $permissionO) {
+      if (StringHelper::compareCaseSensitive($permissionO->permission, $permission)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // ------------------------------------ Cinema ------------------------------------
