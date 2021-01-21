@@ -74,9 +74,6 @@ class EventController extends Controller {
     $anonymous = ! ($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
       $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
       $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS));
-
-    //return response()->json(['msg' => $user->hasPermission(Permissions::$ROOT_ADMINISTRATION)]);
-
     $anonymousString = Converter::booleanToString($anonymous);
 
     $cacheKey = 'events.results.anonymous.' . $anonymousString . '.' . $id;
