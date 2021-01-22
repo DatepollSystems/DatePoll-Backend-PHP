@@ -33,7 +33,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set cinema service enabled',
-      'isEnabled' => $isEnabled, ]);
+      'isEnabled' => $isEnabled,]);
   }
 
   /**
@@ -52,7 +52,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set events service enabled',
-      'isEnabled' => $isEnabled, ]);
+      'isEnabled' => $isEnabled,]);
   }
 
   /**
@@ -71,7 +71,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set broadcast service enabled',
-      'isEnabled' => $isEnabled, ]);
+      'isEnabled' => $isEnabled,]);
   }
 
   /**
@@ -86,11 +86,14 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setBroadcastsProcessIncomingEmailsEnabled($isEnabled);
 
-    Logging::info('setBroadcastsProcessIncomingEmailsEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+    Logging::info(
+      'setBroadcastsProcessIncomingEmailsEnabled',
+      'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled
+    );
 
     return response()->json([
       'msg' => 'Set broadcast process incoming emails service enabled',
-      'isEnabled' => $isEnabled, ]);
+      'isEnabled' => $isEnabled,]);
   }
 
   /**
@@ -105,11 +108,14 @@ class SettingsController extends Controller {
 
     $this->settingRepository->setBroadcastsProcessIncomingEmailsForwardingEnabled($isEnabled);
 
-    Logging::info('setBroadcastsProcessIncomingEmailsForwardingEnabled', 'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled);
+    Logging::info(
+      'setBroadcastsProcessIncomingEmailsForwardingEnabled',
+      'User - ' . $request->auth->id . ' | Changed to ' . $isEnabled
+    );
 
     return response()->json([
       'msg' => 'Set broadcast process incoming emails forwarding service enabled',
-      'isEnabled' => $isEnabled, ]);
+      'isEnabled' => $isEnabled,]);
   }
 
   /**
@@ -131,7 +137,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set broadcast process incoming emails forwarding email addresses set ',
-      'email_addresses' => $emailAddresses, ]);
+      'email_addresses' => $emailAddresses,]);
   }
 
   /**
@@ -141,7 +147,7 @@ class SettingsController extends Controller {
     return response()->json(
       [
         'msg' => 'Broadcast process incoming mails forwarding email addresses',
-        'email_addresses' => $this->settingRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(), ],
+        'email_addresses' => $this->settingRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses(),],
       200
     );
   }
@@ -162,7 +168,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set community name',
-      'community_name' => $communityName, ]);
+      'community_name' => $communityName,]);
   }
 
   /**
@@ -181,7 +187,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set community url',
-      'community_url' => $communityUrl, ]);
+      'community_url' => $communityUrl,]);
   }
 
   /**
@@ -200,7 +206,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set community description',
-      'community_description' => $communityDescription, ]);
+      'community_description' => $communityDescription,]);
   }
 
   /**
@@ -219,7 +225,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set community imprint',
-      'community_url' => $communityImprint, ]);
+      'community_url' => $communityImprint,]);
   }
 
   /**
@@ -238,7 +244,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set community privacy policy',
-      'community_url' => $communityPrivacyPolicy, ]);
+      'community_url' => $communityPrivacyPolicy,]);
   }
 
   /**
@@ -257,7 +263,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set url',
-      'url' => $url, ]);
+      'url' => $url,]);
   }
 
   /**
@@ -266,7 +272,7 @@ class SettingsController extends Controller {
   public function getOpenWeatherMapKey(): JsonResponse {
     return response()->json([
       'msg' => 'OpenWeatherMap key',
-      'openweathermap_key' => $this->settingRepository->getOpenWeatherMapKey(), ], 200);
+      'openweathermap_key' => $this->settingRepository->getOpenWeatherMapKey(),], 200);
   }
 
   /**
@@ -285,7 +291,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set OpenWeatherMap key',
-      'openweathermap_key' => $openWeatherMapKey, ]);
+      'openweathermap_key' => $openWeatherMapKey,]);
   }
 
   /**
@@ -295,7 +301,7 @@ class SettingsController extends Controller {
     return response()->json(
       [
         'msg' => 'OpenWeatherMap cinema city id',
-        'openweathermap_cinema_city_id' => $this->settingRepository->getCinemaOpenWeatherMapCityId(), ],
+        'openweathermap_cinema_city_id' => $this->settingRepository->getCinemaOpenWeatherMapCityId(),],
       200
     );
   }
@@ -319,7 +325,7 @@ class SettingsController extends Controller {
 
     return response()->json([
       'msg' => 'Set OpenWeatherMap cinema city id',
-      'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId, ]);
+      'openweathermap_cinema_city_id' => $openWeatherMapCinemaCityId,]);
   }
 
   /**
@@ -328,7 +334,7 @@ class SettingsController extends Controller {
   public function getAlert(): JsonResponse {
     return response()->json([
       'msg' => 'Alert',
-      'alert' => $this->settingRepository->getAlert(), ], 200);
+      'alert' => $this->settingRepository->getAlert(),], 200);
   }
 
   /**
@@ -344,15 +350,37 @@ class SettingsController extends Controller {
 
     if (! str_contains($aType, 'happy') && ! str_contains($aType, 'normal')) {
       return response()->json(['msg' => 'Unknown type', 'error_code' => 'unknown_alert_type',
-        'possible types' => ['happy', 'normal'], ], 422);
+        'possible types' => ['happy', 'normal'],], 422);
     }
 
     $alert = $this->settingRepository->setAlert($alertMessage, $aType);
-
     Logging::info('setAlert', 'User - ' . $request->auth->id . ' | Changed to ' . $alert->message);
 
     return response()->json([
       'msg' => 'Set alert',
-      'alert' => $alert, ]);
+      'alert' => $alert,], 200);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function setJitsiInstanceUrl(AuthenticatedRequest $request): JsonResponse {
+    $this->validate($request, ['instance_url' => 'url|max:190|nullable']);
+
+    $instanceUrl = $request->input('instance_url');
+    $instanceUrl = $this->settingRepository->setJitsiInstanceUrl($instanceUrl);
+    Logging::info('setJitsiInstance', 'User "' . $request->auth->id . '" | Changed to "' . $instanceUrl . '"');
+
+    return response()->json(['msg' => 'Set jitsi instance url', 'instance_url' => $instanceUrl], 200);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  public function getJitsiInstanceUrl(): JsonResponse {
+    return response()->json(['msg' => 'Jitsi instance url',
+      'instance_url' => $this->settingRepository->getJitsiInstanceUrl(), ], 200);
   }
 }
