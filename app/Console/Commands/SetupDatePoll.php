@@ -1,8 +1,7 @@
 <?php namespace App\Console\Commands;
 
-use App\Utils\Converter;
+use App\Utils\EnvironmentHelper;
 use App\Utils\Generator;
-use App\Utils\TypeHelper;
 
 class SetupDatePoll extends ACommand {
   protected $signature = 'setup-datepoll';
@@ -41,30 +40,6 @@ class SetupDatePoll extends ACommand {
   private function make(string $envKeyWord, string $question, string $default) {
     $answer = $this->askStringQuestion($question, $default);
 
-    $this->changeEnvironmentVariable($envKeyWord, $answer);
-  }
-
-  private function changeEnvironmentVariable($key, $value) {
-    $path = base_path('.env');
-
-    if (TypeHelper::isBoolean(env($key))) {
-      $old = Converter::stringToBoolean(env($key));
-    } elseif (env($key) === null) {
-      $old = 'null';
-    } else {
-      $old = '"'.env($key).'"';
-    }
-
-    if (TypeHelper::isBoolean($value)) {
-      $value = Converter::booleanToString($value);
-    } elseif ($value === null) {
-      $value = 'null';
-    } else {
-      $value = '"'.$value.'"';
-    }
-
-    if (file_exists($path)) {
-      file_put_contents($path, str_replace("$key=" . $old, "$key=" . $value, file_get_contents($path)));
-    }
+    EnvironmentHelper::setEnvironmentVariable($envKeyWord, $answer);
   }
 }

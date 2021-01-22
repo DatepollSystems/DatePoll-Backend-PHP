@@ -8,7 +8,9 @@ use App\Console\Commands\DropDatabase;
 use App\Console\Commands\ProcessBroadcastEmailsInInbox;
 use App\Console\Commands\ReQueueNotSentBroadcasts;
 use App\Console\Commands\SetupDatePoll;
+use App\Console\Commands\TestSomething;
 use App\Console\Commands\UpdateDatePollDB;
+use App\Utils\EnvironmentHelper;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
@@ -26,6 +28,7 @@ class Kernel extends ConsoleKernel {
     ReQueueNotSentBroadcasts::class,
     ProcessBroadcastEmailsInInbox::class,
     DeleteUnusedBroadcastAttachments::class,
+    TestSomething::class,
   ];
 
   /**
@@ -34,8 +37,8 @@ class Kernel extends ConsoleKernel {
    * @param Schedule $schedule
    * @return void
    */
-  protected function schedule(Schedule $schedule) {
-    if (env('APP_DEBUG', false)) {
+  protected function schedule(Schedule $schedule): void {
+    if (EnvironmentHelper::isDebug()) {
       $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyMinute();
     } else {
       $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyFourMinutes();
