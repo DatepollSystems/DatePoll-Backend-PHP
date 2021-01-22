@@ -16,6 +16,7 @@ use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Utils\ArrayHelper;
+use App\Utils\EnvironmentHelper;
 use App\Utils\QueueHelper;
 use DateInterval;
 use DateTime;
@@ -184,7 +185,7 @@ class BroadcastRepository implements IBroadcastRepository {
 
       $attachment->broadcast_id = $broadcast->id;
       $attachment->save();
-      $mAttachments = $mAttachments . '> <a href="' . $frontendUrl . '/download/' . $attachment->token . '">' . $attachment->name . '</a><br>';
+      $mAttachments .= '> <a href="' . $frontendUrl . '/download/' . $attachment->token . '">' . $attachment->name . '</a><br>';
     }
 
     if ($happened) {
@@ -192,14 +193,25 @@ class BroadcastRepository implements IBroadcastRepository {
     }
 
     $writer = $this->userRepository->getUserById($writerId);
+    if ($writer == null) {
+      Logging::error(
+        'createBroadcast',
+        'Broadcast failed to create! Writer id is null');
+      $broadcast->delete();
+
+      return null;
+    }
     $writerEmailAddress = null;
     if ($writer->hasEmailAddresses()) {
       $writerEmailAddress = $writer->getEmailAddresses()[0];
     }
 
     $time = new DateTime();
+    if (EnvironmentHelper::isProduction()) {
+      $time->add(new DateInterval('PT' . 2 . 'M'));
+    }
     foreach ($users as $user) {
-      if ($user->hasEmailAddresses() && $user->activated && ! $user->information_denied) {
+      if (! $user->information_denied && $user->activated && $user->hasEmailAddresses()) {
         $broadcastUserInfo = new BroadcastUserInfo([
           'broadcast_id' => $broadcast->id,
           'user_id' => $user->id,
@@ -221,7 +233,8 @@ class BroadcastRepository implements IBroadcastRepository {
           $DatePollAddress,
           $mAttachments
         );
-        $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $user->getEmailAddresses(), $user->id, $broadcast->id);
+        $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $user->getEmailAddresses(), $user->id,
+          $broadcast->id);
 
         QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
       }
@@ -275,7 +288,8 @@ class BroadcastRepository implements IBroadcastRepository {
         $DatePollAddress,
         $mAttachments
       );
-      $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses(), $broadcast->id, $broadcastUserInfo->user()->id);
+      $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses(),
+        $broadcast->id, $broadcastUserInfo->user()->id);
 
       QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
     }

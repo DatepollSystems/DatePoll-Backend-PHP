@@ -177,7 +177,7 @@ class BroadcastController extends Controller {
    * @param string $token
    * @return RedirectResponse|Redirector|BinaryFileResponse
    */
-  public function attachmentDownload(string $token) {
+  public function attachmentDownload(string $token): BinaryFileResponse|Redirector|RedirectResponse {
     $attachment = $this->broadcastAttachmentRepository->getAttachmentByToken($token);
 
     if ($attachment == null) {
