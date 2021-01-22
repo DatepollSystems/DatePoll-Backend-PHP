@@ -15,7 +15,7 @@ abstract class StringHelper {
    */
   #[Pure]
   public static function contains(?string $string, ?string $keyword): bool {
-    if (! self::notNull($string) || ! self::notNull($keyword)) {
+    if (self::null($string) || self::null($keyword)) {
       return false;
     }
 
@@ -28,7 +28,7 @@ abstract class StringHelper {
    */
   #[Pure]
   public static function length(?string $string): int {
-    if (! self::notNull($string)) {
+    if (self::nullAndEmpty($string)) {
       return 0;
     }
 
@@ -43,7 +43,7 @@ abstract class StringHelper {
    */
   #[Pure]
   public static function countSubstring(?string $string, ?string $substring): int {
-    if (! self::notNull($string) || ! self::notNull($substring)) {
+    if (self::null($string) || self::null($substring)) {
       return 0;
     }
 
@@ -56,7 +56,16 @@ abstract class StringHelper {
    */
   #[Pure]
   public static function notNullAndEmpty(?string $string): bool {
-    return (! self::trim($string) == '' && ! self::trim($string) == 'NaN');
+    return (self::trim($string) != '' && self::trim($string) != 'NaN');
+  }
+
+  /**
+   * @param string|null $string
+   * @return bool Returns <code>true</code> if string is null or empty, otherwise <code>false</code>.
+   */
+  #[Pure]
+  public static function nullAndEmpty(?string $string): bool {
+    return ! self::notNullAndEmpty($string);
   }
 
   /**
@@ -66,6 +75,15 @@ abstract class StringHelper {
   #[Pure]
   public static function notNull(?string $string): bool {
     return isset($string);
+  }
+
+  /**
+   * @param string|null $string $string
+   * @return bool Returns <code>true</code> if string is null, otherwise <code>false</code>.
+   */
+  #[Pure]
+  public static function null(?string $string): bool {
+    return ! self::notNull($string);
   }
 
   /**

@@ -39,16 +39,15 @@ class MovieController extends Controller {
    * @return JsonResponse
    */
   public function getMoviesOrderedByDate(?string $year = null): JsonResponse {
-    if (! StringHelper::notNull($year)) {
-      $year = null;
-    } else {
-      $year = Converter::stringToInteger($year);
+    $iYear = null;
+    if (StringHelper::notNull($year)) {
+      $iYear = Converter::stringToInteger($year);
     }
 
     return response()->json([
       'msg' => 'List of all movies',
-      'movies' => $this->movieRepository->getAllMoviesOrderedByDate($year),
-      'year' => $year]);
+      'movies' => $this->movieRepository->getAllMoviesOrderedByDate($iYear),
+      'year' => $iYear]);
   }
 
   /**

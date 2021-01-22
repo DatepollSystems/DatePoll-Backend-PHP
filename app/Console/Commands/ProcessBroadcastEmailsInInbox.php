@@ -200,7 +200,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     Logging::info(
       'processBroadcastEmails',
-      'Sending email. Creating broadcast... Subject: [' . $subject . ']'
+      'Sending email. Creating broadcast... Subject: "' . $subject . '"'
     );
 
     $this->broadcastRepository->create(
@@ -301,7 +301,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     // Invalid: "[]" | "[ ]"
     $receiverString = $this->getReceiverString($subject);
-    if (StringHelper::length($receiverString) < 1) {
+    if (StringHelper::length($receiverString) < 1 || StringHelper::nullAndEmpty($receiverString)) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Nothing between "[" and "]"');
 
       return false;

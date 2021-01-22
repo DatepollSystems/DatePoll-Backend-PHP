@@ -47,15 +47,16 @@ class EventController extends Controller {
    * @return JsonResponse
    */
   public function getEventsOrderedByDate(?string $year = null): JsonResponse {
-    if (! StringHelper::notNullAndEmpty($year)) {
-      $year = null;
+    $iYear = null;
+    if (StringHelper::nullAndEmpty($year)) {
+      $iYear = null;
     } else {
-      $year = Converter::stringToInteger($year);
+      $iYear = Converter::stringToInteger($year);
     }
 
     return response()->json([
       'msg' => 'List of all events of this year',
-      'events' => $this->eventRepository->getEventsOrderedByDate($year), ]);
+      'events' => $this->eventRepository->getEventsOrderedByDate($iYear), 'year' => $iYear, ]);
   }
 
   /**
