@@ -13,7 +13,7 @@ abstract class ArrayHelper {
    */
   #[Pure]
   public static function inArray(array $array, mixed $toFind): bool {
-    return in_array($toFind, $array);
+    return in_array($toFind, $array, true);
   }
 
   /**
