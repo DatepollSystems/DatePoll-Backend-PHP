@@ -30,6 +30,12 @@ interface IUserRepository {
   public function getUserByUsername(string $username): ?User;
 
   /**
+   * @param string $emailAddress
+   * @return User[]
+   */
+  public function getUsersByEmailAddress(string $emailAddress): array;
+
+  /**
    * @param string|null $title
    * @param string $username
    * @param string $firstname

@@ -10,6 +10,7 @@ use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
+use App\Utils\ArrayHelper;
 use App\Utils\Converter;
 use App\Utils\Generator;
 use App\Utils\MailHelper;
@@ -55,6 +56,14 @@ class UserRepository implements IUserRepository {
   public function getUserByUsername(string $username): ?User {
     return User::where('username', $username)
       ->first();
+  }
+
+  /**
+   * @param string $emailAddress
+   * @return User[]
+   */
+  public function getUsersByEmailAddress(string $emailAddress): array {
+    return User::find(ArrayHelper::getPropertyArrayOfObjectArray(UserEmailAddress::where('email', '=', $emailAddress)->get()->all(), 'user_id'))->all();
   }
 
   /**
@@ -134,20 +143,29 @@ class UserRepository implements IUserRepository {
     } else {
       $this->userChangeRepository->checkForPropertyChange('username', $user->id, $editorId, $username, $user->username);
       $this->userChangeRepository->checkForPropertyChange('title', $user->id, $editorId, $title, $user->title);
-      $this->userChangeRepository->checkForPropertyChange('firstname', $user->id, $editorId, $firstname, $user->firstname);
+      $this->userChangeRepository->checkForPropertyChange('firstname', $user->id, $editorId, $firstname,
+        $user->firstname);
       $this->userChangeRepository->checkForPropertyChange('surname', $user->id, $editorId, $surname, $user->surname);
       $this->userChangeRepository->checkForPropertyChange('birthday', $user->id, $editorId, $birthday, $user->birthday);
-      $this->userChangeRepository->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate, $user->join_date);
-      $this->userChangeRepository->checkForPropertyChange('streetname', $user->id, $editorId, $streetname, $user->streetname);
-      $this->userChangeRepository->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber, $user->streetnumber);
+      $this->userChangeRepository->checkForPropertyChange('join_date', $user->id, $editorId, $joinDate,
+        $user->join_date);
+      $this->userChangeRepository->checkForPropertyChange('streetname', $user->id, $editorId, $streetname,
+        $user->streetname);
+      $this->userChangeRepository->checkForPropertyChange('streetnumber', $user->id, $editorId, $streetnumber,
+        $user->streetnumber);
       $this->userChangeRepository->checkForPropertyChange('location', $user->id, $editorId, $location, $user->location);
       $this->userChangeRepository->checkForPropertyChange('activity', $user->id, $editorId, $activity, $user->activity);
-      $this->userChangeRepository->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber, $user->member_number);
-      $this->userChangeRepository->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment, $user->internal_comment);
-      $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember, $user->bv_member);
+      $this->userChangeRepository->checkForPropertyChange('member_number', $user->id, $editorId, $memberNumber,
+        $user->member_number);
+      $this->userChangeRepository->checkForPropertyChange('internal_comment', $user->id, $editorId, $internalComment,
+        $user->internal_comment);
+      $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember,
+        $user->bv_member);
       $this->userChangeRepository->checkForPropertyChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
-      $this->userChangeRepository->checkForPropertyChange('activated', $user->id, $editorId, $activated, $user->activated);
-      $this->userChangeRepository->checkForPropertyChange('informationDenied', $user->id, $editorId, $informationDenied, $user->information_denied);
+      $this->userChangeRepository->checkForPropertyChange('activated', $user->id, $editorId, $activated,
+        $user->activated);
+      $this->userChangeRepository->checkForPropertyChange('informationDenied', $user->id, $editorId, $informationDenied,
+        $user->information_denied);
 
 
       $user->username = $username;
@@ -199,7 +217,8 @@ class UserRepository implements IUserRepository {
 
       if ($toDelete) {
         $phoneNumberToDeleteObject = UserTelephoneNumber::find($oldPhoneNumber->id);
-        $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, null, $phoneNumberToDeleteObject->number);
+        $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, null,
+          $phoneNumberToDeleteObject->number);
         if (! $phoneNumberToDeleteObject->delete()) {
           Logging::error('createOrUpdateUser', 'Could not delete $phoneNumberToDeleteObject');
 
@@ -229,7 +248,8 @@ class UserRepository implements IUserRepository {
 
           return null;
         }
-        $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, $phoneNumber['number'], null);
+        $this->userChangeRepository->createUserChange('phone number', $user->id, $editorId, $phoneNumber['number'],
+          null);
       }
     }
 
@@ -261,7 +281,8 @@ class UserRepository implements IUserRepository {
       }
 
       if ($toDelete) {
-        $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, null, $oldEmailAddress->email);
+        $this->userChangeRepository->createUserChange('email address', $user->id, $editorId, null,
+          $oldEmailAddress->email);
         if (! $oldEmailAddress->delete()) {
           Logging::error('updateUserEmailAddresses', 'Could not delete emailAddressToDeleteObject');
 

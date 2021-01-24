@@ -18,6 +18,7 @@ use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller {
   private static string $YEARS_CACHE_KEY = 'events.years';
+  private static string $GET_SINGLE_CACHE_KEY = 'events.results.anonymous.';
 
   protected IEventRepository $eventRepository;
   protected IEventDateRepository $eventDateRepository;
@@ -77,7 +78,7 @@ class EventController extends Controller {
       $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS));
     $anonymousString = Converter::booleanToString($anonymous);
 
-    $cacheKey = 'events.results.anonymous.' . $anonymousString . '.' . $id;
+    $cacheKey = self::$GET_SINGLE_CACHE_KEY . $anonymousString . '.' . $id;
     if (Cache::has($cacheKey)) {
       Logging::info('getSingleEvent', 'Receiving ' . $cacheKey . ' from cache');
 
@@ -179,6 +180,10 @@ class EventController extends Controller {
       return response()->json(['msg' => 'An error occurred during event updating.'], 500);
     }
 
+    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'true.' . $event->id);
+    Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'false.' . $event->id);
+
     return response()->json([
       'msg' => 'Successful updated event',
       'event' => $event, ], 200);
@@ -198,6 +203,8 @@ class EventController extends Controller {
     if (! $this->eventRepository->deleteEvent($event)) {
       return response()->json(['msg' => 'Could not delete event'], 500);
     }
+    
+    Cache::forget(self::$YEARS_CACHE_KEY);
 
     return response()->json(['msg' => 'Successfully deleted event'], 200);
   }

@@ -13,6 +13,7 @@ use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Repositories\User\User\IUserRepository;
 use App\Utils\ArrayHelper;
 use App\Utils\MailHelper;
 use App\Utils\StringHelper;
@@ -48,6 +49,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
   protected $description = 'Processes all emails!';
 
   public function __construct(
+    private IUserRepository $userRepository,
     private IBroadcastRepository $broadcastRepository,
     private IGroupRepository $groupRepository,
     private IBroadcastAttachmentRepository $broadcastAttachmentRepository,
@@ -120,7 +122,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     // Check if from address is in block list
     if (ArrayHelper::inArray($this->senderBlockList, StringHelper::toLowerCase($fromAddress))) {
-      Logging::info('processBroadcastEmails', 'Got an email from DatePoll and deleting it: [' . $subject . ']');
+      Logging::info('processBroadcastEmails', 'Got an email from DatePoll and deleting it: "' . $subject . '"');
       return self::$actionDelete;
     }
 
@@ -128,42 +130,34 @@ class ProcessBroadcastEmailsInInbox extends Command {
       if ($this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEnabled()) {
         Logging::info('processBroadcastEmails', 'Forwarding email to community major...');
 
-        $textPlain = $mail->textPlain;
-        $textHtml = $textPlain;
-        if (StringHelper::notNullAndEmpty($mail->textHtml)) {
-          $textHtml = $mail->textHtml;
-        }
-        $textPlain = Encoding::toUTF8($textPlain);
-        $textHtml = Encoding::toUTF8($textHtml);
-
-        $broadcastMail = new BroadcastMail(
-          $subject,
-          $textPlain,
-          $textHtml,
-          $mail->senderName,
-          $fromAddress,
-          $this->settingsRepository->getUrl(),
-          ''
-        );
-        MailHelper::sendEmailOnHighQueue($broadcastMail, $this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses());
+        $this->forwardEmailToDatePollCommunityLeaders($mail, $subject, $fromAddress);
         return self::$actionDelete;
       }
 
-      Logging::info('processBroadcastEmails', $fromAddress . ' Subject not valid. Subject: [' . $subject . ']');
+      Logging::info('processBroadcastEmails', $fromAddress . ' Subject not valid. Subject: "' . $subject . '"');
       MailHelper::sendEmailOnHighQueue(new BroadcastInvalidSubject(), $fromAddress);
       return self::$actionDelete;
     }
 
-    $userHasPermissionToSendBroadcasts = DB::table('user_email_addresses')
-      ->join('user_permissions', 'user_email_addresses.user_id', '=', 'user_permissions.user_id')
-      ->where('user_email_addresses.email', '=', $fromAddress)
-      ->where('user_permissions.permission', '=', Permissions::$BROADCASTS_ADMINISTRATION)
-      ->orWhere('user_permissions.permission', '=', Permissions::$ROOT_ADMINISTRATION)
-      ->select('user_permissions.user_id as user_id')->first();
+    $userId = null;
+    foreach ($this->userRepository->getUsersByEmailAddress($fromAddress) as $user) {
+      if ($user->hasPermission(Permissions::$BROADCASTS_ADMINISTRATION)) {
+        $userId = $user->id;
+        break;
+      }
+    }
 
-    if ($userHasPermissionToSendBroadcasts == null) {
+    if ($userId == null) {
+      if ($this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEnabled()) {
+        Logging::info('processBroadcastEmails',
+          $fromAddress . ' Permission denied, forwarding it. Subject: "' . $subject . '"');
+
+        $this->forwardEmailToDatePollCommunityLeaders($mail, $subject, $fromAddress);
+        return self::$actionDelete;
+      }
+
       Logging::info('processBroadcastEmails',
-        $fromAddress . ' Permission denied, deleting it. Subject: [' . $subject . ']');
+        $fromAddress . ' Permission denied, deleting it. Subject: "' . $subject . '"');
       MailHelper::sendEmailOnHighQueue(new BroadcastPermissionDenied(), $fromAddress);
       return self::$actionDelete;
     }
@@ -207,7 +201,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
       $subject,
       $textHtml,
       $textPlain,
-      $userHasPermissionToSendBroadcasts->user_id,
+      $userId,
       $groupsIds,
       [],
       $forEveryone,
@@ -215,6 +209,27 @@ class ProcessBroadcastEmailsInInbox extends Command {
     );
 
     return self::$actionDelete;
+  }
+
+  private function forwardEmailToDatePollCommunityLeaders(IncomingMail $mail, string $subject, string $fromAddress): void {
+    $textPlain = $mail->textPlain;
+    $textHtml = $textPlain;
+    if (StringHelper::notNullAndEmpty($mail->textHtml)) {
+      $textHtml = $mail->textHtml;
+    }
+    $textPlain = Encoding::toUTF8($textPlain);
+    $textHtml = Encoding::toUTF8($textHtml);
+
+    $broadcastMail = new BroadcastMail(
+      $subject,
+      $textPlain,
+      $textHtml,
+      $mail->senderName,
+      $fromAddress,
+      $this->settingsRepository->getUrl(),
+      ''
+    );
+    MailHelper::sendEmailOnHighQueue($broadcastMail, $this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses());
   }
 
   /**

@@ -190,6 +190,17 @@ interface ISettingRepository {
   public function setAlert(string $alertMessage, string $communityAlertType): stdClass;
 
   /**
+   * @return string
+   */
+  public function getJitsiInstanceUrl(): string;
+
+  /**
+   * @param string $jitsiInstanceUrl
+   * @return string
+   */
+  public function setJitsiInstanceUrl(string $jitsiInstanceUrl): string;
+
+  /**
    * @return int
    */
   public function getCurrentDatabaseVersion(): int;

@@ -3,38 +3,39 @@
 namespace App\Repositories\System\Setting;
 
 abstract class SettingKey {
-  const CINEMA_ENABLED = 'cinema_enabled';
-  const CINEMA_OPENWEATHERMAP_CITY_ID = 'cinema_openweathermap_city_id';
+  public const CINEMA_ENABLED = 'cinema_enabled';
+  public const CINEMA_OPENWEATHERMAP_CITY_ID = 'cinema_openweathermap_city_id';
 
-  const EVENTS_ENABLED = 'events_enabled';
+  public const EVENTS_ENABLED = 'events_enabled';
 
-  const BROADCASTS_ENABLED = 'broadcasts_enabled';
-  const BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED = 'broadcasts_process_incoming_emails_enabled';
-  const BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_ENABLED = 'broadcasts_process_incoming_emails_forwarding_enabled';
-  const BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_EMAIL_ADDRESSES = 'broadcasts_process_incoming_emails_forwarding_email_addresses';
+  public const BROADCASTS_ENABLED = 'broadcasts_enabled';
+  public const BROADCASTS_PROCESS_INCOMING_EMAIL_ENABLED = 'broadcasts_process_incoming_emails_enabled';
+  public const BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_ENABLED = 'broadcasts_process_incoming_emails_forwarding_enabled';
+  public const BROADCASTS_PROCESS_INCOMING_EMAIL_FORWARDING_EMAIL_ADDRESSES = 'broadcasts_process_incoming_emails_forwarding_email_addresses';
 
-  const SEAT_RESERVATION_ENABLED = 'seat_reservation_enabled';
+  public const SEAT_RESERVATION_ENABLED = 'seat_reservation_enabled';
 
-  const FILES_ENABLED = 'files_enabled';
+  public const FILES_ENABLED = 'files_enabled';
 
-  const URL = 'url';
+  public const URL = 'url';
 
-  const COMMUNITY_NAME = 'community_name';
-  const COMMUNITY_URL = 'community_url';
-  const COMMUNITY_DESCRIPTION = 'community_description';
-  const COMMUNITY_IMPRINT = 'community_imprint';
-  const COMMUNITY_PRIVACY_POLICY = 'community_privacy_policy';
-  const COMMUNITY_ALERT = 'community_alert';
-  const COMMUNITY_ALERT_TYPE = 'community_alert_type';
+  public const COMMUNITY_NAME = 'community_name';
+  public const COMMUNITY_URL = 'community_url';
+  public const COMMUNITY_DESCRIPTION = 'community_description';
+  public const COMMUNITY_IMPRINT = 'community_imprint';
+  public const COMMUNITY_PRIVACY_POLICY = 'community_privacy_policy';
+  public const COMMUNITY_ALERT = 'community_alert';
+  public const COMMUNITY_ALERT_TYPE = 'community_alert_type';
 
-  const OPENWEATHERMAP_KEY = 'openweathermap_key';
+  public const JITSI_INSTANCE_URL = 'jitsi_instance_url';
+  public const OPENWEATHERMAP_KEY = 'openweathermap_key';
 
-  const DATABASE_VERSION = 'database_version';
+  public const DATABASE_VERSION = 'database_version';
 }
 
 abstract class CommunityAlertTypes {
-  const HAPPY = 'happy';
-  const NORMAL = 'normal';
+  public const HAPPY = 'happy';
+  public const NORMAL = 'normal';
 }
 
 use App\Models\System\Setting;
@@ -171,11 +172,11 @@ class SettingRepository implements ISettingRepository {
     $url = $this->getUrl();
     if (StringHelper::contains($url, 'localhost')) {
       return 'http://localhost:9130';
-    } else {
-      $urlWithoutPort = explode(':', $url);
-
-      return $urlWithoutPort[0] . ':' . $urlWithoutPort[1] . ':9230';
     }
+
+    $urlWithoutPort = explode(':', $url);
+
+    return $urlWithoutPort[0] . ':' . $urlWithoutPort[1] . ':9230';
   }
 
   /**
@@ -319,6 +320,21 @@ class SettingRepository implements ISettingRepository {
   }
 
   /**
+   * @return string
+   */
+  public function getJitsiInstanceUrl(): string {
+    return $this->getStringValueByKey(SettingKey::JITSI_INSTANCE_URL, '');
+  }
+
+  /**
+   * @param string $jitsiInstanceUrl
+   * @return string
+   */
+  public function setJitsiInstanceUrl(string $jitsiInstanceUrl): string {
+    return $this->setStringValueByKey(SettingKey::JITSI_INSTANCE_URL, $jitsiInstanceUrl);
+  }
+
+  /**
    * @return int
    */
   public function getCurrentDatabaseVersion(): int {
@@ -350,9 +366,9 @@ class SettingRepository implements ISettingRepository {
       $newSetting->save();
 
       return $newSetting->value;
-    } else {
-      return $setting->value;
     }
+
+    return $setting->value;
   }
 
   /**
@@ -371,12 +387,12 @@ class SettingRepository implements ISettingRepository {
       $newSetting->save();
 
       return $newSetting->value;
-    } else {
-      $setting->value = $value;
-      $setting->save();
-
-      return $setting->value;
     }
+
+    $setting->value = $value;
+    $setting->save();
+
+    return $setting->value;
   }
 
   /**
@@ -397,9 +413,9 @@ class SettingRepository implements ISettingRepository {
       $newSetting->save();
 
       return Converter::stringToBoolean($newSetting->value);
-    } else {
-      return Converter::stringToBoolean($setting->value);
     }
+
+    return Converter::stringToBoolean($setting->value);
   }
 
   /**
@@ -421,12 +437,12 @@ class SettingRepository implements ISettingRepository {
       $newSetting->save();
 
       return Converter::stringToBoolean($newSetting->value);
-    } else {
-      $setting->value = $valueToSave;
-      $setting->save();
-
-      return Converter::stringToBoolean($setting->value);
     }
+
+    $setting->value = $valueToSave;
+    $setting->save();
+
+    return Converter::stringToBoolean($setting->value);
   }
 
   /**
@@ -448,12 +464,12 @@ class SettingRepository implements ISettingRepository {
       $newSetting->save();
 
       return Converter::stringToInteger($newSetting->value);
-    } else {
-      $setting->value = $valueToSave;
-      $setting->save();
-
-      return Converter::stringToInteger($setting->value);
     }
+
+    $setting->value = $valueToSave;
+    $setting->save();
+
+    return Converter::stringToInteger($setting->value);
   }
 
   /**
@@ -472,9 +488,9 @@ class SettingRepository implements ISettingRepository {
       $newSetting->save();
 
       return Converter::stringToInteger($newSetting->value);
-    } else {
-      return Converter::stringToInteger($setting->value);
     }
+
+    return Converter::stringToInteger($setting->value);
   }
 
   /**

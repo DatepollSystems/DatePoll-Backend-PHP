@@ -21,6 +21,15 @@ abstract class TypeHelper {
    */
   #[Pure]
   public static function isInteger(mixed $possibleInteger): bool {
-    return is_integer($possibleInteger);
+    return is_int($possibleInteger);
+  }
+
+  /**
+   * @param mixed $possibleString
+   * @return bool
+   */
+  #[Pure]
+  public static function isString(mixed $possibleString): bool {
+    return is_string($possibleString);
   }
 }
