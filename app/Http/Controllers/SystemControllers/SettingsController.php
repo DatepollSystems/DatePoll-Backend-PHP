@@ -196,7 +196,7 @@ class SettingsController extends Controller {
    * @throws ValidationException
    */
   public function setCommunityDescription(AuthenticatedRequest $request): JsonResponse {
-    $this->validate($request, ['community_description' => 'required|min:1']);
+    $this->validate($request, ['community_description' => 'required|min:1|max:30000000']);
 
     $communityDescription = $request->input('community_description');
 
@@ -215,7 +215,7 @@ class SettingsController extends Controller {
    * @throws ValidationException
    */
   public function setCommunityImprint(AuthenticatedRequest $request): JsonResponse {
-    $this->validate($request, ['community_imprint' => 'required|min:1']);
+    $this->validate($request, ['community_imprint' => 'required|min:1|max:30000000']);
 
     $communityImprint = $request->input('community_imprint');
 
@@ -234,7 +234,7 @@ class SettingsController extends Controller {
    * @throws ValidationException
    */
   public function setCommunityPrivacyPolicy(AuthenticatedRequest $request): JsonResponse {
-    $this->validate($request, ['community_privacy_policy' => 'required|min:1']);
+    $this->validate($request, ['community_privacy_policy' => 'required|min:1|max:30000000']);
 
     $communityPrivacyPolicy = $request->input('community_privacy_policy');
 
