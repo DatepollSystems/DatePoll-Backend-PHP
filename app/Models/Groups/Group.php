@@ -6,7 +6,10 @@ use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
+use App\Permissions;
+use App\Utils\ArrayHelper;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use stdClass;
 
 /**
@@ -28,7 +31,7 @@ class Group extends Model {
     'orderN',
     'description',
     'created_at',
-    'updated_at', ];
+    'updated_at',];
 
   /**
    * @return Subgroup[]
@@ -105,5 +108,46 @@ class Group extends Model {
   public function broadcastsForGroups(): array {
     return $this->hasMany(BroadcastForGroup::class)
       ->get()->all();
+  }
+
+  // ------------------------------------ Permissions ------------------------------------
+  /**
+   * @return GroupPermission[]
+   */
+  public function getPermissions(): array {
+    return $this->hasMany(GroupPermission::class)
+      ->get()->all();
+  }
+
+  /**
+   * @param string $permission
+   * @return bool
+   */
+  public function hasPermission(string $permission): bool {
+    if (DB::table('group_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where(
+      'group_id',
+      '=',
+      $this->id
+    )->count() > 0) {
+      return true;
+    }
+
+    return (DB::table('group_permissions')->where('permission', '=', $permission)->where(
+      'group_id',
+      '=',
+      $this->id
+    )->count() > 0);
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $group = parent::toArray();
+    $group['permissions'] = ArrayHelper::getPropertyArrayOfObjectArray($this->getPermissions(), 'permission');
+    $group['subgroups'] = $this->getSubgroupsOrdered();
+    $group['users'] = $this->getUsersWithRolesOrderedBySurname();
+
+    return $group;
   }
 }

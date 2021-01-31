@@ -4,7 +4,9 @@ namespace App\Repositories\Group\Group;
 
 use App\Logging;
 use App\Models\Groups\Group;
+use App\Models\Groups\GroupPermission;
 use App\Models\Groups\UsersMemberOfGroups;
+use App\Utils\ArrayHelper;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -167,7 +169,7 @@ class GroupRepository implements IGroupRepository {
       }
 
       $joinYear = date_format(new DateTime($user->created_at), 'Y');
-      if (! in_array($joinYear, $joinYears)) {
+      if (ArrayHelper::notInArray($joinYears, $joinYear)) {
         $joinYears[] = $joinYear;
       }
     }
@@ -196,5 +198,65 @@ class GroupRepository implements IGroupRepository {
     $group['users_grouped_by_join_year'] = $users_grouped_by_join_year;
 
     return $group;
+  }
+
+  /**
+   * @param string[]|array $permissions
+   * @param Group $group
+   * @return bool
+   */
+  public function createOrUpdatePermissionsForGroup(array $permissions, Group $group): bool {
+    $permissionsWhichHaveNotBeenDeleted = [];
+
+    foreach ($group->getPermissions() as $oldPermission) {
+      $toDelete = true;
+
+      foreach ((array)$permissions as $permission) {
+        if ($oldPermission['permission'] == $permission) {
+          $toDelete = false;
+          $permissionsWhichHaveNotBeenDeleted[] = $permission;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $permissionToDeleteObject = GroupPermission::find($oldPermission->id);
+        if (! $permissionToDeleteObject->delete()) {
+          Logging::error(
+            'createOrUpdatePermissionsForGroup',
+            'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for group: ' . $group->id
+          );
+
+          return false;
+        }
+      }
+    }
+
+    foreach ($permissions as $permission) {
+      $toAdd = true;
+
+      foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
+        if ($permission == $permissionWhichHaveNotBeenDeleted) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $permissionToSave = new GroupPermission([
+          'permission' => $permission,
+          'group_id' => $group->id,]);
+        if (! $permissionToSave->save()) {
+          Logging::error(
+            'createOrUpdatePermissionsForGroup',
+            'Could not add permission: ' . $permission . ' for group: ' . $group->id
+          );
+
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 }

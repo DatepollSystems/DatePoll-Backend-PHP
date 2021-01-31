@@ -10,6 +10,7 @@ class Permissions {
   public static string $EVENTS_VIEW_DETAILS = 'events.details';
 
   public static string $BROADCASTS_ADMINISTRATION = 'broadcasts.*';
+  public static string $BROADCASTS_DELETE_EXTRA = 'broadcasts.delete';
 
   public static string $SEAT_RESERVATION_ADMINISTRATION = 'seatReservation.*';
 

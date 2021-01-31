@@ -4,13 +4,13 @@ namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
+use App\Permissions;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller {
@@ -34,15 +34,17 @@ class GroupController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request): JsonResponse {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'orderN' => 'integer|nullable',
-      'description' => 'max:65535', ]);
+      'description' => 'max:65535',
+      'permissions' => 'array',
+      'permissions.*' => 'required|max:190', ]);
 
     $name = $request->input('name');
     $orderN = $request->input('orderN');
@@ -52,6 +54,15 @@ class GroupController extends Controller {
 
     if ($group == null) {
       return response()->json(['msg' => 'An error occurred'], 500);
+    }
+
+    $permissions = $request->input('permissions');
+
+    if ($request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_PERMISSIONS)) {
+      /** @noinspection NestedPositiveIfStatementsInspection */
+      if (! $this->groupRepository->createOrUpdatePermissionsForGroup($permissions, $group)) {
+        return response()->json(['msg' => 'Failed during permission clearing...'], 500);
+      }
     }
 
     return response()->json([
@@ -70,8 +81,6 @@ class GroupController extends Controller {
     }
 
     $group = $this->groupRepository->getGroupStatisticsByGroup($group);
-    $group->subgroups = $group->getSubgroupsOrdered();
-    $group['users'] = $group->getUsersWithRolesOrderedBySurname();
 
     return response()->json([
       'msg' => 'Group information',
@@ -79,16 +88,18 @@ class GroupController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function update(Request $request, int $id): JsonResponse {
+  public function update(AuthenticatedRequest $request, int $id): JsonResponse {
     $this->validate($request, [
       'name' => 'required|max:190|min:1',
       'orderN' => 'integer|nullable',
-      'description' => 'max:65535', ]);
+      'description' => 'max:65535',
+      'permissions' => 'array',
+      'permissions.*' => 'required|max:190',]);
 
     $group = $this->groupRepository->getGroupById($id);
     if ($group == null) {
@@ -103,6 +114,15 @@ class GroupController extends Controller {
 
     if ($group == null) {
       return response()->json(['msg' => 'An error occurred'], 500);
+    }
+
+    $permissions = $request->input('permissions');
+
+    if ($request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_PERMISSIONS)) {
+      /** @noinspection NestedPositiveIfStatementsInspection */
+      if (! $this->groupRepository->createOrUpdatePermissionsForGroup($permissions, $group)) {
+        return response()->json(['msg' => 'Failed during permission clearing...'], 500);
+      }
     }
 
     return response()->json([

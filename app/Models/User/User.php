@@ -84,6 +84,7 @@ class User extends Model {
   }
 
   // ------------------------------------ Properties ------------------------------------
+
   /**
    * @return UserTelephoneNumber[]
    */
@@ -115,11 +116,12 @@ class User extends Model {
   }
 
   // ------------------------------------ Groups and subgroups ------------------------------------
+
   /**
    * @return UsersMemberOfGroups[]
    */
   public function usersMemberOfGroups(): array {
-    return $this->hasMany('App\Models\Groups\UsersMemberOfGroups')
+    return $this->hasMany(UsersMemberOfGroups::class)
       ->get()->all();
   }
 
@@ -127,7 +129,7 @@ class User extends Model {
    * @return Group[]
    */
   public function getGroups(): array {
-    return array_map(function ($group) {
+    return array_map(static function ($group) {
       return $group->group();
     }, $this->usersMemberOfGroups());
   }
@@ -136,11 +138,12 @@ class User extends Model {
    * @return UsersMemberOfSubgroups[]
    */
   public function usersMemberOfSubgroups(): array {
-    return $this->hasMany('App\Models\Subgroups\UsersMemberOfSubgroups')
+    return $this->hasMany(UsersMemberOfSubgroups::class)
       ->get()->all();
   }
 
   // ------------------------------------ Badges ------------------------------------
+
   /**
    * @return UserHavePerformanceBadgeWithInstrument[]
    */
@@ -157,6 +160,7 @@ class User extends Model {
   }
 
   // ------------------------------------ Permissions ------------------------------------
+
   /**
    * @return UserPermission[]
    */
@@ -170,14 +174,37 @@ class User extends Model {
    * @return bool
    */
   public function hasPermission(string $permission): bool {
-    if (DB::table('user_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where('user_id', '=', $this->id)->count() > 0) {
+    if (DB::table('user_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where(
+      'user_id',
+      '=',
+      $this->id
+    )->count() > 0 || DB::table('user_permissions')->where(
+          'permission',
+          '=',
+          $permission
+        )->where('user_id', '=', $this->id)->count() > 0) {
       return true;
     }
 
-    return (DB::table('user_permissions')->where('permission', '=', $permission)->where('user_id', '=', $this->id)->count() > 0);
+    foreach ($this->getGroups() as $group) {
+      if (DB::table('group_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where(
+        'group_id',
+        '=',
+        $group->id
+      )->count() > 0 || DB::table('group_permissions')->where(
+            'permission',
+            '=',
+            $permission
+          )->where('group_id', '=', $group->id)->count() > 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // ------------------------------------ Cinema ------------------------------------
+
   /**
    * @return Movie[]
    */
@@ -207,15 +234,17 @@ class User extends Model {
   }
 
   // ------------------------------------ Events ------------------------------------
+
   /**
    * @return EventUserVotedForDecision[]
    */
   public function votedForDecisions(): array {
-    return $this->hasMany('App\Models\Events\EventUserVotedForDecision')
+    return $this->hasMany(EventUserVotedForDecision::class)
       ->get()->all();
   }
 
   // ------------------------------------ Broadcasts ------------------------------------
+
   /**
    * @return Broadcast[]
    */
@@ -233,6 +262,7 @@ class User extends Model {
   }
 
   // ------------------------------------ Place reservations ------------------------------------
+
   /**
    * @return PlaceReservation[]
    */
@@ -253,6 +283,16 @@ class User extends Model {
    * @return array
    */
   public function toArray(): array {
+    $permissions = [];
+    foreach ($this->getGroups() as $group) {
+      foreach ($group->toArray()['permissions'] as $permission) {
+        $permissions[] = $permission;
+      }
+    }
+    foreach ($this->getPermissions() as $permission) {
+      $permissions[] = $permission->permission;
+    }
+
     return [
       'id' => $this->id,
       'title' => $this->title,
@@ -274,7 +314,7 @@ class User extends Model {
       'force_password_change' => $this->force_password_change,
       'phone_numbers' => $this->telephoneNumbers(),
       'email_addresses' => $this->getEmailAddresses(),
-      'permissions' => ArrayHelper::getPropertyArrayOfObjectArray($this->getPermissions(), 'permission'),
+      'permissions' => $permissions,
       'performance_badges' => $this->getPerformanceBadges(),
     ];
   }

@@ -18,6 +18,16 @@ abstract class ArrayHelper {
 
   /**
    * @param array $array
+   * @param mixed $toFind
+   * @return bool
+   */
+  #[Pure]
+  public static function notInArray(array $array, mixed $toFind): bool {
+    return ! self::inArray($array, $toFind);
+  }
+
+  /**
+   * @param array $array
    * @param string $propertyName
    * @return array
    */
@@ -42,6 +52,15 @@ abstract class ArrayHelper {
   #[Pure]
   public static function isArray(mixed $possibleArray): bool {
     return is_array($possibleArray);
+  }
+
+  /**
+   * @param array ...$array
+   * @return array
+   */
+  #[Pure]
+  public static function mergeArrays(array ...$array): array {
+    return array_merge($array);
   }
 
 //  /**

@@ -78,4 +78,11 @@ interface IGroupRepository {
    * @return Group
    */
   public function getGroupStatisticsByGroup(Group $group): Group;
+
+  /**
+   * @param string[]|array $permissions
+   * @param Group $group
+   * @return bool
+   */
+  public function createOrUpdatePermissionsForGroup(array $permissions, Group $group): bool;
 }

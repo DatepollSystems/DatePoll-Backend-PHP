@@ -11,10 +11,13 @@ use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class UserController extends Controller {
+
+  public static string $MYSELF_CACHE_KEY = 'user.myself.';
 
   public function __construct(protected IUserRepository $userRepository,
                               protected IUserChangeRepository $userChangeRepository,
@@ -30,6 +33,14 @@ class UserController extends Controller {
    */
   public function getMyself(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
+
+    $cacheKey = self::$MYSELF_CACHE_KEY . $user->id;
+    if (Cache::has($cacheKey)) {
+      $user = Cache::get($cacheKey);
+    } else {
+      // Time to live 3 hours
+      Cache::put($cacheKey, $user, 3 * 60 * 60);
+    }
 
     return response()->json([
       'msg' => 'Get yourself',
@@ -76,6 +87,8 @@ class UserController extends Controller {
     if (! $user->save()) {
       return response()->json(['msg' => 'An error occurred'], 500);
     }
+
+    Cache::forget(self::$MYSELF_CACHE_KEY . $user->id);
 
     return response()->json([
       'msg' => 'User updated',
