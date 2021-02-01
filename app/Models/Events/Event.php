@@ -4,6 +4,7 @@ namespace App\Models\Events;
 
 use App\Models\Groups\Group;
 use App\Models\Subgroups\Subgroup;
+use App\Utils\ArrayHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property boolean $forEveryone
  * @property string $created_at
  * @property string $updated_at
- * @property EventDecision[] $eventsDecisions
+ * @property EventDecision[] $eventDecisions
  * @property EventDate[] $eventDates
  * @property EventForGroup[] $eventsForGroups
  * @property EventForSubgroup[] $eventsForSubgroups
@@ -23,24 +24,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Event extends Model {
   protected $table = 'events';
 
-  protected $hidden = ['forEveryone'];
-
-  /**
-   * @var array
-   */
   protected $fillable = [
     'name',
     'description',
     'forEveryone',
     'created_at',
     'updated_at',];
+  protected $hidden = ['forEveryone', 'eventDates', 'eventDecisions'];
+  protected $with = ['eventDecisions', 'eventDates'];
 
   /**
-   * @return EventDecision[]
+   * @return HasMany
    */
-  public function eventsDecisions(): array {
-    return $this->hasMany(EventDecision::class, 'event_id')
-      ->get()->all();
+  public function eventDecisions(): HasMany {
+    return $this->hasMany(EventDecision::class, 'event_id');
   }
 
   /**
@@ -55,11 +52,8 @@ class Event extends Model {
    * @return Group[]
    */
   public function getGroupsOrdered(): array {
-    $groups = [];
-    foreach ($this->eventsForGroups() as $eventForGroup) {
-      $groups[] = $eventForGroup->group();
-    }
-    usort($groups, function ($a, $b) {
+    $groups = ArrayHelper::getPropertyArrayOfObjectArray($this->eventsForGroups(), 'group');
+    usort($groups, static function ($a, $b) {
       return strcmp($a->orderN, $b->orderN);
     });
 
@@ -78,11 +72,8 @@ class Event extends Model {
    * @return Subgroup[]
    */
   public function getSubgroupsOrdered(): array {
-    $subgroups = [];
-    foreach ($this->eventsForSubgroups() as $eventForSubgroup) {
-      $subgroups[] = $eventForSubgroup->subgroup();
-    }
-    usort($subgroups, function ($a, $b) {
+    $subgroups = ArrayHelper::getPropertyArrayOfObjectArray($this->eventsForSubgroups(), 'subgroup');
+    usort($subgroups, static function ($a, $b) {
       return strcmp($a->orderN, $b->orderN);
     });
 
@@ -105,30 +96,18 @@ class Event extends Model {
   }
 
 
-  private function eventDates(): HasMany {
+  /**
+   * @return HasMany
+   */
+  public function eventDates(): HasMany {
     return $this->hasMany(EventDate::class);
-  }
-
-  /**
-   * @return EventDate[]
-   */
-  public function getEventDates(): array {
-    return $this->eventDates()
-      ->get()->all();
-  }
-
-  /**
-   * @return EventDate[]
-   */
-  public function getEventDatesOrderedByDate(): array {
-    return $this->eventDates()->orderBy('date')->get()->all();
   }
 
   /**
    * @return EventDate|HasMany
    */
   public function getFirstEventDate(): EventDate|HasMany {
-    return $this->eventDates()->orderBy('date', 'ASC')->first();
+    return $this->eventDates()->oldest('date')->first();
   }
 
   /**
@@ -144,22 +123,10 @@ class Event extends Model {
   public function toArray(): array {
     $returnable = parent::toArray();
     $returnable['for_everyone'] = $this->forEveryone;
-
-    $returnable['decisions'] = $this->eventsDecisions();
-    $returnable['dates'] = $this->getEventDatesOrderedByDate();
-
-    $startDate = $this->getFirstEventDate();
-    $endDate = $this->getLastEventDate();
-
-    if ($startDate != null) {
-      $startDate = $startDate->date;
-    }
-    $returnable['start_date'] = $startDate;
-
-    if ($endDate != null) {
-      $endDate = $endDate->date;
-    }
-    $returnable['end_date'] = $endDate;
+    $returnable['decisions'] = $this->eventDecisions;
+    $returnable['dates'] = $this->eventDates;
+    $returnable['start_date'] = $this->getFirstEventDate()?->date;
+    $returnable['end_date'] = $this->getLastEventDate()?->date;
 
     return $returnable;
   }

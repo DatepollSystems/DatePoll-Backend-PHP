@@ -129,9 +129,7 @@ class User extends Model {
    * @return Group[]
    */
   public function getGroups(): array {
-    return array_map(static function ($group) {
-      return $group->group();
-    }, $this->usersMemberOfGroups());
+    return ArrayHelper::getPropertyArrayOfObjectArray($this->usersMemberOfGroups(), 'group');
   }
 
   /**
@@ -179,10 +177,10 @@ class User extends Model {
       '=',
       $this->id
     )->count() > 0 || DB::table('user_permissions')->where(
-          'permission',
-          '=',
-          $permission
-        )->where('user_id', '=', $this->id)->count() > 0) {
+      'permission',
+      '=',
+      $permission
+    )->where('user_id', '=', $this->id)->count() > 0) {
       return true;
     }
 
@@ -192,10 +190,10 @@ class User extends Model {
         '=',
         $group->id
       )->count() > 0 || DB::table('group_permissions')->where(
-            'permission',
-            '=',
-            $permission
-          )->where('group_id', '=', $group->id)->count() > 0) {
+        'permission',
+        '=',
+        $permission
+      )->where('group_id', '=', $group->id)->count() > 0) {
         return true;
       }
     }

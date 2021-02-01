@@ -54,15 +54,6 @@ abstract class ArrayHelper {
     return is_array($possibleArray);
   }
 
-  /**
-   * @param array ...$array
-   * @return array
-   */
-  #[Pure]
-  public static function mergeArrays(array ...$array): array {
-    return array_merge($array);
-  }
-
 //  /**
 //   * @param array $array
 //   * @param mixed $toAdd

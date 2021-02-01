@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class BroadcastForGroup extends Model {
   protected $table = 'broadcasts_for_groups';
+  protected $with = ['broadcast', 'group'];
 
   /**
    * @var array
@@ -28,16 +29,16 @@ class BroadcastForGroup extends Model {
     'updated_at', ];
 
   /**
-   * @return BelongsTo | Broadcast
+   * @return BelongsTo
    */
-  public function broadcast(): BelongsTo|Broadcast {
-    return $this->belongsTo(Broadcast::class)->first();
+  public function broadcast(): BelongsTo {
+    return $this->belongsTo(Broadcast::class);
   }
 
   /**
-   * @return BelongsTo | Group
+   * @return BelongsTo
    */
-  public function group(): BelongsTo|Group {
-    return $this->belongsTo(Group::class)->first();
+  public function group(): BelongsTo {
+    return $this->belongsTo(Group::class);
   }
 }

@@ -64,16 +64,16 @@ class Group extends Model {
   public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
     foreach ($this->usersMemberOfGroups() as $userS) {
-      $user = new stdClass();
-      $user->id = $userS->user_id;
-      $user->firstname = $userS->user()->firstname;
-      $user->surname = $userS->user()->surname;
-      $user->role = $userS->role;
+      $user = [];
+      $user['id'] = $userS->user_id;
+      $user['firstname'] = $userS->user->firstname;
+      $user['surname'] = $userS->user->surname;
+      $user['role'] = $userS->role;
 
       $rUsers[] = $user;
     }
     usort($rUsers, static function ($a, $b) {
-      return strcmp($a->surname, $b->surname);
+      return strcmp($a['surname'], $b['surname']);
     });
 
     return $rUsers;
@@ -83,10 +83,7 @@ class Group extends Model {
    * @return User[]
    */
   public function getUsersOrderedBySurname(): array {
-    $users = [];
-    foreach ($this->usersMemberOfGroups() as $usersMemberOfGroup) {
-      $users[] = $usersMemberOfGroup->user();
-    }
+    $users = ArrayHelper::getPropertyArrayOfObjectArray($this->usersMemberOfGroups(), 'user');
     usort($users, static function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });

@@ -150,25 +150,24 @@ class GroupRepository implements IGroupRepository {
    * @throws Exception
    */
   public function getGroupStatisticsByGroup(Group $group): Group {
-    $usersInGroups = $group->usersMemberOfGroups();
+    $usersMembersOfGroups = $group->usersMemberOfGroups();
 
     $joinYears = [];
 
     $users_only_in_this_group = [];
-    foreach ($usersInGroups as $user) {
+    foreach ($usersMembersOfGroups as $userMemberOfGroup) {
       if (DB::table('users_member_of_groups')
-        ->where('user_id', '=', $user->user_id)
+        ->where('user_id', '=', $userMemberOfGroup->user_id)
         ->count() < 2) {
-        $userD = $user->user();
-        $userR = new stdClass();
-        $userR->firstname = $userD->firstname;
-        $userR->surname = $userD->surname;
-        $userR->created_at = $user->created_at;
+        $userR = [];
+        $userR['firstname'] = $userMemberOfGroup->user->firstname;
+        $userR['surname'] = $userMemberOfGroup->user->surname;
+        $userR['created_at'] = $userMemberOfGroup->created_at;
 
         $users_only_in_this_group[] = $userR;
       }
 
-      $joinYear = date_format(new DateTime($user->created_at), 'Y');
+      $joinYear = date_format(new DateTime($userMemberOfGroup->created_at), 'Y');
       if (ArrayHelper::notInArray($joinYears, $joinYear)) {
         $joinYears[] = $joinYear;
       }
@@ -180,14 +179,13 @@ class GroupRepository implements IGroupRepository {
       $year = new stdClass();
       $year->year = $joinYear;
       $userToAdd = [];
-      foreach ($usersInGroups as $user) {
-        $userJoinYear = date_format(new DateTime($user->created_at), 'Y');
+      foreach ($usersMembersOfGroups as $userMemberOfGroup) {
+        $userJoinYear = date_format(new DateTime($userMemberOfGroup->created_at), 'Y');
         if (str_contains($joinYear, $userJoinYear)) {
-          $userD = $user->user();
-          $userR = new stdClass();
-          $userR->firstname = $userD->firstname;
-          $userR->surname = $userD->surname;
-          $userR->created_at = $user->created_at;
+          $userR = [];
+          $userR['firstname'] = $userMemberOfGroup->user->firstname;
+          $userR['surname'] = $userMemberOfGroup->user->surname;
+          $userR['created_at'] = $userMemberOfGroup->created_at;
 
           $userToAdd[] = $userR;
         }

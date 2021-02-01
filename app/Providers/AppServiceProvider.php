@@ -36,8 +36,6 @@ use App\Repositories\System\DatePollServer\DatePollServerRepository;
 use App\Repositories\System\DatePollServer\IDatePollServerRepository;
 use App\Repositories\System\Job\IJobRepository;
 use App\Repositories\System\Job\JobRepository;
-use App\Repositories\System\Log\ILogRepository;
-use App\Repositories\System\Log\LogRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\System\Setting\SettingRepository;
 use App\Repositories\User\DeletedUser\DeletedUserRepository;
@@ -95,7 +93,6 @@ class AppServiceProvider extends ServiceProvider {
     /** System repositories */
     $this->app->bind(ISettingRepository::class, SettingRepository::class);
     $this->app->bind(IJobRepository::class, JobRepository::class);
-    $this->app->bind(ILogRepository::class, LogRepository::class);
     $this->app->bind(IDatePollServerRepository::class, DatePollServerRepository::class);
   }
 

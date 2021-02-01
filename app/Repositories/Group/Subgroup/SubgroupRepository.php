@@ -166,7 +166,7 @@ class SubgroupRepository implements ISubgroupRepository {
       }
 
       if (! $isInSubgroup) {
-        $subgroup['group_name'] = $subgroup->group()->name;
+        $subgroup['group_name'] = $subgroup->group->name;
         $subgroupsToReturn[] = $subgroup;
       }
     }

@@ -8,7 +8,6 @@ use App\Models\Groups\Group;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use stdClass;
 
 /**
  * @property int $id
@@ -22,6 +21,8 @@ use stdClass;
  * @property UsersMemberOfSubgroups[] $usersMemberOfSubgroups
  */
 class Subgroup extends Model {
+  protected $with = ['group'];
+
   /**
    * @var array
    */
@@ -34,11 +35,10 @@ class Subgroup extends Model {
     'updated_at', ];
 
   /**
-   * @return BelongsTo | Group
+   * @return BelongsTo
    */
-  public function group(): BelongsTo|Group {
-    return $this->belongsTo(Group::class)
-      ->first();
+  public function group(): BelongsTo {
+    return $this->belongsTo(Group::class);
   }
 
   /**
@@ -54,17 +54,17 @@ class Subgroup extends Model {
    */
   public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
-    foreach ($this->usersMemberOfSubgroups() as $userS) {
-      $user = new stdClass();
-      $user->id = $userS->user_id;
-      $user->firstname = $userS->user()->firstname;
-      $user->surname = $userS->user()->surname;
-      $user->role = $userS->role;
+    foreach ($this->usersMemberOfSubgroups() as $userMemberOfSubgroup) {
+      $user = [];
+      $user['id'] = $userMemberOfSubgroup->user_id;
+      $user['firstname'] = $userMemberOfSubgroup->user->firstname;
+      $user['surname'] = $userMemberOfSubgroup->user->surname;
+      $user['role'] = $userMemberOfSubgroup->role;
 
       $rUsers[] = $user;
     }
-    usort($rUsers, function ($a, $b) {
-      return strcmp($a->surname, $b->surname);
+    usort($rUsers, static function ($a, $b) {
+      return strcmp($a['surname'], $b['surname']);
     });
 
     return $rUsers;
@@ -74,11 +74,11 @@ class Subgroup extends Model {
    * @return User[]
    */
   public function getUsersOrderedBySurname(): array {
-    $users = [];
-    foreach ( $this->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
-      $users[] = $usersMemberOfSubgroup->user();
-    }
-    usort($users, function ($a, $b) {
+    $users = array_map(static function ($userMemberOfSubgroups) {
+      return $userMemberOfSubgroups->user;
+    }, $this->usersMemberOfSubgroups());
+
+    usort($users, static function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
 

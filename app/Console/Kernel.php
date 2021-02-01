@@ -3,7 +3,7 @@
 namespace App\Console;
 
 use App\Console\Commands\AddAdminUser;
-use App\Console\Commands\DeleteUnusedBroadcastAttachments;
+use App\Console\Commands\DatePollClearUp;
 use App\Console\Commands\DropDatabase;
 use App\Console\Commands\ProcessBroadcastEmailsInInbox;
 use App\Console\Commands\ReQueueNotSentBroadcasts;
@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel {
     UpdateDatePollDB::class,
     ReQueueNotSentBroadcasts::class,
     ProcessBroadcastEmailsInInbox::class,
-    DeleteUnusedBroadcastAttachments::class,
+    DatePollClearUp::class,
     TestSomething::class,
   ];
 
@@ -43,6 +43,6 @@ class Kernel extends ConsoleKernel {
     } else {
       $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyFourMinutes();
     }
-    $schedule->command(DeleteUnusedBroadcastAttachments::class, ['--force'])->daily();
+    $schedule->command(DatePollClearUp::class, ['--force'])->daily();
   }
 }

@@ -16,6 +16,7 @@ use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Utils\ArrayHelper;
+use App\Utils\DateHelper;
 use App\Utils\EnvironmentHelper;
 use App\Utils\QueueHelper;
 use DateInterval;
@@ -114,7 +115,7 @@ class BroadcastRepository implements IBroadcastRepository {
         }
 
         foreach ($group->usersMemberOfGroups() as $memberOfGroup) {
-          $user = $memberOfGroup->user();
+          $user = $memberOfGroup->user;
           $users[] = $user;
           $userIds[] = $user->id;
         }
@@ -206,9 +207,9 @@ class BroadcastRepository implements IBroadcastRepository {
       $writerEmailAddress = $writer->getEmailAddresses()[0];
     }
 
-    $time = new DateTime();
+    $time = DateHelper::getCurrentDateTime();
     if (EnvironmentHelper::isProduction()) {
-      $time->add(new DateInterval('PT' . 2 . 'M'));
+      $time = DateHelper::addMinuteToDateTime($time, 3);
     }
     foreach ($users as $user) {
       if (! $user->information_denied && $user->activated && $user->hasEmailAddresses()) {
@@ -223,7 +224,7 @@ class BroadcastRepository implements IBroadcastRepository {
           return null;
         }
 
-        $time->add(new DateInterval('PT' . 1 . 'M'));
+        $time = DateHelper::addMinuteToDateTime($time, 1);
         $broadcastMail = new BroadcastMail(
           $subject,
           $body,
@@ -247,7 +248,7 @@ class BroadcastRepository implements IBroadcastRepository {
    * @param Broadcast $broadcast
    * @throws Exception
    */
-  public function reQueueNotSentBroadcastsForBroadcast(Broadcast $broadcast) {
+  public function reQueueNotSentBroadcastsForBroadcast(Broadcast $broadcast): void {
     $broadcastUserInfos = BroadcastUserInfo::where('broadcast_id', '=', $broadcast->id)
       ->where('sent', '=', false)
       ->get();
@@ -262,14 +263,14 @@ class BroadcastRepository implements IBroadcastRepository {
 
       $attachment->broadcast_id = $broadcast->id;
       $attachment->save();
-      $mAttachments = $mAttachments . '> <a href="' . $frontendUrl . '/download/' . $attachment->token . '">' . $attachment->name . '</a><br>';
+      $mAttachments .= '> <a href="' . $frontendUrl . '/download/' . $attachment->token . '">' . $attachment->name . '</a><br>';
     }
 
     if ($happened) {
       $mAttachments = '================= Anhänge =================<br>' . $mAttachments . '========================================<br>';
     }
 
-    $time = new DateTime();
+    $time = DateHelper::getCurrentDateTime();
 
     $writerEmailAddress = null;
     if ($broadcast->writer()->hasEmailAddresses()) {
@@ -278,7 +279,7 @@ class BroadcastRepository implements IBroadcastRepository {
     $writerName = $broadcast->writer()->getCompleteName();
 
     foreach ($broadcastUserInfos as $broadcastUserInfo) {
-      $time->add(new DateInterval('PT' . 1 . 'M'));
+      $time = DateHelper::addMinuteToDateTime($time, 1);
       $broadcastMail = new BroadcastMail(
         $broadcast->subject,
         $broadcast->body,

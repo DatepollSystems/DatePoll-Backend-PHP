@@ -151,22 +151,20 @@ class UserController extends Controller {
       if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
         $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
         $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
-        if ($remTimeDate < date('m-d', strtotime($user->birthday)) && date(
-            'm-d',
-            strtotime($user->birthday)
-          ) < $addTimeDate) {
-          $birthdayToShow = new stdClass();
+        $birthdayMonthDay = date('m-d', strtotime($user->birthday));
+        if ($remTimeDate < $birthdayMonthDay && $birthdayMonthDay < $addTimeDate) {
+          $birthdayToShow = [];
 
-          $birthdayToShow->name = $user->getCompleteName();
-          $birthdayToShow->date = $user->birthday;
+          $birthdayToShow['name'] = $user->getCompleteName();
+          $birthdayToShow['date'] = $user->birthday;
 
           $birthdaysToShow[] = $birthdayToShow;
         }
       }
     }
 
-    usort($birthdaysToShow, function ($a, $b) {
-      return strcmp(date('m-d', strtotime($a->date)), date('m-d', strtotime($b->date)));
+    usort($birthdaysToShow, static function ($a, $b) {
+      return strcmp(date('m-d', strtotime($a['date'])), date('m-d', strtotime($b['date'])));
     });
 
     $response = [
