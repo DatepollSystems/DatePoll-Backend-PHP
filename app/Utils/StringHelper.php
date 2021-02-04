@@ -179,4 +179,12 @@ abstract class StringHelper {
   public static function startsWithCharacter(string $string, string $char): bool {
     return str_starts_with($string, $char);
   }
+
+  /**
+   * @param string $string
+   * @return string
+   */
+  public static function removeImageHtmlTag(string $string): string {
+    return preg_replace('/<img[^>]+>/i', ' (image) ', $string);
+  }
 }
