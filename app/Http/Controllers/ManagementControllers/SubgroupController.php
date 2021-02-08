@@ -286,10 +286,17 @@ class SubgroupController extends Controller {
         'error_code' => 'user_not_found', ], 404);
     }
 
+    $toReturn = [];
+    foreach ($this->subgroupRepository->getSubgroupsWhereUserIsIn($userID) as $subgroup) {
+      $toReturnS = $subgroup->toArray();
+      $toReturnS['group_name'] = $subgroup->group->name;
+      $toReturn[] = $toReturnS;
+    }
+
     return response()->json(
       [
         'msg' => 'List of joined subgroups',
-        'subgroups' => $this->subgroupRepository->getJoinedSubgroupsReturnableByUserId($userID), ],
+        'subgroups' => $toReturn, ],
       200
     );
   }
@@ -305,10 +312,17 @@ class SubgroupController extends Controller {
         'error_code' => 'user_not_found', ], 404);
     }
 
+    $toReturn = [];
+    foreach ($this->subgroupRepository->getSubgroupsWhereUserIsNotIn($userID) as $subgroup) {
+      $toReturnS = $subgroup->toArray();
+      $toReturnS['group_name'] = $subgroup->group['name'];
+      $toReturn[] = $toReturnS;
+    }
+
     return response()->json(
       [
         'msg' => 'List of free subgroups',
-        'subgroups' => $this->subgroupRepository->getFreeSubgroupsReturnableByUserId($userID), ],
+        'subgroups' => $toReturn, ],
       200
     );
   }

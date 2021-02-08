@@ -139,6 +139,13 @@ class Group extends Model {
   /**
    * @return array
    */
+  public function toArrayWithoutConstraints(): array {
+    return parent::toArray();
+  }
+
+  /**
+   * @return array
+   */
   public function toArray(): array {
     $group = parent::toArray();
     $group['permissions'] = ArrayHelper::getPropertyArrayOfObjectArray($this->getPermissions(), 'permission');

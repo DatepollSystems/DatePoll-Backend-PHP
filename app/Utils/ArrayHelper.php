@@ -54,6 +54,15 @@ abstract class ArrayHelper {
     return is_array($possibleArray);
   }
 
+  /**
+   * @param mixed $possibleArray
+   * @return bool
+   */
+  #[Pure]
+  public static function isNotArray(mixed $possibleArray): bool {
+    return ! self::isArray($possibleArray);
+  }
+
 //  /**
 //   * @param array $array
 //   * @param mixed $toAdd

@@ -42,6 +42,13 @@ class Subgroup extends Model {
   }
 
   /**
+   * @return BelongsTo|Group
+   */
+  public function getGroup(): BelongsTo|Group {
+    return $this->group()->first();
+  }
+
+  /**
    * @return UsersMemberOfSubgroups[]
    */
   public function usersMemberOfSubgroups(): array {

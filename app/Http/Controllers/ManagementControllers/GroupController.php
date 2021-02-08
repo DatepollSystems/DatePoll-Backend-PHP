@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Permissions;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
@@ -30,7 +31,7 @@ class GroupController extends Controller {
 
     return response()->json([
       'msg' => 'List of all groups',
-      'groups' => $groups, ], 200);
+      'groups' => $groups,], 200);
   }
 
   /**
@@ -44,7 +45,7 @@ class GroupController extends Controller {
       'orderN' => 'integer|nullable',
       'description' => 'max:65535',
       'permissions' => 'array',
-      'permissions.*' => 'required|max:190', ]);
+      'permissions.*' => 'required|max:190',]);
 
     $name = $request->input('name');
     $orderN = $request->input('orderN');
@@ -67,7 +68,7 @@ class GroupController extends Controller {
 
     return response()->json([
       'msg' => 'Group created',
-      'group' => $group, ], 201);
+      'group' => $group,], 201);
   }
 
   /**
@@ -84,7 +85,7 @@ class GroupController extends Controller {
 
     return response()->json([
       'msg' => 'Group information',
-      'group' => $group, ]);
+      'group' => $group,]);
   }
 
   /**
@@ -127,7 +128,7 @@ class GroupController extends Controller {
 
     return response()->json([
       'msg' => 'Group updated',
-      'group' => $group, ], 201);
+      'group' => $group,], 201);
   }
 
   /**
@@ -157,7 +158,7 @@ class GroupController extends Controller {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'group_id' => 'required|integer',
-      'role' => 'max:190', ]);
+      'role' => 'max:190',]);
 
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
@@ -187,7 +188,7 @@ class GroupController extends Controller {
 
     return response()->json([
       'msg' => 'Successfully added user to group',
-      'userMemberOfGroup' => $userMemberOfGroup, ], 201);
+      'userMemberOfGroup' => $userMemberOfGroup,], 201);
   }
 
   /**
@@ -199,7 +200,7 @@ class GroupController extends Controller {
   public function removeUser(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'user_id' => 'required|integer',
-      'group_id' => 'required|integer', ]);
+      'group_id' => 'required|integer',]);
 
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
@@ -226,6 +227,8 @@ class GroupController extends Controller {
     $userMemberOfSubgroupsToRemove = $this->subgroupRepository->getUserMemberOfSubgroupsAndInGroups($userID, $groupID);
 
     foreach ($userMemberOfSubgroupsToRemove as $userMemberOfSubgroupToRemove) {
+      Logging::info('GroupController@removeUser',
+        'Automated removing subgroup ' . $userMemberOfSubgroupToRemove->subgroup_id . ' for group ' . $groupID);
       if (! $this->subgroupRepository->removeSubgroupForUser($userMemberOfSubgroupToRemove)) {
         return response()->json(['msg' => 'Could not remove user of child subgroups'], 500);
       }
@@ -234,8 +237,7 @@ class GroupController extends Controller {
     $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, null, $group->name);
 
     return response()->json([
-      'msg' => 'Successfully removed user from group',
-      'userWasMemberOfSubgroups' => $userMemberOfSubgroupsToRemove, ], 200);
+      'msg' => 'Successfully removed user from group'], 200);
   }
 
   /**
@@ -247,7 +249,7 @@ class GroupController extends Controller {
     $this->validate($request, [
       'user_id' => 'required|integer',
       'group_id' => 'required|integer',
-      'role' => 'max:190', ]);
+      'role' => 'max:190',]);
 
     $userID = $request->input('user_id');
     $groupID = $request->input('group_id');
@@ -276,11 +278,12 @@ class GroupController extends Controller {
       return response()->json(['msg' => 'Could not save UserMemberOfGroup'], 500);
     }
 
-    $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, $userMemberOfGroup->role, $userMemberOfGroup->role);
+    $this->userChangeRepository->createUserChange('group', $userID, $request->auth->id, $userMemberOfGroup->role,
+      $userMemberOfGroup->role);
 
     return response()->json([
       'msg' => 'Successfully updated user in group',
-      'userMemberOfGroup' => $userMemberOfGroup, ], 200);
+      'userMemberOfGroup' => $userMemberOfGroup,], 200);
   }
 
   /**
@@ -292,12 +295,17 @@ class GroupController extends Controller {
     if ($user == null) {
       return response()->json([
         'msg' => 'User not found',
-        'error_code' => 'user_not_found', ], 404);
+        'error_code' => 'user_not_found',], 404);
+    }
+
+    $groups = [];
+    foreach ($user->getGroups() as $group) {
+      $groups[] = $group->toArrayWithoutConstraints();
     }
 
     return response()->json([
       'msg' => 'List of joined groups',
-      'groups' => $user->getGroups(), ], 200);
+      'groups' => $groups,], 200);
   }
 
   /**
@@ -309,11 +317,16 @@ class GroupController extends Controller {
     if ($user == null) {
       return response()->json([
         'msg' => 'User not found',
-        'error_code' => 'user_not_found', ], 404);
+        'error_code' => 'user_not_found',], 404);
+    }
+
+    $groups = [];
+    foreach ($this->groupRepository->getGroupsWhereUserIsNotIn($user->id) as $group) {
+      $groups[] = $group->toArrayWithoutConstraints();
     }
 
     return response()->json([
       'msg' => 'List of free groups',
-      'groups' => $this->groupRepository->getGroupsWhereUserIsNotIn($user->id), ], 200);
+      'groups' => $groups,], 200);
   }
 }

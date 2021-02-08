@@ -182,9 +182,19 @@ abstract class StringHelper {
 
   /**
    * @param string $string
+   * @param string $pattern
+   * @param string $replacement
+   * @return string
+   */
+  private static function removeRegularExpression(string $string, string $pattern, string $replacement): string {
+    return preg_replace($pattern, $replacement, $string);
+  }
+
+  /**
+   * @param string $string
    * @return string
    */
   public static function removeImageHtmlTag(string $string): string {
-    return preg_replace('/<img[^>]+>/i', ' (image) ', $string);
+    return self::removeRegularExpression($string, '/<img[^>]+>/i', ' (image) ');
   }
 }
