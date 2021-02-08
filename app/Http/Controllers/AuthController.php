@@ -79,7 +79,7 @@ class AuthController extends Controller {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
           $userToken = $this->userTokenRepository->createUserToken(
-            $user,
+            $user->id,
             $randomToken,
             'stayLoggedIn',
             $sessionInformation
@@ -149,7 +149,7 @@ class AuthController extends Controller {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
           $userToken = $this->userTokenRepository->createUserToken(
-            $user,
+            $user->id,
             $randomToken,
             'stayLoggedIn',
             $sessionInformation

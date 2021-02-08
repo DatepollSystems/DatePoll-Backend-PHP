@@ -16,9 +16,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class UserTelephoneNumber extends Model {
   /**
-   * @var array
+   * @var string[]
    */
   protected $fillable = ['user_id', 'label', 'number', 'created_at', 'updated_at'];
+
+  /**
+   * @var string[]
+   */
+  protected $hidden = ['user_id', 'created_at', 'updated_at'];
 
   /**
    * @return BelongsTo|User

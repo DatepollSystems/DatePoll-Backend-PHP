@@ -282,7 +282,7 @@ class EventRepository implements IEventRepository {
           }
 
           $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'users' => $subgroupResultUsers,
-                          'parent_group_name' => $subgroup->group->name, 'parent_group_id' => $subgroup->group_id];
+                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id];
         }
 
         $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers,
@@ -330,7 +330,7 @@ class EventRepository implements IEventRepository {
           }
 
           $subgroupToSave = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                             'parent_group_name' => $subgroup->group->name, 'parent_group_id' => $subgroup->group_id,
+                             'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
                              'users' => $subgroupResultUsers];
           $subgroups[] = $subgroupToSave;
           $allSubgroupsIds[] = $subgroup->id;
@@ -353,7 +353,7 @@ class EventRepository implements IEventRepository {
           }
 
           $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                          'parent_group_name' => $subgroup->group->name, 'parent_group_id' => $subgroup->group_id,
+                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
                           'users' => $subgroupResultUsers];
         }
       }

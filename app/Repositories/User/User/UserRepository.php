@@ -451,7 +451,7 @@ class UserRepository implements IUserRepository {
           $role .= ' - ' . $usersMemberOfSubgroup->role;
         }
 
-        $subgroups .= '[' . $usersMemberOfSubgroup->subgroup->group->name . '] ' . $usersMemberOfSubgroup->subgroup->name . $role . ', ';
+        $subgroups .= '[' . $usersMemberOfSubgroup->subgroup->getGroup()->name . '] ' . $usersMemberOfSubgroup->subgroup->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 

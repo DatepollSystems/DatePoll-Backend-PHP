@@ -256,7 +256,7 @@ class EventGroupController extends Controller {
       }
 
       if (! $isInSubgroup) {
-        $subgroup['group_name'] = $subgroup->group->name;
+        $subgroup['group_name'] = $subgroup->getGroup()->name;
         $subgroupsToReturn[] = $subgroup;
       }
     }

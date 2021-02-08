@@ -21,8 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property UsersMemberOfSubgroups[] $usersMemberOfSubgroups
  */
 class Subgroup extends Model {
-  protected $with = ['group'];
-
   /**
    * @var array
    */
@@ -35,17 +33,10 @@ class Subgroup extends Model {
     'updated_at', ];
 
   /**
-   * @return BelongsTo
-   */
-  public function group(): BelongsTo {
-    return $this->belongsTo(Group::class);
-  }
-
-  /**
    * @return BelongsTo|Group
    */
   public function getGroup(): BelongsTo|Group {
-    return $this->group()->first();
+    return $this->belongsTo(Group::class, 'group_id')->first();
   }
 
   /**

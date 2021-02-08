@@ -8,13 +8,13 @@ use App\Models\User\UserToken;
 interface IUserTokenRepository {
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param string $token
    * @param string $purpose
    * @param string|null $description
    * @return UserToken|null
    */
-  public function createUserToken(User $user, string $token, string $purpose, ?string $description = null): ?UserToken;
+  public function createUserToken(int $userId, string $token, string $purpose, ?string $description = null): ?UserToken;
 
   /**
    * @param UserToken $userToken
@@ -44,11 +44,11 @@ interface IUserTokenRepository {
   public function getUserTokenByTokenAndPurpose(string $token, string $purpose): ?UserToken;
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param string $purpose
    * @return UserToken|null
    */
-  public function getUserTokenByUserAndPurpose(User $user, string $purpose): ?UserToken;
+  public function getUserTokenByUserAndPurpose(int $userId, string $purpose): ?UserToken;
 
   /**
    * @param User $user

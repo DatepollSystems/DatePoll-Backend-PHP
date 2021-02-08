@@ -24,11 +24,11 @@ class UserTokenController extends Controller {
   public function getCalendarToken(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
-    $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
+    $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user->id, 'calendar');
     if ($tokenObject == null) {
       $randomToken = $this->userTokenRepository->generateUniqueRandomToken(10);
 
-      $tokenObject = $this->userTokenRepository->createUserToken($user, $randomToken, 'calendar');
+      $tokenObject = $this->userTokenRepository->createUserToken($user->id, $randomToken, 'calendar');
       if ($tokenObject == null) {
         return response()->json(['msg' => 'Could not save the calendar token', 'error_code' => 'token_not_saved'], 500);
       }
@@ -47,7 +47,7 @@ class UserTokenController extends Controller {
   public function resetCalendarToken(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
 
-    $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user, 'calendar');
+    $tokenObject = $this->userTokenRepository->getUserTokenByUserAndPurpose($user->id, 'calendar');
     if ($tokenObject == null) {
       return response()->json(['msg' => 'There is no token to delete'], 200);
     }

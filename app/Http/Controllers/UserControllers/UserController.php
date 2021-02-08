@@ -148,7 +148,7 @@ class UserController extends Controller {
     $users = $this->userRepository->getAllUsers();
     $birthdaysToShow = [];
     foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+      if ($this->userSettingRepository->getShareBirthdayForUser($user->id)) {
         $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
         $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
         $birthdayMonthDay = date('m-d', strtotime($user->birthday));

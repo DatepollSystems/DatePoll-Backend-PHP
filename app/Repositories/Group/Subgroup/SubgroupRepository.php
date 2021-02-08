@@ -127,7 +127,7 @@ class SubgroupRepository implements ISubgroupRepository {
     $userMemberOfSubgroups = [];
     foreach (UsersMemberOfSubgroups::where('user_id', $userId)
       ->get()->all() as $userMemberOfSubgroup) {
-      if ($userMemberOfSubgroup->subgroup->group_id = $groupId) {
+      if ($userMemberOfSubgroup->subgroup->group_id == $groupId) {
         $userMemberOfSubgroups[] = $userMemberOfSubgroup;
       }
     }
@@ -154,7 +154,7 @@ class SubgroupRepository implements ISubgroupRepository {
       return [];
     }
 
-    return Subgroup::without('group')->whereIn('id', $subgroupIds)->get()->all();
+    return Subgroup::whereIn('id', $subgroupIds)->get()->all();
   }
 
   /**
@@ -162,7 +162,7 @@ class SubgroupRepository implements ISubgroupRepository {
    * @return Subgroup[]
    */
   public function getSubgroupsWhereUserIsNotIn(int $userId): array {
-    return Subgroup::without('group')->whereNotIn(
+    return Subgroup::whereNotIn(
       'id',
       DB::table('users_member_of_subgroups')->where('user_id', '=', $userId)->pluck('subgroup_id')
     )->get()->all();

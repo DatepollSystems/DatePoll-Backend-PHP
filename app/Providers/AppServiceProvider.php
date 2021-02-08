@@ -57,7 +57,7 @@ class AppServiceProvider extends ServiceProvider {
    *
    * @return void
    */
-  public function register() {
+  public function register(): void {
     /** Cinema repositories */
     $this->app->bind(IMovieRepository::class, MovieRepository::class);
     $this->app->bind(IMovieWorkerRepository::class, MovieWorkerRepository::class);
@@ -96,7 +96,7 @@ class AppServiceProvider extends ServiceProvider {
     $this->app->bind(IDatePollServerRepository::class, DatePollServerRepository::class);
   }
 
-  public function boot() {
+  public function boot(): void {
     Schema::defaultStringLength(191);
   }
 }

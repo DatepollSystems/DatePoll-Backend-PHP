@@ -99,7 +99,7 @@ class Broadcast extends Model {
     $toReturnSubgroups = [];
     foreach ($this->broadcastsForSubgroups() as $broadcastForSubgroup) {
       $toReturnSubgroups[] = ['id' => $broadcastForSubgroup->id, 'name' => $broadcastForSubgroup->subgroup->name, 'group_id' => $broadcastForSubgroup->subgroup->group_id,
-                              'group_name' => $broadcastForSubgroup->subgroup->group->name];
+                              'group_name' => $broadcastForSubgroup->subgroup->getGroup()->name];
     }
     $returnable['subgroups'] = $toReturnSubgroups;
 

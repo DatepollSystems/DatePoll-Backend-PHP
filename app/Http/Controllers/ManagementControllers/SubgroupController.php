@@ -289,7 +289,7 @@ class SubgroupController extends Controller {
     $toReturn = [];
     foreach ($this->subgroupRepository->getSubgroupsWhereUserIsIn($userID) as $subgroup) {
       $toReturnS = $subgroup->toArray();
-      $toReturnS['group_name'] = $subgroup->group->name;
+      $toReturnS['group_name'] = $subgroup->getGroup()->name;
       $toReturn[] = $toReturnS;
     }
 
@@ -315,7 +315,7 @@ class SubgroupController extends Controller {
     $toReturn = [];
     foreach ($this->subgroupRepository->getSubgroupsWhereUserIsNotIn($userID) as $subgroup) {
       $toReturnS = $subgroup->toArray();
-      $toReturnS['group_name'] = $subgroup->group['name'];
+      $toReturnS['group_name'] = $subgroup->getGroup()->name;
       $toReturn[] = $toReturnS;
     }
 

@@ -15,12 +15,11 @@ use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepositor
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
+use App\Repositories\User\UserSetting\UserSettingRepository;
 use App\Utils\ArrayHelper;
 use App\Utils\DateHelper;
 use App\Utils\EnvironmentHelper;
 use App\Utils\QueueHelper;
-use DateInterval;
-use DateTime;
 use Exception;
 
 class BroadcastRepository implements IBroadcastRepository {
@@ -29,7 +28,8 @@ class BroadcastRepository implements IBroadcastRepository {
     protected ISettingRepository $settingRepository,
     protected IGroupRepository $groupRepository,
     protected IBroadcastAttachmentRepository $broadcastAttachmentRepository,
-    protected IUserRepository $userRepository
+    protected IUserRepository $userRepository,
+    protected UserSettingRepository $userSettingRepository
   ) {
   }
 
@@ -212,7 +212,7 @@ class BroadcastRepository implements IBroadcastRepository {
       $time = DateHelper::addMinuteToDateTime($time, 3);
     }
     foreach ($users as $user) {
-      if (! $user->information_denied && $user->activated && $user->hasEmailAddresses()) {
+      if (! $user->information_denied && $user->activated && $user->hasEmailAddresses() && $this->userSettingRepository->getNotifyMeBroadcastEmailsForUser($user->id)) {
         $broadcastUserInfo = new BroadcastUserInfo([
           'broadcast_id' => $broadcast->id,
           'user_id' => $user->id,

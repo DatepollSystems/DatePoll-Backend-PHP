@@ -51,7 +51,7 @@ class CreateNewEventEmailsJob extends Job {
       // Also check if user is not information denied
       $user = User::find($eventUser->id);
 
-      if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user) && ! $user->information_denied && $user->activated) {
+      if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user->id) && ! $user->information_denied && $user->activated) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
         MailHelper::sendDelayedEmailOnLowQueue(new NewEvent(
           $user->firstname,

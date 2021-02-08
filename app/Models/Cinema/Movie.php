@@ -3,6 +3,7 @@
 namespace App\Models\Cinema;
 
 use App\Models\User\User;
+use App\Repositories\User\UserSetting\UserSettingKey;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
@@ -30,13 +31,16 @@ use stdClass;
 class Movie extends Model {
   private static string $workerIdProperty = 'worker_id';
   private static string $workerNameProperty = 'worker_name';
+  private static string $workerNumberProperty = 'worker_number';
   private static string $emergencyWorkerIdProperty = 'emergency_worker_id';
   private static string $emergencyWorkerNameProperty = 'emergency_worker_name';
+  private static string $emergencyWorkerNumberProperty = 'emergency_worker_number';
 
   /**
    * @var array
    */
-  protected $fillable = ['worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink', 'bookedTickets', 'maximalTickets', 'created_at', 'updated_at'];
+  protected $fillable = ['worker_id', 'emergency_worker_id', 'name', 'date', 'trailerLink', 'posterLink',
+                         'bookedTickets', 'maximalTickets', 'created_at', 'updated_at'];
 
   /**
    * @return BelongsTo | User | null
@@ -64,21 +68,23 @@ class Movie extends Model {
    * @return int
    */
   public function getBookedTicketsForUser(int $userId): int {
-    $movieBookingForYourself = MoviesBooking::where('movie_id', $this->id)->where('user_id',$userId)->first();
+    $movieBookingForYourself = MoviesBooking::where('movie_id', $this->id)->where('user_id', $userId)->first();
 
     if ($movieBookingForYourself == null) {
       return 0;
-    } else {
-      return $movieBookingForYourself->amount;
     }
+
+    return $movieBookingForYourself->amount;
   }
 
   /**
    * @return array
    */
   #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
-    'poster_link' => "string", 'booked_tickets' => "int", 'maximal_tickets' => "int", 'created_at' => "string",
-    'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int', 'emergency_worker_name' => 'string'])]
+                'poster_link' => "string", 'booked_tickets' => "int", 'maximal_tickets' => "int",
+                'created_at' => "string",
+                'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string',
+                'emergency_worker_id' => 'int', 'emergency_worker_name' => 'string'])]
   public function toArray(): array {
     $returnable = [
       "id" => $this->id,
@@ -95,21 +101,13 @@ class Movie extends Model {
     $worker = $this->worker();
     $emergencyWorker = $this->emergencyWorker();
 
-    if ($worker == null) {
-      $returnable[$this::$workerIdProperty] = null;
-      $returnable[$this::$workerNameProperty] = null;
-    } else {
-      $returnable[$this::$workerIdProperty] = $worker->id;
-      $returnable[$this::$workerNameProperty] = $worker->getCompleteName();
-    }
+    $returnable[self::$workerIdProperty] = $worker?->id;
+    $returnable[self::$workerNameProperty] = $worker?->getCompleteName();
+    $returnable[self::$workerNumberProperty] = $worker?->telephoneNumbers();
+    $returnable[self::$emergencyWorkerIdProperty] = $emergencyWorker?->id;
+    $returnable[self::$emergencyWorkerNameProperty] = $emergencyWorker?->getCompleteName();
+    $returnable[self::$emergencyWorkerNumberProperty] = $emergencyWorker?->telephoneNumbers();
 
-    if ($emergencyWorker == null) {
-      $returnable[$this::$emergencyWorkerIdProperty] = null;
-      $returnable[$this::$emergencyWorkerNameProperty] = null;
-    } else {
-      $returnable[$this::$emergencyWorkerIdProperty] = $emergencyWorker->id;
-      $returnable[$this::$emergencyWorkerNameProperty] = $emergencyWorker->getCompleteName();
-    }
     return $returnable;
   }
 
@@ -118,9 +116,11 @@ class Movie extends Model {
    * @noinspection SqlNoDataSourceInspection SqlResolve
    */
   #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
-    'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string",
-    'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string', 'emergency_worker_id' => 'int',
-    'emergency_worker_name' => 'string', 'bookings' => 'array'])]
+                'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int",
+                'created_at' => "string",
+                'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string',
+                'emergency_worker_id' => 'int',
+                'emergency_worker_name' => 'string', 'bookings' => 'array'])]
   public function getAdminReturnable(): array {
     $returnableMovie = $this->toArray();
     $bookings = [];
@@ -133,21 +133,20 @@ class Movie extends Model {
       $bookings[] = $booking;
     }
 
-    $usersNotBooked = DB::select('SELECT id, firstname, surname FROM users WHERE users.id 
-                                                                     NOT IN (SELECT mb.user_id FROM movies_bookings mb 
+    $usersNotBooked = DB::select('SELECT id, firstname, surname, token FROM users WHERE users.id 
+                                                                     NOT IN (SELECT mb.user_id FROM movies_bookings mb
                                                                      WHERE mb.movie_id = ' . $this->id . ')');
 
     foreach ($usersNotBooked as $user) {
-      $booking = new stdClass();
-      $booking->user_id = $user->id;
-      $booking->firstname = $user->firstname;
-      $booking->surname = $user->surname;
-      $booking->amount = 0;
+      $booking = ['user_id' => $user->id,
+                  'firstname' => $user->firstname,
+                  'surname' => $user->surname,
+                  'amount' => 0];
 
       $bookings[] = $booking;
     }
 
-    usort($bookings, function ($a, $b) {
+    usort($bookings, static function ($a, $b) {
       return strcmp($b->amount, $a->amount);
     });
 
