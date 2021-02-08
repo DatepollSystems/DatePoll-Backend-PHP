@@ -2,6 +2,7 @@
 /** @noinspection PhpUndefinedVariableInspection  @noinspection PhpUndefinedMethodInspection */
 
 use App\Http\Middleware\ManagementPermissionMiddleware;
+use App\Http\Middleware\ManagementUserDeleteExtraPermissionMiddleware;
 
 $router->group([
   'prefix' => 'management',
@@ -24,12 +25,18 @@ $router->group([
       $router->delete('changes/users/{id}', ['uses' => 'ManagementControllers\UserChangesController@deleteUserChange']);
     }
 
-    {
-      /** Delete user routes */
-      $router->delete('users/{id}', ['uses' => 'ManagementControllers\DeletedUsersController@delete']);
-      $router->get('deleted/users', ['uses' => 'ManagementControllers\DeletedUsersController@getDeletedUsers']);
-      $router->delete('deleted/users', ['uses' => 'ManagementControllers\DeletedUsersController@deleteAllDeletedUsers']);
-    }
+    /** Delete user routes */
+    $router->group([
+      'prefix' => '',
+      'middleware' => [ManagementUserDeleteExtraPermissionMiddleware::class],], function () use ($router) {
+        $router->delete('users/{id}', ['uses' => 'ManagementControllers\DeletedUsersController@delete']);
+        $router->get('deleted/users', ['uses' => 'ManagementControllers\DeletedUsersController@getDeletedUsers']);
+        $router->delete(
+          'deleted/users',
+          ['uses' => 'ManagementControllers\DeletedUsersController@deleteAllDeletedUsers']
+        );
+      });
+
   }
 
     /** Groups routes */
@@ -84,9 +91,18 @@ $router->group([
       $router->delete('instruments/{id}', ['uses' => 'ManagementControllers\InstrumentController@delete']);
     }
 
-    $router->post('performanceBadgeWithInstrument', ['uses' => 'ManagementControllers\PerformanceBadgeController@addPerformanceBadgeForUserWithInstrument']);
-    $router->delete('performanceBadgeWithInstrument/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']);
-    $router->get('performanceBadgesForUser/{id}', ['uses' => 'ManagementControllers\PerformanceBadgeController@performanceBadgesForUser']);
+    $router->post(
+      'performanceBadgeWithInstrument',
+      ['uses' => 'ManagementControllers\PerformanceBadgeController@addPerformanceBadgeForUserWithInstrument']
+    );
+    $router->delete(
+      'performanceBadgeWithInstrument/{id}',
+      ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']
+    );
+    $router->get(
+      'performanceBadgesForUser/{id}',
+      ['uses' => 'ManagementControllers\PerformanceBadgeController@performanceBadgesForUser']
+    );
   }
 
     /** Badge routes */

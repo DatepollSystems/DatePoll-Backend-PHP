@@ -16,7 +16,7 @@ class BroadcastsAdministrationPermissionMiddleware {
    */
   public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse|Response {
     $user = $request->auth;
-    if (! ($user->hasPermission(Permissions::$BROADCASTS_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
+    if (! $user->hasPermission(Permissions::$BROADCASTS_ADMINISTRATION)) {
       return response()->json([
         'msg' => 'Permission denied',
         'error_code' => 'permissions_denied',

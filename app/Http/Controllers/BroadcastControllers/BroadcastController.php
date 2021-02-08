@@ -6,6 +6,7 @@ use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Models\Broadcasts\BroadcastAttachment;
+use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\System\Setting\ISettingRepository;
@@ -112,6 +113,15 @@ class BroadcastController extends Controller {
    * @throws Exception
    */
   public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
+    if (! ($request->auth->hasPermission(Permissions::$BROADCASTS_DELETE_EXTRA))) {
+      return response()->json([
+        'msg' => 'Permission denied',
+        'error_code' => 'permissions_denied',
+        'needed_permissions' => [
+          Permissions::$ROOT_ADMINISTRATION,
+          Permissions::$BROADCASTS_DELETE_EXTRA,],], 403);
+    }
+
     $broadcast = $this->broadcastRepository->getBroadcastById($id);
     if ($broadcast == null) {
       return response()->json(['msg' => 'Broadcast not found'], 404);

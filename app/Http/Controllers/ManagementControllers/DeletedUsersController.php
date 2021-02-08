@@ -5,7 +5,6 @@ namespace App\Http\Controllers\ManagementControllers;
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
-use App\Permissions;
 use App\Repositories\User\DeletedUser\IDeletedUserRepository;
 use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
@@ -34,15 +33,6 @@ class DeletedUsersController extends Controller {
    * @return JsonResponse
    */
   public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
-    if (! ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
-      return response()->json([
-        'msg' => 'Permission denied',
-        'error_code' => 'permissions_denied',
-        'needed_permissions' => [
-          Permissions::$ROOT_ADMINISTRATION,
-          Permissions::$MANAGEMENT_EXTRA_USER_DELETE,],], 403);
-    }
-
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       return response()->json(['msg' => 'User not found'], 404);
@@ -64,15 +54,6 @@ class DeletedUsersController extends Controller {
    * @return JsonResponse
    */
   public function deleteAllDeletedUsers(AuthenticatedRequest $request): JsonResponse {
-    if (! ($request->auth->hasPermission(Permissions::$ROOT_ADMINISTRATION) || $request->auth->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE))) {
-      return response()->json([
-        'msg' => 'Permission denied',
-        'error_code' => 'permissions_denied',
-        'needed_permissions' => [
-          Permissions::$ROOT_ADMINISTRATION,
-          Permissions::$MANAGEMENT_EXTRA_USER_DELETE,],], 403);
-    }
-
     Logging::info('deleteDeletedUsers', 'Deleting all deleted users... User id - ' . $request->auth->id);
     $this->deletedUserRepository->deleteAllDeletedUsers();
     Logging::info('deleteDeletedUsers', 'Deleted all deleted users! User id - ' . $request->auth->id);
