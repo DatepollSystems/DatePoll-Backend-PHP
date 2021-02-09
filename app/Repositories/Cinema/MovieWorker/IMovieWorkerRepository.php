@@ -7,18 +7,18 @@ use App\Models\User\User;
 
 interface IMovieWorkerRepository {
   /**
-   * @param User $worker
+   * @param int $workerId
    * @param Movie $movie
    * @return bool
    */
-  public function setWorkerForMovie(User $worker, Movie $movie): bool;
+  public function setWorkerForMovie(int $workerId, Movie $movie): bool;
 
   /**
-   * @param User $emergencyWorker
+   * @param int $emergencyWorkerId
    * @param Movie $movie
    * @return bool
    */
-  public function setEmergencyWorkerForMovie(User $emergencyWorker, Movie $movie): bool;
+  public function setEmergencyWorkerForMovie(int $emergencyWorkerId, Movie $movie): bool;
 
   /**
    * @param Movie $movie

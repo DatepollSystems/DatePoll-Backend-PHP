@@ -3,12 +3,9 @@
 namespace App\Models\Cinema;
 
 use App\Models\User\User;
-use App\Repositories\User\UserSetting\UserSettingKey;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
-use stdClass;
 
 /**
  * @property int $id
@@ -31,10 +28,10 @@ use stdClass;
 class Movie extends Model {
   private static string $workerIdProperty = 'worker_id';
   private static string $workerNameProperty = 'worker_name';
-  private static string $workerNumberProperty = 'worker_number';
+  public static string $workerNumberProperty = 'worker_numbers';
   private static string $emergencyWorkerIdProperty = 'emergency_worker_id';
   private static string $emergencyWorkerNameProperty = 'emergency_worker_name';
-  private static string $emergencyWorkerNumberProperty = 'emergency_worker_number';
+  public static string $emergencyWorkerNumberProperty = 'emergency_worker_numbers';
 
   /**
    * @var array
@@ -103,55 +100,19 @@ class Movie extends Model {
 
     $returnable[self::$workerIdProperty] = $worker?->id;
     $returnable[self::$workerNameProperty] = $worker?->getCompleteName();
-    $returnable[self::$workerNumberProperty] = $worker?->telephoneNumbers();
+    if ($worker == null) {
+      $returnable[self::$workerNumberProperty] = [];
+    } else {
+      $returnable[self::$workerNumberProperty] = $worker?->telephoneNumbers();
+    }
     $returnable[self::$emergencyWorkerIdProperty] = $emergencyWorker?->id;
     $returnable[self::$emergencyWorkerNameProperty] = $emergencyWorker?->getCompleteName();
-    $returnable[self::$emergencyWorkerNumberProperty] = $emergencyWorker?->telephoneNumbers();
+    if ($emergencyWorker == null) {
+      $returnable[self::$emergencyWorkerNumberProperty] = [];
+    } else {
+      $returnable[self::$emergencyWorkerNumberProperty] = $emergencyWorker->telephoneNumbers();
+    }
 
     return $returnable;
-  }
-
-  /**
-   * @return array
-   * @noinspection SqlNoDataSourceInspection SqlResolve
-   */
-  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string",
-                'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int",
-                'created_at' => "string",
-                'updated_at' => "string", 'worker_id' => "int", 'worker_name' => 'string',
-                'emergency_worker_id' => 'int',
-                'emergency_worker_name' => 'string', 'bookings' => 'array'])]
-  public function getAdminReturnable(): array {
-    $returnableMovie = $this->toArray();
-    $bookings = [];
-    foreach ($this->moviesBookings() as $moviesBooking) {
-      $booking = new stdClass();
-      $booking->user_id = $moviesBooking->user()->id;
-      $booking->firstname = $moviesBooking->user()->firstname;
-      $booking->surname = $moviesBooking->user()->surname;
-      $booking->amount = $moviesBooking->amount;
-      $bookings[] = $booking;
-    }
-
-    $usersNotBooked = DB::select('SELECT id, firstname, surname, token FROM users WHERE users.id 
-                                                                     NOT IN (SELECT mb.user_id FROM movies_bookings mb
-                                                                     WHERE mb.movie_id = ' . $this->id . ')');
-
-    foreach ($usersNotBooked as $user) {
-      $booking = ['user_id' => $user->id,
-                  'firstname' => $user->firstname,
-                  'surname' => $user->surname,
-                  'amount' => 0];
-
-      $bookings[] = $booking;
-    }
-
-    usort($bookings, static function ($a, $b) {
-      return strcmp($b->amount, $a->amount);
-    });
-
-    $returnableMovie['bookings'] = $bookings;
-
-    return $returnableMovie;
   }
 }

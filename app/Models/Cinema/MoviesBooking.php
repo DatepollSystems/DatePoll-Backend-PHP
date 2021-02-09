@@ -17,22 +17,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property User $user
  */
 class MoviesBooking extends Model {
+  protected $with = ['user', 'movie'];
+
   /**
    * @var array
    */
   protected $fillable = ['user_id', 'movie_id', 'amount', 'created_at', 'updated_at'];
 
   /**
-   * @return Movie|BelongsTo
+   * @return BelongsTo
    */
-  public function movie(): BelongsTo|Movie {
-    return $this->belongsTo(Movie::class)->first();
+  public function movie(): BelongsTo {
+    return $this->belongsTo(Movie::class);
   }
 
   /**
-   * @return User|BelongsTo|null
+   * @return BelongsTo
    */
-  public function user(): BelongsTo|User|null {
-    return $this->belongsTo(User::class)->first();
+  public function user(): BelongsTo {
+    return $this->belongsTo(User::class);
   }
 }

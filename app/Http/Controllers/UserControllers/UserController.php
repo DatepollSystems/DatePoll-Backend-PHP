@@ -105,7 +105,7 @@ class UserController extends Controller {
     $bookingsToShow = [];
     if ($this->settingRepository->getCinemaEnabled()) {
       foreach ($user->moviesBookings() as $booking) {
-        $movie = $booking->movie();
+        $movie = $booking->movie;
 
         if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
           $bookingToShow = new stdClass();

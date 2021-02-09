@@ -56,7 +56,7 @@ abstract class MailHelper {
    * @param string $queue
    * @return void
    */
-  private static function sendDelayedEmailOnQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time, string $queue) {
+  private static function sendDelayedEmailOnQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time, string $queue): void {
     if (! ArrayHelper::isArray($receiverEmailAddressList)) {
       $receiverEmailAddressList = [$receiverEmailAddressList];
     }
@@ -70,7 +70,7 @@ abstract class MailHelper {
    * @param DateTime $time
    * @return void
    */
-  public static function sendDelayedEmailOnLowQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time) {
+  public static function sendDelayedEmailOnLowQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time): void {
     self::sendDelayedEmailOnQueue($datePollMailable, $receiverEmailAddressList, $time, QueueHelper::$QUEUE_LOW);
   }
 
@@ -80,7 +80,7 @@ abstract class MailHelper {
    * @param DateTime $time
    * @return void
    */
-  public static function sendDelayedEmailOnDefaultQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time) {
+  public static function sendDelayedEmailOnDefaultQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time): void {
     self::sendDelayedEmailOnQueue($datePollMailable, $receiverEmailAddressList, $time, QueueHelper::$QUEUE_DEFAULT);
   }
 
@@ -90,7 +90,7 @@ abstract class MailHelper {
    * @param DateTime $time
    * @return void
    */
-  public static function sendDelayedEmailOnHighQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time) {
+  public static function sendDelayedEmailOnHighQueue(ADatePollMailable $datePollMailable, string|array $receiverEmailAddressList, DateTime $time): void {
     self::sendDelayedEmailOnQueue($datePollMailable, $receiverEmailAddressList, $time, QueueHelper::$QUEUE_HIGH);
   }
 }

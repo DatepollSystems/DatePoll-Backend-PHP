@@ -53,7 +53,7 @@ abstract class QueueHelper {
    *   or <code>QueueHelper::$QUEUE_HIGH</code>.
    * @return void
    */
-  public static function addDelayedJobToQueue(Job $job, DateTime $time, string $queue = 'default') {
+  public static function addDelayedJobToQueue(Job $job, DateTime $time, string $queue = 'default'): void {
     Queue::later($time, $job, null, $queue);
   }
 
@@ -62,7 +62,7 @@ abstract class QueueHelper {
    * @param DateTime $time
    * @return void
    */
-  public static function addDelayedJobToLowQueue(Job $job, DateTime $time) {
+  public static function addDelayedJobToLowQueue(Job $job, DateTime $time): void {
     self::addDelayedJobToQueue($job, $time, self::$QUEUE_LOW);
   }
 
@@ -71,7 +71,7 @@ abstract class QueueHelper {
    * @param DateTime $time
    * @return void
    */
-  public static function addDelayedJobToDefaultQueue(Job $job, DateTime $time) {
+  public static function addDelayedJobToDefaultQueue(Job $job, DateTime $time): void {
     self::addDelayedJobToQueue($job, $time, self::$QUEUE_DEFAULT);
   }
 
@@ -80,7 +80,7 @@ abstract class QueueHelper {
    * @param DateTime $time
    * @return void
    */
-  public static function addDelayedJobToHighQueue(Job $job, DateTime $time) {
+  public static function addDelayedJobToHighQueue(Job $job, DateTime $time): void {
     self::addDelayedJobToQueue($job, $time, self::$QUEUE_HIGH);
   }
 }

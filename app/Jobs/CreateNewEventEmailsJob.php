@@ -9,6 +9,7 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Utils\DateHelper;
 use App\Utils\MailHelper;
 use DateInterval;
 use DateTime;
@@ -43,15 +44,15 @@ class CreateNewEventEmailsJob extends Job {
    * @return void
    * @throws Exception
    */
-  public function handle() {
-    $time = new DateTime();
+  public function handle(): void {
+    $time = DateHelper::getCurrentDateTime();
     foreach ($this->eventRepository->getPotentialVotersForEvent($this->event) as $eventUser) {
       // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
       // a circular dependency and RAM will explode
       // Also check if user is not information denied
       $user = User::find($eventUser->id);
 
-      if ($this->userSettingRepository->getNotifyMeOfNewEventsForUser($user->id) && ! $user->information_denied && $user->activated) {
+      if (! $user->information_denied && $user->activated && $this->userSettingRepository->getNotifyMeOfNewEventsForUser($user->id)) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
         MailHelper::sendDelayedEmailOnLowQueue(new NewEvent(
           $user->firstname,

@@ -6,17 +6,22 @@ use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Cinema\Movie\IMovieRepository;
+use App\Repositories\User\User\UserRepository;
 use App\Utils\Converter;
+use App\Utils\DateHelper;
 use App\Utils\StringHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class MovieController extends Controller {
   private static string $YEARS_CACHE_KEY = 'movie.years';
+  private static string $MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY = 'movie.ordered.date.years.';
 
-  public function __construct(protected IMovieRepository $movieRepository) {
+  public function __construct(protected IMovieRepository $movieRepository,
+                              protected UserRepository $userRepository) {
   }
 
   /**
@@ -44,9 +49,18 @@ class MovieController extends Controller {
       $iYear = Converter::stringToInteger($year);
     }
 
+    $cacheKey = self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . Converter::integerToString($iYear);
+    if (Cache::has($cacheKey)) {
+      $movies = Cache::get($cacheKey);
+    } else {
+      $movies = $this->movieRepository->getAllMoviesOrderedByDate($iYear);
+      // Time to live 3 hours
+      Cache::put($cacheKey, $movies, 3 * 60 * 60);
+    }
+
     return response()->json([
       'msg' => 'List of all movies',
-      'movies' => $this->movieRepository->getAllMoviesOrderedByDate($iYear),
+      'movies' => $movies,
       'year' => $iYear]);
   }
 
@@ -74,6 +88,7 @@ class MovieController extends Controller {
     }
     Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
     Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget(self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     return response()->json([
       'msg' => 'Movie created',
@@ -93,9 +108,38 @@ class MovieController extends Controller {
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
+    $returnableMovie = $movie->toArray();
+    $bookings = [];
+    foreach ($movie->moviesBookings() as $moviesBooking) {
+      $user = $moviesBooking->user;
+      $booking = ['user_id' => $user->id,
+                  'firstname' => $user->firstname,
+                  'surname' => $user->surname,
+                  'amount' => $moviesBooking->amount];
+      $bookings[] = $booking;
+    }
+
+    $usersNotBooked = DB::select('SELECT id, firstname, surname FROM users WHERE users.id 
+                                                                     NOT IN (SELECT mb.user_id FROM movies_bookings mb
+                                                                     WHERE mb.movie_id = ' . $returnableMovie['id'] . ')');
+
+    foreach ($usersNotBooked as $user) {
+      $booking = ['user_id' => $user->id,
+                  'firstname' => $user->firstname,
+                  'surname' => $user->surname,
+                  'amount' => 0];
+      $bookings[] = $booking;
+    }
+
+    usort($bookings, static function ($a, $b) {
+      return strcmp($b['amount'], $a['amount']);
+    });
+
+    $returnableMovie['bookings'] = $bookings;
+
     return response()->json([
       'msg' => 'Movie information',
-      'movie' => $movie->getAdminReturnable(),]);
+      'movie' => $returnableMovie,]);
   }
 
   /**
@@ -121,7 +165,8 @@ class MovieController extends Controller {
     }
 
     $movie = $this->movieRepository->updateMovie($movie, $request->input('name'), $request->input('date'),
-      $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'), $request->input('maximal_tickets'));
+      $request->input('trailer_link'), $request->input('poster_link'), $request->input('booked_tickets'),
+      $request->input('maximal_tickets'));
 
     if ($movie == null) {
       Logging::error('updateMovie', 'User . ' . $request->auth->id . ' | Could not update movie');
@@ -129,6 +174,7 @@ class MovieController extends Controller {
     }
     Logging::info('updateMovie', 'User - ' . $request->auth->id . ' | Movie updated - ' . $movie->id);
     Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget(self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     return response()->json([
       'msg' => 'Movie updated',
@@ -149,18 +195,16 @@ class MovieController extends Controller {
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
+    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget(self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+
     if (! $this->movieRepository->deleteMovie($movie)) {
       Logging::error('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Could not delete movie');
 
       return response()->json(['msg' => 'Movie deletion failed'], 500);
     }
 
-    return response()->json([
-      'msg' => 'Movie deleted',
-      'create' => [
-        'href' => 'api/v1/cinema/administration/movie',
-        'method' => 'POST',
-        'params' => 'name, date, trailer_link, poster_link, booked_tickets, movie_year_id',],]);
+    return response()->json(['msg' => 'Movie deleted',]);
   }
 
   /**

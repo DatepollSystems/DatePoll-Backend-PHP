@@ -63,15 +63,16 @@ abstract class ArrayHelper {
     return ! self::isArray($possibleArray);
   }
 
-//  /**
-//   * @param array $array
-//   * @param mixed $toAdd
-//   * @return mixed
-//   */
-//  #[Pure]
-//  public static function addToArrayIfNotInIt(array $array, mixed $toAdd): mixed {
-//    if (! self::inArray($array, $toAdd)) {
-//      return $toAdd;
-//    }
-//  }
+  /**
+   * @param array $array
+   * @param mixed $toAdd
+   * @return array
+   */
+  public static function addToArrayIfNotInIt(array $array, mixed $toAdd): array {
+    if (self::notInArray($array, $toAdd)) {
+      $array[] = $toAdd;
+    }
+
+    return $array;
+  }
 }
