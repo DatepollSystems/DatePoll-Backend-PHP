@@ -23,4 +23,24 @@ deploy:
   script:
     - rm ./composer.lock
     - php composer.phar install -n -v --ignore-platform-reqs
+    - ls -la
     - ./vendor/bin/phpstan analyse --memory-limit=1G ||  echo 0;
+    - zip -r DatePoll-Backend-dev.zip . >> /dev/null
+    - scp -P $SSH_PORT -o StrictHostKeyChecking=no ./DatePoll-Backend-dev.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+
+deploy-release:
+  stage: deploy
+  environment: Staging
+  only:
+    - master
+  script:
+    - version=$(git describe --tags $(git rev-list --tags --max-count=1))
+    - rm ./composer.lock
+    - php composer.phar install -n -v --ignore-platform-reqs
+    - ls -la
+    - ./vendor/bin/phpstan analyse --memory-limit=1G ||  echo 0;
+    - zip -r "DatePoll-Backend-${version}.zip" . >> /dev/null
+    - cp "DatePoll-Backend-${version}.zip" DatePoll-Backend-latest.zip
+    - scp -P $SSH_PORT -o StrictHostKeyChecking=no ./DatePoll-Backend-latest.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+    - scp -P $SSH_PORT -o StrictHostKeyChecking=no "DatePoll-Backend-${version}.zip" $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+

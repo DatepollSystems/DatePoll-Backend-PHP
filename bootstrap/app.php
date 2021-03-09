@@ -61,9 +61,22 @@ $app->register(CorsServiceProvider::class);
 $app->configure('cors');
 $app->middleware([HandleCors::class]);
 
-/** IDE Helper */
 if (EnvironmentHelper::isDebug()) {
+  /** IDE Helper */
   $app->register(IdeHelperServiceProvider::class);
+
+  DB::listen(function ($sql) {
+    if ($sql instanceof Illuminate\Database\Events\QueryExecuted) {
+      Log::info($sql->sql);
+      Log::info(json_encode($sql->bindings, JSON_THROW_ON_ERROR));
+    }
+  });
+
+  DB::listen(
+    function ($query) {
+      Log::info($query->sql);
+    }
+  );
 }
 
 /** Redis and Horizon */
