@@ -1,4 +1,4 @@
-image: php:8.0
+image: php:8.0-buster
   
 stages:
   - build
@@ -32,7 +32,7 @@ deploy-dev:
   only:
     - development
   script:
-    - apt-get update -qq && apt-get install -y -qq zip
+    - apt-get update -qq && apt-get install -y -qq zip openssh-client
     - eval "$(ssh-agent -s)"
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
@@ -49,7 +49,7 @@ deploy-release:
     - master
   script:
     - version=$(git describe --tags $(git rev-list --tags --max-count=1))
-    - apt-get update -qq && apt-get install -y -qq zip
+    - apt-get update -qq && apt-get install -y -qq zip openssh-client
     - eval "$(ssh-agent -s)"
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
