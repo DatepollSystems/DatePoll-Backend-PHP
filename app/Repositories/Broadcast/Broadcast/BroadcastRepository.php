@@ -13,6 +13,7 @@ use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\Group\Subgroup\ISubgroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\UserSettingRepository;
@@ -27,6 +28,7 @@ class BroadcastRepository implements IBroadcastRepository {
   public function __construct(
     protected ISettingRepository $settingRepository,
     protected IGroupRepository $groupRepository,
+    protected ISubgroupRepository $subgroupRepository,
     protected IBroadcastAttachmentRepository $broadcastAttachmentRepository,
     protected IUserRepository $userRepository,
     protected UserSettingRepository $userSettingRepository
@@ -115,14 +117,16 @@ class BroadcastRepository implements IBroadcastRepository {
         }
 
         foreach ($group->usersMemberOfGroups() as $memberOfGroup) {
-          $user = $memberOfGroup->user;
-          $users[] = $user;
-          $userIds[] = $user->id;
+          if (ArrayHelper::notInArray($userIds, $memberOfGroup->user_id)) {
+            $user = $memberOfGroup->user;
+            $users[] = $user;
+            $userIds[] = $user->id;
+          }
         }
       }
 
       foreach ($subgroups as $subgroupId) {
-        $subgroup = Subgroup::find($subgroupId);
+        $subgroup = $this->subgroupRepository->getSubgroupById($subgroupId);
 
         if ($subgroup == null) {
           Logging::error(
@@ -144,10 +148,9 @@ class BroadcastRepository implements IBroadcastRepository {
           return null;
         }
 
-        foreach ($subgroup->usersMemberOfSubgroups() as $memberOfGroup) {
-          $user = $memberOfGroup->user();
-
-          if (! in_array($user->id, $userIds, true)) {
+        foreach ($subgroup->usersMemberOfSubgroups() as $memberOfSubgroup) {
+          if (ArrayHelper::notInArray($userIds, $memberOfSubgroup->user_id)) {
+            $user = $memberOfSubgroup->user;
             $userIds[] = $user->id;
             $users[] = $user;
           }
