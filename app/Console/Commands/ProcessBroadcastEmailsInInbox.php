@@ -223,7 +223,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
       $subject,
       $textPlain,
       $textHtml,
-      $mail->senderName,
+      $mail->senderName ?: $fromAddress,
       $fromAddress,
       $this->settingsRepository->getUrl(),
       ''
