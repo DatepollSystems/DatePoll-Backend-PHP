@@ -37,7 +37,7 @@ deploy-dev:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo -e “Host *\n\tStrictHostKeyChecking no\n\n” > ~/.ssh/config
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - zip -r DatePoll-Backend-dev.zip . >> /dev/null
     - scp -P $SSH_PORT -o StrictHostKeyChecking=no ./DatePoll-Backend-dev.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
 
@@ -56,7 +56,7 @@ deploy-release:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo -e “Host *\n\tStrictHostKeyChecking no\n\n” > ~/.ssh/config
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - zip -r "DatePoll-Backend-${version}.zip" . >> /dev/null
     - cp "DatePoll-Backend-${version}.zip" DatePoll-Backend-latest.zip
     - scp -P $SSH_PORT -o StrictHostKeyChecking=no ./DatePoll-Backend-latest.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
