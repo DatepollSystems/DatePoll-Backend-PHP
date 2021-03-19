@@ -121,7 +121,7 @@ class EventRepository implements IEventRepository {
     foreach ($event->eventDecisions as $oldDecision) {
       $toDelete = true;
 
-      foreach ((array)$decisions as $decision) {
+      foreach ($decisions as $decision) {
         $decisionObject = (object)$decision;
         if ($oldDecision->id == $decisionObject->id) {
           $toDelete = false;
@@ -247,9 +247,9 @@ class EventRepository implements IEventRepository {
       Logging::error('deleteEvent', 'Could not delete event');
 
       return false;
-    } else {
-      return true;
     }
+
+    return true;
   }
 
   /**
@@ -346,7 +346,7 @@ class EventRepository implements IEventRepository {
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
             $subgroupResultUsers[] = $user;
-            if (ArrayHelper::notInArray($sUser->id, $allUserIds)) {
+            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
               $allUsers[] = $user;
               $allUserIds[] = $sUser->id;
             }
