@@ -9,7 +9,6 @@ use App\Models\Broadcasts\Broadcast;
 use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Broadcasts\BroadcastForSubgroup;
 use App\Models\Broadcasts\BroadcastUserInfo;
-use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;

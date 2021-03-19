@@ -1,18 +1,32 @@
 <?php
-/** @noinspection PhpUndefinedVariableInspection  @noinspection PhpUndefinedMethodInspection */
+/** @noinspection PhpUndefinedVariableInspection PhpUndefinedMethodInspection */
 
-use App\Http\Middleware\ManagementPermissionMiddleware;
-use App\Http\Middleware\ManagementUserDeleteExtraPermissionMiddleware;
+use App\Http\Middleware\Management\ManagementPermissionMiddleware;
+use App\Http\Middleware\Management\ManagementUserDeleteExtraPermissionMiddleware;
+use App\Http\Middleware\Management\ManagementUsersViewPermissionMiddleware;
 
 $router->group([
   'prefix' => 'management',
-  'middleware' => [ManagementPermissionMiddleware::class],], function () use ($router) {
+  'middleware' => [ManagementUsersViewPermissionMiddleware::class],], static function () use ($router) {
+    $router->get('users', ['uses' => 'ManagementControllers\UsersController@getAll']);
+    $router->get('users/{id}', ['uses' => 'ManagementControllers\UsersController@getSingle']);
+
+    $router->get('subgroups/joined/{userID}', ['uses' => 'ManagementControllers\SubgroupController@joined']);
+    $router->get('groups/joined/{userID}', ['uses' => 'ManagementControllers\GroupController@joined']);
+    $router->get(
+      'performanceBadgesForUser/{id}',
+      ['uses' => 'ManagementControllers\PerformanceBadgeController@performanceBadgesForUser']
+    );
+    $router->get('badgesForUser/{id}', ['uses' => 'ManagementControllers\BadgeController@userBadgesForUser']);
+  });
+
+$router->group([
+  'prefix' => 'management',
+  'middleware' => [ManagementPermissionMiddleware::class],], static function () use ($router) {
     /** Users routes */
     {
     {
-      $router->get('users', ['uses' => 'ManagementControllers\UsersController@getAll']);
       $router->post('users', ['uses' => 'ManagementControllers\UsersController@create']);
-      $router->get('users/{id}', ['uses' => 'ManagementControllers\UsersController@getSingle']);
       $router->put('users/changePassword/{id}', ['uses' => 'ManagementControllers\UsersController@changePassword']);
       $router->put('users/{id}', ['uses' => 'ManagementControllers\UsersController@update']);
       $router->post('users/activate', ['uses' => 'ManagementControllers\UsersController@activateAll']);
@@ -51,7 +65,6 @@ $router->group([
       $router->post('groups/addUser', ['uses' => 'ManagementControllers\GroupController@addUser']);
       $router->post('groups/removeUser', ['uses' => 'ManagementControllers\GroupController@removeUser']);
       $router->post('groups/updateUser', ['uses' => 'ManagementControllers\GroupController@updateUser']);
-      $router->get('groups/joined/{userID}', ['uses' => 'ManagementControllers\GroupController@joined']);
       $router->get('groups/free/{userID}', ['uses' => 'ManagementControllers\GroupController@free']);
     }
   }
@@ -68,7 +81,6 @@ $router->group([
       $router->post('subgroups/addUser', ['uses' => 'ManagementControllers\SubgroupController@addUser']);
       $router->post('subgroups/removeUser', ['uses' => 'ManagementControllers\SubgroupController@removeUser']);
       $router->post('subgroups/updateUser', ['uses' => 'ManagementControllers\SubgroupController@updateUser']);
-      $router->get('subgroups/joined/{userID}', ['uses' => 'ManagementControllers\SubgroupController@joined']);
       $router->get('subgroups/free/{userID}', ['uses' => 'ManagementControllers\SubgroupController@free']);
     }
   }
@@ -99,10 +111,6 @@ $router->group([
       'performanceBadgeWithInstrument/{id}',
       ['uses' => 'ManagementControllers\PerformanceBadgeController@removePerformanceBadgeForUserWithInstrument']
     );
-    $router->get(
-      'performanceBadgesForUser/{id}',
-      ['uses' => 'ManagementControllers\PerformanceBadgeController@performanceBadgesForUser']
-    );
   }
 
     /** Badge routes */
@@ -115,7 +123,6 @@ $router->group([
       $router->get('yearBadge/{year}', ['uses' => 'ManagementControllers\BadgeController@getYearBadges']);
       $router->post('badgeForUser', ['uses' => 'ManagementControllers\BadgeController@addUserBadge']);
       $router->delete('badgeForUser/{id}', ['uses' => 'ManagementControllers\BadgeController@removeUserBadge']);
-      $router->get('badgesForUser/{id}', ['uses' => 'ManagementControllers\BadgeController@userBadgesForUser']);
     }
   }
   });

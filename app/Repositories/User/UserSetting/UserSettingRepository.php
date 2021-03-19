@@ -170,7 +170,7 @@ class UserSettingRepository implements IUserSettingRepository {
   private function getUserSetting(int $userId, string $settingKey, bool $default): bool {
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($userId, $settingKey);
     if ($setting == null) {
-      $setting = $this->userTokenRepository->createUserToken($userId, Converter::booleanToString($default), $settingKey);
+      return $default;
     }
 
     return Converter::stringToBoolean($setting->token);

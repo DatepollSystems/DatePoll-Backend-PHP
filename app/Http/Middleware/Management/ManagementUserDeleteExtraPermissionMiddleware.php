@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http\Middleware\Management;
 
 use App\Http\AuthenticatedRequest;
 use App\Permissions;
@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
-class ManagementPermissionMiddleware {
+class ManagementUserDeleteExtraPermissionMiddleware {
   /**
    * Handle an incoming request.
    *
@@ -18,12 +18,12 @@ class ManagementPermissionMiddleware {
    */
   public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse|Response {
     $user = $request->auth;
-    if (! $user->hasPermission(Permissions::$MANAGEMENT_ADMINISTRATION)) {
+    if (! $user->hasPermission(Permissions::$MANAGEMENT_EXTRA_USER_DELETE)) {
       return response()->json(['msg' => 'Permission denied',
         'error_code' => 'permissions_denied',
         'needed_permissions' => [
           Permissions::$ROOT_ADMINISTRATION,
-          Permissions::$MANAGEMENT_ADMINISTRATION, ], ], 403);
+          Permissions::$MANAGEMENT_EXTRA_USER_DELETE, ], ], 403);
     }
 
     return $next($request);
