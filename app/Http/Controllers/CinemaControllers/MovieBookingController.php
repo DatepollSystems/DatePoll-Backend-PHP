@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\CinemaControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Repositories\Cinema\Movie\IMovieRepository;
@@ -9,7 +10,6 @@ use App\Repositories\Cinema\MovieBooking\IMovieBookingRepository;
 use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class MovieBookingController extends Controller {
@@ -24,11 +24,11 @@ class MovieBookingController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function bookTickets(Request $request) {
+  public function bookTickets(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'movie_id' => 'required|numeric',
       'ticket_amount' => 'required|int', ]);
@@ -58,20 +58,20 @@ class MovieBookingController extends Controller {
       return response()->json([
         'msg' => 'Reservation successful',
         'movie_booking' => $movieBooking, ], 200);
-    } else {
-      Logging::error('bookTickets', 'User - ' . $user->id . ' | Could not save movie booking');
-
-      return response()->json(['msg' => 'An error occurred during booking saving'], 500);
     }
+
+    Logging::error('bookTickets', 'User - ' . $user->id . ' | Could not save movie booking');
+
+    return response()->json(['msg' => 'An error occurred during booking saving'], 500);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws Exception
    */
-  public function cancelBooking(Request $request, int $id) {
+  public function cancelBooking(AuthenticatedRequest $request, int $id): JsonResponse {
     $user = $request->auth;
 
     $movie = $this->movieRepository->getMovieById($id);
@@ -88,20 +88,20 @@ class MovieBookingController extends Controller {
       Logging::info('cancelBooking', 'Movie booking | Successful');
 
       return response()->json(['msg' => 'Booking successful removed'], 200);
-    } else {
-      Logging::error('cancelBooking', 'Movie booking - ' . $movieBooking->id . ' | Could not cancel booking');
-
-      return response()->json(['msg' => 'An error occurred during removing'], 500);
     }
+
+    Logging::error('cancelBooking', 'Movie booking - ' . $movieBooking->id . ' | Could not cancel booking');
+
+    return response()->json(['msg' => 'An error occurred during removing'], 500);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function bookForUsers(Request $request, int $id) {
+  public function bookForUsers(AuthenticatedRequest $request, int $id): JsonResponse {
     $this->validate($request, ['bookings' => 'required|array']);
 
     $movie = $this->movieRepository->getMovieById($id);
@@ -139,13 +139,13 @@ class MovieBookingController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    * @throws ValidationException
    * @throws Exception
    */
-  public function cancelBookingForUsers(Request $request, int $id) {
+  public function cancelBookingForUsers(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found'], 404);

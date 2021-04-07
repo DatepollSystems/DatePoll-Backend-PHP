@@ -152,7 +152,7 @@ class UserSettingRepository implements IUserSettingRepository {
 
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($userId, $settingKey);
     if ($setting == null) {
-      $setting = $this->userTokenRepository->createUserToken($userId, $valueToSave, $settingKey)->token;
+      $setting = $this->userTokenRepository->createUserToken($userId, $valueToSave, $settingKey);
     } else {
       $setting->token = $valueToSave;
       $setting->save();
@@ -170,6 +170,12 @@ class UserSettingRepository implements IUserSettingRepository {
   private function getUserSetting(int $userId, string $settingKey, bool $default): bool {
     $setting = $this->userTokenRepository->getUserTokenByUserAndPurpose($userId, $settingKey);
     if ($setting == null) {
+      return $default;
+    }
+
+    if (Converter::stringToBoolean($setting->token) == $default) {
+      $this->userTokenRepository->deleteUserToken($setting);
+
       return $default;
     }
 

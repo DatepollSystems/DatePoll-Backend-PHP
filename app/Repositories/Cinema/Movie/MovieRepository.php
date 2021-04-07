@@ -84,9 +84,9 @@ class MovieRepository implements IMovieRepository {
 
     if ($movie->save()) {
       return $movie;
-    } else {
-      return null;
     }
+
+    return null;
   }
 
   /**
@@ -146,13 +146,13 @@ class MovieRepository implements IMovieRepository {
 
       if ($movie->worker_id == null) {
         $returnable[Movie::$workerNumberProperty] = [];
-      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->worker_id)) {
+      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
         $returnable[Movie::$workerNumberProperty] = [];
       }
 
       if ($movie->emergency_worker_id == null) {
         $returnable[Movie::$emergencyWorkerNumberProperty] = [];
-      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->emergency_worker_id)) {
+      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->emergency_worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
         $returnable[Movie::$emergencyWorkerNumberProperty] = [];
       }
 
