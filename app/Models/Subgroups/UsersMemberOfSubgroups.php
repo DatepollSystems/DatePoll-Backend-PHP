@@ -17,22 +17,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property User $user
  */
 class UsersMemberOfSubgroups extends Model {
-  /**
-   * @var array
-   */
   protected $fillable = ['role', 'subgroup_id', 'user_id', 'created_at', 'updated_at'];
+  protected $with = ['subgroup', 'user'];
 
   /**
-   * @return BelongsTo | Subgroup
+   * @return BelongsTo
    */
-  public function subgroup(): BelongsTo|Subgroup {
-    return $this->belongsTo(Subgroup::class)->first();
+  public function subgroup(): BelongsTo {
+    return $this->belongsTo(Subgroup::class);
   }
 
   /**
-   * @return BelongsTo | User
+   * @return BelongsTo
    */
-  public function user(): BelongsTo|User {
-    return $this->belongsTo(User::class)->first();
+  public function user(): BelongsTo {
+    return $this->belongsTo(User::class);
   }
 }

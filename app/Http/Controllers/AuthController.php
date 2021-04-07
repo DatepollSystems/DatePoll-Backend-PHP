@@ -79,7 +79,7 @@ class AuthController extends Controller {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
           $userToken = $this->userTokenRepository->createUserToken(
-            $user,
+            $user->id,
             $randomToken,
             'stayLoggedIn',
             $sessionInformation
@@ -149,7 +149,7 @@ class AuthController extends Controller {
           $randomToken = $this->userTokenRepository->generateUniqueRandomToken(64);
 
           $userToken = $this->userTokenRepository->createUserToken(
-            $user,
+            $user->id,
             $randomToken,
             'stayLoggedIn',
             $sessionInformation
@@ -286,19 +286,19 @@ class AuthController extends Controller {
       Logging::info('checkForgotPasswordCode', 'User - ' . $user->id . ' | Code correct');
 
       return response()->json(['msg' => 'Code correct', 'success_code' => 'code_correct'], 200);
-    } else {
-      $userCode->rate_limit++;
-      if (! $userCode->save()) {
-        Logging::error(
-          'checkForgotPasswordCode',
-          'User - ' . $user->id . ' | User code ' . $userCode->id . ' | Could not save after rate limit adding'
-        );
-
-        return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
-      }
-
-      return response()->json(['msg' => 'The code is incorrect', 'error_code' => 'code_incorrect'], 400);
     }
+
+    $userCode->rate_limit++;
+    if (! $userCode->save()) {
+      Logging::error(
+        'checkForgotPasswordCode',
+        'User - ' . $user->id . ' | User code ' . $userCode->id . ' | Could not save after rate limit adding'
+      );
+
+      return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
+    }
+
+    return response()->json(['msg' => 'The code is incorrect', 'error_code' => 'code_incorrect'], 400);
   }
 
   /**
@@ -346,18 +346,18 @@ class AuthController extends Controller {
       Logging::info('resetPasswordAfterForgotPassword', 'User - ' . $user->id . ' | Changed password');
 
       return response()->json(['msg' => 'Changed password successful'], 200);
-    } else {
-      $userCode->rate_limit++;
-      if (! $userCode->save()) {
-        Logging::error(
-          'resetPasswordAfterForgotPassword',
-          'User - ' . $user->id . ' | User code ' . $userCode->id . ' | Could not save user code after '
-        );
-
-        return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
-      }
-
-      return response()->json(['msg' => 'The code is incorrect', 'error_code' => 'code_incorrect'], 400);
     }
+
+    $userCode->rate_limit++;
+    if (! $userCode->save()) {
+      Logging::error(
+        'resetPasswordAfterForgotPassword',
+        'User - ' . $user->id . ' | User code ' . $userCode->id . ' | Could not save user code after '
+      );
+
+      return response()->json(['msg' => 'Could not save user code after rate limit adding'], 500);
+    }
+
+    return response()->json(['msg' => 'The code is incorrect', 'error_code' => 'code_incorrect'], 400);
   }
 }

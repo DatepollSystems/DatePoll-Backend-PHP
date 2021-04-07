@@ -5,6 +5,8 @@ namespace App\Repositories\Group\Subgroup;
 use App\Logging;
 use App\Models\Subgroups\Subgroup;
 use App\Models\Subgroups\UsersMemberOfSubgroups;
+use App\Utils\ArrayHelper;
+use DB;
 use Exception;
 
 class SubgroupRepository implements ISubgroupRepository {
@@ -32,13 +34,19 @@ class SubgroupRepository implements ISubgroupRepository {
    * @param Subgroup|null $subgroup
    * @return Subgroup|null
    */
-  public function createOrUpdateSubgroup(string $name, string $description, int $groupId, ?int $orderN = null, ?Subgroup $subgroup = null): ?Subgroup {
+  public function createOrUpdateSubgroup(
+    string $name,
+    string $description,
+    int $groupId,
+    ?int $orderN = null,
+    ?Subgroup $subgroup = null
+  ): ?Subgroup {
     if ($subgroup == null) {
       $subgroup = new Subgroup([
         'name' => $name,
         'description' => $description,
         'orderN' => $orderN,
-        'group_id' => $groupId, ]);
+        'group_id' => $groupId,]);
     } else {
       $subgroup->name = $name;
       $subgroup->description = $description;
@@ -86,12 +94,17 @@ class SubgroupRepository implements ISubgroupRepository {
    * @param UsersMemberOfSubgroups|null $userMemberOfSubgroup
    * @return UsersMemberOfSubgroups|null
    */
-  public function createOrUpdateUserMemberOfSubgroup(int $subgroupId, int $userId, ?string $role = null, ?UsersMemberOfSubgroups $userMemberOfSubgroup = null): ?UsersMemberOfSubgroups {
+  public function createOrUpdateUserMemberOfSubgroup(
+    int $subgroupId,
+    int $userId,
+    ?string $role = null,
+    ?UsersMemberOfSubgroups $userMemberOfSubgroup = null
+  ): ?UsersMemberOfSubgroups {
     if ($userMemberOfSubgroup == null) {
       $userMemberOfSubgroup = new UsersMemberOfSubgroups([
         'user_id' => $userId,
         'subgroup_id' => $subgroupId,
-        'role' => $role, ]);
+        'role' => $role,]);
     } else {
       $userMemberOfSubgroup->role = $role;
     }
@@ -114,7 +127,7 @@ class SubgroupRepository implements ISubgroupRepository {
     $userMemberOfSubgroups = [];
     foreach (UsersMemberOfSubgroups::where('user_id', $userId)
       ->get()->all() as $userMemberOfSubgroup) {
-      if ($userMemberOfSubgroup->subgroup()->group_id = $groupId) {
+      if ($userMemberOfSubgroup->subgroup->group_id == $groupId) {
         $userMemberOfSubgroups[] = $userMemberOfSubgroup;
       }
     }
@@ -135,42 +148,23 @@ class SubgroupRepository implements ISubgroupRepository {
    * @param int $userId
    * @return Subgroup[]
    */
-  public function getJoinedSubgroupsReturnableByUserId(int $userId): array {
-    $subgroupsToReturn = [];
-    foreach (UsersMemberOfSubgroups::where('user_id', $userId)
-      ->get()->all() as $userMemberOfSubgroup) {
-      $subgroup = $userMemberOfSubgroup->subgroup();
-
-      $subgroup['group_name'] = $subgroup->group()->name;
-
-      $subgroupsToReturn[] = $subgroup;
+  public function getSubgroupsWhereUserIsIn(int $userId): array {
+    $subgroupIds = DB::table('users_member_of_subgroups')->where('user_id', '=', $userId)->pluck('subgroup_id')->all();
+    if (ArrayHelper::isNotArray($subgroupIds)) {
+      return [];
     }
 
-    return $subgroupsToReturn;
+    return Subgroup::whereIn('id', $subgroupIds)->get()->all();
   }
 
   /**
    * @param int $userId
    * @return Subgroup[]
    */
-  public function getFreeSubgroupsReturnableByUserId(int $userId): array {
-    $subgroupsToReturn = [];
-    foreach ($this->getAllSubgroupsOrdered() as $subgroup) {
-      $isInSubgroup = false;
-      foreach (UsersMemberOfSubgroups::where('user_id', $userId)
-        ->get()->all() as $userMemberOfSubgroup) {
-        if ($userMemberOfSubgroup->subgroup_id == $subgroup->id) {
-          $isInSubgroup = true;
-          break;
-        }
-      }
-
-      if (! $isInSubgroup) {
-        $subgroup['group_name'] = $subgroup->group()->name;
-        $subgroupsToReturn[] = $subgroup;
-      }
-    }
-
-    return $subgroupsToReturn;
+  public function getSubgroupsWhereUserIsNotIn(int $userId): array {
+    return Subgroup::whereNotIn(
+      'id',
+      DB::table('users_member_of_subgroups')->where('user_id', '=', $userId)->pluck('subgroup_id')
+    )->get()->all();
   }
 }

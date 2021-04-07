@@ -8,7 +8,7 @@ parameters:
     # The level 8 is the highest level
     level: 5
 
-    excludes_analyse:
+    excludePaths:
         - ./routes/*
         - ./vendor/*
 

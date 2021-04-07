@@ -10,12 +10,14 @@ class Permissions {
   public static string $EVENTS_VIEW_DETAILS = 'events.details';
 
   public static string $BROADCASTS_ADMINISTRATION = 'broadcasts.*';
+  public static string $BROADCASTS_DELETE_EXTRA = 'broadcasts.delete';
 
   public static string $SEAT_RESERVATION_ADMINISTRATION = 'seatReservation.*';
 
   public static string $FILES_ADMINISTRATION = 'files.*';
 
   public static string $MANAGEMENT_ADMINISTRATION = 'management.*';
+  public static string $MANAGEMENT_USER_VIEW = 'management.user.view';
   public static string $MANAGEMENT_EXTRA_USER_PERMISSIONS = 'management.user.permissions';
   public static string $MANAGEMENT_EXTRA_USER_DELETE = 'management.user.delete';
 

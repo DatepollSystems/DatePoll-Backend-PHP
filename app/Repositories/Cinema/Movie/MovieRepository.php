@@ -3,6 +3,7 @@
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Utils\ArrayHelper;
 use App\Utils\DateHelper;
 use Exception;
@@ -10,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
 
 class MovieRepository implements IMovieRepository {
+
+  public function __construct(protected IUserSettingRepository $userSettingRepository) {
+  }
+
   /**
    * @param int $id
    * @return Movie|null
@@ -79,9 +84,9 @@ class MovieRepository implements IMovieRepository {
 
     if ($movie->save()) {
       return $movie;
-    } else {
-      return null;
     }
+
+    return null;
   }
 
   /**
@@ -138,6 +143,19 @@ class MovieRepository implements IMovieRepository {
     foreach ($this->getMoviesAfterDate($date) as $movie) {
       $returnable = $movie->toArray();
       $returnable['booked_tickets_for_yourself'] = $movie->getBookedTicketsForUser($userId);
+
+      if ($movie->worker_id == null) {
+        $returnable[Movie::$workerNumberProperty] = [];
+      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
+        $returnable[Movie::$workerNumberProperty] = [];
+      }
+
+      if ($movie->emergency_worker_id == null) {
+        $returnable[Movie::$emergencyWorkerNumberProperty] = [];
+      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->emergency_worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
+        $returnable[Movie::$emergencyWorkerNumberProperty] = [];
+      }
+
       $returnableMovies[] = $returnable;
     }
 

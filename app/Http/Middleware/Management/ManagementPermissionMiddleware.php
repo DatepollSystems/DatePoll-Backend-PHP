@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http\Middleware\Management;
 
 use App\Http\AuthenticatedRequest;
 use App\Permissions;
 use Closure;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class ManagementPermissionMiddleware {
   /**
@@ -13,11 +14,11 @@ class ManagementPermissionMiddleware {
    *
    * @param AuthenticatedRequest $request
    * @param Closure $next
-   * @return JsonResponse
+   * @return JsonResponse|Response
    */
-  public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse {
+  public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse|Response {
     $user = $request->auth;
-    if (! ($user->hasPermission(Permissions::$MANAGEMENT_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
+    if (! $user->hasPermission(Permissions::$MANAGEMENT_ADMINISTRATION)) {
       return response()->json(['msg' => 'Permission denied',
         'error_code' => 'permissions_denied',
         'needed_permissions' => [

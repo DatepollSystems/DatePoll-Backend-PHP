@@ -179,4 +179,22 @@ abstract class StringHelper {
   public static function startsWithCharacter(string $string, string $char): bool {
     return str_starts_with($string, $char);
   }
+
+  /**
+   * @param string $string
+   * @param string $pattern
+   * @param string $replacement
+   * @return string
+   */
+  private static function removeRegularExpression(string $string, string $pattern, string $replacement): string {
+    return preg_replace($pattern, $replacement, $string);
+  }
+
+  /**
+   * @param string $string
+   * @return string
+   */
+  public static function removeImageHtmlTag(string $string): string {
+    return self::removeRegularExpression($string, '/<img[^>]+>/i', ' (image) ');
+  }
 }

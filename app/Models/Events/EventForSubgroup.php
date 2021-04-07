@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class EventForSubgroup extends Model {
   protected $table = 'events_for_subgroups';
+  protected $with = ['event', 'subgroup'];
 
   /**
    * @var array
@@ -28,16 +29,16 @@ class EventForSubgroup extends Model {
     'updated_at', ];
 
   /**
-   * @return BelongsTo | Event
+   * @return BelongsTo
    */
-  public function event(): BelongsTo|Event {
-    return $this->belongsTo(Event::class)->first();
+  public function event(): BelongsTo {
+    return $this->belongsTo(Event::class);
   }
 
   /**
-   * @return BelongsTo | Subgroup
+   * @return BelongsTo
    */
-  public function subgroup(): BelongsTo|Subgroup {
-    return $this->belongsTo(Subgroup::class)->first();
+  public function subgroup(): BelongsTo {
+    return $this->belongsTo(Subgroup::class);
   }
 }

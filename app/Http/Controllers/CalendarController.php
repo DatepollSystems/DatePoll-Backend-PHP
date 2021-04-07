@@ -11,6 +11,7 @@ use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Repositories\User\UserToken\IUserTokenRepository;
 use App\Utils\Converter;
+use App\Utils\StringHelper;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -85,7 +86,7 @@ class CalendarController extends Controller {
       ->setName($this->settingRepository->getCommunityName())
       ->setLanguage('de');
 
-    if ($this->settingRepository->getCinemaEnabled() && $this->userSettingRepository->getShowMoviesInCalendarForUser($user)) {
+    if ($this->settingRepository->getCinemaEnabled() && $this->userSettingRepository->getShowMoviesInCalendarForUser($user->id)) {
       /* -------- Movie booking specific calendar -------------*/
       $movies = $this->movieBookingRepository->getMoviesWhereUserBookedTickets($user->id);
 
@@ -170,7 +171,7 @@ class CalendarController extends Controller {
       }
     }
 
-    if ($this->settingRepository->getEventsEnabled() && $this->userSettingRepository->getShowEventsInCalendarForUser($user)) {
+    if ($this->settingRepository->getEventsEnabled() && $this->userSettingRepository->getShowEventsInCalendarForUser($user->id)) {
       // Find events where user answered a question with decision which also has showInCalendar on true
       $eventIds = DB::table('events_users_voted_for')
         ->join('events_decisions', 'events_decisions.id', '=', 'events_users_voted_for.decision_id')
@@ -213,7 +214,7 @@ class CalendarController extends Controller {
         }
 
         if ($startDate->location != null) {
-          if (strlen($startDate->location) > 0) {
+          if (StringHelper::notNullAndEmpty($startDate->location) > 0) {
             $location = new Location();
             $location->setLanguage('de');
             $location->setName($startDate->location);
@@ -225,10 +226,10 @@ class CalendarController extends Controller {
       }
     }
 
-    if ($this->userSettingRepository->getShowBirthdaysInCalendarForUser($user)) {
+    if ($this->userSettingRepository->getShowBirthdaysInCalendarForUser($user->id)) {
       $users = $this->userRepository->getAllUsers();
       foreach ($users as $user) {
-        if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+        if ($this->userSettingRepository->getShareBirthdayForUser($user->id)) {
           $d = date_parse_from_format('Y-m-d', $user->birthday);
           if ($d['month'] == date('n')) {
             $birthdayEvent = new CalendarEvent();

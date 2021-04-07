@@ -167,7 +167,7 @@ class EventGroupController extends Controller {
     $groupsToReturn = [];
     $eventForGroups = EventForGroup::where('event_id', $id)->get();
     foreach ($eventForGroups as $eventForGroup) {
-      $group = $eventForGroup->group();
+      $group = $eventForGroup->group;
 
       $groupsToReturn[] = $group;
     }
@@ -193,7 +193,7 @@ class EventGroupController extends Controller {
     foreach ($allGroups as $group) {
       $isInGroup = false;
       foreach ($eventForGroups as $eventForGroup) {
-        if ($eventForGroup->group()->id == $group->id) {
+        if ($eventForGroup->group->id == $group->id) {
           $isInGroup = true;
           break;
         }
@@ -223,7 +223,7 @@ class EventGroupController extends Controller {
 
     $eventForSubgroups = EventForSubgroup::where('event_id', $id)->get();
     foreach ($eventForSubgroups as $eventForSubgroup) {
-      $subgroup = $eventForSubgroup->subgroup();
+      $subgroup = $eventForSubgroup->subgroup;
       $subgroup['group_name'] = $subgroup->group()->name;
       $subgroupsToReturn[] = $subgroup;
     }
@@ -249,14 +249,14 @@ class EventGroupController extends Controller {
     foreach ($allSubgroups as $subgroup) {
       $isInSubgroup = false;
       foreach ($eventForSubgroups as $eventForSubgroup) {
-        if ($eventForSubgroup->subgroup()->id == $subgroup->id) {
+        if ($eventForSubgroup->subgroup->id == $subgroup->id) {
           $isInSubgroup = true;
           break;
         }
       }
 
       if (! $isInSubgroup) {
-        $subgroup['group_name'] = $subgroup->group()->name;
+        $subgroup['group_name'] = $subgroup->getGroup()->name;
         $subgroupsToReturn[] = $subgroup;
       }
     }

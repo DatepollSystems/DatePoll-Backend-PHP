@@ -9,15 +9,15 @@ use Exception;
 
 class UserTokenRepository implements IUserTokenRepository {
   /**
-   * @param User $user
+   * @param int $userId
    * @param string $token
    * @param string $purpose
    * @param string|null $description
    * @return UserToken|null
    */
-  public function createUserToken(User $user, string $token, string $purpose, ?string $description = null): ?UserToken {
+  public function createUserToken(int $userId, string $token, string $purpose, ?string $description = null): ?UserToken {
     $userToken = new UserToken([
-      'user_id' => $user->id,
+      'user_id' => $userId,
       'token' => $token,
       'purpose' => $purpose,
       'description' => $description, ]);
@@ -86,12 +86,12 @@ class UserTokenRepository implements IUserTokenRepository {
   }
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param string $purpose
    * @return UserToken|null
    */
-  public function getUserTokenByUserAndPurpose(User $user, string $purpose): ?UserToken {
-    return UserToken::where('user_id', $user->id)
+  public function getUserTokenByUserAndPurpose(int $userId, string $purpose): ?UserToken {
+    return UserToken::where('user_id', $userId)
       ->where('purpose', $purpose)
       ->first();
   }

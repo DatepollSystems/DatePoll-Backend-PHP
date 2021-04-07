@@ -2,44 +2,75 @@
 
 namespace App\Http\Controllers\CinemaControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Repositories\Cinema\Movie\IMovieRepository;
 use App\Repositories\Cinema\MovieWorker\IMovieWorkerRepository;
+use App\Utils\DateHelper;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class MovieWorkerController extends Controller {
-  protected IMovieWorkerRepository $movieWorkerRepository;
-  protected IMovieRepository $movieRepository;
 
-  public function __construct(IMovieWorkerRepository $movieWorkerRepository, IMovieRepository $movieRepository) {
-    $this->movieWorkerRepository = $movieWorkerRepository;
-    $this->movieRepository = $movieRepository;
+  public function __construct(protected IMovieWorkerRepository $movieWorkerRepository,
+                              protected IMovieRepository $movieRepository) {
   }
 
   /**
-   * @param Request $request
+   * @return JsonResponse
+   */
+  private function movieAlreadyShownResponse(): JsonResponse {
+    return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  private function workerAlreadyApplied(): JsonResponse {
+    return response()->json(['msg' => 'There applied a worker already for this movie',
+                             'error_code' => 'worker_already_applied'], 400);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  private function noWorkerFoundForThisMovie(): JsonResponse {
+    return response()->json(['msg' => 'No worker found for this movie', 'error_code' => 'no_worker_found_for_movie'],
+      400);
+  }
+
+  /**
+   * @return JsonResponse
+   */
+  private function youAreNotTheWorkerForThisMovie(): JsonResponse {
+    return response()->json(['msg' => 'You are not the worker for this movie',
+                             'error_code' => 'not_the_worker_for_movie'], 400);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function applyForWorker(Request $request, int $id) {
-    /* Check if movie exists */
+  public function applyForWorker(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
+    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+      DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
+      return $this->movieAlreadyShownResponse();
     }
 
-    if ($movie->worker() != null) {
-      return response()->json(['msg' => 'There applied a worker already for this movie', 'error_code' => 'worker_already_applied'], 400);
+    if ($movie->worker_id != null) {
+      return $this->workerAlreadyApplied();
     }
 
-    $user = $request->auth;
-
-    if ($this->movieWorkerRepository->setWorkerForMovie($user, $movie)) {
+    $userId = $request->auth->id;
+    if ($this->movieWorkerRepository->setWorkerForMovie($userId, $movie)) {
+      Logging::info('MovieWorkerController@applyForWorker',
+        'User - ' . $userId . ' applied for movie ' . $movie->id . ' as worker.');
       return response()->json(['msg' => 'Successfully applied for worker'], 200);
     }
 
@@ -47,32 +78,33 @@ class MovieWorkerController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function signOutForWorker(Request $request, int $id) {
-    /* Check if movie exists */
+  public function signOutForWorker(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
+    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+      DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
+      return $this->movieAlreadyShownResponse();
     }
 
-    if ($movie->worker() == null) {
-      return response()->json(['msg' => 'No worker found for this movie', 'error_code' => 'no_worker_found_for_movie'], 400);
+    if ($movie->worker_id == null) {
+      return $this->noWorkerFoundForThisMovie();
     }
 
-    $user = $request->auth;
-
-    if ($movie->worker_id != $user->id) {
-      return response()->json(['msg' => 'You are not the worker for this movie', 'error_code' => 'not_the_worker_for_movie'], 400);
+    $userId = $request->auth->id;
+    if ($movie->worker_id != $userId) {
+      return $this->youAreNotTheWorkerForThisMovie();
     }
 
     if ($this->movieWorkerRepository->removeWorkerFromMovie($movie)) {
+      Logging::info('MovieWorkerController@signOutForWorker',
+        'User - ' . $userId . ' signed out for movie ' . $movie->id . ' as worker.');
       return response()->json(['msg' => 'Successfully signed out for worker'], 200);
     }
 
@@ -80,29 +112,29 @@ class MovieWorkerController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function applyForEmergencyWorker(Request $request, int $id) {
-    /* Check if movie exists */
+  public function applyForEmergencyWorker(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
-
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
+    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+      DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
+      return $this->movieAlreadyShownResponse();
     }
 
-    if ($movie->emergencyWorker() != null) {
-      return response()->json(['msg' => 'There applied a emergency worker already for this movie', 'error_code' => 'worker_already_applied'], 400);
+    if ($movie->emergency_worker_id != null) {
+      return $this->workerAlreadyApplied();
     }
 
-    $user = $request->auth;
-
-    if ($this->movieWorkerRepository->setEmergencyWorkerForMovie($user, $movie)) {
+    $userId = $request->auth->id;
+    if ($this->movieWorkerRepository->setEmergencyWorkerForMovie($userId, $movie)) {
+      Logging::info('MovieWorkerController@applyForEmergencyWorker',
+        'User - ' . $userId . ' applied for movie ' . $movie->id . ' as emergency worker.');
       return response()->json(['msg' => 'Successfully applied for emergency worker'], 200);
     }
 
@@ -110,32 +142,33 @@ class MovieWorkerController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function signOutForEmergencyWorker(Request $request, int $id) {
-    /* Check if movie exists */
+  public function signOutForEmergencyWorker(AuthenticatedRequest $request, int $id): JsonResponse {
     $movie = $this->movieRepository->getMovieById($id);
     if ($movie == null) {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if ((time() - (60 * 60 * 24)) > strtotime($movie->date . ' 20:00:00')) {
-      return response()->json(['msg' => 'Movie already showed', 'error_code' => 'movie_already_shown'], 400);
+    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+      DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
+      return $this->movieAlreadyShownResponse();
     }
 
-    if ($movie->emergencyWorker() == null) {
-      return response()->json(['msg' => 'No emergency worker found for this movie', 'error_code' => 'no_worker_found_for_movie'], 400);
+    if ($movie->emergency_worker_id == null) {
+      return $this->noWorkerFoundForThisMovie();
     }
 
-    $user = $request->auth;
-
-    if ($movie->emergencyWorker()->id != $user->id) {
-      return response()->json(['msg' => 'You are not the emergency worker for this movie', 'error_code' => 'not_the_worker_for_movie'], 400);
+    $userId = $request->auth->id;
+    if ($movie->emergency_worker_id != $userId) {
+      return $this->youAreNotTheWorkerForThisMovie();
     }
 
     if ($this->movieWorkerRepository->removeEmergencyWorkerFromMovie($movie)) {
+      Logging::info('MovieWorkerController@signOutForWorker',
+        'User - ' . $userId . ' signed out for movie ' . $movie->id . ' as emergency worker.');
       return response()->json(['msg' => 'Successfully signed out for emergency worker'], 200);
     }
 
@@ -143,14 +176,12 @@ class MovieWorkerController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getMovies(Request $request) {
-    $user = $request->auth;
-
-    $movies = $this->movieWorkerRepository->getMoviesWhereUserAppliedAsWorker($user);
-
-    return response()->json(['msg' => 'Booked tickets for your movie service', 'movies' => $movies], 200);
+  public function getMovies(AuthenticatedRequest $request): JsonResponse {
+    return response()->json(['msg' => 'Booked tickets for your movie service',
+                             'movies' => $this->movieWorkerRepository->getMoviesWhereUserAppliedAsWorker($request->auth)],
+      200);
   }
 }

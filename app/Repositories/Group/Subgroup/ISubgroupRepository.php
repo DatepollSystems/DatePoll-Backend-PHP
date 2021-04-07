@@ -69,11 +69,11 @@ interface ISubgroupRepository {
    * @param int $userId
    * @return Subgroup[]
    */
-  public function getJoinedSubgroupsReturnableByUserId(int $userId): array;
+  public function getSubgroupsWhereUserIsIn(int $userId): array;
 
   /**
    * @param int $userId
    * @return Subgroup[]
    */
-  public function getFreeSubgroupsReturnableByUserId(int $userId): array;
+  public function getSubgroupsWhereUserIsNotIn(int $userId): array;
 }

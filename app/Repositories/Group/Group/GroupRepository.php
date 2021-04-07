@@ -4,7 +4,9 @@ namespace App\Repositories\Group\Group;
 
 use App\Logging;
 use App\Models\Groups\Group;
+use App\Models\Groups\GroupPermission;
 use App\Models\Groups\UsersMemberOfGroups;
+use App\Utils\ArrayHelper;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -148,26 +150,25 @@ class GroupRepository implements IGroupRepository {
    * @throws Exception
    */
   public function getGroupStatisticsByGroup(Group $group): Group {
-    $usersInGroups = $group->usersMemberOfGroups();
+    $usersMembersOfGroups = $group->usersMemberOfGroups();
 
     $joinYears = [];
 
     $users_only_in_this_group = [];
-    foreach ($usersInGroups as $user) {
+    foreach ($usersMembersOfGroups as $userMemberOfGroup) {
       if (DB::table('users_member_of_groups')
-        ->where('user_id', '=', $user->user_id)
+        ->where('user_id', '=', $userMemberOfGroup->user_id)
         ->count() < 2) {
-        $userD = $user->user();
-        $userR = new stdClass();
-        $userR->firstname = $userD->firstname;
-        $userR->surname = $userD->surname;
-        $userR->created_at = $user->created_at;
+        $userR = [];
+        $userR['firstname'] = $userMemberOfGroup->user->firstname;
+        $userR['surname'] = $userMemberOfGroup->user->surname;
+        $userR['created_at'] = $userMemberOfGroup->created_at;
 
         $users_only_in_this_group[] = $userR;
       }
 
-      $joinYear = date_format(new DateTime($user->created_at), 'Y');
-      if (! in_array($joinYear, $joinYears)) {
+      $joinYear = date_format(new DateTime($userMemberOfGroup->created_at), 'Y');
+      if (ArrayHelper::notInArray($joinYears, $joinYear)) {
         $joinYears[] = $joinYear;
       }
     }
@@ -178,14 +179,13 @@ class GroupRepository implements IGroupRepository {
       $year = new stdClass();
       $year->year = $joinYear;
       $userToAdd = [];
-      foreach ($usersInGroups as $user) {
-        $userJoinYear = date_format(new DateTime($user->created_at), 'Y');
+      foreach ($usersMembersOfGroups as $userMemberOfGroup) {
+        $userJoinYear = date_format(new DateTime($userMemberOfGroup->created_at), 'Y');
         if (str_contains($joinYear, $userJoinYear)) {
-          $userD = $user->user();
-          $userR = new stdClass();
-          $userR->firstname = $userD->firstname;
-          $userR->surname = $userD->surname;
-          $userR->created_at = $user->created_at;
+          $userR = [];
+          $userR['firstname'] = $userMemberOfGroup->user->firstname;
+          $userR['surname'] = $userMemberOfGroup->user->surname;
+          $userR['created_at'] = $userMemberOfGroup->created_at;
 
           $userToAdd[] = $userR;
         }
@@ -196,5 +196,65 @@ class GroupRepository implements IGroupRepository {
     $group['users_grouped_by_join_year'] = $users_grouped_by_join_year;
 
     return $group;
+  }
+
+  /**
+   * @param string[]|array $permissions
+   * @param Group $group
+   * @return bool
+   */
+  public function createOrUpdatePermissionsForGroup(array $permissions, Group $group): bool {
+    $permissionsWhichHaveNotBeenDeleted = [];
+
+    foreach ($group->getPermissions() as $oldPermission) {
+      $toDelete = true;
+
+      foreach ((array)$permissions as $permission) {
+        if ($oldPermission['permission'] == $permission) {
+          $toDelete = false;
+          $permissionsWhichHaveNotBeenDeleted[] = $permission;
+          break;
+        }
+      }
+
+      if ($toDelete) {
+        $permissionToDeleteObject = GroupPermission::find($oldPermission->id);
+        if (! $permissionToDeleteObject->delete()) {
+          Logging::error(
+            'createOrUpdatePermissionsForGroup',
+            'Could not delete old permission: ' . $permissionToDeleteObject->permission . ' for group: ' . $group->id
+          );
+
+          return false;
+        }
+      }
+    }
+
+    foreach ($permissions as $permission) {
+      $toAdd = true;
+
+      foreach ($permissionsWhichHaveNotBeenDeleted as $permissionWhichHaveNotBeenDeleted) {
+        if ($permission == $permissionWhichHaveNotBeenDeleted) {
+          $toAdd = false;
+          break;
+        }
+      }
+
+      if ($toAdd) {
+        $permissionToSave = new GroupPermission([
+          'permission' => $permission,
+          'group_id' => $group->id,]);
+        if (! $permissionToSave->save()) {
+          Logging::error(
+            'createOrUpdatePermissionsForGroup',
+            'Could not add permission: ' . $permission . ' for group: ' . $group->id
+          );
+
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 }

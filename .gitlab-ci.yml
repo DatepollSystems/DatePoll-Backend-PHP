@@ -1,26 +1,64 @@
-image: php:8.0
+image: php:8.0-buster
+  
+stages:
+  - build
+  - deploy
+  
+build:
+  stage: build
+  artifacts:
+    untracked: true
+  cache:
+    paths:
+      - vendor/
+  script:
+    - apt-get update -qq && apt-get install -y git zip wget libc-client-dev libkrb5-dev > /dev/null && rm -r /var/lib/apt/lists/*
+    - docker-php-ext-install pdo_mysql pcntl opcache > /dev/null
+    - docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap > /dev/null
+    - wget https://composer.github.io/installer.sig -O - -q | tr -d '\n' > installer.sig
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php -r "if (hash_file('SHA384', 'composer-setup.php') === file_get_contents('installer.sig')) { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+    - php composer-setup.php
+    - php -r "unlink('composer-setup.php'); unlink('installer.sig');"
+    - rm ./composer.lock
+    - php composer.phar install -n -v --ignore-platform-reqs
+    - ls -la
+    - ./vendor/bin/phpstan analyse --memory-limit=1G ||  echo 0;
 
-cache:
-  paths:
-    - vendor/
-
-before_script:
-  - apt-get update -yqq > /dev/null
-  - apt-get install -y git zip wget libc-client-dev libkrb5-dev > /dev/null && rm -r /var/lib/apt/lists/*
-  - docker-php-ext-install pdo_mysql pcntl opcache > /dev/null
-  - docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-install imap > /dev/null
-  - wget https://composer.github.io/installer.sig -O - -q | tr -d '\n' > installer.sig
-  - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-  - php -r "if (hash_file('SHA384', 'composer-setup.php') === file_get_contents('installer.sig')) { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-  - php composer-setup.php
-  - php -r "unlink('composer-setup.php'); unlink('installer.sig');"
-
-deploy:
+deploy-dev:
   stage: deploy
-  environment: Staging
+  dependencies:
+    - build
   only:
     - development
   script:
-    - rm ./composer.lock
-    - php composer.phar install -n -v --ignore-platform-reqs
-    - ./vendor/bin/phpstan analyse --memory-limit=1G ||  echo 0;
+    - apt-get update -qq && apt-get install -y -qq zip openssh-client
+    - eval "$(ssh-agent -s)"
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - zip -r DatePoll-Backend-dev.zip . >> /dev/null
+    - scp -P $SSH_PORT -o StrictHostKeyChecking=no ./DatePoll-Backend-dev.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+
+deploy-release:
+  stage: deploy
+  dependencies:
+    - build
+  only:
+    - tags
+  except:
+    - branches
+  script:
+    - version=$(git describe --tags $(git rev-list --tags --max-count=1))
+    - apt-get update -qq && apt-get install -y -qq zip openssh-client
+    - eval "$(ssh-agent -s)"
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - zip -r "DatePoll-Backend-${version}.zip" . >> /dev/null
+    - cp "DatePoll-Backend-${version}.zip" DatePoll-Backend-latest.zip
+    - scp -P $SSH_PORT -o StrictHostKeyChecking=no ./DatePoll-Backend-latest.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+    - scp -P $SSH_PORT -o StrictHostKeyChecking=no "DatePoll-Backend-${version}.zip" $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+

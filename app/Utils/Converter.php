@@ -31,7 +31,7 @@ abstract class Converter {
    */
   #[Pure]
   public static function integerToString(int $integer): string {
-    return strval($integer);
+    return (string)$integer;
   }
 
   /**
@@ -40,7 +40,7 @@ abstract class Converter {
    */
   #[Pure]
   public static function stringToInteger(string $string): int {
-    return intval($string);
+    return (int)$string;
   }
 
   /**
@@ -50,9 +50,9 @@ abstract class Converter {
    */
   public static function integerToBoolean(int $integer): bool {
     if ($integer != 0 && $integer != 1) {
-      throw new Exception('Integer is not 0 or 1');
+      throw new RuntimeException('Integer is not 0 or 1');
     }
 
-    return (bool) $integer;
+    return (bool)$integer;
   }
 }

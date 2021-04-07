@@ -14,6 +14,7 @@ use App\Utils\ArrayHelper;
 use App\Utils\Converter;
 use App\Utils\Generator;
 use App\Utils\MailHelper;
+use App\Utils\StringHelper;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use stdClass;
@@ -208,7 +209,7 @@ class UserRepository implements IUserRepository {
       $toDelete = true;
 
       foreach ($phoneNumbers as $phoneNumber) {
-        if ($oldPhoneNumber['label'] == $phoneNumber['label'] and $oldPhoneNumber['number'] == $phoneNumber['number']) {
+        if ($oldPhoneNumber['label'] == $phoneNumber['label'] && $oldPhoneNumber['number'] == $phoneNumber['number']) {
           $toDelete = false;
           $phoneNumbersWhichHaveNotBeenDeleted[] = $phoneNumber;
           break;
@@ -231,7 +232,7 @@ class UserRepository implements IUserRepository {
       $toAdd = true;
 
       foreach ($phoneNumbersWhichHaveNotBeenDeleted as $phoneNumberWhichHasNotBeenDeleted) {
-        if ($phoneNumber['label'] == $phoneNumberWhichHasNotBeenDeleted['label'] and $phoneNumber['number'] == $phoneNumberWhichHasNotBeenDeleted['number']) {
+        if ($phoneNumber['label'] == $phoneNumberWhichHasNotBeenDeleted['label'] && $phoneNumber['number'] == $phoneNumberWhichHasNotBeenDeleted['number']) {
           $toAdd = false;
           break;
         }
@@ -272,7 +273,7 @@ class UserRepository implements IUserRepository {
     foreach ($OldEmailAddresses as $oldEmailAddress) {
       $toDelete = true;
 
-      foreach ((array)$emailAddresses as $emailAddress) {
+      foreach ($emailAddresses as $emailAddress) {
         if ($oldEmailAddress['email'] == $emailAddress) {
           $toDelete = false;
           $emailAddressesWhichHaveNotBeenDeleted[] = $emailAddress;
@@ -291,7 +292,7 @@ class UserRepository implements IUserRepository {
       }
     }
 
-    foreach ((array)$emailAddresses as $emailAddress) {
+    foreach ($emailAddresses as $emailAddress) {
       $toAdd = true;
 
       foreach ($emailAddressesWhichHaveNotBeenDeleted as $EmailAddressWhichHasNotBeenDeleted) {
@@ -435,27 +436,22 @@ class UserRepository implements IUserRepository {
       $groups = '';
       foreach ($user->usersMemberOfGroups() as $usersMemberOfGroup) {
         $role = '';
-        if ($usersMemberOfGroup->role != null) {
-          if (strlen($usersMemberOfGroup->role) != 0) {
-            $role .= ' - ' . $usersMemberOfGroup->role;
-          }
+        if (StringHelper::notNullAndEmpty($usersMemberOfGroup->role)) {
+          $role .= ' - ' . $usersMemberOfGroup->role;
         }
 
-        $groups .= $usersMemberOfGroup->group()->name . $role . ', ';
+        $groups .= $usersMemberOfGroup->group->name . $role . ', ';
       }
       $toReturnUser->Gruppen = $groups;
 
       $subgroups = '';
       foreach ($user->usersMemberOfSubgroups() as $usersMemberOfSubgroup) {
         $role = '';
-        if ($usersMemberOfSubgroup->role != null) {
-          if (strlen($usersMemberOfSubgroup->role) != 0) {
-            $role .= ' - ' . $usersMemberOfSubgroup->role;
-          }
+        if (StringHelper::notNullAndEmpty($usersMemberOfSubgroup->role)) {
+          $role .= ' - ' . $usersMemberOfSubgroup->role;
         }
 
-        $subgroups .= '[' . $usersMemberOfSubgroup->subgroup()
-            ->group()->name . '] ' . $usersMemberOfSubgroup->subgroup()->name . $role . ', ';
+        $subgroups .= '[' . $usersMemberOfSubgroup->subgroup->getGroup()->name . '] ' . $usersMemberOfSubgroup->subgroup->name . $role . ', ';
       }
       $toReturnUser->Register = $subgroups;
 

@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use App\Logging;
+use Exception;
 use JetBrains\PhpStorm\Pure;
 
 abstract class Generator {
@@ -17,7 +19,11 @@ abstract class Generator {
     $charactersLength = strlen($characters);
     $randomToken = '';
     for ($i = 0; $i < $length; $i++) {
-      $randomToken .= $characters[rand(0, $charactersLength - 1)];
+      try {
+        $randomToken .= $characters[random_int(0, $charactersLength - 1)];
+      } catch (Exception) {
+        Logging::error('getRandomMixedNumberAndABCToken', 'Could not gather enough data to generate random string.');
+      }
     }
 
     return $randomToken;
@@ -26,8 +32,13 @@ abstract class Generator {
   /**
    * @return int
    */
-  #[Pure]
   public static function getRandom6DigitNumber(): int {
-    return rand(100000, 999999);
+    try {
+      return random_int(100000, 999999);
+    } catch (Exception) {
+      Logging::error('getRandomMixedNumberAndABCToken', 'Could not gather enough data to generate random string.');
+    }
+
+    return 42;
   }
 }

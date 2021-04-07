@@ -1,37 +1,34 @@
-<?php /** @noinspection PhpMultipleClassesDeclarationsInOneFile */
+<?php
 
 namespace App;
 
-use App\Repositories\System\Log\LogRepository;
-
-abstract class LogTypes {
-  public const INFO = 'INFO';
-  public const WARNING = 'WARNING';
-  public const ERROR = 'ERROR';
-}
+use Illuminate\Support\Facades\Log;
 
 class Logging {
-  private static ?LogRepository $logRepository = null;
-
-  public static function info(string $function, string $message) {
-    return self::log('INFO', $function, $message);
+  /**
+   * @param string $function
+   * @param string $message
+   * @param array $context
+   */
+  public static function info(string $function, string $message, array $context = []): void {
+    Log::info($function . ' | ' . $message, $context);
   }
 
-  public static function warning(string $function, string $message) {
-    return self::log('WARNING', $function, $message);
+  /**
+   * @param string $function
+   * @param string $message
+   * @param array $context
+   */
+  public static function warning(string $function, string $message, array $context = []): void {
+    Log::warning($function . ' | ' . $message, $context);
   }
 
-  public static function error(string $function, string $message) {
-    return self::log('ERROR', $function, $message);
-  }
-
-  private static function log(string $type, string $function, string $message) {
-    if (self::$logRepository == null) {
-      self::$logRepository = new LogRepository();
-    }
-
-    $message = $function . ' | ' . $message;
-
-    return self::$logRepository->createLog($type, $message);
+  /**
+   * @param string $function
+   * @param string $message
+   * @param array $context
+   */
+  public static function error(string $function, string $message, array $context = []): void {
+    Log::error($function . ' | ' . $message, $context);
   }
 }

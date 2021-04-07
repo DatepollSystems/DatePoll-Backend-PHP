@@ -2,7 +2,6 @@
 
 use App\Http\Middleware\SettingsPermissionMiddleware;
 use App\Http\Middleware\System\JobsPermissionMiddleware;
-use App\Http\Middleware\System\LogsPermissionMiddleware;
 
 $router->group(['prefix' => 'settings'], function () use ($router) {
   $router->get('openweathermap/key', ['uses' => 'SystemControllers\SettingsController@getOpenWeatherMapKey']);
@@ -34,16 +33,6 @@ $router->group(['prefix' => 'system'], function () use ($router) {
       $router->post('url', ['uses' => 'SystemControllers\SettingsController@setUrl']);
       $router->post('alert', ['uses' => 'SystemControllers\SettingsController@setAlert']);
     });
-
-  /** Log routes */
-  $router->group([
-    'prefix' => 'logs',
-    'middleware' => [LogsPermissionMiddleware::class], ], function () use ($router) {
-      $router->get('', ['uses' => 'SystemControllers\LoggingController@getAllLogs']);
-      $router->delete('all', ['uses' => 'SystemControllers\LoggingController@deleteAllLogs']);
-      $router->delete('{id}', ['uses' => 'SystemControllers\LoggingController@deleteLog']);
-    });
-  $router->post('logs', ['uses' => 'SystemControllers\LoggingController@saveLog']);
 
   /** Job routes */
   $router->group([

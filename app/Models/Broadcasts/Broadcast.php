@@ -88,20 +88,18 @@ class Broadcast extends Model {
     $returnable['for_everyone'] = $this->forEveryone;
 
     $toReturnGroups = [];
-    foreach ($this->broadcastsForGroups() as $group) {
-      $group = $group->group();
+    foreach ($this->broadcastsForGroups() as $broadcastForGroup) {
       $toReturnGroups[] = [
-        'id' => $group->id,
-        'name' => $group->name
-      ];;
+        'id' => $broadcastForGroup->group->id,
+        'name' => $broadcastForGroup->group->name
+      ];
     }
     $returnable['groups'] = $toReturnGroups;
 
     $toReturnSubgroups = [];
-    foreach ($this->broadcastsForSubgroups() as $subgroup) {
-      $subgroup = $subgroup->subgroup();
-      $toReturnSubgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'group_id' => $subgroup->group_id,
-                              'group_name' => $subgroup->group()->name];
+    foreach ($this->broadcastsForSubgroups() as $broadcastForSubgroup) {
+      $toReturnSubgroups[] = ['id' => $broadcastForSubgroup->id, 'name' => $broadcastForSubgroup->subgroup->name, 'group_id' => $broadcastForSubgroup->subgroup->group_id,
+                              'group_name' => $broadcastForSubgroup->subgroup->getGroup()->name];
     }
     $returnable['subgroups'] = $toReturnSubgroups;
 
@@ -118,7 +116,7 @@ class Broadcast extends Model {
    * @return array
    */
   public function toArrayWithBodyHTML(): array {
-    $returnable = $this::toArray();
+    $returnable = $this->toArray();
     $returnable['bodyHTML'] = $this->bodyHTML;
     return $returnable;
   }

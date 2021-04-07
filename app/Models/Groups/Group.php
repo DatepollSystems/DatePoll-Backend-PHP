@@ -6,7 +6,10 @@ use App\Models\Broadcasts\BroadcastForGroup;
 use App\Models\Events\EventForGroup;
 use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
+use App\Permissions;
+use App\Utils\ArrayHelper;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use stdClass;
 
 /**
@@ -28,7 +31,7 @@ class Group extends Model {
     'orderN',
     'description',
     'created_at',
-    'updated_at', ];
+    'updated_at',];
 
   /**
    * @return Subgroup[]
@@ -61,16 +64,16 @@ class Group extends Model {
   public function getUsersWithRolesOrderedBySurname(): array {
     $rUsers = [];
     foreach ($this->usersMemberOfGroups() as $userS) {
-      $user = new stdClass();
-      $user->id = $userS->user_id;
-      $user->firstname = $userS->user()->firstname;
-      $user->surname = $userS->user()->surname;
-      $user->role = $userS->role;
+      $user = [];
+      $user['id'] = $userS->user_id;
+      $user['firstname'] = $userS->user->firstname;
+      $user['surname'] = $userS->user->surname;
+      $user['role'] = $userS->role;
 
       $rUsers[] = $user;
     }
     usort($rUsers, static function ($a, $b) {
-      return strcmp($a->surname, $b->surname);
+      return strcmp($a['surname'], $b['surname']);
     });
 
     return $rUsers;
@@ -80,10 +83,7 @@ class Group extends Model {
    * @return User[]
    */
   public function getUsersOrderedBySurname(): array {
-    $users = [];
-    foreach ($this->usersMemberOfGroups() as $usersMemberOfGroup) {
-      $users[] = $usersMemberOfGroup->user();
-    }
+    $users = ArrayHelper::getPropertyArrayOfObjectArray($this->usersMemberOfGroups(), 'user');
     usort($users, static function ($a, $b) {
       return strcmp($a->surname, $b->surname);
     });
@@ -105,5 +105,53 @@ class Group extends Model {
   public function broadcastsForGroups(): array {
     return $this->hasMany(BroadcastForGroup::class)
       ->get()->all();
+  }
+
+  // ------------------------------------ Permissions ------------------------------------
+  /**
+   * @return GroupPermission[]
+   */
+  public function getPermissions(): array {
+    return $this->hasMany(GroupPermission::class)
+      ->get()->all();
+  }
+
+  /**
+   * @param string $permission
+   * @return bool
+   */
+  public function hasPermission(string $permission): bool {
+    if (DB::table('group_permissions')->where('permission', '=', Permissions::$ROOT_ADMINISTRATION)->where(
+      'group_id',
+      '=',
+      $this->id
+    )->count() > 0) {
+      return true;
+    }
+
+    return (DB::table('group_permissions')->where('permission', '=', $permission)->where(
+      'group_id',
+      '=',
+      $this->id
+    )->count() > 0);
+  }
+
+  /**
+   * @return array
+   */
+  public function toArrayWithoutConstraints(): array {
+    return parent::toArray();
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray(): array {
+    $group = parent::toArray();
+    $group['permissions'] = ArrayHelper::getPropertyArrayOfObjectArray($this->getPermissions(), 'permission');
+    $group['subgroups'] = $this->getSubgroupsOrdered();
+    $group['users'] = $this->getUsersWithRolesOrderedBySurname();
+
+    return $group;
   }
 }

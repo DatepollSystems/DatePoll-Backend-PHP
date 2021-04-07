@@ -11,10 +11,13 @@ use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class UserController extends Controller {
+
+  public static string $MYSELF_CACHE_KEY = 'user.myself.';
 
   public function __construct(protected IUserRepository $userRepository,
                               protected IUserChangeRepository $userChangeRepository,
@@ -30,6 +33,14 @@ class UserController extends Controller {
    */
   public function getMyself(AuthenticatedRequest $request): JsonResponse {
     $user = $request->auth;
+
+    $cacheKey = self::$MYSELF_CACHE_KEY . $user->id;
+    if (Cache::has($cacheKey)) {
+      $user = Cache::get($cacheKey);
+    } else {
+      // Time to live 3 hours
+      Cache::put($cacheKey, $user, 3 * 60 * 60);
+    }
 
     return response()->json([
       'msg' => 'Get yourself',
@@ -77,6 +88,8 @@ class UserController extends Controller {
       return response()->json(['msg' => 'An error occurred'], 500);
     }
 
+    Cache::forget(self::$MYSELF_CACHE_KEY . $user->id);
+
     return response()->json([
       'msg' => 'User updated',
       'user' => $user,], 201);
@@ -92,7 +105,7 @@ class UserController extends Controller {
     $bookingsToShow = [];
     if ($this->settingRepository->getCinemaEnabled()) {
       foreach ($user->moviesBookings() as $booking) {
-        $movie = $booking->movie();
+        $movie = $booking->movie;
 
         if ((time() - (60 * 60 * 24)) < strtotime($movie->date . ' 05:00:00')) {
           $bookingToShow = new stdClass();
@@ -135,25 +148,23 @@ class UserController extends Controller {
     $users = $this->userRepository->getAllUsers();
     $birthdaysToShow = [];
     foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user)) {
+      if ($this->userSettingRepository->getShareBirthdayForUser($user->id)) {
         $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
         $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
-        if ($remTimeDate < date('m-d', strtotime($user->birthday)) && date(
-            'm-d',
-            strtotime($user->birthday)
-          ) < $addTimeDate) {
-          $birthdayToShow = new stdClass();
+        $birthdayMonthDay = date('m-d', strtotime($user->birthday));
+        if ($remTimeDate < $birthdayMonthDay && $birthdayMonthDay < $addTimeDate) {
+          $birthdayToShow = [];
 
-          $birthdayToShow->name = $user->getCompleteName();
-          $birthdayToShow->date = $user->birthday;
+          $birthdayToShow['name'] = $user->getCompleteName();
+          $birthdayToShow['date'] = $user->birthday;
 
           $birthdaysToShow[] = $birthdayToShow;
         }
       }
     }
 
-    usort($birthdaysToShow, function ($a, $b) {
-      return strcmp(date('m-d', strtotime($a->date)), date('m-d', strtotime($b->date)));
+    usort($birthdaysToShow, static function ($a, $b) {
+      return strcmp(date('m-d', strtotime($a['date'])), date('m-d', strtotime($b['date'])));
     });
 
     $response = [

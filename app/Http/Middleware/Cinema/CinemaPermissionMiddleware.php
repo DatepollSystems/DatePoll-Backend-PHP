@@ -15,7 +15,7 @@ class CinemaPermissionMiddleware {
    */
   public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse {
     $user = $request->auth;
-    if (! ($user->hasPermission(Permissions::$CINEMA_ADMINISTRATION) or $user->hasPermission(Permissions::$ROOT_ADMINISTRATION))) {
+    if (! $user->hasPermission(Permissions::$CINEMA_ADMINISTRATION)) {
       return response()->json([
         'msg' => 'Permission denied',
         'error_code' => 'permissions_denied',

@@ -118,11 +118,10 @@ class EventRepository implements IEventRepository {
     //-------------------------------- Only delete changed decisions --------------------------------------
     $decisionsWhichHaveNotBeenDeleted = [];
 
-    $oldDecisions = $event->eventsDecisions();
-    foreach ($oldDecisions as $oldDecision) {
+    foreach ($event->eventDecisions as $oldDecision) {
       $toDelete = true;
 
-      foreach ((array)$decisions as $decision) {
+      foreach ($decisions as $decision) {
         $decisionObject = (object)$decision;
         if ($oldDecision->id == $decisionObject->id) {
           $toDelete = false;
@@ -140,7 +139,7 @@ class EventRepository implements IEventRepository {
       }
     }
 
-    foreach ((array)$decisions as $decision) {
+    foreach ($decisions as $decision) {
       $decisionObject = (object)$decision;
       $decisionInDatabaseObject = null;
 
@@ -167,10 +166,10 @@ class EventRepository implements IEventRepository {
 
     //-------------------------------- Only delete changed dates --------------------------------------
     $datesWhichHaveNotBeenDeleted = [];
-    foreach ($event->getEventDates() as $oldDate) {
+    foreach ($event->eventDates as $oldDate) {
       $toDelete = true;
 
-      foreach ((array)$dates as $date) {
+      foreach ($dates as $date) {
         $dateObject = (object)$date;
         if ($oldDate->id == $dateObject->id) {
           $toDelete = false;
@@ -188,7 +187,7 @@ class EventRepository implements IEventRepository {
       }
     }
 
-    foreach ((array)$dates as $date) {
+    foreach ($dates as $date) {
       $dateObject = (object)$date;
       $toAdd = true;
 
@@ -248,9 +247,9 @@ class EventRepository implements IEventRepository {
       Logging::error('deleteEvent', 'Could not delete event');
 
       return false;
-    } else {
-      return true;
     }
+
+    return true;
   }
 
   /**
@@ -267,9 +266,9 @@ class EventRepository implements IEventRepository {
 
       foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
         $groupResultUsers = [];
-        foreach ($group->getUsersOrderedBySurname() as $userMemberOfGroup) {
+        foreach ($group->getUsersOrderedBySurname() as $user) {
           $groupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser(
-            $userMemberOfGroup,
+            $user,
             $event,
             $anonymous
           );
@@ -283,7 +282,7 @@ class EventRepository implements IEventRepository {
           }
 
           $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'users' => $subgroupResultUsers,
-                          'parent_group_name' => $subgroup->group()->name, 'parent_group_id' => $subgroup->group_id];
+                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id];
         }
 
         $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers,
@@ -324,14 +323,14 @@ class EventRepository implements IEventRepository {
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
             $subgroupResultUsers[] = $user;
-            if (! ArrayHelper::inArray($allUserIds, $sUser->id)) {
+            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
               $allUsers[] = $user;
               $allUserIds[] = $sUser->id;
             }
           }
 
           $subgroupToSave = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                             'parent_group_name' => $subgroup->group()->name, 'parent_group_id' => $subgroup->group_id,
+                             'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
                              'users' => $subgroupResultUsers];
           $subgroups[] = $subgroupToSave;
           $allSubgroupsIds[] = $subgroup->id;
@@ -342,19 +341,19 @@ class EventRepository implements IEventRepository {
 
       $subgroups = [];
       foreach ($event->getSubgroupsOrdered() as $subgroup) {
-        if (! ArrayHelper::inArray($allSubgroupsIds, $subgroup->id)) {
+        if (ArrayHelper::notInArray($allSubgroupsIds, $subgroup->id)) {
           $subgroupResultUsers = [];
           foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
             $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
             $subgroupResultUsers[] = $user;
-            if (! in_array($sUser->id, $allUserIds)) {
+            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
               $allUsers[] = $user;
               $allUserIds[] = $sUser->id;
             }
           }
 
           $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                          'parent_group_name' => $subgroup->group()->name, 'parent_group_id' => $subgroup->group_id,
+                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
                           'users' => $subgroupResultUsers];
         }
       }
@@ -382,9 +381,7 @@ class EventRepository implements IEventRepository {
       '>',
       $date
     )->orderBy('event_dates.date')->addSelect('event_dates.event_id as id')->get()->unique('id')->all();
-    foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'id') as $eventId) {
-      $event = $this->getEventById($eventId);
-
+    foreach (Event::find(ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'id')) as $event) {
       $inGroup = DB::table('events_for_groups')->join(
           'users_member_of_groups',
           'events_for_groups.group_id',

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property string $purpose
  * @property string $code
+ * @property int $rate_limit
  * @property string $created_at
  * @property string $updated_at
  * @property User $user

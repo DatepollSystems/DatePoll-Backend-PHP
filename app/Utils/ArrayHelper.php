@@ -18,6 +18,16 @@ abstract class ArrayHelper {
 
   /**
    * @param array $array
+   * @param mixed $toFind
+   * @return bool
+   */
+  #[Pure]
+  public static function notInArray(array $array, mixed $toFind): bool {
+    return ! self::inArray($array, $toFind);
+  }
+
+  /**
+   * @param array $array
    * @param string $propertyName
    * @return array
    */
@@ -44,15 +54,25 @@ abstract class ArrayHelper {
     return is_array($possibleArray);
   }
 
-//  /**
-//   * @param array $array
-//   * @param mixed $toAdd
-//   * @return mixed
-//   */
-//  #[Pure]
-//  public static function addToArrayIfNotInIt(array $array, mixed $toAdd): mixed {
-//    if (! self::inArray($array, $toAdd)) {
-//      return $toAdd;
-//    }
-//  }
+  /**
+   * @param mixed $possibleArray
+   * @return bool
+   */
+  #[Pure]
+  public static function isNotArray(mixed $possibleArray): bool {
+    return ! self::isArray($possibleArray);
+  }
+
+  /**
+   * @param array $array
+   * @param mixed $toAdd
+   * @return array
+   */
+  public static function addToArrayIfNotInIt(array $array, mixed $toAdd): array {
+    if (self::notInArray($array, $toAdd)) {
+      $array[] = $toAdd;
+    }
+
+    return $array;
+  }
 }

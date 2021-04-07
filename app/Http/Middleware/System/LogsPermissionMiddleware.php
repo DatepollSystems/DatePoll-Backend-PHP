@@ -6,17 +6,18 @@ use App\Http\AuthenticatedRequest;
 use App\Permissions;
 use Closure;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 
 class LogsPermissionMiddleware {
   /**
    * @param AuthenticatedRequest $request
    * @param Closure $next
-   * @return Response|JsonResponse
+   * @return JsonResponse|Response|RedirectResponse
    */
-  public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse|Response {
+  public function handle(AuthenticatedRequest $request, Closure $next): JsonResponse|Response|RedirectResponse {
     $user = $request->auth;
-    if (! ($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) or $user->hasPermission(Permissions::$SYSTEM_ADMINISTRATION) or $user->hasPermission(Permissions::$SYSTEM_LOGS_ADMINISTRATION))) {
+    if (! ($user->hasPermission(Permissions::$SYSTEM_ADMINISTRATION) || $user->hasPermission(Permissions::$SYSTEM_LOGS_ADMINISTRATION))) {
       return response()->json([
         'msg' => 'Permission denied',
         'error_code' => 'permissions_denied',

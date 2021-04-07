@@ -4,11 +4,13 @@ namespace App\Http\Controllers\ManagementControllers;
 
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UserControllers\UserController;
 use App\Permissions;
 use App\Repositories\User\User\IUserRepository;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class UsersController extends Controller {
@@ -59,7 +61,9 @@ class UsersController extends Controller {
       'member_number' => 'max:190',
       'phone_numbers' => 'array',
       'permissions' => 'array',
-      'email_addresses' => 'array',]);
+      'permissions.*' => 'required|max:190',
+      'email_addresses' => 'array',
+      'email_addresses.*' => 'required|max:190',]);
 
     $title = $request->input('title');
     $username = $request->input('username');
@@ -119,15 +123,13 @@ class UsersController extends Controller {
       }
     }
 
-    if ($activated and $user->hasEmailAddresses()) {
+    if ($activated && $user->hasEmailAddresses()) {
       $this->userRepository->activateUser($user);
     }
 
-    $response = [
+    return response()->json([
       'msg' => 'User successful created',
-      'user' => $user,];
-
-    return response()->json($response, 201);
+      'user' => $user,], 201);
   }
 
   /**
@@ -174,9 +176,11 @@ class UsersController extends Controller {
       'information_denied' => 'boolean|nullable',
       'bv_member' => 'string|max:190|nullable',
       'internal_comment' => 'string|nullable',
-      'email_addresses' => 'array',
       'phone_numbers' => 'array',
-      'permissions' => 'array',]);
+      'permissions' => 'array',
+      'permissions.*' => 'required|max:190',
+      'email_addresses' => 'array',
+      'email_addresses.*' => 'required|max:190',]);
 
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
@@ -251,9 +255,11 @@ class UsersController extends Controller {
     }
     //---------------------------------------------------------------
 
-    if ($activated and ! $oldActivatedStatus and $user->hasEmailAddresses()) {
+    if ($activated && ! $oldActivatedStatus && $user->hasEmailAddresses()) {
       $this->userRepository->activateUser($user);
     }
+
+    Cache::forget(UserController::$MYSELF_CACHE_KEY . $user->id);
 
     return response()->json([
       'msg' => 'User updated',

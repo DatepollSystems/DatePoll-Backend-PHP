@@ -20,7 +20,6 @@ use App\Utils\StringHelper;
 use Exception;
 use ForceUTF8\Encoding;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use JetBrains\PhpStorm\Pure;
 use PhpImap\Exceptions\ConnectionException;
@@ -167,8 +166,8 @@ class ProcessBroadcastEmailsInInbox extends Command {
     if (StringHelper::notNullAndEmpty($mail->textHtml)) {
       $textHtml = $mail->textHtml;
     }
-    $textPlain = Encoding::toUTF8($textPlain);
-    $textHtml = Encoding::toUTF8($textHtml);
+    $textPlain = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textPlain));
+    $textHtml = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textHtml));
 
     $attachmentIds = [];
     foreach ($mail->getAttachments() as $attachment) {
@@ -224,7 +223,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
       $subject,
       $textPlain,
       $textHtml,
-      $mail->senderName,
+      $mail->senderName ?: $fromAddress,
       $fromAddress,
       $this->settingsRepository->getUrl(),
       ''
