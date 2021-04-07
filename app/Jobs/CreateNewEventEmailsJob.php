@@ -50,7 +50,7 @@ class CreateNewEventEmailsJob extends Job {
       // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
       // a circular dependency and RAM will explode
       // Also check if user is not information denied
-      $user = User::find($eventUser->id);
+      $user = User::find($eventUser['id']);
 
       if (! $user->information_denied && $user->activated && $this->userSettingRepository->getNotifyMeOfNewEventsForUser($user->id)) {
         $time->add(new DateInterval('PT' . 1 . 'M'));
