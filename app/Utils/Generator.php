@@ -38,5 +38,7 @@ abstract class Generator {
     } catch (Exception) {
       Logging::error('getRandomMixedNumberAndABCToken', 'Could not gather enough data to generate random string.');
     }
+
+    return 42;
   }
 }
