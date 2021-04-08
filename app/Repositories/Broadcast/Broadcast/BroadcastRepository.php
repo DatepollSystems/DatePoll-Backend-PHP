@@ -328,7 +328,12 @@ class BroadcastRepository implements IBroadcastRepository {
       $query = $query->limit($limit);
     }
 
-    return Broadcast::find(ArrayHelper::getPropertyArrayOfObjectArray($query->get()->all(), 'broadcast_id'))->all();
+    $broadcasts = [];
+    foreach (ArrayHelper::getPropertyArrayOfObjectArray($query->get()->all(), 'broadcast_id') as $broadcastId) {
+      $broadcasts[] = $this->getBroadcastById($broadcastId);
+    }
+
+    return $broadcasts;
 
   }
 
