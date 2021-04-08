@@ -330,7 +330,8 @@ class EventRepository implements IEventRepository {
           }
 
           $subgroupToSave = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                             'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
+                             'parent_group_name' => $subgroup->getGroup()->name,
+                             'parent_group_id' => $subgroup->group_id,
                              'users' => $subgroupResultUsers];
           $subgroups[] = $subgroupToSave;
           $allSubgroupsIds[] = $subgroup->id;
@@ -377,11 +378,12 @@ class EventRepository implements IEventRepository {
 
     $date = date('Y-m-d H:i:s');
     $eventIdsResult = DB::table('event_dates')->where(
-      'event_dates.date',
+      'date',
       '>',
-      $date
-    )->orderBy('event_dates.date')->addSelect('event_dates.event_id as id')->get()->unique('id')->all();
-    foreach (Event::find(ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'id')) as $event) {
+      $date)->orderBy('date')->get(['event_id', 'date'])->unique('event_id')->all();
+    // DO NOT EVERY use Event::find(Array) because it messes with the orderBy
+    foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'event_id') as $eventId) {
+      $event = $this->getEventById($eventId);
       $inGroup = DB::table('events_for_groups')->join(
           'users_member_of_groups',
           'events_for_groups.group_id',
