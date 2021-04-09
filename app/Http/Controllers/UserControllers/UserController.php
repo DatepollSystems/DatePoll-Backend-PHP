@@ -145,10 +145,9 @@ class UserController extends Controller {
       $broadcastsToShow = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
     }
 
-    $users = $this->userRepository->getAllUsers();
+    $users = $this->userRepository->getUsersWhichShareBirthday();
     $birthdaysToShow = [];
     foreach ($users as $user) {
-      if ($this->userSettingRepository->getShareBirthdayForUser($user->id)) {
         $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
         $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
         $birthdayMonthDay = date('m-d', strtotime($user->birthday));
@@ -160,7 +159,6 @@ class UserController extends Controller {
 
           $birthdaysToShow[] = $birthdayToShow;
         }
-      }
     }
 
     usort($birthdaysToShow, static function ($a, $b) {

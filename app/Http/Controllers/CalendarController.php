@@ -55,7 +55,7 @@ class CalendarController extends Controller {
       return response()->json(['msg' => 'Provided token is incorrect', 'error_code' => 'token_incorrect'], 401);
     }
 
-    $cacheKey = CalendarController::$personalCalendarCacheKey . $tokenObject->user_id;
+    $cacheKey = self::$personalCalendarCacheKey . $tokenObject->user_id;
     if (Cache::has($cacheKey)) {
       header('Content-type: text/calendar; charset=utf-8');
       header('Content-Disposition: attachment; filename="calendar.ics"');
@@ -77,8 +77,8 @@ class CalendarController extends Controller {
       // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
       'X-WR-CALNAME' => 'Personal DatePoll calendar',
       // https://en.wikipedia.org/wiki/ICalendar
-      'X-PUBLISHED-TTL' => 'PT15M',
-      // update calendar every 15 minutes
+      'X-PUBLISHED-TTL' => 'PT30M',
+      // update calendar every 30 minutes
     ]);
 
     $appOrganizer = new Organizer(new Formatter());
@@ -227,31 +227,29 @@ class CalendarController extends Controller {
     }
 
     if ($this->userSettingRepository->getShowBirthdaysInCalendarForUser($user->id)) {
-      $users = $this->userRepository->getAllUsers();
-      foreach ($users as $user) {
-        if ($this->userSettingRepository->getShareBirthdayForUser($user->id)) {
-          $d = date_parse_from_format('Y-m-d', $user->birthday);
-          if ($d['month'] == date('n')) {
-            $birthdayEvent = new CalendarEvent();
-            $birthdayEvent->setStart(new DateTime($this->updateDate($user->birthday) . 'T00:00:01'))
-              ->setEnd(new DateTime($this->updateDate($user->birthday) . 'T00:00:02'))
-              ->setAllDay(true)
-              ->setSequence(1)
-              ->setStatus('CONFIRMED')
-              ->setCreated(new DateTime($user->created_at))
-              ->setOrganizer($appOrganizer)
-              ->setSummary($user->getCompleteName() . '\'s Geburtstag')
-              ->setUid('userBirthday' . $user->id);
+      foreach ($this->userRepository->getUsersWhichShareBirthday() as $user) {
+        $d = date_parse_from_format('Y-m-d', $user->birthday);
+        if ($d['month'] == date('n')) {
+          $birthdayEvent = new CalendarEvent();
+          $birthdayEvent->setStart(new DateTime($this->updateDate($user->birthday) . 'T00:00:01'))
+            ->setEnd(new DateTime($this->updateDate($user->birthday) . 'T00:00:02'))
+            ->setAllDay(true)
+            ->setSequence(1)
+            ->setStatus('CONFIRMED')
+            ->setCreated(new DateTime($user->created_at))
+            ->setOrganizer($appOrganizer)
+            ->setSummary($user->getCompleteName() . '\'s Geburtstag')
+            ->setUid('userBirthday' . $user->id);
 
-            $calendar->addEvent($birthdayEvent);
-          }
+          $calendar->addEvent($birthdayEvent);
         }
       }
     }
     $calendarExport->addCalendar($calendar);
     $stream = $calendarExport->getStream();
 
-    Cache::put($cacheKey, $stream, 60 * 60);
+    // 30 minutes
+    Cache::put($cacheKey, $stream, 30 * 60);
 
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="'. $token . '.ics"');
@@ -276,13 +274,13 @@ class CalendarController extends Controller {
    * @throws CalendarEventException
    * @throws Exception
    */
-  public function getCompleteCalendar() {
-    if (Cache::has(CalendarController::$completeCalendarCacheKey)) {
+  public function getCompleteCalendar(): void {
+    if (Cache::has(self::$completeCalendarCacheKey)) {
       header('Content-type: text/calendar; charset=utf-8');
       header('Content-Disposition: attachment; filename="calendar.ics"');
-      echo Cache::get(CalendarController::$completeCalendarCacheKey);
+      echo Cache::get(self::$completeCalendarCacheKey);
 
-      return null;
+      return;
     }
 
     $calendarExport = new CalendarExport(new CalendarStream, new Formatter());
@@ -294,10 +292,10 @@ class CalendarController extends Controller {
     $calendar->setCustomHeaders([
       'X-WR-TIMEZONE' => $timezone,
       // Support e.g. Google Calendar -> https://blog.jonudell.net/2011/10/17/x-wr-timezone-considered-harmful/
-      'X-WR-CALNAME' => 'Complete DatePoll calendar',
+      'X-WR-CALNAME' => $this->settingRepository->getCommunityName() ?: 'Complete DatePoll' . ' calendar',
       // https://en.wikipedia.org/wiki/ICalendar
-      'X-PUBLISHED-TTL' => 'PT15M',
-      // update calendar every 15 minutes
+      'X-PUBLISHED-TTL' => 'PT60M',
+      // update calendar every 60 minutes
     ]);
 
     $appOrganizer = new Organizer(new Formatter());
@@ -370,7 +368,7 @@ class CalendarController extends Controller {
         }
 
         if ($startDate->location != null) {
-          if (strlen($startDate->location) > 0) {
+          if (StringHelper::notNullAndEmpty($startDate->location)) {
             $location = new Location();
             $location->setLanguage('de');
             $location->setName($startDate->location);
@@ -384,7 +382,8 @@ class CalendarController extends Controller {
 
     $calendarExport->addCalendar($calendar);
     $stream = $calendarExport->getStream();
-    Cache::put(CalendarController::$completeCalendarCacheKey, $stream, 60 * 60 * 4);
+    // 4 hours
+    Cache::put(self::$completeCalendarCacheKey, $stream, 60 * 60 * 4);
 
     header('Content-type: text/calendar; charset=utf-8');
     header('Content-Disposition: attachment; filename="calendar.ics"');

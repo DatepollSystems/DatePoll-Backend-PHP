@@ -10,6 +10,9 @@ use App\Models\User\UserPermission;
 use App\Models\User\UserTelephoneNumber;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
+use App\Repositories\User\UserSetting\IUserSettingRepository;
+use App\Repositories\User\UserSetting\UserSettingKey;
+use App\Repositories\User\UserToken\IUserTokenRepository;
 use App\Utils\ArrayHelper;
 use App\Utils\Converter;
 use App\Utils\Generator;
@@ -23,7 +26,8 @@ class UserRepository implements IUserRepository {
 
   public function __construct(
     protected ISettingRepository $settingRepository,
-    protected IUserChangeRepository $userChangeRepository
+    protected IUserChangeRepository $userChangeRepository,
+    protected IUserSettingRepository $userSettingRepository
   ) {
   }
 
@@ -64,7 +68,8 @@ class UserRepository implements IUserRepository {
    * @return User[]
    */
   public function getUsersByEmailAddress(string $emailAddress): array {
-    return User::find(ArrayHelper::getPropertyArrayOfObjectArray(UserEmailAddress::where('email', '=', $emailAddress)->get()->all(), 'user_id'))->all();
+    return User::find(ArrayHelper::getPropertyArrayOfObjectArray(UserEmailAddress::where('email', '=',
+      $emailAddress)->get()->all(), 'user_id'))->all();
   }
 
   /**
@@ -508,5 +513,19 @@ class UserRepository implements IUserRepository {
     }
 
     return Hash::check($password . $user->id, $user->password);
+  }
+
+  /**
+   * @return User[]
+   */
+  public function getUsersWhichShareBirthday(): array {
+    $users = [];
+    foreach ($this->getAllUsers() as $user) {
+      if ($this->userSettingRepository->getShareBirthdayForUser($user->id)) {
+        $users[] = $user;
+      }
+    }
+
+    return $users;
   }
 }
