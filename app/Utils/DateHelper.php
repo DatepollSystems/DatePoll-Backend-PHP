@@ -60,6 +60,16 @@ abstract class DateHelper {
   }
 
   /**
+   * @param string $formattedDate
+   * @param int $day
+   * @return string
+   */
+  #[Pure]
+  public static function removeDayFromDateFormatted(string $formattedDate, int $day): string {
+    return self::getDateFormatted($formattedDate . ' -' . Converter::integerToString($day) . ' day');
+  }
+
+  /**
    * @return DateTime
    */
   public static function getCurrentDateTime(): DateTime {

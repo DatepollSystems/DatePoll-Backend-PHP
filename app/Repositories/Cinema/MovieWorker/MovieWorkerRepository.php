@@ -98,7 +98,7 @@ class MovieWorkerRepository implements IMovieWorkerRepository {
       $bookingUser = $moviesBooking->user;
       $localBooking = ['user_name' => $bookingUser->getCompleteName(),
                        'user_id ' => $bookingUser->id,
-                       'amount ' => $moviesBooking->amount,];
+                       'amount' => $moviesBooking->amount,];
       if ($movieWorkerShowsNumbers && $this->userSettingRepository->getShareMovieWorkerPhoneNumber($bookingUser->id)) {
         $localBooking['numbers'] = $bookingUser->telephoneNumbers();
       } else {

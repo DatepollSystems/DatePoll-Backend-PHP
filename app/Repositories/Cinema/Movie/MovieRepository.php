@@ -137,7 +137,7 @@ class MovieRepository implements IMovieRepository {
    */
   #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string", 'booked_tickets_for_yourself' => 'int'])]
   public function getNotShownMoviesForUser(int $userId): array {
-    $date = DateHelper::addDayToDateFormatted(DateHelper::getCurrentDateFormatted(), 1);
+    $date = DateHelper::removeDayFromDateFormatted(DateHelper::getCurrentDateFormatted(), 1);
 
     $returnableMovies = [];
     foreach ($this->getMoviesAfterDate($date) as $movie) {
