@@ -140,7 +140,7 @@ abstract class StringHelper {
    *   <code>true</code>. If strings match returns <code>true</code>. Otherwise <code>false</code>.
    */
   #[Pure]
-  public static function compareCaseSensitive(?string $string1, ?string $string2): bool {
+  public static function equalsCaseSensitive(?string $string1, ?string $string2): bool {
     if (! $string1 && ! $string2) {
       return true;
     }
@@ -159,7 +159,7 @@ abstract class StringHelper {
    *   <code>true</code>. If strings match returns <code>true</code>. Otherwise <code>false</code>.
    */
   #[Pure]
-  public static function compare(?string $string1, ?string $string2): bool {
+  public static function equals(?string $string1, ?string $string2): bool {
     if (! $string1 && ! $string2) {
       return true;
     }
@@ -169,6 +169,17 @@ abstract class StringHelper {
     }
 
     return strcasecmp($string1, $string2) === 0;
+  }
+
+  /**
+   * @param string|null $string1
+   * @param string|null $string2
+   * @return bool If string1 or string2 is null returns <code>true</code>. If string1 and string2 are null returns
+   *   <code>false</code>. If strings don't match returns <code>true</code>. Otherwise <code>false</code>.
+   */
+  #[Pure]
+  public static function notEquals(?string $string1, ?string $string2): bool {
+    return ! self::equals($string1, $string2);
   }
 
   /**

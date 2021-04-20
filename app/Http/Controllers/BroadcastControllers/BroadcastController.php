@@ -178,9 +178,9 @@ class BroadcastController extends Controller {
 
     if ($this->broadcastAttachmentRepository->deleteAttachment($broadcastAttachment)) {
       return response()->json(['msg' => 'Broadcast attachment deleted successfully'], 200);
-    } else {
-      return response()->json(['msg' => 'Could not delete attachment'], 500);
     }
+
+    return response()->json(['msg' => 'Could not delete attachment'], 500);
   }
 
   /**
