@@ -20,6 +20,9 @@ $router->group([
     $router->get('badgesForUser/{id}', ['uses' => 'ManagementControllers\BadgeController@userBadgesForUser']);
   });
 
+// Permission check in controller
+$router->get('management/groups', ['uses' => 'ManagementControllers\GroupController@getAll']);
+
 $router->group([
   'prefix' => 'management',
   'middleware' => [ManagementPermissionMiddleware::class],], static function () use ($router) {
@@ -55,7 +58,6 @@ $router->group([
 
     /** Groups routes */
     {
-    $router->get('groups', ['uses' => 'ManagementControllers\GroupController@getAll']);
     $router->post('groups', ['uses' => 'ManagementControllers\GroupController@create']);
     $router->get('groups/{id}', ['uses' => 'ManagementControllers\GroupController@getSingle']);
     $router->put('groups/{id}', ['uses' => 'ManagementControllers\GroupController@update']);
