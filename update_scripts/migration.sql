@@ -138,3 +138,7 @@ DROP TABLE movie_years;
 
 ALTER TABLE places ADD location VARCHAR(191);
 DROP TABLE place_reservation_notify_groups;
+
+# 7 to 8
+# -------------------------------------------------------------------------------------------
+DROP TABLE logs;

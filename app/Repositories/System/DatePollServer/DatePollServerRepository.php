@@ -27,8 +27,6 @@ class DatePollServerRepository implements IDatePollServerRepository {
     $dto->community_imprint = $this->settingRepository->getCommunityImprint();
     $dto->community_privacy_policy = $this->settingRepository->getCommunityPrivacyPolicy();
 
-    $dto->logged_interactions_count = DB::table('logs')->count();
-
     $dto->events_enabled = $this->settingRepository->getEventsEnabled();
     $dto->events_count = DB::table('events')->count();
     $dto->event_votes_count = DB::table('events_users_voted_for')->count();
