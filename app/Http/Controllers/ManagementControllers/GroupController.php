@@ -24,14 +24,22 @@ class GroupController extends Controller {
   }
 
   /**
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getAll(): JsonResponse {
-    $groups = $this->groupRepository->getAllGroupsWithSubgroupsOrdered();
-
+  public function getAll(AuthenticatedRequest $request): JsonResponse {
+    if (!$request->auth->hasPermission(Permissions::$MANAGEMENT_ADMINISTRATION) && !$request->auth->hasPermission(Permissions::$BROADCASTS_ADMINISTRATION) && !$request->auth->hasPermission(Permissions::$EVENTS_ADMINISTRATION)) {
+      return response()->json(['msg' => 'Permission denied',
+                               'error_code' => 'permissions_denied',
+                               'needed_permissions' => [
+                                 Permissions::$ROOT_ADMINISTRATION,
+                                 Permissions::$BROADCASTS_ADMINISTRATION,
+                                 Permissions::$MANAGEMENT_ADMINISTRATION,
+                                 Permissions::$EVENTS_ADMINISTRATION, ], ], 403);
+    }
     return response()->json([
       'msg' => 'List of all groups',
-      'groups' => $groups,], 200);
+      'groups' => $this->groupRepository->getAllGroupsWithSubgroupsOrdered(),], 200);
   }
 
   /**

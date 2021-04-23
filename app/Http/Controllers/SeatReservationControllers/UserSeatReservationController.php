@@ -8,6 +8,8 @@ use App\Models\SeatReservation\PlaceReservationState;
 use App\Permissions;
 use App\Repositories\SeatReservation\Place\IPlaceRepository;
 use App\Repositories\SeatReservation\UserSeatReservation\IUserSeatReservationRepository;
+use App\Utils\NumberHelper;
+use App\Utils\StringHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
@@ -113,10 +115,10 @@ class UserSeatReservationController extends Controller {
       $state = $request->input('state');
       $approver = $request->auth;
     } else {
-      if ($placeReservation->user_id != $request->auth->id) {
+      if (NumberHelper::notEqualsInteger($placeReservation->user_id, $request->auth->id)) {
         return response()->json(['msg' => 'Insufficient permissions to edit this place reservation'], 403);
       }
-      if ($placeReservation->state != PlaceReservationState::WAITING) {
+      if (StringHelper::notEquals($placeReservation->state, PlaceReservationState::WAITING)) {
         return response()->json(
           ['msg' => 'You are not allowed to edit this place reservation after approval or declining'],
           400

@@ -506,7 +506,7 @@ class SettingRepository implements ISettingRepository {
       $in = false;
 
       foreach ($oldArray as $oldString) {
-        if (StringHelper::compareCaseSensitive($oldString->value, $string)) {
+        if (StringHelper::equalsCaseSensitive($oldString->value, $string)) {
           $in = true;
           break;
         }
@@ -520,7 +520,7 @@ class SettingRepository implements ISettingRepository {
     foreach ($oldArray as $oldString) {
       $in = false;
       foreach ($array as $string) {
-        if (StringHelper::compareCaseSensitive($oldString->value, $string)) {
+        if (StringHelper::equalsCaseSensitive($oldString->value, $string)) {
           $in = true;
           break;
         }

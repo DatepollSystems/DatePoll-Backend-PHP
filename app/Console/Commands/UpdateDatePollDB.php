@@ -24,12 +24,14 @@ class UpdateDatePollDB extends ACommand {
   /**
    * @return void
    */
-  public function handle() {
+  public function handle(): void {
     $this->comment('Application database version: ' . Versions::getApplicationDatabaseVersion());
 
-    $this->comment('Current database version: ' . $this->settingRepository->getCurrentDatabaseVersion());
+    $currentDatabaseVersion = $this->settingRepository->getCurrentDatabaseVersion();
 
-    if (Versions::getApplicationDatabaseVersion() === $this->settingRepository->getCurrentDatabaseVersion()) {
+    $this->comment('Current database version: ' . $currentDatabaseVersion);
+
+    if (Versions::getApplicationDatabaseVersion() === $currentDatabaseVersion) {
       $this->comment('Application and current database version match, nothing to do! Aborting...');
 
       return;
@@ -41,8 +43,8 @@ class UpdateDatePollDB extends ACommand {
       return;
     }
 
-    while (Versions::getApplicationDatabaseVersion() > $this->settingRepository->getCurrentDatabaseVersion()) {
-      $versionToMigrateTo = $this->settingRepository->getCurrentDatabaseVersion() + 1;
+    while (Versions::getApplicationDatabaseVersion() > $currentDatabaseVersion) {
+      $versionToMigrateTo = $currentDatabaseVersion + 1;
 
       switch ($versionToMigrateTo) {
         case 1:
@@ -101,6 +103,13 @@ class UpdateDatePollDB extends ACommand {
             return;
           }
           break;
+        case 9:
+          if (! $this->migrateDatabaseVersionFrom8To9()) {
+            $this->error('Migration failed!');
+
+            return;
+          }
+          break;
       }
 
       $this->comment('Saving new database version');
@@ -116,6 +125,26 @@ class UpdateDatePollDB extends ACommand {
     $this->info('Database update finished!');
   }
 
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom8To9(): bool {
+    $this->comment('Running migration from 8 to 9');
+
+    $this->comment('Dropping logs table');
+    try {
+      $this->runDbStatement('DROP TABLE \'logs\';');
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Running migration from 8 to 9 finished!');
+    return true;
+  }
+
+  /**
+   * @return bool
+   */
   private function migrateDatabaseVersionFrom7To8(): bool {
     $this->comment('Running migration from 7 to 8');
 
@@ -380,12 +409,12 @@ class UpdateDatePollDB extends ACommand {
    * @param string $statement
    * @throws Exception
    */
-  private function runDbStatement(string $statement) {
+  private function runDbStatement(string $statement): void {
     try {
       DB::statement($statement);
     } catch (Exception $exception) {
       $this->error('Statement failed: "' . $statement . '" | Error message: ' . $exception->getMessage());
-      throw new Exception('Migration error...');
+      throw new RuntimeException('Migration error...');
     }
   }
 }

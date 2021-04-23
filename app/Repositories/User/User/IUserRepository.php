@@ -126,4 +126,9 @@ interface IUserRepository {
    * @return bool
    */
   public function checkPasswordOfUser(User $user, string $password): bool;
+
+  /**
+   * @return User[]
+   */
+  public function getUsersWhichShareBirthday(): array;
 }
