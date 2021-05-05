@@ -48,7 +48,6 @@ class EventController extends Controller {
    * @return JsonResponse
    */
   public function getEventsOrderedByDate(?string $year = null): JsonResponse {
-    $iYear = null;
     if (StringHelper::nullAndEmpty($year)) {
       $iYear = null;
     } else {
