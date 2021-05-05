@@ -13,11 +13,10 @@ use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
 use App\Utils\ArrayHelper;
-use DateInterval;
-use DateTime;
+use App\Utils\DateHelper;
+use App\Utils\QueueHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
 
 class EventRepository implements IEventRepository {
   public function __construct(
@@ -57,10 +56,15 @@ class EventRepository implements IEventRepository {
       $query = $query->whereYear('date', '=', $year);
     }
 
-    return Event::find(ArrayHelper::getPropertyArrayOfObjectArray(
-      $query->orderBy('date')->addSelect('event_id')->get()->toArray(),
-      'event_id'
-    ))->all();
+    $events = [];
+
+    $eventIdsResult = $query->orderBy('date')->get(['event_id', 'date'])->unique('event_id')->all();
+    // DO NOT EVER use Event::find(Array) because it messes with the orderBy
+    foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'event_id') as $eventId) {
+      $events[] = $this->getEventById($eventId);
+    }
+
+    return $events;
   }
 
   /**
@@ -219,19 +223,14 @@ class EventRepository implements IEventRepository {
     Logging::info('createOrUpdateEvent', 'Successfully created or updated event ' . $event->id);
 
     if ($creating) {
-      $time = new DateTime();
-      $time->add(new DateInterval('PT' . 1 . 'M'));
-      Queue::later(
-        $time,
-        new CreateNewEventEmailsJob(
-          $event,
-          $this,
-          $this->userSettingRepository,
-          $this->settingRepository
-        ),
-        null,
-        'high'
-      );
+      $time = DateHelper::getCurrentDateTime();
+      $time = DateHelper::addMinuteToDateTime($time, 1);
+      QueueHelper::addDelayedJobToHighQueue(new CreateNewEventEmailsJob(
+        $event,
+        $this,
+        $this->userSettingRepository,
+        $this->settingRepository
+      ), $time);
     }
 
     return $event;
@@ -292,13 +291,10 @@ class EventRepository implements IEventRepository {
       $results['groups'] = $groups;
 
       $allUsers = [];
-      // Directly use User:: methods because in the UserRepository we already use the EventRepository and that would be
-      // a circular dependency and RAM will explodes
       foreach ($this->userRepository->getAllUsersOrderedBySurname() as $user) {
         $allUsers[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
       }
 
-      $results['allUsers'] = $allUsers;
     } else {
       $allUsers = [];
       $allUserIds = [];
@@ -363,8 +359,8 @@ class EventRepository implements IEventRepository {
 
       $results['groups'] = $groups;
 
-      $results['allUsers'] = $allUsers;
     }
+    $results['allUsers'] = $allUsers;
 
     return $results;
   }
@@ -381,7 +377,7 @@ class EventRepository implements IEventRepository {
       'date',
       '>',
       $date)->orderBy('date')->get(['event_id', 'date'])->unique('event_id')->all();
-    // DO NOT EVERY use Event::find(Array) because it messes with the orderBy
+    // DO NOT EVER use Event::find(Array) because it messes with the orderBy
     foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'event_id') as $eventId) {
       $event = $this->getEventById($eventId);
       $inGroup = DB::table('events_for_groups')->join(

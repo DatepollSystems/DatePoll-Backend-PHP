@@ -216,8 +216,8 @@ class ProcessBroadcastEmailsInInbox extends Command {
     if (StringHelper::notNullAndEmpty($mail->textHtml)) {
       $textHtml = $mail->textHtml;
     }
-    $textPlain = Encoding::toUTF8($textPlain);
-    $textHtml = Encoding::toUTF8($textHtml);
+    $textPlain = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textPlain));
+    $textHtml = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textHtml));
 
     $broadcastMail = new BroadcastMail(
       $subject,
