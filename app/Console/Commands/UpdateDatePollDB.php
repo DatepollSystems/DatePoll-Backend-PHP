@@ -7,6 +7,7 @@ use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Versions;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class UpdateDatePollDB extends ACommand {
@@ -122,6 +123,8 @@ class UpdateDatePollDB extends ACommand {
       }
     }
 
+    Cache::flush();
+
     $this->info('Database update finished!');
   }
 
@@ -133,7 +136,7 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Dropping logs table');
     try {
-      $this->runDbStatement('DROP TABLE \'logs\';');
+      $this->runDbStatement("DROP TABLE 'logs';");
     } catch (Exception $exception) {
       return false;
     }
@@ -150,10 +153,10 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Fixing settings table...');
     try {
-      $this->runDbStatement('DELETE FROM settings WHERE `key` = \'community_happy_alert\';');
-      $this->runDbStatement('ALTER TABLE settings DROP COLUMN type;');
-      $this->runDbStatement('UPDATE settings SET value = \'true\' WHERE value = \'1\';');
-      $this->runDbStatement('UPDATE settings SET value = \'false\' WHERE value = \'0\';');
+      $this->runDbStatement("DELETE FROM settings WHERE `key` = 'community_happy_alert';");
+      $this->runDbStatement("ALTER TABLE settings DROP COLUMN type;");
+      $this->runDbStatement("UPDATE settings SET value = 'true' WHERE value = '1';");
+      $this->runDbStatement("UPDATE settings SET value = 'false' WHERE value = '0';");
     } catch (Exception $exception) { }
 
     $this->comment('Fixing user_tokens table...');
@@ -196,9 +199,9 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Altering table dates migrate date from varchar to date');
     try {
-      $this->runDbStatement('ALTER TABLE event_dates ADD date_dt DATETIME;');
-      $this->runDbStatement('UPDATE event_dates SET date_dt = STR_TO_DATE(event_dates.date, \'%Y-%c-%d %H:%i:%s\');');
-      $this->runDbStatement('ALTER TABLE event_dates DROP date, RENAME COLUMN date_dt TO date;');
+      $this->runDbStatement("ALTER TABLE event_dates ADD date_dt DATETIME;");
+      $this->runDbStatement("UPDATE event_dates SET date_dt = STR_TO_DATE(event_dates.date, '%Y-%c-%d %H:%i:%s');");
+      $this->runDbStatement("ALTER TABLE event_dates DROP date, RENAME COLUMN date_dt TO date;");
     } catch (Exception $exception) {
       return false;
     }
@@ -215,8 +218,8 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Altering table logs adding user id foreign key');
     try {
-      $this->runDbStatement('ALTER TABLE logs ADD COLUMN user_id INT UNSIGNED;');
-      $this->runDbStatement('ALTER TABLE logs ADD FOREIGN KEY (user_id) REFERENCES `users` (`id`);');
+      $this->runDbStatement("ALTER TABLE logs ADD COLUMN user_id INT UNSIGNED;");
+      $this->runDbStatement("ALTER TABLE logs ADD FOREIGN KEY (user_id) REFERENCES `users` (`id`);");
     } catch (Exception $exception) {
       return false;
     }
@@ -234,42 +237,41 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Altering table movies drop worker foreign keys...');
     try {
-      $this->runDbStatement('ALTER TABLE movies DROP FOREIGN KEY movies_emergency_worker_id_foreign;');
-      $this->runDbStatement('ALTER TABLE movies DROP FOREIGN KEY movies_worker_id_foreign;');
+      $this->runDbStatement("ALTER TABLE movies DROP FOREIGN KEY movies_emergency_worker_id_foreign;");
+      $this->runDbStatement("ALTER TABLE movies DROP FOREIGN KEY movies_worker_id_foreign;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table movies add new foreign keys...');
     try {
-      $this->runDbStatement('ALTER TABLE movies ADD FOREIGN KEY (emergency_worker_id) REFERENCES `users` (`id`);');
-      $this->runDbStatement('ALTER TABLE movies ADD FOREIGN KEY (worker_id) REFERENCES `users` (`id`);');
+      $this->runDbStatement("ALTER TABLE movies ADD FOREIGN KEY (emergency_worker_id) REFERENCES `users` (`id`);");
+      $this->runDbStatement("ALTER TABLE movies ADD FOREIGN KEY (worker_id) REFERENCES `users` (`id`);");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table broadcasts changing writer foreign key...');
     try {
-      $this->runDbStatement('ALTER TABLE broadcasts DROP FOREIGN KEY broadcasts_writer_user_id_foreign;');
-      $this->runDbStatement('ALTER TABLE broadcasts ADD FOREIGN KEY (writer_user_id) REFERENCES `users` (`id`);'
-      );
+      $this->runDbStatement("ALTER TABLE broadcasts DROP FOREIGN KEY broadcasts_writer_user_id_foreign;");
+      $this->runDbStatement("ALTER TABLE broadcasts ADD FOREIGN KEY (writer_user_id) REFERENCES `users` (`id`);");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table groups and subgroups adding oderN INT NOT NULL DEFAULT 0');
     try {
-      $this->runDbStatement('ALTER TABLE \'groups\' ADD orderN INT NOT NULL DEFAULT 0;');
-      $this->runDbStatement('ALTER TABLE subgroups ADD orderN INT NOT NULL DEFAULT 0;');
+      $this->runDbStatement("ALTER TABLE 'groups' ADD orderN INT NOT NULL DEFAULT 0;");
+      $this->runDbStatement("ALTER TABLE subgroups ADD orderN INT NOT NULL DEFAULT 0;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Changing bv_member to varchar(191) and altering data');
     try {
-      $this->runDbStatement('ALTER TABLE users MODIFY bv_member VARCHAR (191) NOT NULL;');
-      $this->runDbStatement('UPDATE users SET bv_member = \'gemeldet\' where bv_member = \'1\';');
-      $this->runDbStatement('UPDATE users SET bv_member = \'\' where bv_member = \'0\';');
+      $this->runDbStatement("ALTER TABLE users MODIFY bv_member VARCHAR (191) NOT NULL;");
+      $this->runDbStatement("UPDATE users SET bv_member = 'gemeldet' where bv_member = '1';");
+      $this->runDbStatement("UPDATE users SET bv_member = '' where bv_member = '0';");
     } catch (Exception $exception) {
       return false;
     }
@@ -286,14 +288,14 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Altering table user drop member_number');
     try {
-      $this->runDbStatement('ALTER TABLE users DROP member_number;');
+      $this->runDbStatement("ALTER TABLE users DROP member_number;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table user add member_number');
     try {
-      $this->runDbStatement('ALTER TABLE users ADD member_number VARCHAR(191) DEFAULT null;');
+      $this->runDbStatement("ALTER TABLE users ADD member_number VARCHAR(191) DEFAULT null;");
     } catch (Exception $exception) {
       return false;
     }
@@ -310,35 +312,35 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Deleting jobs table...');
     try {
-      $this->runDbStatement('DROP TABLE jobs;');
+      $this->runDbStatement("DROP TABLE jobs;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table user add internal_comment');
     try {
-      $this->runDbStatement('ALTER TABLE users ADD internal_comment TEXT NULL;');
+      $this->runDbStatement("ALTER TABLE users ADD internal_comment TEXT NULL;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table user add information_denied');
     try {
-      $this->runDbStatement('ALTER TABLE users ADD information_denied TINYINT DEFAULT 0 NOT NULL;');
+      $this->runDbStatement("ALTER TABLE users ADD information_denied TINYINT DEFAULT 0 NOT NULL;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table user add member_number');
     try {
-      $this->runDbStatement('ALTER TABLE users ADD member_number INTEGER DEFAULT NULL;');
+      $this->runDbStatement("ALTER TABLE users ADD member_number INTEGER DEFAULT NULL;");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Altering table user add bv_member');
     try {
-      $this->runDbStatement('ALTER TABLE users ADD bv_member TINYINT DEFAULT 0 NOT NULL;');
+      $this->runDbStatement("ALTER TABLE users ADD bv_member TINYINT DEFAULT 0 NOT NULL;");
     } catch (Exception $exception) {
       return false;
     }
@@ -355,14 +357,14 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Running events decisions color migrations...');
     try {
-      $this->runDbStatement('ALTER TABLE events_decisions ADD color varchar(7) NOT NULL DEFAULT \'#ffffff\';');
+      $this->runDbStatement("ALTER TABLE events_decisions ADD color varchar(7) NOT NULL DEFAULT '#ffffff';");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Running event standard decisions color migrations...');
     try {
-      $this->runDbStatement('ALTER TABLE events_standard_decisions ADD color varchar(7) NOT NULL DEFAULT \'#ffffff\';');
+      $this->runDbStatement("ALTER TABLE events_standard_decisions ADD color varchar(7) NOT NULL DEFAULT '#ffffff';");
     } catch (Exception $exception) {
       return false;
     }
@@ -393,10 +395,10 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Running event startDate, endDate migrations finished!');
     try {
-      $this->runDbStatement('ALTER TABLE user_tokens DROP INDEX user_tokens_token_unique;');
-      $this->runDbStatement('ALTER TABLE events DROP COLUMN location;');
-      $this->runDbStatement('ALTER TABLE events DROP COLUMN startDate;');
-      $this->runDbStatement('ALTER TABLE events DROP COLUMN endDate;');
+      $this->runDbStatement("ALTER TABLE user_tokens DROP INDEX user_tokens_token_unique;");
+      $this->runDbStatement("ALTER TABLE events DROP COLUMN location;");
+      $this->runDbStatement("ALTER TABLE events DROP COLUMN startDate;");
+      $this->runDbStatement("ALTER TABLE events DROP COLUMN endDate;");
     } catch (Exception $exception) {
       return false;
     }
