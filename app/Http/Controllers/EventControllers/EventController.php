@@ -18,7 +18,7 @@ use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller {
   private static string $YEARS_CACHE_KEY = 'events.years';
-  private static string $GET_SINGLE_CACHE_KEY = 'events.results.anonymous.';
+  public static string $GET_SINGLE_CACHE_KEY = 'events.results.anonymous.';
 
   protected IEventRepository $eventRepository;
   protected IEventDateRepository $eventDateRepository;
@@ -90,8 +90,8 @@ class EventController extends Controller {
     $toReturnEvent = $event->toArray();
     $toReturnEvent['resultGroups'] = $this->eventRepository->getResultsForEvent($event, $anonymous);
 
-    // Time to live 5 minutes
-    Cache::put($cacheKey, $toReturnEvent, 60 * 5);
+    // Time to live 10 minutes
+    Cache::put($cacheKey, $toReturnEvent, 60 * 10);
 
     return response()->json([
       'msg' => 'Event information',

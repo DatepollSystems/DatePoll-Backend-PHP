@@ -380,27 +380,32 @@ class EventRepository implements IEventRepository {
     // DO NOT EVER use Event::find(Array) because it messes with the orderBy
     foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'event_id') as $eventId) {
       $event = $this->getEventById($eventId);
-      $inGroup = DB::table('events_for_groups')->join(
-          'users_member_of_groups',
-          'events_for_groups.group_id',
-          '=',
-          'users_member_of_groups.group_id'
-        )->where(
-          'events_for_groups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
 
-      $inSubgroup = DB::table('events_for_subgroups')->join(
-          'users_member_of_subgroups',
-          'events_for_subgroups.subgroup_id',
-          '=',
-          'users_member_of_subgroups.subgroup_id'
-        )->where(
-          'events_for_subgroups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+      $inGroup = true;
+      $inSubgroup = true;
+      if (!$event->forEveryone) {
+        $inGroup = DB::table('events_for_groups')->join(
+            'users_member_of_groups',
+            'events_for_groups.group_id',
+            '=',
+            'users_member_of_groups.group_id'
+          )->where(
+            'events_for_groups.event_id',
+            '=',
+            $event->id
+          )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+
+        $inSubgroup = DB::table('events_for_subgroups')->join(
+            'users_member_of_subgroups',
+            'events_for_subgroups.subgroup_id',
+            '=',
+            'users_member_of_subgroups.subgroup_id'
+          )->where(
+            'events_for_subgroups.event_id',
+            '=',
+            $event->id
+          )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+      }
 
       if ($event->forEveryone || $inGroup || $inSubgroup) {
         $events[] = $event->toArrayWithUserDecisionByUserId($user->id);
