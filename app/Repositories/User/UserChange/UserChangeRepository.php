@@ -49,6 +49,8 @@ class UserChangeRepository implements IUserChangeRepository {
   }
 
   /**
+   * @param int $page
+   * @param int $pageSize
    * @return UserChange[]
    */
   public function getAllUserChangesOrderedByDate(int $page = 0, int $pageSize = 15): array {
