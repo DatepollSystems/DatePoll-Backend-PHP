@@ -38,7 +38,8 @@ $router->group([
 
     {
       /** User changes routes */
-      $router->get('changes/users', ['uses' => 'ManagementControllers\UserChangesController@getAllUserChanges']);
+      $router->post('changes/users/search', ['uses' => 'ManagementControllers\UserChangesController@searchUserChanges']);
+      $router->get('changes/users/{page}/{pageSize}', ['uses' => 'ManagementControllers\UserChangesController@getAllUserChanges']);
       $router->delete('changes/users/{id}', ['uses' => 'ManagementControllers\UserChangesController@deleteUserChange']);
     }
 
