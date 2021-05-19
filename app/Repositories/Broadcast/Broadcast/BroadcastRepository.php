@@ -21,6 +21,7 @@ use App\Utils\DateHelper;
 use App\Utils\EnvironmentHelper;
 use App\Utils\QueueHelper;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class BroadcastRepository implements IBroadcastRepository {
 
@@ -319,13 +320,17 @@ class BroadcastRepository implements IBroadcastRepository {
   /**
    * @param int $userId
    * @param int $limit
+   * @param int $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1): array {
+  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1, int $page = -1): array {
     $query = BroadcastUserInfo::where('user_id', '=', $userId)
       ->orderBy('created_at', 'DESC');
     if ($limit != -1) {
       $query = $query->limit($limit);
+    }
+    if ($page != -1 && $limit != -1) {
+      $query = $query->skip($page * $limit)->take($limit);
     }
 
     $broadcasts = [];
@@ -335,6 +340,21 @@ class BroadcastRepository implements IBroadcastRepository {
 
     return $broadcasts;
 
+  }
+
+  /**
+   * @param string $search
+   * @return array
+   */
+  public function searchBroadcasts(string $search): array {
+    $search = '%' . $search . '%';
+
+    return Broadcast::find(ArrayHelper::getPropertyArrayOfObjectArray(DB::table('broadcasts')
+      ->join('users', 'users.id', '=', 'broadcasts.writer_user_id')
+      ->where(DB::raw('concat(users.firstname, " ", users.surname)'), 'like', $search)
+      ->orWhere('subject', 'like', $search)
+      ->orWhere('body', 'like', $search)
+      ->select('broadcasts.id as id')->get()->all(), 'id'))->all();
   }
 
   /**

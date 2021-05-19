@@ -4,7 +4,8 @@ use App\Http\Middleware\Broadcasts\BroadcastsAdministrationPermissionMiddleware;
 use App\Http\Middleware\Broadcasts\BroadcastsFeatureMiddleware;
 
 $router->group(['prefix' => 'broadcast', 'middleware' => [BroadcastsFeatureMiddleware::class]], function () use ($router) {
-  $router->get('', ['uses' => 'BroadcastControllers\BroadcastUserController@getAll']);
+  $router->get('all/{page}/{pageSize}', ['uses' => 'BroadcastControllers\BroadcastUserController@getAll']);
+  $router->post('search', ['uses' => 'BroadcastControllers\BroadcastUserController@searchBroadcast']);
   $router->get('{id}', ['uses' => 'BroadcastControllers\BroadcastUserController@getSingle']);
 
   /** Broadcast administration routes */

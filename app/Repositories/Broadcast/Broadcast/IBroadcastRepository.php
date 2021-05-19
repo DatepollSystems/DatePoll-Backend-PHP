@@ -56,9 +56,16 @@ interface IBroadcastRepository {
   /**
    * @param int $userId
    * @param int $limit
+   * @param int $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1): array;
+  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1, int $page = -1): array;
+
+  /**
+   * @param string $search
+   * @return array
+   */
+  public function searchBroadcasts(string $search): array;
 
   /**
    * @param int $userId
