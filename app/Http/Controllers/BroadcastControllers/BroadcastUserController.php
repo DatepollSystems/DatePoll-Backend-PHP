@@ -5,7 +5,9 @@ namespace App\Http\Controllers\BroadcastControllers;
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
+use App\Utils\StringHelper;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class BroadcastUserController extends Controller {
   protected IBroadcastRepository $broadcastRepository;
@@ -16,12 +18,31 @@ class BroadcastUserController extends Controller {
 
   /**
    * @param AuthenticatedRequest $request
+   * @param int $page
+   * @param int $pageSize
    * @return JsonResponse
    */
-  public function getAll(AuthenticatedRequest $request): JsonResponse {
+  public function getAll(AuthenticatedRequest $request, int $page = 0, int $pageSize = 15): JsonResponse {
     return response()->json([
-      'msg' => 'List of all broadcasts',
-      'broadcasts' => $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($request->auth->id), ]);
+      'msg' => 'List broadcasts',
+      'page' => $page,
+      'page_size' => $pageSize,
+      'broadcasts' => $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($request->auth->id, $pageSize, $page), ]);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
+   * @return JsonResponse
+   * @throws ValidationException
+   */
+  public function searchBroadcast(AuthenticatedRequest $request): JsonResponse {
+    $this->validate($request, [
+      'search' => 'required|string', ]);
+
+    $search = StringHelper::trim($request->input('search'));
+
+    return response()->json(['msg' => 'Searched broadcasts', 'search' => $search,
+      'broadcasts' => $this->broadcastRepository->searchBroadcasts($search), ]);
   }
 
   /**

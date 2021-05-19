@@ -51,6 +51,7 @@ class EventDecision extends Model {
    */
   public function toArray(): array {
     $returnable = parent::toArray();
+    $returnable['event_id'] = $this->event_id;
     $returnable['show_in_calendar'] = $this->showInCalendar;
     return $returnable;
   }

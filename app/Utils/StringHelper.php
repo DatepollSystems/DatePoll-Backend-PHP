@@ -192,6 +192,25 @@ abstract class StringHelper {
   }
 
   /**
+   * @param string|string[] $string
+   * @param string|string[] $toReplace
+   * @param string|string[] $replacement
+   * @return string
+   */
+  public static function replaceString(string|array $string, string|array $toReplace, string|array $replacement): string {
+    return str_replace($toReplace, $replacement, $string);
+  }
+
+  /**
+   * @param string $string
+   * @param string $toRemove
+   * @return string
+   */
+  public static function removeString(string $string, string $toRemove): string {
+    return self::replaceString($string, $toRemove, '');
+  }
+
+  /**
    * @param string $string
    * @param string $pattern
    * @param string $replacement

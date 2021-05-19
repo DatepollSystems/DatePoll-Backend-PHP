@@ -18,13 +18,20 @@ interface IUserChangeRepository {
   /**
    * @return UserChange[]
    */
-  public function getAllUserChangesOrderedByDate(): array;
+  public function getAllUserChangesOrderedByDate(int $page = 0, int $pageSize = 15): array;
 
   /**
    * @param int $id
    * @return UserChange|null
    */
   public function getUserChangeById(int $id): ?UserChange;
+
+  /**
+   * @param string $search
+   * @param bool $ignoreEditor
+   * @return array
+   */
+  public function searchUserChange(string $search, $ignoreEditor = false): array;
 
   /**
    * @param string $property
@@ -39,5 +46,5 @@ interface IUserChangeRepository {
     int $editorId,
     string|int|bool|null $newValue,
     string|int|bool|null $oldValue
-  );
+  ): void;
 }

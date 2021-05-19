@@ -4,13 +4,16 @@ namespace App\Http\Controllers\EventControllers;
 
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
+use App\Logging;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
+use Psr\SimpleCache\InvalidArgumentException;
 
 class EventVoteController extends Controller {
   public function __construct(protected IEventRepository $eventRepository, protected IUserRepository $userRepository) {
@@ -76,6 +79,13 @@ class EventVoteController extends Controller {
       return response()->json(['msg' => 'Could not save user voting...'], 500);
     }
 
+    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $eventId;
+    try {
+      Cache::delete($key);
+    } catch (InvalidArgumentException $e) {
+      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
+    }
+
     return response()->json(
       [
         'msg' => 'Voting saved',
@@ -108,6 +118,13 @@ class EventVoteController extends Controller {
       }
 
       return response()->json(['msg' => 'Decision for event removed successfully'], 200);
+    }
+
+    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id;
+    try {
+      Cache::delete($key);
+    } catch (InvalidArgumentException $e) {
+      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
     }
 
     return response()->json([
@@ -167,6 +184,13 @@ class EventVoteController extends Controller {
       }
     }
 
+    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id;
+    try {
+      Cache::delete($key);
+    } catch (InvalidArgumentException $e) {
+      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
+    }
+
     return response()->json(['msg' => 'Successfully applied all votes'], 200);
   }
 
@@ -200,6 +224,13 @@ class EventVoteController extends Controller {
           return response()->json(['msg' => 'Could not delete old decisions'], 500);
         }
       }
+    }
+
+    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id;
+    try {
+      Cache::delete($key);
+    } catch (InvalidArgumentException $e) {
+      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
     }
 
     return response()->json(['msg' => 'Decisions for event removed successfully'], 200);

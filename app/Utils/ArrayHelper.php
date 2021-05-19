@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
 
 abstract class ArrayHelper {
@@ -68,11 +70,48 @@ abstract class ArrayHelper {
    * @param mixed $toAdd
    * @return array
    */
+  #[Pure]
   public static function addToArrayIfNotInIt(array $array, mixed $toAdd): array {
     if (self::notInArray($array, $toAdd)) {
       $array[] = $toAdd;
     }
 
     return $array;
+  }
+
+  /**
+   * @param Collection $results
+   * @param int $pageSize
+   * @return LengthAwarePaginator
+   */
+  public static function paginate(Collection $results, int $pageSize): LengthAwarePaginator {
+    $page = Paginator::resolveCurrentPage('page');
+
+    $total = $results->count();
+
+    return self::paginator($results->forPage($page, $pageSize), $total, $pageSize, $page, [
+      'path' => Paginator::resolveCurrentPath(),
+      'pageName' => 'page',
+    ]);
+  }
+
+  /**
+   * Create a new length-aware paginator instance.
+   *
+   * @param Collection $items
+   * @param int $total
+   * @param int $perPage
+   * @param int $currentPage
+   * @param array $options
+   * @return LengthAwarePaginator
+   */
+  protected static function paginator(Collection $items, int $total, int $perPage, int $currentPage, array $options): LengthAwarePaginator {
+    return Container::getInstance()->makeWith(LengthAwarePaginator::class, compact(
+      'items',
+      'total',
+      'perPage',
+      'currentPage',
+      'options'
+    ));
   }
 }
