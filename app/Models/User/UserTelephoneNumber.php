@@ -4,6 +4,7 @@ namespace App\Models\User;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use JetBrains\PhpStorm\ArrayShape;
 
 /**
  * @property int $id
@@ -30,5 +31,18 @@ class UserTelephoneNumber extends Model {
    */
   public function user(): BelongsTo|User {
     return $this->belongsTo(User::class)->first();
+  }
+
+  #[ArrayShape(['id' => "int", 'user_id' => "int", 'label' => "string", 'number' => "string", 'created_at' => "string",
+                'updated_at' => "string"])]
+  public function toArray(): array {
+    return [
+      'id' => $this->id,
+      'user_id' => $this->user_id,
+      'label' => $this->label,
+      'number' => $this->number,
+      'created_at' => $this->created_at,
+      'updated_at' => $this->updated_at
+    ];
   }
 }

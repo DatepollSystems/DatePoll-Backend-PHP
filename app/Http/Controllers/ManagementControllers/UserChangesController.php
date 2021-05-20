@@ -25,7 +25,7 @@ class UserChangesController extends Controller {
    * @return JsonResponse
    */
   public function getAllUserChanges(int $page = 0, int $pageSize = 15): JsonResponse {
-    return response()->json(['msg' => 'User changes',
+    return response()->json(['msg' => 'List user changes', 'page' => $page, 'pageSize' => $pageSize,
                              'user_changes' => $this->userChangeRepository->getAllUserChangesOrderedByDate($page,
                                $pageSize)], 200);
   }
