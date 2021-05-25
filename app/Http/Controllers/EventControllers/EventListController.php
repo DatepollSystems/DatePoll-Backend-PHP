@@ -21,7 +21,7 @@ class EventListController extends Controller {
     $events = $this->eventRepository->getOpenEventsForUser($user);
 
     return response()->json([
-      'msg' => 'List of events',
+      'msg' => 'List of open events for user',
       'events' => $events, ], 200);
   }
 }

@@ -112,7 +112,7 @@ abstract class DateHelper {
    *   <code>false</code>.
    */
   #[Pure]
-  public static function ifFirstTimestampIsBeforeSecondOne(int|string $timestamp0, int|string $timestamp1): bool {
+  public static function firstTimestampIsBeforeSecondOne(int|string $timestamp0, int|string $timestamp1): bool {
     if (TypeHelper::isNotInteger($timestamp0)) {
       $timestamp0 = self::convertStringDateToUnixTimestamp($timestamp0);
     }
@@ -129,8 +129,8 @@ abstract class DateHelper {
    *   <code>false</code>.
    */
   #[Pure]
-  public static function ifFirstTimestampIsAfterSecondOne(int|string $timestamp0, int|string $timestamp1): bool {
-    return ! self::ifFirstTimestampIsBeforeSecondOne($timestamp0, $timestamp1);
+  public static function firstTimestampIsAfterSecondOne(int|string $timestamp0, int|string $timestamp1): bool {
+    return ! self::firstTimestampIsBeforeSecondOne($timestamp0, $timestamp1);
   }
 
   /**

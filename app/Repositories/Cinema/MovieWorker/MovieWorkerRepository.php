@@ -67,7 +67,7 @@ class MovieWorkerRepository implements IMovieWorkerRepository {
 
     $movieWorkerShowsNumber = $this->userSettingRepository->getShareMovieWorkerPhoneNumber($user->id);
     foreach ($user->workerMovies() as $movie) {
-      if (DateHelper::ifFirstTimestampIsBeforeSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+      if (DateHelper::firstTimestampIsBeforeSecondOne(DateHelper::removeDayFromUnixTimestamp(),
         DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
         $moviesIDs[] = $movie->id;
         $movies[] = $this->getMoviesBookingWithMovie($movie, $movieWorkerShowsNumber);
@@ -75,7 +75,7 @@ class MovieWorkerRepository implements IMovieWorkerRepository {
     }
 
     foreach ($user->emergencyWorkerMovies() as $movie) {
-      if (DateHelper::ifFirstTimestampIsBeforeSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+      if (DateHelper::firstTimestampIsBeforeSecondOne(DateHelper::removeDayFromUnixTimestamp(),
         DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
         if (ArrayHelper::notInArray($moviesIDs, $movie->id)) {
           $movies[] = $this->getMoviesBookingWithMovie($movie, $movieWorkerShowsNumber);
