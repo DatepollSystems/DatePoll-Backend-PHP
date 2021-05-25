@@ -44,30 +44,31 @@ class EventDecisionRepository implements IEventDecisionRepository {
   }
 
   /**
+   * @param int $id
+   * @return EventDecision[]
+   */
+  public function getEventDecisionsByEventId(int $id): array {
+    return EventDecision::where('event_id', '=', $id)->get()->all();
+  }
+
+  /**
    * @param User $user
    * @param Event $event
-   * @param bool $anonymous
    * @return array
    */
   #[ArrayShape(['id' => "int|null", 'firstname' => "null|string", 'surname' => "null|string",
                 'decisionId' => "mixed", 'decision' => "mixed",
                 'additional_information' => "mixed"])]
-  public function getDecisionForUser(User $user, Event $event, $anonymous = true): array {
-    $id = null;
-    $firstname = null;
-    $surname = null;
+  public function getDecisionForUser(User $user, Event $event): array {
     $additionalInformation = null;
-
-    if (! $anonymous) {
-      $id = $user->id;
-      $firstname = $user->firstname;
-      $surname = $user->surname;
-    }
+    $id = $user->id;
+    $firstname = $user->firstname;
+    $surname = $user->surname;
 
     $decision = EventUserVotedForDecision::where('user_id', $user->id)
       ->where('event_id', $event->id)
       ->first();
-    if ($decision != null && ! $anonymous) {
+    if ($decision != null) {
       $additionalInformation = $decision->additionalInformation;
     }
 

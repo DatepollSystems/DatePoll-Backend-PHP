@@ -52,9 +52,10 @@ interface IEventRepository {
   /**
    * @param Event $event
    * @param bool $anonymous
+   * @param bool $calculateCharts
    * @return array
    */
-  public function getResultsForEvent(Event $event, bool $anonymous): array;
+  public function getResultsForEvent(Event $event, bool $anonymous, bool $calculateCharts = false): array;
 
   /**
    * @param User $user

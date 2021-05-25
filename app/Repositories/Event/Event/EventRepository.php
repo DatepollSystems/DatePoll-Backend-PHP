@@ -5,6 +5,7 @@ namespace App\Repositories\Event\Event;
 use App\Jobs\CreateNewEventEmailsJob;
 use App\Logging;
 use App\Models\Events\Event;
+use App\Models\Events\EventDecision;
 use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
@@ -17,6 +18,7 @@ use App\Utils\DateHelper;
 use App\Utils\QueueHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class EventRepository implements IEventRepository {
   public function __construct(
@@ -252,120 +254,6 @@ class EventRepository implements IEventRepository {
   }
 
   /**
-   * @param Event $event
-   * @param bool $anonymous
-   * @return array
-   */
-  public function getResultsForEvent(Event $event, bool $anonymous): array {
-    $results = [];
-    $results['anonymous'] = $anonymous;
-
-    if ($event->forEveryone) {
-      $groups = [];
-
-      foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
-        $groupResultUsers = [];
-        foreach ($group->getUsersOrderedBySurname() as $user) {
-          $groupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser(
-            $user,
-            $event,
-            $anonymous
-          );
-        }
-
-        $subgroups = [];
-        foreach ($group->getSubgroupsOrdered() as $subgroup) {
-          $subgroupResultUsers = [];
-          foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
-            $subgroupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
-          }
-
-          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'users' => $subgroupResultUsers,
-                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id];
-        }
-
-        $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers,
-                     'subgroups' => $subgroups];
-      }
-
-      $results['groups'] = $groups;
-
-      $allUsers = [];
-      foreach ($this->userRepository->getAllUsersOrderedBySurname() as $user) {
-        $allUsers[] = $this->eventDecisionRepository->getDecisionForUser($user, $event, $anonymous);
-      }
-
-    } else {
-      $allUsers = [];
-      $allUserIds = [];
-      $allSubgroupsIds = [];
-
-      $groups = [];
-
-      foreach ($event->getGroupsOrdered() as $group) {
-        $groupResultUsers = [];
-        foreach ($group->getUsersOrderedBySurname() as $gUser) {
-          $user = $this->eventDecisionRepository->getDecisionForUser($gUser, $event, $anonymous);
-          $groupResultUsers[] = $user;
-          if (! ArrayHelper::inArray($allUserIds, $gUser->id)) {
-            $allUsers[] = $user;
-            $allUserIds[] = $gUser->id;
-          }
-        }
-
-        $subgroups = [];
-        foreach ($group->getSubgroupsOrdered() as $subgroup) {
-          $subgroupResultUsers = [];
-          foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
-            $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
-            $subgroupResultUsers[] = $user;
-            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
-              $allUsers[] = $user;
-              $allUserIds[] = $sUser->id;
-            }
-          }
-
-          $subgroupToSave = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                             'parent_group_name' => $subgroup->getGroup()->name,
-                             'parent_group_id' => $subgroup->group_id,
-                             'users' => $subgroupResultUsers];
-          $subgroups[] = $subgroupToSave;
-          $allSubgroupsIds[] = $subgroup->id;
-        }
-        $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers,
-                     'subgroups' => $subgroups];
-      }
-
-      $subgroups = [];
-      foreach ($event->getSubgroupsOrdered() as $subgroup) {
-        if (ArrayHelper::notInArray($allSubgroupsIds, $subgroup->id)) {
-          $subgroupResultUsers = [];
-          foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
-            $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event, $anonymous);
-            $subgroupResultUsers[] = $user;
-            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
-              $allUsers[] = $user;
-              $allUserIds[] = $sUser->id;
-            }
-          }
-
-          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name,
-                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
-                          'users' => $subgroupResultUsers];
-        }
-      }
-      // Add unknown group with single subgroups
-      $groups[] = ['id' => -1, 'name' => 'unknown', 'users' => [], 'subgroups' => $subgroups];
-
-      $results['groups'] = $groups;
-
-    }
-    $results['allUsers'] = $allUsers;
-
-    return $results;
-  }
-
-  /**
    * @param User $user
    * @return array
    */
@@ -383,7 +271,7 @@ class EventRepository implements IEventRepository {
 
       $inGroup = true;
       $inSubgroup = true;
-      if (!$event->forEveryone) {
+      if (! $event->forEveryone) {
         $inGroup = DB::table('events_for_groups')->join(
             'users_member_of_groups',
             'events_for_groups.group_id',
@@ -417,9 +305,222 @@ class EventRepository implements IEventRepository {
 
   /**
    * @param Event $event
+   * @param bool $anonymous
+   * @param bool $calculateCharts
+   * @return array
+   */
+  public function getResultsForEvent(Event $event, bool $anonymous, bool $calculateCharts = true): array {
+    $eventDecisions = $this->eventDecisionRepository->getEventDecisionsByEventId($event->id);
+    $results = [];
+    $results['anonymous'] = $anonymous;
+
+    if ($event->forEveryone) {
+      $groups = [];
+
+      foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
+        $groupResultUsers = [];
+        foreach ($group->getUsersOrderedBySurname() as $user) {
+          $groupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser(
+            $user,
+            $event);
+        }
+
+        $subgroups = [];
+        foreach ($group->getSubgroupsOrdered() as $subgroup) {
+          $subgroupResultUsers = [];
+          foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
+            $subgroupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($sUser, $event);
+          }
+
+          if ($calculateCharts) {
+            $chart = $this->calculateChart($eventDecisions, $subgroupResultUsers);
+          } else {
+            $chart = null;
+          }
+          /** @noinspection DisconnectedForeachInstructionInspection */
+          if ($anonymous) {
+            $subgroupResultUsers = null;
+          }
+
+          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'users' => $subgroupResultUsers,
+                          'chart' => $chart,
+                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id];
+        }
+
+        if ($calculateCharts) {
+          $chart = $this->calculateChart($eventDecisions, $groupResultUsers);
+        } else {
+          $chart = null;
+        }
+        /** @noinspection DisconnectedForeachInstructionInspection */
+        if ($anonymous) {
+          $groupResultUsers = null;
+        }
+
+        $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers, 'chart' => $chart,
+                     'subgroups' => $subgroups];
+      }
+
+      $results['groups'] = $groups;
+
+      $allUsers = [];
+      foreach ($this->userRepository->getAllUsersOrderedBySurname() as $user) {
+        $allUsers[] = $this->eventDecisionRepository->getDecisionForUser($user, $event);
+      }
+
+    } else {
+      $allUsers = [];
+      $allUserIds = [];
+      $allSubgroupsIds = [];
+
+      $groups = [];
+
+      foreach ($event->getGroupsOrdered() as $group) {
+        $groupResultUsers = [];
+        foreach ($group->getUsersOrderedBySurname() as $gUser) {
+          $user = $this->eventDecisionRepository->getDecisionForUser($gUser, $event);
+          $groupResultUsers[] = $user;
+          if (! ArrayHelper::inArray($allUserIds, $gUser->id)) {
+            $allUsers[] = $user;
+            $allUserIds[] = $gUser->id;
+          }
+        }
+
+        $subgroups = [];
+        foreach ($group->getSubgroupsOrdered() as $subgroup) {
+          $subgroupResultUsers = [];
+          foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
+            $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event);
+            $subgroupResultUsers[] = $user;
+            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
+              $allUsers[] = $user;
+              $allUserIds[] = $sUser->id;
+            }
+          }
+
+          if ($calculateCharts) {
+            $chart = $this->calculateChart($eventDecisions, $subgroupResultUsers);
+          } else {
+            $chart = null;
+          }
+          /** @noinspection DisconnectedForeachInstructionInspection */
+          if ($anonymous) {
+            $subgroupResultUsers = null;
+          }
+
+          $subgroupToSave = ['id' => $subgroup->id, 'name' => $subgroup->name,
+                             'parent_group_name' => $subgroup->getGroup()->name,
+                             'parent_group_id' => $subgroup->group_id,
+                             'users' => $subgroupResultUsers, 'chart' => $chart];
+          $subgroups[] = $subgroupToSave;
+          $allSubgroupsIds[] = $subgroup->id;
+        }
+        if ($calculateCharts) {
+          $chart = $this->calculateChart($eventDecisions, $groupResultUsers);
+        } else {
+          $chart = null;
+        }
+        /** @noinspection DisconnectedForeachInstructionInspection */
+        if ($anonymous) {
+          $groupResultUsers = null;
+        }
+
+        $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers, 'chart' => $chart,
+                     'subgroups' => $subgroups];
+      }
+
+      $subgroups = [];
+      foreach ($event->getSubgroupsOrdered() as $subgroup) {
+        if (ArrayHelper::notInArray($allSubgroupsIds, $subgroup->id)) {
+          $subgroupResultUsers = [];
+          foreach ($subgroup->getUsersOrderedBySurname() as $sUser) {
+            $user = $this->eventDecisionRepository->getDecisionForUser($sUser, $event);
+            $subgroupResultUsers[] = $user;
+            if (ArrayHelper::notInArray($allUserIds, $sUser->id)) {
+              $allUsers[] = $user;
+              $allUserIds[] = $sUser->id;
+            }
+          }
+
+          if ($calculateCharts) {
+            $chart = $this->calculateChart($eventDecisions, $subgroupResultUsers);
+          } else {
+            $chart = null;
+          }
+          if ($anonymous) {
+            $subgroupResultUsers = null;
+          }
+
+          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name,
+                          'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
+                          'users' => $subgroupResultUsers, 'chart' => $chart];
+        }
+      }
+      // Add unknown group with single subgroups
+      $groups[] = ['id' => -1, 'name' => 'unknown', 'users' => [], 'subgroups' => $subgroups];
+
+      $results['groups'] = $groups;
+    }
+
+    $results['allUsers'] = $allUsers;
+
+    if ($anonymous) {
+      $results['allUsers'] = null;
+    }
+
+    if ($calculateCharts) {
+      $results['chart'] = $this->calculateChart($eventDecisions, $allUsers);
+    }
+
+    return $results;
+  }
+
+  /**
+   * @param Event $event
    * @return array
    */
   public function getPotentialVotersForEvent(Event $event): array {
-    return $this->getResultsForEvent($event, false)['allUsers'];
+    return $this->getResultsForEvent($event, false, false)['allUsers'];
+  }
+
+  /**
+   * @param EventDecision[] $eventDecisions
+   * @param array $userDecisions
+   * @return array
+   */
+  private function calculateChart(array $eventDecisions, array $userDecisions): array {
+    $objects = [];
+
+    foreach ($eventDecisions as $decision) {
+      $object = new stdClass();
+      $object->id = $decision->id;
+      $object->name = $decision->decision;
+      $object->color = $decision->color;
+      $object->count = 0;
+
+      $objects[] = $object;
+    }
+
+    $votedUsersCount = 0;
+    foreach ($userDecisions as $userDecision) {
+      foreach ($objects as $object) {
+        if ($userDecision['decisionId'] == $object->id) {
+          $object->count++;
+          $votedUsersCount++;
+          break;
+        }
+      }
+    }
+
+    $chartElements = [];
+    if ($votedUsersCount > 0) {
+      foreach ($objects as $object) {
+        $chartElements[] = ['name' => $object->name,
+                            'percentWidth' => floor(($object->count / $votedUsersCount) * 100),
+                            'count' => $object->count,
+                            'color' => $object->color];
+      }
+    }
+    return $chartElements;
   }
 }
