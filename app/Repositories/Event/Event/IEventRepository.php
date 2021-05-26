@@ -4,25 +4,15 @@ namespace App\Repositories\Event\Event;
 
 use App\Models\Events\Event;
 use App\Models\User\User;
+use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
-interface IEventRepository {
+interface IEventRepository extends IHasYearsRepository {
 
   /**
    * @return Event[]
    */
   public function getAllEvents(): array;
-
-  /**
-   * @return int[]
-   */
-  public function getYearsOfEvents(): array;
-
-  /**
-   * @param int|null $year
-   * @return Event[]
-   */
-  public function getEventsOrderedByDate(int $year = null): array;
 
   /**
    * @param int $id
