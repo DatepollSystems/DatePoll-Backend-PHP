@@ -50,7 +50,7 @@ abstract class AHasYears extends Controller implements IHasYears {
     }
 
     if (StringHelper::notNull($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY)) {
-      $cacheKey = self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . Converter::integerToString($iYear);
+      $cacheKey = $this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . Converter::integerToString($iYear);
       if (Cache::has($cacheKey)) {
         $data = Cache::get($cacheKey);
       } else {

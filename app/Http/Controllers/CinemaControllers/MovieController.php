@@ -53,8 +53,8 @@ class MovieController extends AHasYears {
       return response()->json(['msg' => 'An error occurred during movie creating!'], 500);
     }
     Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
-    Cache::forget(self::$YEARS_CACHE_KEY);
-    Cache::forget(self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+    Cache::forget($this->YEARS_CACHE_KEY);
+    Cache::forget($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     return response()->json([
       'msg' => 'Movie created',
@@ -146,8 +146,8 @@ class MovieController extends AHasYears {
       return response()->json(['msg' => 'An error occurred during movie saving'], 500);
     }
     Logging::info('updateMovie', 'User - ' . $request->auth->id . ' | Movie updated - ' . $movie->id);
-    Cache::forget(self::$YEARS_CACHE_KEY);
-    Cache::forget(self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+    Cache::forget($this->YEARS_CACHE_KEY);
+    Cache::forget($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     return response()->json([
       'msg' => 'Movie updated',
@@ -168,8 +168,8 @@ class MovieController extends AHasYears {
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    Cache::forget(self::$YEARS_CACHE_KEY);
-    Cache::forget(self::$MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+    Cache::forget($this->YEARS_CACHE_KEY);
+    Cache::forget($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     if (! $this->movieRepository->deleteMovie($movie)) {
       Logging::error('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Could not delete movie');

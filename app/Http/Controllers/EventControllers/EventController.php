@@ -95,7 +95,7 @@ class EventController extends AHasYears {
       return response()->json(['msg' => 'An error occurred during event creating.'], 500);
     }
 
-    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget($this->YEARS_CACHE_KEY);
 
     return response()->json([
       'msg' => 'Successful created event',
@@ -143,7 +143,7 @@ class EventController extends AHasYears {
       return response()->json(['msg' => 'An error occurred during event updating.'], 500);
     }
 
-    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget($this->YEARS_CACHE_KEY);
     Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'true.' . $event->id);
     Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'false.' . $event->id);
 
@@ -167,7 +167,7 @@ class EventController extends AHasYears {
       return response()->json(['msg' => 'Could not delete event'], 500);
     }
     
-    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget($this->YEARS_CACHE_KEY);
 
     return response()->json(['msg' => 'Successfully deleted event'], 200);
   }

@@ -304,7 +304,7 @@ class CalendarController extends Controller {
       ->setLanguage('de');
 
     if ($this->settingRepository->getCinemaEnabled()) {
-      foreach ($this->movieRepository->getAllMoviesOrderedByDate() as $movie) {
+      foreach ($this->movieRepository->getDataOrderedByDate() as $movie) {
         $geo = new Geo();
         $geo->setLatitude(48.643865);
         $geo->setLongitude(15.814679);
