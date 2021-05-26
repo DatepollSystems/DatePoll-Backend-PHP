@@ -2,8 +2,9 @@
 
 namespace App\Repositories\Interfaces;
 
-use Illuminate\Database\Eloquent\Model;
-
+/**
+ * @template T of \Illuminate\Database\Eloquent\Model
+ */
 interface IHasYearsRepository {
   /**
    * @return int[]
@@ -12,7 +13,7 @@ interface IHasYearsRepository {
 
   /**
    * @param int|null $year
-   * @return Model[]
+   * @return T[]
    */
   public function getDataOrderedByDate(int $year = null): array;
 }

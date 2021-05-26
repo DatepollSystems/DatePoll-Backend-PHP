@@ -7,6 +7,9 @@ use App\Models\User\User;
 use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
+/**
+ * @extends IHasYearsRepository<Event>
+ */
 interface IEventRepository extends IHasYearsRepository {
 
   /**

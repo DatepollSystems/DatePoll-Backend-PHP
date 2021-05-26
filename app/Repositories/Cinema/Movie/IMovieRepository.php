@@ -6,6 +6,9 @@ use App\Models\Cinema\Movie;
 use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
+/**
+ * @extends IHasYearsRepository<Movie>
+ */
 interface IMovieRepository extends IHasYearsRepository {
   /**
    * @param int $id
