@@ -23,6 +23,7 @@ build:
     - rm ./composer.lock
     - php composer.phar install -n -v --ignore-platform-reqs
     - ls -la
+    - ./vendor/phpunit/phpunit/phpunit --configuration ./phpunit.xml ||  echo 0;
     - ./vendor/bin/phpstan analyse --memory-limit=1G ||  echo 0;
 
 deploy-dev:

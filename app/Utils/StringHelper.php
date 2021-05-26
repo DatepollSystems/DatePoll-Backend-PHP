@@ -10,11 +10,15 @@ abstract class StringHelper {
    * @param string|null $string
    * @param string|null $keyword
    * @return bool Returns <code>true</code> if the string contains the keyword. If string or keyword is empty or
-   *   <code>null</code> returns <code>false</code>.
+   *   <code>null</code> returns <code>false</code>. If both are <code>null</code> returns <code>true</code>.
    * @noinspection PhpPureFunctionMayProduceSideEffectsInspection (Because it's 100% pure)
    */
   #[Pure]
   public static function contains(?string $string, ?string $keyword): bool {
+    if (self::null($string) && self::null($keyword)) {
+      return true;
+    }
+
     if (self::null($string) || self::null($keyword)) {
       return false;
     }
@@ -37,14 +41,36 @@ abstract class StringHelper {
 
   /**
    * @param string|null $string
+   * @return int Returns length of string. If string is <code>null</code> returns <code>0</code>.
+   */
+  #[Pure]
+  public static function lengthWithoutTrim(?string $string): int {
+    if (self::null($string)) {
+      return 0;
+    }
+
+    return strlen($string);
+  }
+
+  /**
+   * @param string|null $string
    * @param string|null $substring
-   * @return int Returns how often the substring occurs in the string. If string or substring is empty or
-   *   <code>null</code> returns <code>0</code>.
+   * @return int Returns how often the substring occurs in the string. If string and substring are <code>null</code>
+   *   returns <code>1</code>. If string or substring are <code>null</code> returns <code>0</code> If substring is
+   *   empty returns <code>1</code>.
    */
   #[Pure]
   public static function countSubstring(?string $string, ?string $substring): int {
+    if (self::null($string) && self::null($substring)) {
+      return 1;
+    }
+
     if (self::null($string) || self::null($substring)) {
       return 0;
+    }
+
+    if (self::lengthWithoutTrim($substring) < 1) {
+      return 1;
     }
 
     return substr_count($string, $substring);
@@ -183,11 +209,19 @@ abstract class StringHelper {
   }
 
   /**
-   * @param string $string
-   * @param string $char
+   * @param string|null $string
+   * @param string|null $char
    * @return bool
    */
-  public static function startsWithCharacter(string $string, string $char): bool {
+  public static function startsWithCharacter(?string $string, ?string $char): bool {
+    if (self::null($string) && self::null($char)) {
+      return true;
+    }
+
+    if (self::null($string) || self::null($char)) {
+      return false;
+    }
+
     return str_starts_with($string, $char);
   }
 
@@ -197,7 +231,11 @@ abstract class StringHelper {
    * @param string|string[] $replacement
    * @return string
    */
-  public static function replaceString(string|array $string, string|array $toReplace, string|array $replacement): string {
+  public static function replaceString(
+    string | array $string,
+    string | array $toReplace,
+    string | array $replacement
+  ): string {
     return str_replace($toReplace, $replacement, $string);
   }
 
