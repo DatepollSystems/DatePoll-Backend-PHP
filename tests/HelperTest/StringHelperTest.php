@@ -277,4 +277,20 @@ class StringHelperTest extends TestCase {
     self::assertFalse($helperFunction(null, 'test'));
     self::assertTrue($helperFunction(null, null));
   }
+
+  public function testRemoveString(): void {
+    $helperFunction = static function ($var1, $var2) {
+      return StringHelper::removeString($var1, $var2);
+    };
+    self::assertEquals('ein Test', $helperFunction('Das ist ein Test', 'Das ist '));
+    self::assertEquals('____', $helperFunction('__einTest__', 'einTest'));
+    self::assertEquals('__einTest__', $helperFunction('__einTest__', 'EINTEST'));
+    self::assertEquals('__EIN__', $helperFunction('__EINTest__', 'Test'));
+    self::assertEquals('AAAAA', $helperFunction('A_A_A_A_A', '_'));
+    self::assertEquals('Hallo124', $helperFunction('Hallo1234', '3'));
+    self::assertEquals('A', $helperFunction('A_A_A_A_A', '_A'));
+    self::assertNull($helperFunction(null, '_A'));
+    self::assertNull($helperFunction('A_A_A_A_A', null));
+    self::assertNull($helperFunction(null, null));
+  }
 }

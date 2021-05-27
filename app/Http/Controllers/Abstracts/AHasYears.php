@@ -63,8 +63,8 @@ abstract class AHasYears extends Controller implements IHasYears {
     }
 
     return response()->json([
-      'msg' => 'List of all ' . get_class($this),
+      'msg' => 'List of ' . get_class($data[0]?: $this),
       'data' => $data,
-      'year' => $iYear, ]);
+      'year' => $iYear?: 'all', ]);
   }
 }

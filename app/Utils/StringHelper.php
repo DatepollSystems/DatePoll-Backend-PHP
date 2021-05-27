@@ -240,11 +240,15 @@ abstract class StringHelper {
   }
 
   /**
-   * @param string $string
-   * @param string $toRemove
-   * @return string
+   * @param string|null $string $string
+   * @param string|null $toRemove
+   * @return string|null
    */
-  public static function removeString(string $string, string $toRemove): string {
+  public static function removeString(?string $string, ?string $toRemove): ?string {
+    if (self::null($string) || self::null($toRemove)) {
+      return null;
+    }
+
     return self::replaceString($string, $toRemove, '');
   }
 
