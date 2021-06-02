@@ -4,7 +4,6 @@ namespace App\Http\Controllers\EventControllers;
 
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
-use App\Logging;
 use App\Models\Events\EventDecision;
 use App\Models\Events\EventUserVotedForDecision;
 use App\Repositories\Event\Event\IEventRepository;
@@ -13,7 +12,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
-use Psr\SimpleCache\InvalidArgumentException;
 
 class EventVoteController extends Controller {
   public function __construct(protected IEventRepository $eventRepository, protected IUserRepository $userRepository) {
@@ -28,13 +26,13 @@ class EventVoteController extends Controller {
     $this->validate($request, [
       'decision_id' => 'required|integer',
       'event_id' => 'required|integer',
-      'additional_information' => 'nullable|string|max:128|min:1', ]);
+      'additional_information' => 'nullable|string|max:128|min:1',]);
 
     $eventId = $request->input('event_id');
     if ($this->eventRepository->getEventById($eventId) == null) {
       return response()->json([
         'msg' => 'Event not found',
-        'error_code' => 'event_not_found', ], 404);
+        'error_code' => 'event_not_found',], 404);
     }
 
     $eventDecisions = EventDecision::where('event_id', $eventId)
@@ -43,7 +41,7 @@ class EventVoteController extends Controller {
     if ($eventDecisions == null) {
       return response()->json([
         'msg' => 'Decision not found for this event',
-        'error_code' => 'decision_not_found_for_event', ], 404);
+        'error_code' => 'decision_not_found_for_event',], 404);
     }
 
     $user = $request->auth;
@@ -55,7 +53,7 @@ class EventVoteController extends Controller {
         if ($openEvent['already_voted']) {
           return response()->json([
             'msg' => 'User already voted for event',
-            'error_code' => 'already_voted', ], 400);
+            'error_code' => 'already_voted',], 400);
         }
 
         $allowedToVote = true;
@@ -66,30 +64,25 @@ class EventVoteController extends Controller {
     if (! $allowedToVote) {
       return response()->json([
         'msg' => 'You are not allowed to vote for this event',
-        'error_code' => 'not_allowed', ], 400);
+        'error_code' => 'not_allowed',], 400);
     }
 
     $eventUserVotedForDecision = new EventUserVotedForDecision([
       'additionalInformation' => $request->input('additional_information'),
       'event_id' => $eventId,
       'decision_id' => $eventDecisions->id,
-      'user_id' => $user->id, ]);
+      'user_id' => $user->id,]);
 
     if (! $eventUserVotedForDecision->save()) {
       return response()->json(['msg' => 'Could not save user voting...'], 500);
     }
 
-    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $eventId;
-    try {
-      Cache::delete($key);
-    } catch (InvalidArgumentException $e) {
-      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
-    }
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $eventId);
 
     return response()->json(
       [
         'msg' => 'Voting saved',
-        'user_decision' => $eventUserVotedForDecision, ],
+        'user_decision' => $eventUserVotedForDecision,],
       200
     );
   }
@@ -103,7 +96,7 @@ class EventVoteController extends Controller {
     if ($this->eventRepository->getEventById($id) == null) {
       return response()->json([
         'msg' => 'Event not found',
-        'error_code' => 'event_not_found', ], 404);
+        'error_code' => 'event_not_found',], 404);
     }
 
     $user = $request->auth;
@@ -120,16 +113,11 @@ class EventVoteController extends Controller {
       return response()->json(['msg' => 'Decision for event removed successfully'], 200);
     }
 
-    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id;
-    try {
-      Cache::delete($key);
-    } catch (InvalidArgumentException $e) {
-      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
-    }
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
 
     return response()->json([
       'msg' => 'There is no voting for this event to remove',
-      'error_code' => 'not_voted', ], 404);
+      'error_code' => 'not_voted',], 404);
   }
 
   /**
@@ -142,7 +130,7 @@ class EventVoteController extends Controller {
     $this->validate($request, [
       'decision_id' => 'required|integer',
       'additional_information' => 'nullable|string|max:128|min:1',
-      'user_ids' => 'array', ]);
+      'user_ids' => 'array',]);
 
     $event = $this->eventRepository->getEventById($id);
     if ($event == null) {
@@ -161,7 +149,7 @@ class EventVoteController extends Controller {
       if ($this->userRepository->getUserById($userId) == null) {
         return response()->json([
           'msg' => 'User not found',
-          'user_id' => $userId, ], 404);
+          'user_id' => $userId,], 404);
       }
 
       $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
@@ -177,19 +165,13 @@ class EventVoteController extends Controller {
         'additionalInformation' => $request->input('additional_information'),
         'event_id' => $id,
         'decision_id' => $eventDecision->id,
-        'user_id' => $userId, ]);
+        'user_id' => $userId,]);
 
       if (! $eventUserVotedForDecision->save()) {
         return response()->json(['msg' => 'Could not save eventUserVotedForDecision'], 500);
       }
     }
-
-    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id;
-    try {
-      Cache::delete($key);
-    } catch (InvalidArgumentException $e) {
-      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
-    }
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
 
     return response()->json(['msg' => 'Successfully applied all votes'], 200);
   }
@@ -213,7 +195,7 @@ class EventVoteController extends Controller {
       if ($this->userRepository->getUserById($userId) == null) {
         return response()->json([
           'msg' => 'User not found',
-          'user_id' => $userId, ], 404);
+          'user_id' => $userId,], 404);
       }
 
       $eventUserVotedForDecision = EventUserVotedForDecision::where('event_id', $id)
@@ -226,12 +208,7 @@ class EventVoteController extends Controller {
       }
     }
 
-    $key = EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id;
-    try {
-      Cache::delete($key);
-    } catch (InvalidArgumentException $e) {
-      Logging::error('EventVoteController@voteForUser', 'Could not clear cache from events ' . $key, $e->getMessage());
-    }
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
 
     return response()->json(['msg' => 'Decisions for event removed successfully'], 200);
   }

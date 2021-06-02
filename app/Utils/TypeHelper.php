@@ -57,6 +57,6 @@ abstract class TypeHelper {
    */
   #[Pure]
   public static function isNotString(mixed $possibleString): bool {
-    return ! self::isInteger($possibleString);
+    return ! self::isString($possibleString);
   }
 }

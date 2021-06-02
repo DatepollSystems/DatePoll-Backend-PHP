@@ -3,60 +3,24 @@
 namespace App\Http\Controllers\EventControllers;
 
 use App\Http\AuthenticatedRequest;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Abstracts\AHasYears;
 use App\Logging;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Utils\Converter;
-use App\Utils\StringHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
-class EventController extends Controller {
-  private static string $YEARS_CACHE_KEY = 'events.years';
+class EventController extends AHasYears {
   public static string $GET_SINGLE_CACHE_KEY = 'events.results.anonymous.';
 
-  protected IEventRepository $eventRepository;
-  protected IEventDateRepository $eventDateRepository;
-
-  public function __construct(IEventRepository $eventRepository, IEventDateRepository $eventDateRepository) {
-    $this->eventRepository = $eventRepository;
-    $this->eventDateRepository = $eventDateRepository;
-  }
-
-  /**
-   * @return JsonResponse
-   */
-  public function getYearsOfEvents(): JsonResponse {
-    if (Cache::has(self::$YEARS_CACHE_KEY)) {
-      $years = Cache::get(self::$YEARS_CACHE_KEY);
-    } else {
-      $years = $this->eventRepository->getYearsOfEvents();
-      // Time to live 3 hours
-      Cache::put(self::$YEARS_CACHE_KEY, $years, 3 * 60 * 60);
-    }
-
-    return response()->json(['msg' => 'List of all years', 'years' => $years]);
-  }
-
-  /**
-   * @param string|null $year
-   * @return JsonResponse
-   */
-  public function getEventsOrderedByDate(?string $year = null): JsonResponse {
-    if (StringHelper::nullAndEmpty($year)) {
-      $iYear = null;
-    } else {
-      $iYear = Converter::stringToInteger($year);
-    }
-
-    return response()->json([
-      'msg' => 'List of all events of this year',
-      'events' => $this->eventRepository->getEventsOrderedByDate($iYear), 'year' => $iYear, ]);
+  public function __construct(protected IEventRepository $eventRepository, protected IEventDateRepository $eventDateRepository) {
+    parent::__construct($this->eventRepository);
+    $this->YEARS_CACHE_KEY = 'events.years';
   }
 
   /**
@@ -131,7 +95,7 @@ class EventController extends Controller {
       return response()->json(['msg' => 'An error occurred during event creating.'], 500);
     }
 
-    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget($this->YEARS_CACHE_KEY);
 
     return response()->json([
       'msg' => 'Successful created event',
@@ -179,7 +143,7 @@ class EventController extends Controller {
       return response()->json(['msg' => 'An error occurred during event updating.'], 500);
     }
 
-    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget($this->YEARS_CACHE_KEY);
     Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'true.' . $event->id);
     Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'false.' . $event->id);
 
@@ -203,7 +167,7 @@ class EventController extends Controller {
       return response()->json(['msg' => 'Could not delete event'], 500);
     }
     
-    Cache::forget(self::$YEARS_CACHE_KEY);
+    Cache::forget($this->YEARS_CACHE_KEY);
 
     return response()->json(['msg' => 'Successfully deleted event'], 200);
   }

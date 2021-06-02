@@ -2,36 +2,36 @@
 
 use App\Models\User\User;
 use App\Models\User\UserPermission;
-use Exception;
+use App\Permissions;
+use App\Utils\Generator;
 use Illuminate\Console\Command;
 
 class AddAdminUser extends Command {
   protected $signature = 'add-admin-user';
   protected $description = 'Creates admin user with all permissions.';
-  public function __construct() {
-    parent::__construct();
-  }
 
   /**
    * @return void
-   * @throws Exception
    */
-  public function handle() {
-    if (! $this->confirm('Are you sure you want to create an admin account?', true)) {
+  public function handle(): void {
+    if (! $this->confirm('Confirm creating an admin account', true)) {
       $this->comment('Aborting...');
 
       return;
     }
-    $this->line('> Creating admin user...');
+    $this->comment('Creating admin user...');
+
+    $randomPassword = Generator::getRandom6DigitNumber();
+    $username = 'admin-' . Generator::getRandomMixedNumberAndABCToken(2);
+
     $user = new User([
       'firstname' => 'Helmi',
       'surname' => 'GIS',
       'birthday' => date('Y-m-d'),
       'join_date' => date('Y-m-d'),
-      'username' => 'admin',
-      'password' => app('hash')->make('123456'),
+      'username' => $username,
+      'password' => app('hash')->make($randomPassword),
       'activated' => true,
-      'rank' => 'admin',
       'force_password_change' => true,
       'streetname' => 'Alauntalstraße',
       'streetnumber' => '6-7',
@@ -40,34 +40,31 @@ class AddAdminUser extends Command {
       'activity' => 'active',
       'bv_member' => 'bv_member',
     ]);
-    if ($user->save()) {
-      $this->comment('Admin user created');
-
-      $this->line('> Setting password...');
-      $user->password = app('hash')->make('123456' . $user->id);
-      $user->save();
-      $this->comment('Password changed');
-
-      $this->line('> Setting permissions...');
-      $permission = new UserPermission([
-        'user_id' => $user->id,
-        'permission' => 'root.administration',
-      ]);
-
-      if ($permission->save()) {
-        $this->comment('Permission set');
-      } else {
-        $this->warn('Error during permission setting');
-        $user->delete();
-
-        return;
-      }
-
-      $this->info('Admin user successful created');
-      $this->info('Username: admin');
-      $this->info('Password: 123456');
-    } else {
+    if (! $user->save()) {
       $this->warn('Error during admin user creation.');
+
+      return;
     }
+
+    $this->comment('Setting password...');
+    $user->password = app('hash')->make($randomPassword . $user->id);
+    $user->save();
+
+    $this->comment('Setting permissions...');
+    $permission = new UserPermission([
+      'user_id' => $user->id,
+      'permission' => Permissions::$ROOT_ADMINISTRATION,
+    ]);
+
+    if (! $permission->save()) {
+      $this->warn('Error during permission setting');
+      $user->delete();
+
+      return;
+    }
+
+    $this->info('Admin user created!');
+    $this->info('Username: "' . $username . '"');
+    $this->info('Password: "' . $randomPassword . '"');
   }
 }

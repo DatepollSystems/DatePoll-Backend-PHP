@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\BroadcastControllers;
 
 use App\Http\AuthenticatedRequest;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Abstracts\AHasYears;
 use App\Logging;
 use App\Models\Broadcasts\BroadcastAttachment;
 use App\Permissions;
@@ -20,28 +20,22 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Http\Redirector;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class BroadcastController extends Controller {
-  protected IBroadcastRepository $broadcastRepository;
-  protected IBroadcastAttachmentRepository $broadcastAttachmentRepository;
-  protected ISettingRepository $settingsRepository;
-
-  public function __construct(
-    IBroadcastRepository $broadcastRepository,
-    ISettingRepository $settingRepository,
-    IBroadcastAttachmentRepository $broadcastAttachmentRepository
-  ) {
-    $this->broadcastRepository = $broadcastRepository;
-    $this->settingsRepository = $settingRepository;
-    $this->broadcastAttachmentRepository = $broadcastAttachmentRepository;
-  }
+class BroadcastController extends AHasYears {
 
   /**
-   * @return JsonResponse
+   * BroadcastController constructor.
+   * @param IBroadcastRepository $broadcastRepository
+   * @param ISettingRepository $settingRepository
+   * @param IBroadcastAttachmentRepository $broadcastAttachmentRepository
    */
-  public function getAll(): JsonResponse {
-    return response()->json([
-      'msg' => 'List of all broadcasts',
-      'broadcasts' => $this->broadcastRepository->getAllBroadcastsOrderedByDate(),]);
+  public function __construct(
+    protected IBroadcastRepository $broadcastRepository,
+    protected ISettingRepository $settingRepository,
+    protected IBroadcastAttachmentRepository $broadcastAttachmentRepository
+  ) {
+    parent::__construct($this->broadcastRepository);
+    $this->YEARS_CACHE_KEY = 'broadcasts.years';
+    $this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY = 'broadcasts.ordered.date.year.';
   }
 
   /**
@@ -187,7 +181,7 @@ class BroadcastController extends Controller {
    * @param string $token
    * @return RedirectResponse|Redirector|BinaryFileResponse
    */
-  public function attachmentDownload(string $token): BinaryFileResponse|Redirector|RedirectResponse {
+  public function attachmentDownload(string $token): BinaryFileResponse | Redirector | RedirectResponse {
     $attachment = $this->broadcastAttachmentRepository->getAttachmentByToken($token);
 
     if ($attachment == null) {

@@ -18,11 +18,6 @@ use Exception;
 /**
  * Class SendEmailJob
  * @package App\Jobs
- * @property Event $event
- * @property IEventRepository $eventRepository
- * @property IEventDateRepository $eventDateRepository
- * @property IUserSettingRepository $userSettingRepository
- * @property ISettingRepository $settingRepository
  */
 class CreateNewEventEmailsJob extends Job {
   /**

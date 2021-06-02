@@ -105,7 +105,7 @@ class User extends Model {
    * @return bool
    */
   public function hasEmailAddresses(): bool {
-    return (ArrayHelper::getCount($this->emailAddresses()) > 0);
+    return (ArrayHelper::getSize($this->emailAddresses()) > 0);
   }
 
   /**

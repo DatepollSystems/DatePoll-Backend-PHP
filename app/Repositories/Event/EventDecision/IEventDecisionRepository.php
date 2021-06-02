@@ -26,13 +26,18 @@ interface IEventDecisionRepository {
   public function createOrUpdateEventDecision(Event $event, string $decision, bool $showInCalendar, string $color, EventDecision $eventDecision = null): ?EventDecision;
 
   /**
+   * @param int $id
+   * @return EventDecision[]
+   */
+  public function getEventDecisionsByEventId(int $id): array;
+
+  /**
    * @param User $user
    * @param Event $event
-   * @param bool $anonymous
    * @return array
    */
   #[ArrayShape(['id' => "int|null", 'firstname' => "null|string", 'surname' => "null|string",
                 'decisionId' => "mixed", 'decision' => "mixed",
                 'additional_information' => "mixed"])]
-  public function getDecisionForUser(User $user, Event $event, $anonymous = true): array;
+  public function getDecisionForUser(User $user, Event $event): array;
 }

@@ -224,7 +224,7 @@ class EventGroupController extends Controller {
     $eventForSubgroups = EventForSubgroup::where('event_id', $id)->get();
     foreach ($eventForSubgroups as $eventForSubgroup) {
       $subgroup = $eventForSubgroup->subgroup;
-      $subgroup['group_name'] = $subgroup->group()->name;
+      $subgroup['group_name'] = $subgroup->getGroup()->name;
       $subgroupsToReturn[] = $subgroup;
     }
 

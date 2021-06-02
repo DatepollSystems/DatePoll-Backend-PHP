@@ -58,7 +58,7 @@ class MovieWorkerController extends Controller {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+    if (DateHelper::firstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
       DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
       return $this->movieAlreadyShownResponse();
     }
@@ -88,7 +88,7 @@ class MovieWorkerController extends Controller {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+    if (DateHelper::firstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
       DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
       return $this->movieAlreadyShownResponse();
     }
@@ -122,7 +122,7 @@ class MovieWorkerController extends Controller {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+    if (DateHelper::firstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
       DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
       return $this->movieAlreadyShownResponse();
     }
@@ -152,7 +152,7 @@ class MovieWorkerController extends Controller {
       return response()->json(['msg' => 'Movie not found', 'error_code' => 'movie_not_found'], 404);
     }
 
-    if (DateHelper::ifFirstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
+    if (DateHelper::firstTimestampIsAfterSecondOne(DateHelper::removeDayFromUnixTimestamp(),
       DateHelper::convertStringDateToUnixTimestamp($movie->date . ' 20:00:00'))) {
       return $this->movieAlreadyShownResponse();
     }

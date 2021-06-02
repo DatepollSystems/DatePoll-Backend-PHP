@@ -3,6 +3,7 @@
 namespace App\Repositories\Broadcast\BroadcastAttachment;
 
 use App\Models\Broadcasts\BroadcastAttachment;
+use App\Utils\DateHelper;
 use App\Utils\Generator;
 use Exception;
 use Illuminate\Support\Facades\Storage;
@@ -49,15 +50,11 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
    * @return BroadcastAttachment[]
    */
   public function getAttachmentsOlderThanDayWithoutBroadcastId(int $olderThanDay = 1): array {
-    $rAttachments = [];
-    $attachments = BroadcastAttachment::where('broadcast_id', '=', null)->get();
-    foreach ($attachments as $attachment) {
-      if (strtotime('-' . $olderThanDay . ' day') > strtotime($attachment->created_at)) {
-        $rAttachments[] = $attachment;
-      }
-    }
-
-    return $rAttachments;
+    return BroadcastAttachment::where(
+      'created_at',
+      '<',
+      DateHelper::removeDayFromDateFormatted(DateHelper::getCurrentDateFormatted(), $olderThanDay)
+    )->get()->all();
   }
 
   /**

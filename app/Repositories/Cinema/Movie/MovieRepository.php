@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
 
 class MovieRepository implements IMovieRepository {
-
   public function __construct(protected IUserSettingRepository $userSettingRepository) {
   }
 
@@ -26,9 +25,9 @@ class MovieRepository implements IMovieRepository {
   /**
    * @return int[]
    */
-  public function getYearsOfMovies(): array {
+  public function getYears(): array {
     return ArrayHelper::getPropertyArrayOfObjectArray(
-      DB::table('movies')->orderBy('date')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
+      DB::table('movies')->orderBy('date', 'DESC')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
       'year'
     );
   }
@@ -37,7 +36,7 @@ class MovieRepository implements IMovieRepository {
    * @param int|null $year
    * @return Movie[]
    */
-  public function getAllMoviesOrderedByDate(int $year = null): array {
+  public function getDataOrderedByDate(int $year = null): array {
     if ($year != null) {
       return Movie::whereYear('date', '=', $year)->orderBy('date')->get()->all();
     }
@@ -135,7 +134,7 @@ class MovieRepository implements IMovieRepository {
    * @param int $userId
    * @return array
    */
-  #[ArrayShape(["id" => "int", 'name' => "string", 'date' => "string", 'trailer_link' => "string", 'poster_link' => "string", 'booked_tickets' => "int", 'movie_year_id' => "int", 'created_at' => "string", 'updated_at' => "string", 'booked_tickets_for_yourself' => 'int'])]
+  #[ArrayShape(['id' => 'int', 'name' => 'string', 'date' => 'string', 'trailer_link' => 'string', 'poster_link' => 'string', 'booked_tickets' => 'int', 'movie_year_id' => 'int', 'created_at' => 'string', 'updated_at' => 'string', 'booked_tickets_for_yourself' => 'int'])]
   public function getNotShownMoviesForUser(int $userId): array {
     $date = DateHelper::removeDayFromDateFormatted(DateHelper::getCurrentDateFormatted(), 1);
 
@@ -146,13 +145,13 @@ class MovieRepository implements IMovieRepository {
 
       if ($movie->worker_id == null) {
         $returnable[Movie::$workerNumberProperty] = [];
-      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
+      } elseif (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
         $returnable[Movie::$workerNumberProperty] = [];
       }
 
       if ($movie->emergency_worker_id == null) {
         $returnable[Movie::$emergencyWorkerNumberProperty] = [];
-      } else if (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->emergency_worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
+      } elseif (! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($movie->emergency_worker_id) || ! $this->userSettingRepository->getShareMovieWorkerPhoneNumber($userId)) {
         $returnable[Movie::$emergencyWorkerNumberProperty] = [];
       }
 

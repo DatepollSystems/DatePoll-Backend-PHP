@@ -3,25 +3,18 @@
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
+use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
-interface IMovieRepository {
+/**
+ * @extends IHasYearsRepository<Movie>
+ */
+interface IMovieRepository extends IHasYearsRepository {
   /**
    * @param int $id
    * @return Movie|null
    */
   public function getMovieById(int $id): ?Movie;
-
-  /**
-   * @return int[]
-   */
-  public function getYearsOfMovies(): array;
-
-  /**
-   * @param int|null $year
-   * @return Movie[]
-   */
-  public function getAllMoviesOrderedByDate(int $year = null): array;
 
   /**
    * @param string $name
