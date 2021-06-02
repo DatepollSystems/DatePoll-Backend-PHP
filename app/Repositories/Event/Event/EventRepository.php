@@ -260,7 +260,7 @@ class EventRepository implements IEventRepository {
   public function getOpenEventsForUser(User $user): array {
     $events = [];
 
-    $date = date('Y-m-d H:i:s');
+    $date = DateHelper::getCurrentDateFormatted();
     $eventIdsResult = DB::table('event_dates')->where(
       'date',
       '>',
@@ -279,10 +279,10 @@ class EventRepository implements IEventRepository {
           '=',
           'users_member_of_groups.group_id'
         )->where(
-            'events_for_groups.event_id',
-            '=',
-            $event->id
-          )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+          'events_for_groups.event_id',
+          '=',
+          $event->id
+        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
 
         $inSubgroup = DB::table('events_for_subgroups')->join(
           'users_member_of_subgroups',
@@ -290,10 +290,10 @@ class EventRepository implements IEventRepository {
           '=',
           'users_member_of_subgroups.subgroup_id'
         )->where(
-            'events_for_subgroups.event_id',
-            '=',
-            $event->id
-          )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+          'events_for_subgroups.event_id',
+          '=',
+          $event->id
+        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
       }
 
       if ($event->forEveryone || $inGroup || $inSubgroup) {

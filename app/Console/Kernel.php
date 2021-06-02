@@ -3,12 +3,11 @@
 namespace App\Console;
 
 use App\Console\Commands\AddAdminUser;
-use App\Console\Commands\DatePollClearUp;
+use App\Console\Commands\DatePollCleanUp;
 use App\Console\Commands\DropDatabase;
 use App\Console\Commands\ProcessBroadcastEmailsInInbox;
 use App\Console\Commands\ReQueueNotSentBroadcasts;
 use App\Console\Commands\SetupDatePoll;
-use App\Console\Commands\TestSomething;
 use App\Console\Commands\UpdateDatePollDB;
 use App\Utils\EnvironmentHelper;
 use Illuminate\Console\Scheduling\Schedule;
@@ -27,8 +26,7 @@ class Kernel extends ConsoleKernel {
     UpdateDatePollDB::class,
     ReQueueNotSentBroadcasts::class,
     ProcessBroadcastEmailsInInbox::class,
-    DatePollClearUp::class,
-    TestSomething::class,
+    DatePollCleanUp::class,
   ];
 
   /**
@@ -43,6 +41,6 @@ class Kernel extends ConsoleKernel {
     } else {
       $schedule->command(ProcessBroadcastEmailsInInbox::class)->everyFourMinutes();
     }
-    $schedule->command(DatePollClearUp::class, ['--force'])->daily();
+    $schedule->command(DatePollCleanUp::class, ['--force'])->daily();
   }
 }
