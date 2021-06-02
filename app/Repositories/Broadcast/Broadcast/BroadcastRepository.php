@@ -24,7 +24,6 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 
 class BroadcastRepository implements IBroadcastRepository {
-
   public function __construct(
     protected ISettingRepository $settingRepository,
     protected IGroupRepository $groupRepository,
@@ -36,11 +35,25 @@ class BroadcastRepository implements IBroadcastRepository {
   }
 
   /**
+   * @return int[]
+   */
+  public function getYears(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray(
+      DB::table('broadcasts')->orderBy('created_at', 'DESC')->selectRaw('YEAR(created_at) as year')->get()->unique()->values()->toArray(),
+      'year'
+    );
+  }
+
+  /**
+   * @param int|null $year
    * @return Broadcast[]
    */
-  public function getAllBroadcastsOrderedByDate(): array {
-    return Broadcast::orderBy('created_at', 'DESC')
-      ->get()->all();
+  public function getDataOrderedByDate(int $year = null): array {
+    if ($year != null) {
+      return Broadcast::whereYear('created_at', '=', $year)->orderBy('created_at', 'DESC')->get()->all();
+    }
+
+    return Broadcast::orderBy('created_at', 'DESC')->get()->all();
   }
 
   /**
@@ -200,7 +213,8 @@ class BroadcastRepository implements IBroadcastRepository {
     if ($writer == null) {
       Logging::error(
         'createBroadcast',
-        'Broadcast failed to create! Writer id is null');
+        'Broadcast failed to create! Writer id is null'
+      );
       $broadcast->delete();
 
       return null;
@@ -237,8 +251,12 @@ class BroadcastRepository implements IBroadcastRepository {
           $DatePollAddress,
           $mAttachments
         );
-        $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $user->getEmailAddresses(), $user->id,
-          $broadcast->id);
+        $sendEmailJob = new SendBroadcastEmailJob(
+          $broadcastMail,
+          $user->getEmailAddresses(),
+          $user->id,
+          $broadcast->id
+        );
 
         QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
       }
@@ -292,8 +310,12 @@ class BroadcastRepository implements IBroadcastRepository {
         $DatePollAddress,
         $mAttachments
       );
-      $sendEmailJob = new SendBroadcastEmailJob($broadcastMail, $broadcastUserInfo->user()->getEmailAddresses(),
-        $broadcast->id, $broadcastUserInfo->user()->id);
+      $sendEmailJob = new SendBroadcastEmailJob(
+        $broadcastMail,
+        $broadcastUserInfo->user()->getEmailAddresses(),
+        $broadcast->id,
+        $broadcastUserInfo->user()->id
+      );
 
       QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
     }
@@ -339,7 +361,6 @@ class BroadcastRepository implements IBroadcastRepository {
     }
 
     return $broadcasts;
-
   }
 
   /**
@@ -364,8 +385,8 @@ class BroadcastRepository implements IBroadcastRepository {
    */
   public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId): bool {
     return BroadcastUserInfo::where('user_id', '=', $userId)
-        ->where('broadcast_id', '=', $broadcastId)
-        ->orderBy('created_at', 'DESC')
-        ->first() != null;
+      ->where('broadcast_id', '=', $broadcastId)
+      ->orderBy('created_at', 'DESC')
+      ->first() != null;
   }
 }

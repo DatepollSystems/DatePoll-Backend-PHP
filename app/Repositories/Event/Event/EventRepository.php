@@ -43,7 +43,7 @@ class EventRepository implements IEventRepository {
    */
   public function getYears(): array {
     return ArrayHelper::getPropertyArrayOfObjectArray(
-      DB::table('event_dates')->orderBy('date')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
+      DB::table('event_dates')->orderBy('date', 'DESC')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
       'year'
     );
   }

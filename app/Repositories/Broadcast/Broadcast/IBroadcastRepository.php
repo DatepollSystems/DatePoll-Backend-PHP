@@ -3,14 +3,10 @@
 namespace App\Repositories\Broadcast\Broadcast;
 
 use App\Models\Broadcasts\Broadcast;
+use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
-interface IBroadcastRepository {
-
-  /**
-   * @return Broadcast[]
-   */
-  public function getAllBroadcastsOrderedByDate(): array;
+interface IBroadcastRepository extends IHasYearsRepository {
 
   /**
    * @param int $id

@@ -20,8 +20,8 @@ class MovieController extends AHasYears {
     protected UserRepository $userRepository
   ) {
     parent::__construct($this->movieRepository);
-    $this->YEARS_CACHE_KEY = 'movie.years';
-    $this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY = 'movie.ordered.date.years.';
+    $this->YEARS_CACHE_KEY = 'movies.years';
+    $this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY = 'movies.ordered.date.year.';
   }
 
   /**
@@ -54,7 +54,7 @@ class MovieController extends AHasYears {
     }
     Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
     Cache::forget($this->YEARS_CACHE_KEY);
-    Cache::forget($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+    Cache::forget($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     return response()->json([
       'msg' => 'Movie created',
@@ -147,7 +147,7 @@ class MovieController extends AHasYears {
     }
     Logging::info('updateMovie', 'User - ' . $request->auth->id . ' | Movie updated - ' . $movie->id);
     Cache::forget($this->YEARS_CACHE_KEY);
-    Cache::forget($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+    Cache::forget($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     return response()->json([
       'msg' => 'Movie updated',
@@ -169,7 +169,7 @@ class MovieController extends AHasYears {
     }
 
     Cache::forget($this->YEARS_CACHE_KEY);
-    Cache::forget($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
+    Cache::forget($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . DateHelper::getYearOfDate($movie->date));
 
     if (! $this->movieRepository->deleteMovie($movie)) {
       Logging::error('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Could not delete movie');

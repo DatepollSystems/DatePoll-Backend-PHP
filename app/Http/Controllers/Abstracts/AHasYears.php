@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 
 abstract class AHasYears extends Controller implements IHasYears {
   protected string $YEARS_CACHE_KEY = '';
-  protected ?string $MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY = null;
+  protected ?string $DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY = null;
   protected bool $debug = false;
 
   /**
@@ -49,8 +49,8 @@ abstract class AHasYears extends Controller implements IHasYears {
       $iYear = Converter::stringToInteger($year);
     }
 
-    if (StringHelper::notNull($this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY)) {
-      $cacheKey = $this->MOVIES_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . Converter::integerToString($iYear);
+    if (! $this->debug && StringHelper::notNull($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY)) {
+      $cacheKey = $this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . Converter::integerToString($iYear);
       if (Cache::has($cacheKey)) {
         $data = Cache::get($cacheKey);
       } else {

@@ -27,7 +27,7 @@ class MovieRepository implements IMovieRepository {
    */
   public function getYears(): array {
     return ArrayHelper::getPropertyArrayOfObjectArray(
-      DB::table('movies')->orderBy('date')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
+      DB::table('movies')->orderBy('date', 'DESC')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
       'year'
     );
   }

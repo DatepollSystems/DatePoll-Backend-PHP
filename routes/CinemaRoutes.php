@@ -24,7 +24,6 @@ $router->group(['prefix' => 'cinema', 'middleware' => [CinemaFeatureMiddleware::
       'middleware' => [CinemaPermissionMiddleware::class], ],
     function () use ($router) {
       /** Movie routes */
-      $router->get('movie', ['uses' => 'CinemaControllers\MovieController@getMoviesOrderedByDate']);
       $router->get('movie/years', ['uses' => 'CinemaControllers\MovieController@getYears']);
       $router->get('movie/{year}', ['uses' => 'CinemaControllers\MovieController@getDataOrderedByDate']);
       $router->post('movie', ['uses' => 'CinemaControllers\MovieController@create']);
