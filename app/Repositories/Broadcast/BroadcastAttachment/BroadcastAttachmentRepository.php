@@ -50,7 +50,7 @@ class BroadcastAttachmentRepository implements IBroadcastAttachmentRepository {
    * @return BroadcastAttachment[]
    */
   public function getAttachmentsOlderThanDayWithoutBroadcastId(int $olderThanDay = 1): array {
-    return BroadcastAttachment::where(
+    return BroadcastAttachment::where('broadcast_id', '=', null)->where(
       'created_at',
       '<',
       DateHelper::removeDayFromDateFormatted(DateHelper::getCurrentDateFormatted(), $olderThanDay)
