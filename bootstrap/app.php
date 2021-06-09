@@ -4,8 +4,6 @@ use App\Console\Kernel as AppKernel;
 use App\Exceptions\Handler;
 use App\Http\Middleware\JwtMiddleware;
 use App\Providers\AppServiceProvider;
-use App\Utils\EnvironmentHelper;
-use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Dotenv\Exception\InvalidPathException;
 use Fruitcake\Cors\CorsServiceProvider;
 use Fruitcake\Cors\HandleCors;
@@ -62,24 +60,6 @@ $app->register(AppServiceProvider::class);
 $app->register(CorsServiceProvider::class);
 $app->configure('cors');
 $app->middleware([HandleCors::class]);
-
-if (EnvironmentHelper::isDebug()) {
-  /** IDE Helper */
-  $app->register(IdeHelperServiceProvider::class);
-
-  DB::listen(function ($sql) {
-    if ($sql instanceof Illuminate\Database\Events\QueryExecuted) {
-      Log::info($sql->sql);
-      Log::info(json_encode($sql->bindings, JSON_THROW_ON_ERROR));
-    }
-  });
-
-  DB::listen(
-    function ($query) {
-      Log::info($query->sql);
-    }
-  );
-}
 
 /** Redis and Horizon */
 $app->register(RedisServiceProvider::class);

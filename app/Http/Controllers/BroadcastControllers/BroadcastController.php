@@ -185,10 +185,10 @@ class BroadcastController extends AHasYears {
     $attachment = $this->broadcastAttachmentRepository->getAttachmentByToken($token);
 
     if ($attachment == null) {
-      return redirect($this->settingsRepository->getUrl() . '/not-found');
+      return redirect($this->settingRepository->getUrl() . '/not-found');
     }
 
-    $path = storage_path('app/' . $attachment->path);
+    $path = Storage::disk('local')->path($attachment->path);
     $type = File::mimeType($path);
     $headers = ['Content-Type' => $type];
     $response = response()->download($path, $attachment->name, $headers);

@@ -37,12 +37,12 @@ abstract class ArrayHelper {
   }
 
   /**
-   * @param array $array
+   * @param array|null $array
    * @return int
    */
   #[Pure]
-  public static function getSize(array $array): int {
-    return count($array);
+  public static function getSize(?array $array): int {
+    return $array ? count($array) : 0;
   }
 
   /**
