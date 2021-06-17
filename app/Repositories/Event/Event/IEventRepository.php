@@ -29,20 +29,11 @@ interface IEventRepository extends IHasYearsRepository {
    * @param string $description
    * @param array $decisions
    * @param array $dates
-   * @param int[] $linkedBroadcasts
    * @param Event|null $event
    * @return Event|null
    * @throws Exception
    */
-  public function createOrUpdateEvent(
-    string $name,
-    bool $forEveryone,
-    string $description,
-    array $decisions,
-    array $dates,
-    array $linkedBroadcasts,
-    Event $event = null
-  ): ?Event;
+  public function createOrUpdateEvent(string $name, bool $forEveryone, string $description, array $decisions, array $dates, Event $event = null): ?Event;
 
   /**
    * @param Event $event
