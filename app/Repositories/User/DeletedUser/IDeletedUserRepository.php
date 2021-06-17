@@ -17,5 +17,10 @@ interface IDeletedUserRepository {
    */
   public function deleteUser(User $user): bool;
 
-  public function deleteAllDeletedUsers();
+  /**
+   * @param int $id
+   */
+  public function deleteSingleDeletedUser(int $id): void;
+
+  public function deleteAllDeletedUsers(): void;
 }

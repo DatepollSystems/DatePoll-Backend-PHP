@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection DisconnectedForeachInstructionInspection */
 
 namespace App\Repositories\Event\Event;
 
@@ -20,7 +20,8 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
-class EventRepository implements IEventRepository {
+class EventRepository extends AHasYearsRepository implements IEventRepository {
+  #[Pure]
   public function __construct(
     protected IUserRepository $userRepository,
     protected IEventDateRepository $eventDateRepository,
@@ -29,6 +30,7 @@ class EventRepository implements IEventRepository {
     protected ISettingRepository $settingRepository,
     protected IGroupRepository $groupRepository
   ) {
+    parent::__construct('event_dates');
   }
 
   /**
@@ -36,16 +38,6 @@ class EventRepository implements IEventRepository {
    */
   public function getAllEvents(): array {
     return Event::all()->all();
-  }
-
-  /**
-   * @return int[]
-   */
-  public function getYears(): array {
-    return ArrayHelper::getPropertyArrayOfObjectArray(
-      DB::table('event_dates')->orderBy('date', 'DESC')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
-      'year'
-    );
   }
 
   /**
@@ -61,7 +53,7 @@ class EventRepository implements IEventRepository {
     $events = [];
 
     $eventIdsResult = $query->orderBy('date')->get(['event_id', 'date'])->unique('event_id')->all();
-    // DO NOT EVER use Event::find(Array) because it messes with the orderBy
+    // DO NOT EVER use Event::find(Array) because it messes with the order
     foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'event_id') as $eventId) {
       $events[] = $this->getEventById($eventId);
     }
@@ -128,8 +120,7 @@ class EventRepository implements IEventRepository {
       $toDelete = true;
 
       foreach ($decisions as $decision) {
-        $decisionObject = (object)$decision;
-        if ($oldDecision->id == $decisionObject->id) {
+        if ($oldDecision->id == $decision['id']) {
           $toDelete = false;
           $decisionsWhichHaveNotBeenDeleted[] = $oldDecision;
           break;
@@ -146,11 +137,10 @@ class EventRepository implements IEventRepository {
     }
 
     foreach ($decisions as $decision) {
-      $decisionObject = (object)$decision;
       $decisionInDatabaseObject = null;
 
       foreach ($decisionsWhichHaveNotBeenDeleted as $decisionWhichHaveNotBeenDeleted) {
-        if ($decisionObject->id == $decisionWhichHaveNotBeenDeleted->id) {
+        if ($decision['id'] == $decisionWhichHaveNotBeenDeleted->id) {
           $decisionInDatabaseObject = $decisionWhichHaveNotBeenDeleted;
           break;
         }
@@ -158,9 +148,9 @@ class EventRepository implements IEventRepository {
 
       if ($this->eventDecisionRepository->createOrUpdateEventDecision(
         $event,
-        $decisionObject->decision,
-        $decisionObject->show_in_calendar,
-        $decisionObject->color,
+        $decision['decision'],
+        $decision['show_in_calendar'],
+        $decision['color'],
         $decisionInDatabaseObject
       ) == null) {
         $this->deleteEvent($event);
@@ -169,15 +159,15 @@ class EventRepository implements IEventRepository {
         return null;
       }
     }
+    //endregion
 
-    //-------------------------------- Only delete changed dates --------------------------------------
+    //region Check dates
     $datesWhichHaveNotBeenDeleted = [];
     foreach ($event->eventDates as $oldDate) {
       $toDelete = true;
 
       foreach ($dates as $date) {
-        $dateObject = (object)$date;
-        if ($oldDate->id == $dateObject->id) {
+        if ($oldDate->id == $date['id']) {
           $toDelete = false;
           $datesWhichHaveNotBeenDeleted[] = $oldDate;
           break;
@@ -194,11 +184,10 @@ class EventRepository implements IEventRepository {
     }
 
     foreach ($dates as $date) {
-      $dateObject = (object)$date;
       $toAdd = true;
 
       foreach ($datesWhichHaveNotBeenDeleted as $dateWhichHasNotBeenDeleted) {
-        if ($dateObject->id == $dateWhichHasNotBeenDeleted->id) {
+        if ($date['id'] == $dateWhichHasNotBeenDeleted->id) {
           $toAdd = false;
           break;
         }
@@ -207,11 +196,11 @@ class EventRepository implements IEventRepository {
       if ($toAdd) {
         if ($this->eventDateRepository->createEventDate(
           $event,
-          $dateObject->x,
-          $dateObject->y,
-          $dateObject->date,
-          $dateObject->location,
-          $dateObject->description
+          $date['x'],
+          $date['y'],
+          $date['date'],
+          $date['location'],
+          $date['description']
         ) == null) {
           $this->deleteEvent($event);
           Logging::error('createOrUpdateEvent', 'Could not add new event date');
@@ -220,7 +209,7 @@ class EventRepository implements IEventRepository {
         }
       }
     }
-    // ----------------------------------------------------------------------------------------------------
+    //endregion
 
     Logging::info('createOrUpdateEvent', 'Successfully created or updated event ' . $event->id);
 
@@ -279,10 +268,10 @@ class EventRepository implements IEventRepository {
           '=',
           'users_member_of_groups.group_id'
         )->where(
-          'events_for_groups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+            'events_for_groups.event_id',
+            '=',
+            $event->id
+          )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
 
         $inSubgroup = DB::table('events_for_subgroups')->join(
           'users_member_of_subgroups',
@@ -290,10 +279,10 @@ class EventRepository implements IEventRepository {
           '=',
           'users_member_of_subgroups.subgroup_id'
         )->where(
-          'events_for_subgroups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+            'events_for_subgroups.event_id',
+            '=',
+            $event->id
+          )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
       }
 
       if ($event->forEveryone || $inGroup || $inSubgroup) {
@@ -316,6 +305,7 @@ class EventRepository implements IEventRepository {
     $results['anonymous'] = $anonymous;
 
     if ($event->forEveryone) {
+      //region Event for everyone
       $groups = [];
 
       foreach ($this->groupRepository->getAllGroupsOrdered() as $group) {
@@ -334,33 +324,21 @@ class EventRepository implements IEventRepository {
             $subgroupResultUsers[] = $this->eventDecisionRepository->getDecisionForUser($sUser, $event);
           }
 
-          if ($calculateCharts) {
-            $chart = $this->calculateChart($eventDecisions, $subgroupResultUsers);
-          } else {
-            $chart = null;
-          }
-          /** @noinspection DisconnectedForeachInstructionInspection */
-          if ($anonymous) {
-            $subgroupResultUsers = null;
-          }
-
-          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name, 'users' => $subgroupResultUsers,
-            'chart' => $chart,
-            'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id, ];
+          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name,
+            'users' => $anonymous ? [] : $subgroupResultUsers,
+            'chart' => $calculateCharts ? $this->calculateChart(
+              $eventDecisions,
+              $subgroupResultUsers
+            ) : [],
+            'parent_group_name' => $subgroup->getGroup()->name,
+            'parent_group_id' => $subgroup->group_id,];
         }
 
-        if ($calculateCharts) {
-          $chart = $this->calculateChart($eventDecisions, $groupResultUsers);
-        } else {
-          $chart = null;
-        }
-        /** @noinspection DisconnectedForeachInstructionInspection */
-        if ($anonymous) {
-          $groupResultUsers = null;
-        }
-
-        $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers, 'chart' => $chart,
-          'subgroups' => $subgroups, ];
+        $groups[] = ['id' => $group->id,
+          'name' => $group->name,
+          'users' => $anonymous ? [] : $groupResultUsers,
+          'chart' => $calculateCharts ? $this->calculateChart($eventDecisions, $groupResultUsers) : [],
+          'subgroups' => $subgroups,];
       }
 
       $results['groups'] = $groups;
@@ -369,6 +347,7 @@ class EventRepository implements IEventRepository {
       foreach ($this->userRepository->getAllUsersOrderedBySurname() as $user) {
         $allUsers[] = $this->eventDecisionRepository->getDecisionForUser($user, $event);
       }
+      //endregion
     } else {
       $allUsers = [];
       $allUserIds = [];
@@ -399,37 +378,27 @@ class EventRepository implements IEventRepository {
             }
           }
 
-          if ($calculateCharts) {
-            $chart = $this->calculateChart($eventDecisions, $subgroupResultUsers);
-          } else {
-            $chart = null;
-          }
-          /** @noinspection DisconnectedForeachInstructionInspection */
-          if ($anonymous) {
-            $subgroupResultUsers = null;
-          }
-
-          $subgroupToSave = ['id' => $subgroup->id, 'name' => $subgroup->name,
+          $subgroupToSave = ['id' => $subgroup->id,
+            'name' => $subgroup->name,
             'parent_group_name' => $subgroup->getGroup()->name,
             'parent_group_id' => $subgroup->group_id,
-            'users' => $subgroupResultUsers, 'chart' => $chart, ];
+            'users' => $anonymous ? [] : $subgroupResultUsers,
+            'chart' => $calculateCharts ? $this->calculateChart(
+              $eventDecisions,
+              $subgroupResultUsers
+            ) : [],];
           $subgroups[] = $subgroupToSave;
           $allSubgroupsIds[] = $subgroup->id;
         }
-        if ($calculateCharts) {
-          $chart = $this->calculateChart($eventDecisions, $groupResultUsers);
-        } else {
-          $chart = null;
-        }
-        /** @noinspection DisconnectedForeachInstructionInspection */
-        if ($anonymous) {
-          $groupResultUsers = null;
-        }
 
-        $groups[] = ['id' => $group->id, 'name' => $group->name, 'users' => $groupResultUsers, 'chart' => $chart,
-          'subgroups' => $subgroups, ];
+        $groups[] = ['id' => $group->id,
+          'name' => $group->name,
+          'users' => $anonymous ? [] : $groupResultUsers,
+          'chart' => $calculateCharts ? $this->calculateChart($eventDecisions, $groupResultUsers) : [],
+          'subgroups' => $subgroups,];
       }
 
+      //region Single groups for events without parent group in event
       $subgroups = [];
       foreach ($event->getSubgroupsOrdered() as $subgroup) {
         if (ArrayHelper::notInArray($allSubgroupsIds, $subgroup->id)) {
@@ -443,35 +412,27 @@ class EventRepository implements IEventRepository {
             }
           }
 
-          if ($calculateCharts) {
-            $chart = $this->calculateChart($eventDecisions, $subgroupResultUsers);
-          } else {
-            $chart = null;
-          }
-          if ($anonymous) {
-            $subgroupResultUsers = null;
-          }
-
-          $subgroups[] = ['id' => $subgroup->id, 'name' => $subgroup->name,
-            'parent_group_name' => $subgroup->getGroup()->name, 'parent_group_id' => $subgroup->group_id,
-            'users' => $subgroupResultUsers, 'chart' => $chart, ];
+          $subgroups[] = ['id' => $subgroup->id,
+            'name' => $subgroup->name,
+            'parent_group_name' => $subgroup->getGroup()->name,
+            'parent_group_id' => $subgroup->group_id,
+            'users' => $anonymous ? [] : $subgroupResultUsers,
+            'chart' => $calculateCharts ? $this->calculateChart(
+              $eventDecisions,
+              $subgroupResultUsers
+            ) : [],];
         }
       }
       // Add unknown group with single subgroups
       $groups[] = ['id' => -1, 'name' => 'unknown', 'users' => [], 'subgroups' => $subgroups];
 
+      //endregion
+
       $results['groups'] = $groups;
     }
 
-    $results['allUsers'] = $allUsers;
-
-    if ($anonymous) {
-      $results['allUsers'] = null;
-    }
-
-    if ($calculateCharts) {
-      $results['chart'] = $this->calculateChart($eventDecisions, $allUsers);
-    }
+    $results['allUsers'] = $anonymous ? [] : $allUsers;
+    $results['chart'] = $calculateCharts ? $this->calculateChart($eventDecisions, $allUsers) : [];
 
     return $results;
   }
@@ -519,7 +480,7 @@ class EventRepository implements IEventRepository {
         $chartElements[] = ['name' => $object->name,
           'percentWidth' => floor(($object->count / $votedUsersCount) * 100),
           'count' => $object->count,
-          'color' => $object->color, ];
+          'color' => $object->color,];
       }
     }
 

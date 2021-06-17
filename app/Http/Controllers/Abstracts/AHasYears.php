@@ -25,6 +25,21 @@ abstract class AHasYears extends Controller implements IHasYears {
   }
 
   /**
+   * Resets the cache
+   * @param string|null $year
+   */
+  protected function forgetCache(?string $year = null): void {
+    Cache::forget($this->YEARS_CACHE_KEY);
+    if (StringHelper::notNull($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY)) {
+      if ($year != null) {
+        Cache::forget($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY  . $year);
+      } else {
+        Cache::flush();
+      }
+    }
+  }
+
+  /**
    * @return JsonResponse
    */
   public function getYears(): JsonResponse {
@@ -50,7 +65,7 @@ abstract class AHasYears extends Controller implements IHasYears {
     }
 
     if (! $this->debug && StringHelper::notNull($this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY)) {
-      $cacheKey = $this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . Converter::integerToString($iYear);
+      $cacheKey = $this->DATA_ORDERED_BY_DATE_WITH_YEAR_CACHE_KEY . $year;
       if (Cache::has($cacheKey)) {
         $data = Cache::get($cacheKey);
       } else {

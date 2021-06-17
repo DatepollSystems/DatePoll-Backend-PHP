@@ -53,6 +53,10 @@ $router->group([
           'deleted/users',
           ['uses' => 'ManagementControllers\DeletedUsersController@deleteAllDeletedUsers']
         );
+        $router->delete(
+          'deleted/users/{id}',
+          ['uses' => 'ManagementControllers\DeletedUsersController@deleteSingleDeletedUsers']
+        );
       });
 
   }

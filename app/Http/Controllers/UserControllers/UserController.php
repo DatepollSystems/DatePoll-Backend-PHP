@@ -16,15 +16,16 @@ use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class UserController extends Controller {
-
   public static string $MYSELF_CACHE_KEY = 'user.myself.';
 
-  public function __construct(protected IUserRepository $userRepository,
-                              protected IUserChangeRepository $userChangeRepository,
-                              protected ISettingRepository $settingRepository,
-                              protected IEventRepository $eventRepository,
-                              protected IBroadcastRepository $broadcastRepository,
-                              protected IUserSettingRepository $userSettingRepository) {
+  public function __construct(
+    protected IUserRepository $userRepository,
+    protected IUserChangeRepository $userChangeRepository,
+    protected ISettingRepository $settingRepository,
+    protected IEventRepository $eventRepository,
+    protected IBroadcastRepository $broadcastRepository,
+    protected IUserSettingRepository $userSettingRepository
+  ) {
   }
 
   /**
@@ -142,23 +143,23 @@ class UserController extends Controller {
 
     $broadcastsToShow = [];
     if ($this->settingRepository->getBroadcastsEnabled()) {
-      $broadcastsToShow = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 3);
+      $broadcastsToShow = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 7);
     }
 
     $users = $this->userRepository->getUsersWhichShareBirthday();
     $birthdaysToShow = [];
     foreach ($users as $user) {
-        $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
-        $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
-        $birthdayMonthDay = date('m-d', strtotime($user->birthday));
-        if ($remTimeDate < $birthdayMonthDay && $birthdayMonthDay < $addTimeDate) {
-          $birthdayToShow = [];
+      $addTimeDate = date('m-d', strtotime('+15 days', strtotime(date('Y-m-d'))));
+      $remTimeDate = date('m-d', strtotime('-1 days', strtotime(date('Y-m-d'))));
+      $birthdayMonthDay = date('m-d', strtotime($user->birthday));
+      if ($remTimeDate < $birthdayMonthDay && $birthdayMonthDay < $addTimeDate) {
+        $birthdayToShow = [];
 
-          $birthdayToShow['name'] = $user->getCompleteName();
-          $birthdayToShow['date'] = $user->birthday;
+        $birthdayToShow['name'] = $user->getCompleteName();
+        $birthdayToShow['date'] = $user->birthday;
 
-          $birthdaysToShow[] = $birthdayToShow;
-        }
+        $birthdaysToShow[] = $birthdayToShow;
+      }
     }
 
     usort($birthdaysToShow, static function ($a, $b) {

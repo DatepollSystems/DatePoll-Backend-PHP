@@ -13,6 +13,7 @@ use App\Models\User\User;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\Group\Subgroup\ISubgroupRepository;
+use App\Repositories\Interfaces\AHasYearsRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\UserSettingRepository;
@@ -22,8 +23,10 @@ use App\Utils\EnvironmentHelper;
 use App\Utils\QueueHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\Pure;
 
-class BroadcastRepository implements IBroadcastRepository {
+class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepository {
+  #[Pure]
   public function __construct(
     protected ISettingRepository $settingRepository,
     protected IGroupRepository $groupRepository,
@@ -32,16 +35,7 @@ class BroadcastRepository implements IBroadcastRepository {
     protected IUserRepository $userRepository,
     protected UserSettingRepository $userSettingRepository
   ) {
-  }
-
-  /**
-   * @return int[]
-   */
-  public function getYears(): array {
-    return ArrayHelper::getPropertyArrayOfObjectArray(
-      DB::table('broadcasts')->orderBy('created_at', 'DESC')->selectRaw('YEAR(created_at) as year')->get()->unique()->values()->toArray(),
-      'year'
-    );
+    parent::__construct('broadcasts', 'created_at');
   }
 
   /**

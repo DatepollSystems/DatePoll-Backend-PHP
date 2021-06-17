@@ -10,7 +10,6 @@ use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 
 class DeletedUsersController extends Controller {
-
   public function __construct(protected IDeletedUserRepository $deletedUserRepository, protected IUserRepository $userRepository) {
   }
 
@@ -47,6 +46,18 @@ class DeletedUsersController extends Controller {
     }
 
     return response()->json(['msg' => 'User deleted'], 200);
+  }
+
+  /**
+   * @param AuthenticatedRequest $request
+   * @param int $id
+   * @return JsonResponse
+   */
+  public function deleteSingleDeletedUsers(AuthenticatedRequest $request, int $id): JsonResponse {
+    Logging::info('deleteDeletedUsers', 'Deleting single deleted users... User id - ' . $request->auth->id);
+    $this->deletedUserRepository->deleteSingleDeletedUser($id);
+
+    return response()->json(['msg' => 'Deleted user successfully deleted'], 200);
   }
 
   /**
