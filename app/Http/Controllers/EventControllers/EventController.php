@@ -77,6 +77,8 @@ class EventController extends AHasYears {
       'decisions.*.decision' => 'string|min:1|max:190',
       'decisions.*.show_in_calendar' => 'required|boolean',
       'decisions.*.color' => 'required|min:1|max:7',
+      'linked_broadcasts' => 'array|nullable',
+      'linked_broadcasts.*' => 'nullable|numeric',
       'dates' => 'array|required',
       'dates.*.x' => 'nullable|numeric',
       'dates.*.y' => 'nullable|numeric',
@@ -89,8 +91,12 @@ class EventController extends AHasYears {
     $description = $request->input('description');
     $decisions = $request->input('decisions');
     $dates = $request->input('dates');
+    $linkedBroadcastIds = $request->input('linked_broadcasts');
+    if ($linkedBroadcastIds == null) {
+      $linkedBroadcastIds = [];
+    }
 
-    $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates);
+    $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates, $linkedBroadcastIds);
     if ($event == null) {
       return response()->json(['msg' => 'An error occurred during event creating.'], 500);
     }
@@ -119,6 +125,8 @@ class EventController extends AHasYears {
       'decisions.*.decision' => 'string|min:1|max:190',
       'decisions.*.show_in_calendar' => 'required|boolean',
       'decisions.*.color' => 'required|min:1|max:7',
+      'linked_broadcasts' => 'array|nullable',
+      'linked_broadcasts.*' => 'nullable|numeric',
       'dates' => 'array|required',
       'dates.*.id' => 'required|integer',
       'dates.*.x' => 'nullable|numeric',
@@ -137,8 +145,12 @@ class EventController extends AHasYears {
     $description = $request->input('description');
     $decisions = $request->input('decisions');
     $dates = $request->input('dates');
+    $linkedBroadcastIds = $request->input('linked_broadcasts');
+    if ($linkedBroadcastIds == null) {
+      $linkedBroadcastIds = [];
+    }
 
-    $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates, $event);
+    $event = $this->eventRepository->createOrUpdateEvent($name, $forEveryone, $description, $decisions, $dates, $linkedBroadcastIds, $event);
     if ($event == null) {
       return response()->json(['msg' => 'An error occurred during event updating.'], 500);
     }

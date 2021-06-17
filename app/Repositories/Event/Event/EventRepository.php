@@ -6,10 +6,12 @@ use App\Jobs\CreateNewEventEmailsJob;
 use App\Logging;
 use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
+use App\Models\Events\EventLinkedBroadcast;
 use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
 use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\Interfaces\AHasYearsRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
@@ -18,6 +20,7 @@ use App\Utils\DateHelper;
 use App\Utils\QueueHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\Pure;
 use stdClass;
 
 class EventRepository extends AHasYearsRepository implements IEventRepository {
@@ -75,6 +78,7 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
    * @param string $description
    * @param array $decisions
    * @param array $dates
+   * @param int[] $linkedBroadcasts
    * @param Event|null $event
    * @return Event|null
    * @throws Exception
@@ -85,6 +89,7 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
     string $description,
     array $decisions,
     array $dates,
+    array $linkedBroadcasts,
     Event $event = null
   ): ?Event {
     $creating = false;
@@ -113,7 +118,43 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
       }
     }
 
-    //-------------------------------- Only delete changed decisions --------------------------------------
+    //region Check linked broadcasts
+    $linkedBroadcastsWhichHaveNotBeenDeleted = [];
+
+    foreach ($event->getLinkedBroadcasts() as $oldLinkedBroadcast) {
+      $toDelete = true;
+      foreach ($linkedBroadcasts as $linkedBroadcastId) {
+        if ($linkedBroadcastId == $oldLinkedBroadcast->broadcast_id) {
+          $toDelete = false;
+          $linkedBroadcastsWhichHaveNotBeenDeleted[] = $linkedBroadcastId;
+          break;
+        }
+      }
+      if ($toDelete) {
+        DB::table('events_linked_broadcasts')->where('broadcast_id', '=', $oldLinkedBroadcast->broadcast_id)->delete();
+      }
+    }
+
+    foreach ($linkedBroadcasts as $linkedBroadcast) {
+      $toAdd = null;
+
+      foreach ($linkedBroadcastsWhichHaveNotBeenDeleted as $linkedBroadcastIdNotDeleted) {
+        if ($linkedBroadcast == $linkedBroadcastIdNotDeleted) {
+          $toAdd = $linkedBroadcast;
+          break;
+        }
+      }
+
+      if ($toAdd != null) {
+        $eventLinkedBroadcast = new EventLinkedBroadcast([
+          'event_id' => $event->id,
+          'broadcast_id' => $toAdd, ]);
+        $eventLinkedBroadcast->save();
+      }
+    }
+    //endregion
+
+    //region Check decisions
     $decisionsWhichHaveNotBeenDeleted = [];
 
     foreach ($event->eventDecisions as $oldDecision) {

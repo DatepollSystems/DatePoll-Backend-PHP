@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property EventDate[] $eventDates
  * @property EventForGroup[] $eventsForGroups
  * @property EventForSubgroup[] $eventsForSubgroups
+ * @property EventLinkedBroadcast[] $eventLinkedBroadcasts
  * @property EventUserVotedForDecision[] $eventsUsersVotedForDecision
  */
 class Event extends Model {
@@ -81,6 +82,14 @@ class Event extends Model {
   }
 
   /**
+   * @return EventLinkedBroadcast[]
+   */
+  public function getLinkedBroadcasts(): array {
+    return $this->hasMany(EventLinkedBroadcast::class)
+      ->get()->all();
+  }
+
+  /**
    * @return HasMany
    */
   private function usersVotedForDecision(): HasMany {
@@ -95,7 +104,6 @@ class Event extends Model {
       ->get()->all();
   }
 
-
   /**
    * @return HasMany
    */
@@ -106,14 +114,14 @@ class Event extends Model {
   /**
    * @return EventDate|HasMany
    */
-  public function getFirstEventDate(): EventDate|HasMany {
+  public function getFirstEventDate(): EventDate | HasMany {
     return $this->eventDates()->oldest('date')->first();
   }
 
   /**
    * @return EventDate|HasMany
    */
-  public function getLastEventDate(): EventDate|HasMany {
+  public function getLastEventDate(): EventDate | HasMany {
     return $this->eventDates()->latest('date')->first();
   }
 
@@ -140,6 +148,7 @@ class Event extends Model {
     $eventUserVotedFor = $this->usersVotedForDecision()->where('user_id', $userId)->first();
     $returnable['already_voted'] = ($eventUserVotedFor != null);
     $returnable['user_decision'] = $eventUserVotedFor;
+
     return $returnable;
   }
 }
