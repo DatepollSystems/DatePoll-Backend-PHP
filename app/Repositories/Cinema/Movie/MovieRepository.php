@@ -3,15 +3,17 @@
 namespace App\Repositories\Cinema\Movie;
 
 use App\Models\Cinema\Movie;
+use App\Repositories\Interfaces\AHasYearsRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
-use App\Utils\ArrayHelper;
 use App\Utils\DateHelper;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\Pure;
 
-class MovieRepository implements IMovieRepository {
+class MovieRepository extends AHasYearsRepository implements IMovieRepository {
+  #[Pure]
   public function __construct(protected IUserSettingRepository $userSettingRepository) {
+    parent::__construct('movies');
   }
 
   /**
@@ -20,16 +22,6 @@ class MovieRepository implements IMovieRepository {
    */
   public function getMovieById(int $id): ?Movie {
     return Movie::find($id);
-  }
-
-  /**
-   * @return int[]
-   */
-  public function getYears(): array {
-    return ArrayHelper::getPropertyArrayOfObjectArray(
-      DB::table('movies')->orderBy('date', 'DESC')->selectRaw('YEAR(date) as year')->get()->unique()->values()->toArray(),
-      'year'
-    );
   }
 
   /**
@@ -116,9 +108,9 @@ class MovieRepository implements IMovieRepository {
 
     if ($movie->save()) {
       return $movie;
-    } else {
-      return null;
     }
+
+    return null;
   }
 
   /**

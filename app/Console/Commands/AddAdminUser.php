@@ -3,6 +3,7 @@
 use App\Models\User\User;
 use App\Models\User\UserPermission;
 use App\Permissions;
+use App\Utils\Converter;
 use App\Utils\Generator;
 use Illuminate\Console\Command;
 
@@ -21,7 +22,7 @@ class AddAdminUser extends Command {
     }
     $this->comment('Creating admin user...');
 
-    $randomPassword = Generator::getRandom6DigitNumber();
+    $randomPassword = Converter::integerToString(Generator::getRandom6DigitNumber());
     $username = 'admin-' . Generator::getRandomMixedNumberAndABCToken(2);
 
     $user = new User([

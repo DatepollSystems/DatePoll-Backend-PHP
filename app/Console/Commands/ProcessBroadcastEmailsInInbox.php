@@ -15,6 +15,7 @@ use App\Repositories\Group\Group\IGroupRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Utils\ArrayHelper;
+use App\Utils\Converter;
 use App\Utils\MailHelper;
 use App\Utils\StringHelper;
 use Exception;
@@ -122,19 +123,22 @@ class ProcessBroadcastEmailsInInbox extends Command {
     // Check if from address is in block list
     if (ArrayHelper::inArray($this->senderBlockList, StringHelper::toLowerCase($fromAddress))) {
       Logging::info('processBroadcastEmails', 'Got an email from DatePoll and deleting it: "' . $subject . '"');
+
       return self::$actionDelete;
     }
 
-    if (!$this->isBroadcastSubjectValid($subject)) {
+    if (! $this->isBroadcastSubjectValid($subject)) {
       if ($this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEnabled()) {
         Logging::info('processBroadcastEmails', 'Forwarding email to community major...');
 
         $this->forwardEmailToDatePollCommunityLeaders($mail, $subject, $fromAddress);
+
         return self::$actionDelete;
       }
 
       Logging::info('processBroadcastEmails', $fromAddress . ' Subject not valid. Subject: "' . $subject . '"');
       MailHelper::sendEmailOnHighQueue(new BroadcastInvalidSubject(), $fromAddress);
+
       return self::$actionDelete;
     }
 
@@ -148,16 +152,22 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
     if ($userId == null) {
       if ($this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEnabled()) {
-        Logging::info('processBroadcastEmails',
-          $fromAddress . ' Permission denied, forwarding it. Subject: "' . $subject . '"');
+        Logging::info(
+          'processBroadcastEmails',
+          $fromAddress . ' Permission denied, forwarding it. Subject: "' . $subject . '"'
+        );
 
         $this->forwardEmailToDatePollCommunityLeaders($mail, $subject, $fromAddress);
+
         return self::$actionDelete;
       }
 
-      Logging::info('processBroadcastEmails',
-        $fromAddress . ' Permission denied, deleting it. Subject: "' . $subject . '"');
+      Logging::info(
+        'processBroadcastEmails',
+        $fromAddress . ' Permission denied, deleting it. Subject: "' . $subject . '"'
+      );
       MailHelper::sendEmailOnHighQueue(new BroadcastPermissionDenied(), $fromAddress);
+
       return self::$actionDelete;
     }
 
@@ -170,12 +180,20 @@ class ProcessBroadcastEmailsInInbox extends Command {
     $textHtml = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textHtml));
 
     $attachmentIds = [];
+    Logging::info(
+      'processBroadcastEmails',
+      'Attachments: ' . Converter::booleanToString($mail->hasAttachments()) . '; Count: ' . ArrayHelper::getSize($mail->getAttachments())
+    );
     foreach ($mail->getAttachments() as $attachment) {
       $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
-      $path = 'files/' . $token . '.' . $attachment->fileExtension;
-      $attachmentModel = new BroadcastAttachment(['path' => $path, 'name' => $attachment->name, 'token' => $token]);
-      if (! $attachmentModel->save() || ! Storage::put($path, $attachment->getContents())) {
-        Logging::error('processBroadcastEmails', 'Could not save attachment!');
+      $attachment->setFilePath(Storage::disk('local')->path('files/') . $token);
+
+      Logging::info('processBroadcastEmails@savingAttachments', 'Attachment name: ' . $attachment->name . '; Path: ' . $attachment->filePath);
+
+      $attachmentModel = new BroadcastAttachment(['path' => 'files/' . $token, 'name' => $attachment->name, 'token' => $token]);
+      if (! $attachmentModel->save() || ! $attachment->saveToDisk()) {
+        Logging::error('processBroadcastEmails@savingAttachments', 'Could not save attachment!');
+
         return self::$actionCancelProcessing;
       }
 
@@ -210,7 +228,11 @@ class ProcessBroadcastEmailsInInbox extends Command {
     return self::$actionDelete;
   }
 
-  private function forwardEmailToDatePollCommunityLeaders(IncomingMail $mail, string $subject, string $fromAddress): void {
+  private function forwardEmailToDatePollCommunityLeaders(
+    IncomingMail $mail,
+    string $subject,
+    string $fromAddress
+  ): void {
     $textPlain = $mail->textPlain;
     $textHtml = $textPlain;
     if (StringHelper::notNullAndEmpty($mail->textHtml)) {
@@ -228,7 +250,10 @@ class ProcessBroadcastEmailsInInbox extends Command {
       $this->settingsRepository->getUrl(),
       ''
     );
-    MailHelper::sendEmailOnHighQueue($broadcastMail, $this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses());
+    MailHelper::sendEmailOnHighQueue(
+      $broadcastMail,
+      $this->settingsRepository->getBroadcastsProcessIncomingEmailsForwardingEmailAddresses()
+    );
   }
 
   /**
@@ -300,7 +325,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
       return false;
     }
 
-    if (!StringHelper::startsWithCharacter($subject, '[')) {
+    if (! StringHelper::startsWithCharacter($subject, '[')) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Does not start with "["');
 
       return false;

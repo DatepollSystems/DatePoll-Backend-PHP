@@ -24,7 +24,10 @@ A detailed development setup guide can be found [here](https://datepoll.org/docs
 
 ## Commands cheat sheet
 ### Accessing composer in docker container
-`docker-compose exec datepoll-php php /usr/local/bin/composer`
+`docker-compose exec datepoll-php php /usr/local/bin/composer `
+
+Are you having problems with dependencies not available for the php version?
+Add `--ignore-platform-reqs` after your composer command.
 
 ### Accessing artisan in docker container
 `docker-compose exec datepoll-php php artisan`

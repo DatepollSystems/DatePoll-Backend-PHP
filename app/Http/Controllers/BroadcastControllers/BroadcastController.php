@@ -10,6 +10,8 @@ use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Utils\Converter;
+use App\Utils\DateHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -95,6 +97,8 @@ class BroadcastController extends AHasYears {
       return response()->json(['msg' => 'Could not create broadcast'], 500);
     }
 
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($broadcast->created_at)));
+
     return response()->json([
       'msg' => 'Successful created broadcast',
       'broadcast' => $broadcast,], 201);
@@ -120,6 +124,8 @@ class BroadcastController extends AHasYears {
     if ($broadcast == null) {
       return response()->json(['msg' => 'Broadcast not found'], 404);
     }
+
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($broadcast->created_at)));
 
     if (! $this->broadcastRepository->delete($broadcast)) {
       Logging::error('deleteBroadcast', 'Could not delete broadcast! User id - ' . $request->auth->id);
@@ -185,10 +191,10 @@ class BroadcastController extends AHasYears {
     $attachment = $this->broadcastAttachmentRepository->getAttachmentByToken($token);
 
     if ($attachment == null) {
-      return redirect($this->settingsRepository->getUrl() . '/not-found');
+      return redirect($this->settingRepository->getUrl() . '/not-found');
     }
 
-    $path = storage_path('app/' . $attachment->path);
+    $path = Storage::disk('local')->path($attachment->path);
     $type = File::mimeType($path);
     $headers = ['Content-Type' => $type];
     $response = response()->download($path, $attachment->name, $headers);

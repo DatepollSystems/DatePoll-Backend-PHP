@@ -43,7 +43,14 @@ class DeletedUserRepository implements IDeletedUserRepository {
     }
   }
 
-  public function deleteAllDeletedUsers() {
+  /**
+   * @param int $id
+   */
+  public function deleteSingleDeletedUser(int $id): void {
+    DB::table('users_deleted')->delete($id);
+  }
+
+  public function deleteAllDeletedUsers(): void {
     DB::table('users_deleted')
       ->delete();
   }
