@@ -7,6 +7,7 @@ use App\Http\Controllers\Abstracts\AHasYears;
 use App\Logging;
 use App\Repositories\Cinema\Movie\IMovieRepository;
 use App\Repositories\User\User\UserRepository;
+use App\Utils\Converter;
 use App\Utils\DateHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -52,7 +53,7 @@ class MovieController extends AHasYears {
       return response()->json(['msg' => 'An error occurred during movie creating!'], 500);
     }
     Logging::info('createMovie', 'User - ' . $request->auth->id . ' | New movie created - ' . $movie->id);
-    $this->forgetCache(DateHelper::getYearOfDate($movie->date));
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($movie->date)));
 
     return response()->json([
       'msg' => 'Movie created',
@@ -144,7 +145,7 @@ class MovieController extends AHasYears {
       return response()->json(['msg' => 'An error occurred during movie saving'], 500);
     }
     Logging::info('updateMovie', 'User - ' . $request->auth->id . ' | Movie updated - ' . $movie->id);
-    $this->forgetCache(DateHelper::getYearOfDate($movie->date));
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($movie->date)));
 
     return response()->json([
       'msg' => 'Movie updated',
@@ -165,7 +166,7 @@ class MovieController extends AHasYears {
       return response()->json(['msg' => 'Movie not found'], 404);
     }
 
-    $this->forgetCache(DateHelper::getYearOfDate($movie->date));
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($movie->date)));
 
     if (! $this->movieRepository->deleteMovie($movie)) {
       Logging::error('deleteMovie', 'User - ' . $request->auth->id . ' | Movie - ' . $id . ' | Could not delete movie');

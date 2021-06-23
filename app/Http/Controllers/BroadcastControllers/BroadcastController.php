@@ -10,6 +10,7 @@ use App\Permissions;
 use App\Repositories\Broadcast\Broadcast\IBroadcastRepository;
 use App\Repositories\Broadcast\BroadcastAttachment\IBroadcastAttachmentRepository;
 use App\Repositories\System\Setting\ISettingRepository;
+use App\Utils\Converter;
 use App\Utils\DateHelper;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -96,7 +97,7 @@ class BroadcastController extends AHasYears {
       return response()->json(['msg' => 'Could not create broadcast'], 500);
     }
 
-    $this->forgetCache(DateHelper::getYearOfDate($broadcast->created_at));
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($broadcast->created_at)));
 
     return response()->json([
       'msg' => 'Successful created broadcast',
@@ -124,7 +125,7 @@ class BroadcastController extends AHasYears {
       return response()->json(['msg' => 'Broadcast not found'], 404);
     }
 
-    $this->forgetCache(DateHelper::getYearOfDate($broadcast->created_at));
+    $this->forgetCache(Converter::integerToString(DateHelper::getYearOfDate($broadcast->created_at)));
 
     if (! $this->broadcastRepository->delete($broadcast)) {
       Logging::error('deleteBroadcast', 'Could not delete broadcast! User id - ' . $request->auth->id);
