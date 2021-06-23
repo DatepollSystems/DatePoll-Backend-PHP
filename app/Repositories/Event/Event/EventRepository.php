@@ -10,6 +10,7 @@ use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
 use App\Repositories\Group\Group\IGroupRepository;
+use App\Repositories\Interfaces\AHasYearsRepository;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
@@ -18,6 +19,7 @@ use App\Utils\DateHelper;
 use App\Utils\QueueHelper;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\Pure;
 use stdClass;
 
 class EventRepository extends AHasYearsRepository implements IEventRepository {
@@ -268,10 +270,10 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
           '=',
           'users_member_of_groups.group_id'
         )->where(
-            'events_for_groups.event_id',
-            '=',
-            $event->id
-          )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+          'events_for_groups.event_id',
+          '=',
+          $event->id
+        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
 
         $inSubgroup = DB::table('events_for_subgroups')->join(
           'users_member_of_subgroups',
@@ -279,10 +281,10 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
           '=',
           'users_member_of_subgroups.subgroup_id'
         )->where(
-            'events_for_subgroups.event_id',
-            '=',
-            $event->id
-          )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+          'events_for_subgroups.event_id',
+          '=',
+          $event->id
+        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
       }
 
       if ($event->forEveryone || $inGroup || $inSubgroup) {
