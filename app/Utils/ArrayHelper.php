@@ -76,4 +76,13 @@ abstract class ArrayHelper {
 
     return $array;
   }
+
+  /**
+   * @param array $array
+   * @param int $limit
+   * @return array
+   */
+  public static function getFirstValuesOfArray(array $array, int $limit): array {
+    return array_slice($array, 0, $limit, true);
+  }
 }
