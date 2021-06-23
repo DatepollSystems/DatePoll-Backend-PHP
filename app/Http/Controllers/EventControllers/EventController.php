@@ -51,7 +51,7 @@ class EventController extends AHasYears {
     }
     Logging::info('getSingleEvent', 'Generating ' . $cacheKey . ' and saving to cache');
 
-    $toReturnEvent = $event->toArray();
+    $toReturnEvent = $event->toArrayWithUserDecisionByUserId($user->id);
     $toReturnEvent['resultGroups'] = $this->eventRepository->getResultsForEvent($event, $anonymous);
 
     // Time to live 10 minutes
