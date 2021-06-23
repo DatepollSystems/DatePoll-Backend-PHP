@@ -2,7 +2,10 @@
 
 namespace App\Models\Broadcasts;
 
+use App\Models\Groups\Group;
+use App\Models\Subgroups\Subgroup;
 use App\Models\User\User;
+use App\Utils\ArrayHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -42,7 +45,7 @@ class Broadcast extends Model {
   /**
    * @return BelongsTo | User
    */
-  public function writer(): BelongsTo|User {
+  public function writer(): BelongsTo | User {
     return $this->belongsTo(User::class, 'writer_user_id')->first();
   }
 
@@ -55,11 +58,25 @@ class Broadcast extends Model {
   }
 
   /**
+   * @return Group[]
+   */
+  public function getGroups(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray($this->broadcastsForGroups(), 'group');
+  }
+
+  /**
    * @return BroadcastForSubgroup[]
    */
   public function broadcastsForSubgroups(): array {
     return $this->hasMany(BroadcastForSubgroup::class)
       ->get()->all();
+  }
+
+  /**
+   * @return Subgroup[]
+   */
+  public function getSubgroups(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray($this->broadcastsForSubgroups(), 'subgroup');
   }
 
   /**
@@ -91,7 +108,7 @@ class Broadcast extends Model {
     foreach ($this->broadcastsForGroups() as $broadcastForGroup) {
       $toReturnGroups[] = [
         'id' => $broadcastForGroup->group->id,
-        'name' => $broadcastForGroup->group->name
+        'name' => $broadcastForGroup->group->name,
       ];
     }
     $returnable['groups'] = $toReturnGroups;
@@ -99,7 +116,7 @@ class Broadcast extends Model {
     $toReturnSubgroups = [];
     foreach ($this->broadcastsForSubgroups() as $broadcastForSubgroup) {
       $toReturnSubgroups[] = ['id' => $broadcastForSubgroup->id, 'name' => $broadcastForSubgroup->subgroup->name, 'group_id' => $broadcastForSubgroup->subgroup->group_id,
-                              'group_name' => $broadcastForSubgroup->subgroup->getGroup()->name];
+        'group_name' => $broadcastForSubgroup->subgroup->getGroup()->name, ];
     }
     $returnable['subgroups'] = $toReturnSubgroups;
 
@@ -118,6 +135,7 @@ class Broadcast extends Model {
   public function toArrayWithBodyHTML(): array {
     $returnable = $this->toArray();
     $returnable['bodyHTML'] = $this->bodyHTML;
+
     return $returnable;
   }
 
@@ -125,10 +143,11 @@ class Broadcast extends Model {
    * @return array
    */
   public function toArrayWithBodyHTMLAndUserInfo(): array {
-    $returnable = $this::toArrayWithBodyHTML();
+    $returnable = $this->toArrayWithBodyHTML();
     $returnable['users_info'] = BroadcastUserInfo::where('broadcast_id', '=', $this->id)
       ->orderBy('sent')
       ->get()->all();
+
     return $returnable;
   }
 }
