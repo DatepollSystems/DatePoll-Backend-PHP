@@ -16,9 +16,7 @@ class EventListController extends Controller {
    * @return JsonResponse
    */
   public function getOpenEvents(AuthenticatedRequest $request): JsonResponse {
-    $user = $request->auth;
-
-    $events = $this->eventRepository->getOpenEventsForUser($user);
+    $events = $this->eventRepository->getOpenEventsForUser($request->auth->id);
 
     return response()->json([
       'msg' => 'List of open events for user',

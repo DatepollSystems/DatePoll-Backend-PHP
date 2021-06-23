@@ -3,7 +3,6 @@
 namespace App\Repositories\Event\Event;
 
 use App\Models\Events\Event;
-use App\Models\User\User;
 use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
@@ -51,10 +50,11 @@ interface IEventRepository extends IHasYearsRepository {
   public function getResultsForEvent(Event $event, bool $anonymous, bool $calculateCharts = false): array;
 
   /**
-   * @param User $user
+   * @param int $userId
+   * @param int|null $limit
    * @return array
    */
-  public function getOpenEventsForUser(User $user): array;
+  public function getOpenEventsForUser(int $userId, ?int $limit = null): array;
 
   /**
    * @param Event $event

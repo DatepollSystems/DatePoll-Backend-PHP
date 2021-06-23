@@ -44,11 +44,11 @@ class EventVoteController extends Controller {
         'error_code' => 'decision_not_found_for_event',], 404);
     }
 
-    $user = $request->auth;
+    $userId = $request->auth->id;
 
     // Check if user is in a group for this event
     $allowedToVote = false;
-    foreach ($this->eventRepository->getOpenEventsForUser($user) as $openEvent) {
+    foreach ($this->eventRepository->getOpenEventsForUser($userId) as $openEvent) {
       if ($eventId === $openEvent['id']) {
         if ($openEvent['already_voted']) {
           return response()->json([
@@ -71,7 +71,7 @@ class EventVoteController extends Controller {
       'additionalInformation' => $request->input('additional_information'),
       'event_id' => $eventId,
       'decision_id' => $eventDecisions->id,
-      'user_id' => $user->id,]);
+      'user_id' => $userId,]);
 
     if (! $eventUserVotedForDecision->save()) {
       return response()->json(['msg' => 'Could not save user voting...'], 500);

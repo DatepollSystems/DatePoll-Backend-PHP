@@ -6,7 +6,6 @@ use App\Jobs\CreateNewEventEmailsJob;
 use App\Logging;
 use App\Models\Events\Event;
 use App\Models\Events\EventDecision;
-use App\Models\User\User;
 use App\Repositories\Event\EventDate\IEventDateRepository;
 use App\Repositories\Event\EventDecision\IEventDecisionRepository;
 use App\Repositories\Group\Group\IGroupRepository;
@@ -245,10 +244,11 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
   }
 
   /**
-   * @param User $user
+   * @param int $userId
+   * @param int|null $limit
    * @return array
    */
-  public function getOpenEventsForUser(User $user): array {
+  public function getOpenEventsForUser(int $userId, ?int $limit = null): array {
     $events = [];
 
     $date = DateHelper::getCurrentDateFormatted();
@@ -256,9 +256,12 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
       'date',
       '>',
       $date
-    )->orderBy('date')->get(['event_id', 'date'])->unique('event_id')->all();
+    )->orderBy('date')->get(['event_id', 'date'])->unique('event_id');
+    if ($limit != null) {
+      $eventIdsResult = $eventIdsResult->slice(0, $limit);
+    }
     // DO NOT EVER use Event::find(Array) because it messes with the orderBy
-    foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult, 'event_id') as $eventId) {
+    foreach (ArrayHelper::getPropertyArrayOfObjectArray($eventIdsResult->all(), 'event_id') as $eventId) {
       $event = $this->getEventById($eventId);
 
       $inGroup = true;
@@ -270,10 +273,10 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
           '=',
           'users_member_of_groups.group_id'
         )->where(
-          'events_for_groups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_groups.user_id', '=', $user->id)->count() > 0;
+            'events_for_groups.event_id',
+            '=',
+            $event->id
+          )->where('users_member_of_groups.user_id', '=', $userId)->count() > 0;
 
         $inSubgroup = DB::table('events_for_subgroups')->join(
           'users_member_of_subgroups',
@@ -281,14 +284,14 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
           '=',
           'users_member_of_subgroups.subgroup_id'
         )->where(
-          'events_for_subgroups.event_id',
-          '=',
-          $event->id
-        )->where('users_member_of_subgroups.user_id', '=', $user->id)->count() > 0;
+            'events_for_subgroups.event_id',
+            '=',
+            $event->id
+          )->where('users_member_of_subgroups.user_id', '=', $userId)->count() > 0;
       }
 
       if ($event->forEveryone || $inGroup || $inSubgroup) {
-        $events[] = $event->toArrayWithUserDecisionByUserId($user->id);
+        $events[] = $event->toArrayWithUserDecisionByUserId($userId);
       }
     }
 

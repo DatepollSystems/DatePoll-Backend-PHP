@@ -138,7 +138,7 @@ class UserController extends Controller {
 
     $eventsToShow = [];
     if ($this->settingRepository->getEventsEnabled()) {
-      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user);
+      $eventsToShow = $this->eventRepository->getOpenEventsForUser($user->id, 7);
     }
 
     $broadcastsToShow = [];
