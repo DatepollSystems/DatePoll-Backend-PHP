@@ -182,7 +182,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
     $attachmentIds = [];
     Logging::info(
       'processBroadcastEmails',
-      'Attachments: ' . Converter::booleanToString($mail->hasAttachments() . '; Count: ' . ArrayHelper::getSize($mail->getAttachments()))
+      'Attachments: ' . Converter::booleanToString($mail->hasAttachments()) . '; Count: ' . ArrayHelper::getSize($mail->getAttachments())
     );
     foreach ($mail->getAttachments() as $attachment) {
       $token = $this->broadcastAttachmentRepository->getUniqueRandomBroadcastAttachmentToken();
