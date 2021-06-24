@@ -26,9 +26,9 @@ class UpdateDatePollDB extends ACommand {
    * @return void
    */
   public function handle(): void {
-    $this->newLine('Clearing cache...');
+    $this->info('Clearing cache...');
     Cache::flush();
-    $this->newLine('Cache cleared');
+    $this->info('Cache cleared');
 
     $this->comment('Application database version: ' . Versions::getApplicationDatabaseVersion());
 
