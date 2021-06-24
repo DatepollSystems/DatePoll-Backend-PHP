@@ -26,6 +26,8 @@ class UpdateDatePollDB extends ACommand {
    * @return void
    */
   public function handle(): void {
+    Cache::flush();
+
     $this->comment('Application database version: ' . Versions::getApplicationDatabaseVersion());
 
     $currentDatabaseVersion = $this->settingRepository->getCurrentDatabaseVersion();
@@ -122,8 +124,6 @@ class UpdateDatePollDB extends ACommand {
         return;
       }
     }
-
-    Cache::flush();
 
     $this->info('Database update finished!');
   }

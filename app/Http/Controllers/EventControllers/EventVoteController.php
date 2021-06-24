@@ -78,6 +78,7 @@ class EventVoteController extends Controller {
     }
 
     Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $eventId);
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $eventId);
 
     return response()->json(
       [
@@ -114,6 +115,7 @@ class EventVoteController extends Controller {
     }
 
     Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $id);
 
     return response()->json([
       'msg' => 'There is no voting for this event to remove',
@@ -172,6 +174,7 @@ class EventVoteController extends Controller {
       }
     }
     Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $id);
 
     return response()->json(['msg' => 'Successfully applied all votes'], 200);
   }
@@ -209,6 +212,7 @@ class EventVoteController extends Controller {
     }
 
     Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
+    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $id);
 
     return response()->json(['msg' => 'Decisions for event removed successfully'], 200);
   }

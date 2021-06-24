@@ -16,8 +16,6 @@ use Illuminate\Mail\MailServiceProvider;
 use Illuminate\Redis\RedisServiceProvider;
 use Laravel\Lumen\Application;
 use Laravel\Lumen\Bootstrap\LoadEnvironmentVariables;
-use Maatwebsite\Excel\ExcelServiceProvider;
-use Maatwebsite\Excel\Facades\Excel;
 use Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -73,11 +71,6 @@ $app->configure('mail');
 $app->alias('mailer', Mailer::class);
 $app->alias('mailer', ConMailer::class);
 $app->alias('mailer', MailQueue::class);
-
-$app->register(ExcelServiceProvider::class);
-$app->alias('excel', Excel::class);
-$app->configure('excel');
-
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

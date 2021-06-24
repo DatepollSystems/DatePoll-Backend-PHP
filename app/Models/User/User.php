@@ -140,6 +140,13 @@ class User extends Model {
       ->get()->all();
   }
 
+  /**
+   * @return Group[]
+   */
+  public function getSubgroups(): array {
+    return ArrayHelper::getPropertyArrayOfObjectArray($this->usersMemberOfSubgroups(), 'subgroup');
+  }
+
   // ------------------------------------ Badges ------------------------------------
 
   /**

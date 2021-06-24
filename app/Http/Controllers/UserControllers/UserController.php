@@ -143,7 +143,7 @@ class UserController extends Controller {
 
     $broadcastsToShow = [];
     if ($this->settingRepository->getBroadcastsEnabled()) {
-      $broadcastsToShow = $this->broadcastRepository->getBroadcastsForUserByIdOrderedByDate($user->id, 7);
+      $broadcastsToShow = $this->broadcastRepository->getBroadcastsForUserOrderedByDate($user, 7);
     }
 
     $users = $this->userRepository->getUsersWhichShareBirthday();

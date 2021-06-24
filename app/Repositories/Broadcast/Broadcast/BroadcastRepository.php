@@ -334,14 +334,13 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
   }
 
   /**
-   * @param int $userId
+   * @param User $user
    * @param int $limit
    * @param int $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserByIdOrderedByDate(int $userId, int $limit = -1, int $page = -1): array {
-    $query = BroadcastUserInfo::where('user_id', '=', $userId)
-      ->orderBy('created_at', 'DESC');
+  public function getBroadcastsForUserOrderedByDate(User $user, int $limit = -1, int $page = -1): array {
+    $query = Broadcast::orderBy('created_at', 'DESC');
     if ($limit != -1) {
       $query = $query->limit($limit);
     }
@@ -350,8 +349,10 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
     }
 
     $broadcasts = [];
-    foreach (ArrayHelper::getPropertyArrayOfObjectArray($query->get()->all(), 'broadcast_id') as $broadcastId) {
-      $broadcasts[] = $this->getBroadcastById($broadcastId);
+    foreach ($query->get()->all() as $broadcast) {
+      if ($this->isUserAllowedToViewBroadcast($user, $broadcast)) {
+        $broadcasts[] = $broadcast;
+      }
     }
 
     return $broadcasts;
@@ -373,14 +374,33 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
   }
 
   /**
-   * @param int $userId
-   * @param int $broadcastId
+   * @param User $user
+   * @param Broadcast $broadcast
    * @return bool
    */
-  public function isUserByIdAllowedToViewBroadcastById(int $userId, int $broadcastId): bool {
-    return BroadcastUserInfo::where('user_id', '=', $userId)
-      ->where('broadcast_id', '=', $broadcastId)
-      ->orderBy('created_at', 'DESC')
-      ->first() != null;
+  public function isUserAllowedToViewBroadcast(User $user, Broadcast $broadcast): bool {
+    if ($broadcast->forEveryone) {
+      return true;
+    }
+
+    $userGroups = $user->getGroups();
+    $userSubgroups = $user->getSubgroups();
+    foreach ($broadcast->getGroups() as $group) {
+      foreach ($userGroups as $userGroup) {
+        if ($group->id == $userGroup->id) {
+          return true;
+        }
+      }
+    }
+
+    foreach ($broadcast->getSubgroups() as $subgroup) {
+      foreach ($userSubgroups as $userSubgroup) {
+        if ($subgroup->id == $userSubgroup->id) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
