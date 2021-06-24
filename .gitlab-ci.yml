@@ -3,6 +3,7 @@ image: php:8.0-buster
 stages:
   - build
   - deploy
+  - refresh
   
 build:
   stage: build
@@ -12,14 +13,13 @@ build:
     paths:
       - vendor/
   script:
-    - apt-get update -qq && apt-get install -y git zip wget libc-client-dev libkrb5-dev > /dev/null && rm -r /var/lib/apt/lists/*
+    - apt-get update -qq && apt-get install -y -qq git zip wget libc-client-dev libkrb5-dev
     - docker-php-ext-configure imap --with-kerberos --with-imap-ssl > /dev/null && docker-php-ext-install imap pdo_mysql pcntl opcache > /dev/null
     - wget https://composer.github.io/installer.sig -O - -q | tr -d '\n' > installer.sig
     - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
     - php -r "if (hash_file('SHA384', 'composer-setup.php') === file_get_contents('installer.sig')) { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
     - php composer-setup.php > /dev/null
     - php -r "unlink('composer-setup.php'); unlink('installer.sig');"
-    - rm ./composer.lock
     - php composer.phar install -n -v --ignore-platform-reqs --quiet
     - ls -la
     - ./vendor/phpunit/phpunit/phpunit --configuration ./phpunit.xml ||  echo 0;
@@ -61,4 +61,20 @@ deploy-release:
     - cp "DatePoll-Backend-${version}.zip" DatePoll-Backend-latest.zip
     - scp -P $SSH_PORT -o StrictHostKeyChecking=no -o LogLevel=ERROR ./DatePoll-Backend-latest.zip $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
     - scp -P $SSH_PORT -o StrictHostKeyChecking=no -o LogLevel=ERROR "DatePoll-Backend-${version}.zip" $SSH_USERNAME@$SSH_HOST:/var/www/datepoll-share/DatePoll/Backend-Releases/ > /dev/null
+
+# TODO: Root user ssh for demo server
+#refresh-demo:
+#  stage: refresh
+#  dependencies:
+#    - deploy
+#  only:
+#    - development
+#  script:
+#    - apt-get update -qq && apt-get install -y -qq openssh-client
+#    - eval "$(ssh-agent -s)"
+#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+#    - mkdir -p ~/.ssh
+#    - chmod 700 ~/.ssh
+#    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+#    - ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR $SSH_DEMO_USERNAME@$SSH_DEMO_HOST -p $SSH_DEMO_PORT "cd /opt/DatePoll/ && ./scripts/backendUpdate.sh -v dev -f"
 
