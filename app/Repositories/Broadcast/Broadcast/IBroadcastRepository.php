@@ -52,11 +52,11 @@ interface IBroadcastRepository extends IHasYearsRepository {
 
   /**
    * @param User $user
-   * @param int $limit
-   * @param int $page
+   * @param int|null $limit
+   * @param int|null $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserOrderedByDate(User $user, int $limit = -1, int $page = -1): array;
+  public function getBroadcastsForUserOrderedByDate(User $user, ?int $limit = null, ?int $page = null): array;
 
   /**
    * @param string $search

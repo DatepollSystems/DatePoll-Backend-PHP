@@ -335,16 +335,13 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
 
   /**
    * @param User $user
-   * @param int $limit
-   * @param int $page
+   * @param int|null $limit
+   * @param int|null $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserOrderedByDate(User $user, int $limit = -1, int $page = -1): array {
+  public function getBroadcastsForUserOrderedByDate(User $user, ?int $limit = null, ?int $page = null): array {
     $query = Broadcast::orderBy('created_at', 'DESC');
-    if ($limit != -1) {
-      $query = $query->limit($limit);
-    }
-    if ($page != -1 && $limit != -1) {
+    if ($page != null && $limit != null) {
       $query = $query->skip($page * $limit)->take($limit);
     }
 
@@ -353,6 +350,10 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
       if ($this->isUserAllowedToViewBroadcast($user, $broadcast)) {
         $broadcasts[] = $broadcast;
       }
+    }
+
+    if ($limit != null) {
+      $broadcasts = ArrayHelper::getFirstValuesOfArray($broadcasts, 7);
     }
 
     return $broadcasts;
