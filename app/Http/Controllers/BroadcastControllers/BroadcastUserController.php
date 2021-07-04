@@ -27,7 +27,7 @@ class BroadcastUserController extends Controller {
       'msg' => 'List broadcasts',
       'page' => $page,
       'page_size' => $pageSize,
-      'broadcasts' => $this->broadcastRepository->getBroadcastsForUserOrderedByDate($request->auth, $pageSize, $page), ]);
+      'broadcasts' => $this->broadcastRepository->getBroadcastsForUserOrderedByDate($request->auth->id, $pageSize, $page), ]);
   }
 
   /**
@@ -56,7 +56,7 @@ class BroadcastUserController extends Controller {
       return response()->json(['msg' => 'Broadcast not found', 'error_code' => 'not_found'], 404);
     }
 
-    if (! $this->broadcastRepository->isUserAllowedToViewBroadcast($request->auth, $broadcast)) {
+    if (! $this->broadcastRepository->isUserAllowedToViewBroadcast($request->auth->id, $broadcast)) {
       return response()->json(['msg' => 'You are not allowed to view this broadcast', 'error_code' => 'insufficient_permission'], 403);
     }
 

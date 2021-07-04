@@ -3,7 +3,6 @@
 namespace App\Repositories\Broadcast\Broadcast;
 
 use App\Models\Broadcasts\Broadcast;
-use App\Models\User\User;
 use App\Repositories\Interfaces\IHasYearsRepository;
 use Exception;
 
@@ -51,12 +50,12 @@ interface IBroadcastRepository extends IHasYearsRepository {
   public function delete(Broadcast $broadcast): bool;
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param int|null $limit
    * @param int|null $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserOrderedByDate(User $user, ?int $limit = null, ?int $page = null): array;
+  public function getBroadcastsForUserOrderedByDate(int $userId, ?int $limit = null, ?int $page = null): array;
 
   /**
    * @param string $search
@@ -65,9 +64,9 @@ interface IBroadcastRepository extends IHasYearsRepository {
   public function searchBroadcasts(string $search): array;
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param Broadcast $broadcast
    * @return bool
    */
-  public function isUserAllowedToViewBroadcast(User $user, Broadcast $broadcast): bool;
+  public function isUserAllowedToViewBroadcast(int $userId, Broadcast $broadcast): bool;
 }

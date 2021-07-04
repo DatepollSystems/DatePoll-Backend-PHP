@@ -334,12 +334,12 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
   }
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param int|null $limit
    * @param int|null $page
    * @return Broadcast[]
    */
-  public function getBroadcastsForUserOrderedByDate(User $user, ?int $limit = null, ?int $page = null): array {
+  public function getBroadcastsForUserOrderedByDate(int $userId, ?int $limit = null, ?int $page = null): array {
     $query = Broadcast::orderBy('created_at', 'DESC');
     if ($page != null && $limit != null) {
       $query = $query->skip($page * $limit)->take($limit);
@@ -347,13 +347,13 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
 
     $broadcasts = [];
     foreach ($query->get()->all() as $broadcast) {
-      if ($this->isUserAllowedToViewBroadcast($user, $broadcast)) {
+      if ($this->isUserAllowedToViewBroadcast($userId, $broadcast)) {
         $broadcasts[] = $broadcast;
       }
     }
 
-    if ($limit != null) {
-      $broadcasts = ArrayHelper::getFirstValuesOfArray($broadcasts, 7);
+    if ($limit != null && $page == null) {
+      $broadcasts = ArrayHelper::getFirstValuesOfArray($broadcasts, $limit);
     }
 
     return $broadcasts;
@@ -375,33 +375,37 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
   }
 
   /**
-   * @param User $user
+   * @param int $userId
    * @param Broadcast $broadcast
    * @return bool
    */
-  public function isUserAllowedToViewBroadcast(User $user, Broadcast $broadcast): bool {
-    if ($broadcast->forEveryone) {
-      return true;
+  public function isUserAllowedToViewBroadcast(int $userId, Broadcast $broadcast): bool {
+    $inGroup = true;
+    $inSubgroup = true;
+    if (! $broadcast->forEveryone) {
+      $inGroup = DB::table('broadcasts_for_groups')->join(
+        'users_member_of_groups',
+        'broadcasts_for_groups.group_id',
+        '=',
+        'users_member_of_groups.group_id'
+      )->where(
+          'broadcasts_for_groups.broadcast_id',
+          '=',
+          $broadcast->id
+        )->where('users_member_of_groups.user_id', '=', $userId)->count() > 0;
+
+      $inSubgroup = DB::table('broadcasts_for_subgroups')->join(
+        'users_member_of_subgroups',
+        'broadcasts_for_subgroups.subgroup_id',
+        '=',
+        'users_member_of_subgroups.subgroup_id'
+      )->where(
+          'broadcasts_for_subgroups.broadcast_id',
+          '=',
+          $broadcast->id
+        )->where('users_member_of_subgroups.user_id', '=', $userId)->count() > 0;
     }
 
-    $userGroups = $user->getGroups();
-    $userSubgroups = $user->getSubgroups();
-    foreach ($broadcast->getGroups() as $group) {
-      foreach ($userGroups as $userGroup) {
-        if ($group->id == $userGroup->id) {
-          return true;
-        }
-      }
-    }
-
-    foreach ($broadcast->getSubgroups() as $subgroup) {
-      foreach ($userSubgroups as $userSubgroup) {
-        if ($subgroup->id == $userSubgroup->id) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return $broadcast->forEveryone || $inGroup || $inSubgroup;
   }
 }

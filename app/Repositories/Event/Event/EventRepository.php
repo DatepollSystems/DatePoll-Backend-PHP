@@ -114,7 +114,7 @@ class EventRepository extends AHasYearsRepository implements IEventRepository {
       }
     }
 
-    //-------------------------------- Only delete changed decisions --------------------------------------
+    //region Only delete changed decisions
     $decisionsWhichHaveNotBeenDeleted = [];
 
     foreach ($event->eventDecisions as $oldDecision) {
