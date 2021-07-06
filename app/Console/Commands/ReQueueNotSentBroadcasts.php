@@ -16,7 +16,7 @@ class ReQueueNotSentBroadcasts extends ACommand {
    * @return void
    * @throws Exception
    */
-  public function handle() {
+  public function handle(): void {
     $broadcastId = Converter::stringToInteger($this->askStringQuestion('Please enter a broadcast id', null));
 
     $broadcast = $this->broadcastRepository->getBroadcastById($broadcastId);

@@ -294,6 +294,8 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
     $writerName = $broadcast->writer()->getCompleteName();
 
     foreach ($broadcastUserInfos as $broadcastUserInfo) {
+      Logging::info('reQueueNotSentBroadcasts', 'Queuing "' . $broadcastUserInfo->user()->getCompleteName() . '"');
+
       $time = DateHelper::addMinuteToDateTime($time, 1);
       $broadcastMail = new BroadcastMail(
         $broadcast->subject,
@@ -389,10 +391,10 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
         '=',
         'users_member_of_groups.group_id'
       )->where(
-          'broadcasts_for_groups.broadcast_id',
-          '=',
-          $broadcast->id
-        )->where('users_member_of_groups.user_id', '=', $userId)->count() > 0;
+        'broadcasts_for_groups.broadcast_id',
+        '=',
+        $broadcast->id
+      )->where('users_member_of_groups.user_id', '=', $userId)->count() > 0;
 
       $inSubgroup = DB::table('broadcasts_for_subgroups')->join(
         'users_member_of_subgroups',
@@ -400,10 +402,10 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
         '=',
         'users_member_of_subgroups.subgroup_id'
       )->where(
-          'broadcasts_for_subgroups.broadcast_id',
-          '=',
-          $broadcast->id
-        )->where('users_member_of_subgroups.user_id', '=', $userId)->count() > 0;
+        'broadcasts_for_subgroups.broadcast_id',
+        '=',
+        $broadcast->id
+      )->where('users_member_of_subgroups.user_id', '=', $userId)->count() > 0;
     }
 
     return $broadcast->forEveryone || $inGroup || $inSubgroup;

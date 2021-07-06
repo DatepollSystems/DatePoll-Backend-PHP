@@ -105,6 +105,22 @@ class BroadcastController extends AHasYears {
   }
 
   /**
+   * @param int $id
+   * @return JsonResponse
+   * @throws Exception
+   */
+  public function requeueNotSendBroadcastMails(int $id): JsonResponse {
+    $broadcast = $this->broadcastRepository->getBroadcastById($id);
+    if ($broadcast == null) {
+      return response()->json(['msg' => 'Broadcast not found'], 404);
+    }
+
+    $this->broadcastRepository->reQueueNotSentBroadcastsForBroadcast($broadcast);
+
+    return response()->json(['msg' => 'Queued not send broadcast mails']);
+  }
+
+  /**
    * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse

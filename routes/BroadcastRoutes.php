@@ -17,6 +17,7 @@ $router->group(['prefix' => 'broadcast', 'middleware' => [BroadcastsFeatureMiddl
       $router->get('broadcast/years', ['uses' => 'BroadcastControllers\BroadcastController@getYears']);
       $router->get('broadcast/{year}', ['uses' => 'BroadcastControllers\BroadcastController@getDataOrderedByDate']);
       $router->post('broadcast', ['uses' => 'BroadcastControllers\BroadcastController@create']);
+      $router->put('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@requeueNotSendBroadcastMails']);
       $router->get('single/{id}', ['uses' => 'BroadcastControllers\BroadcastController@getSentReceiptReturnable']);
       $router->delete('broadcast/{id}', ['uses' => 'BroadcastControllers\BroadcastController@delete']);
 
