@@ -25,7 +25,7 @@ class SendBroadcastEmailJob extends SendEmailJob {
    * @return void
    */
   public function handle() {
-    $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $this->broadcastId)->where('broadcast_id', '=', $this->userId)->first();
+    $broadcastUserInfo = BroadcastUserInfo::where('user_id', '=', $this->userId)->where('broadcast_id', '=', $this->broadcastId)->first();
     if ($broadcastUserInfo == null) {
       Logging::info($this->mailable->jobDescription, 'DELETED BROADCAST: Sent to ' . $this->emailAddressesString . ' cancelled!');
 

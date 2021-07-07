@@ -309,8 +309,8 @@ class BroadcastRepository extends AHasYearsRepository implements IBroadcastRepos
       $sendEmailJob = new SendBroadcastEmailJob(
         $broadcastMail,
         $broadcastUserInfo->user()->getEmailAddresses(),
+        $broadcastUserInfo->user()->id,
         $broadcast->id,
-        $broadcastUserInfo->user()->id
       );
 
       QueueHelper::addDelayedJobToDefaultQueue($sendEmailJob, $time);
