@@ -10,7 +10,6 @@ use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\User\User\IUserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class EventVoteController extends Controller {
@@ -77,9 +76,6 @@ class EventVoteController extends Controller {
       return response()->json(['msg' => 'Could not save user voting...'], 500);
     }
 
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $eventId);
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $eventId);
-
     return response()->json(
       [
         'msg' => 'Voting saved',
@@ -113,9 +109,6 @@ class EventVoteController extends Controller {
 
       return response()->json(['msg' => 'Decision for event removed successfully'], 200);
     }
-
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $id);
 
     return response()->json([
       'msg' => 'There is no voting for this event to remove',
@@ -173,8 +166,6 @@ class EventVoteController extends Controller {
         return response()->json(['msg' => 'Could not save eventUserVotedForDecision'], 500);
       }
     }
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $id);
 
     return response()->json(['msg' => 'Successfully applied all votes'], 200);
   }
@@ -210,9 +201,6 @@ class EventVoteController extends Controller {
         }
       }
     }
-
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'false.' . $id);
-    Cache::forget(EventController::$GET_SINGLE_CACHE_KEY . 'true.' . $id);
 
     return response()->json(['msg' => 'Decisions for event removed successfully'], 200);
   }
