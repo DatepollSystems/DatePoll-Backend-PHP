@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\ManagementControllers;
 
+use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Controller;
 use App\Logging;
 use App\Models\PerformanceBadge\Badge;
 use App\Models\PerformanceBadge\UserHasBadge;
 use App\Repositories\User\User\IUserRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
+use App\Utils\ArrayHelper;
+use App\Utils\DateHelper;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
+use JetBrains\PhpStorm\ArrayShape;
 use stdClass;
 
 class BadgeController extends Controller {
@@ -26,10 +30,10 @@ class BadgeController extends Controller {
   /**
    * Display a listing of the resource.
    *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    */
-  public function getAll(Request $request) {
+  public function getAll(AuthenticatedRequest $request): JsonResponse {
     $badges = Badge::orderBy('description')
       ->get();
 
@@ -37,27 +41,27 @@ class BadgeController extends Controller {
 
     return response()->json([
       'msg' => 'List of all badges',
-      'badges' => $badges, ]);
+      'badges' => $badges,]);
   }
 
   /**
    * Store a newly created resource in storage.
    *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function create(Request $request) {
+  public function create(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'description' => 'required|max:190|min:1',
-      'after_years' => 'required|integer', ]);
+      'after_years' => 'required|integer',]);
 
     $description = $request->input('description');
     $afterYears = $request->input('after_years');
 
     $badge = new Badge([
       'description' => $description,
-      'afterYears' => $afterYears, ]);
+      'afterYears' => $afterYears,]);
     if (! $badge->save()) {
       Logging::error('createBadge', 'Could not create badge! User id - ' . $request->auth->id);
 
@@ -68,17 +72,17 @@ class BadgeController extends Controller {
 
     return response()->json([
       'msg' => 'Badge successful created',
-      'badge' => $badge, ], 201);
+      'badge' => $badge,], 201);
   }
 
   /**
    * Remove the specified resource from storage.
    *
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function delete(Request $request, int $id) {
+  public function delete(AuthenticatedRequest $request, int $id): JsonResponse {
     $badge = Badge::find($id);
     if ($badge == null) {
       return response()->json(['msg' => 'Badge not found'], 404);
@@ -96,16 +100,16 @@ class BadgeController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @return JsonResponse
    * @throws ValidationException
    */
-  public function addUserBadge(Request $request) {
+  public function addUserBadge(AuthenticatedRequest $request): JsonResponse {
     $this->validate($request, [
       'description' => 'required|max:190|min:1',
       'get_date' => 'date',
       'reason' => 'max:190',
-      'user_id' => 'required|integer', ]);
+      'user_id' => 'required|integer',]);
 
     $userId = $request->input('user_id');
     if ($this->userRepository->getUserById($userId) == null) {
@@ -120,7 +124,7 @@ class BadgeController extends Controller {
       'description' => $description,
       'getDate' => $getDate,
       'reason' => $reason,
-      'user_id' => $userId, ]);
+      'user_id' => $userId,]);
     if (! $userHasBadge->save()) {
       Logging::error('createUserBadge', 'Could not create user badge! User id - ' . $request->auth->id);
 
@@ -139,15 +143,15 @@ class BadgeController extends Controller {
 
     return response()->json([
       'msg' => 'UserBadge successful created',
-      'userBadge' => $this->getUserBadgeReturnable($userHasBadge), ], 201);
+      'userBadge' => $this->getUserBadgeReturnable($userHasBadge),], 201);
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function removeUserBadge(Request $request, int $id) {
+  public function removeUserBadge(AuthenticatedRequest $request, int $id): JsonResponse {
     $badge = UserHasBadge::find($id);
     if ($badge == null) {
       return response()->json(['msg' => 'UserBadge not found'], 404);
@@ -173,11 +177,11 @@ class BadgeController extends Controller {
   }
 
   /**
-   * @param Request $request
+   * @param AuthenticatedRequest $request
    * @param int $id
    * @return JsonResponse
    */
-  public function userBadgesForUser(Request $request, int $id) {
+  public function userBadgesForUser(AuthenticatedRequest $request, int $id): JsonResponse {
     $user = $this->userRepository->getUserById($id);
     if ($user == null) {
       Logging::warning('userBadgesForUser', 'User not found with id - ' . $id . '! User id - ' . $request->auth->id);
@@ -198,25 +202,19 @@ class BadgeController extends Controller {
 
     return response()->json([
       'msg' => 'List of all user badges for user ' . $user->id,
-      'userBadges' => $toReturn, ], 200);
+      'userBadges' => $toReturn,], 200);
   }
 
   /**
-   * @param UserHasBadge $userHasBadge
-   * @return stdClass
+   * @param UserHasBadge|Model $badge
+   * @return array
    */
-  private function getUserBadgeReturnable(UserHasBadge $userHasBadge) {
-    $returnable = new stdClass();
-
-    $returnable->id = $userHasBadge->id;
-    $returnable->description = $userHasBadge->description;
-    $returnable->get_date = $userHasBadge->getDate;
-    $returnable->reason = $userHasBadge->reason;
-    $returnable->created_at = $userHasBadge->created_at;
-    $returnable->updated_at = $userHasBadge->updated_at;
-    $returnable->user_id = $userHasBadge->user_id;
-
-    return $returnable;
+  #[ArrayShape(['id' => 'int', 'description' => 'string', 'get_date' => 'string', 'reason' => 'string',
+    'created_at' => 'string', 'updated_at' => 'string', 'user_id' => 'int', ])]
+  private function getUserBadgeReturnable(UserHasBadge | Model $badge): array {
+    return ['id' => $badge->id, 'description' => $badge->description, 'get_date' => $badge->getDate,
+      'reason' => $badge->reason, 'created_at' => $badge->created_at, 'updated_at' => $badge->updated_at,
+      'user_id' => $badge->user_id, ];
   }
 
   /**
@@ -225,14 +223,14 @@ class BadgeController extends Controller {
    */
   public function getYearBadges(int $year = null): JsonResponse {
     if ($year == null) {
-      $year = date('Y');
+      $year = DateHelper::getYearOfDate();
     }
 
     $cacheKey = 'year.badges.' . $year;
 
     if (Cache::has($cacheKey)) {
       return response()->json(['msg' => 'Current year badges',
-        'users' => Cache::get($cacheKey), ]);
+        'users' => Cache::get($cacheKey),]);
     }
 
     $currentYearBadgesForUser = [];
@@ -258,7 +256,7 @@ class BadgeController extends Controller {
         }
       }
 
-      if (sizeof($badges) > 0) {
+      if (ArrayHelper::getSize($badges) > 0) {
         $userT->current_year_badges = $badges;
         $currentYearBadgesForUser[] = $userT;
       }
@@ -270,6 +268,6 @@ class BadgeController extends Controller {
 
     return response()->json([
       'msg' => 'Current year badges',
-      'users' => $currentYearBadgesForUser, ]);
+      'users' => $currentYearBadgesForUser,]);
   }
 }
