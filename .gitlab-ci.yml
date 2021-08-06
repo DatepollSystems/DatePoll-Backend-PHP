@@ -9,6 +9,8 @@ build:
   stage: build
   artifacts:
     untracked: true
+    exclude:
+      - vendor/
   cache:
     paths:
       - vendor/
