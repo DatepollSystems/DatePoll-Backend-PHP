@@ -230,7 +230,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
   private function forwardEmailToDatePollCommunityLeaders(
     IncomingMail $mail,
-    string $subject,
+    ?string $subject,
     string $fromAddress
   ): void {
     $textPlain = $mail->textPlain;
@@ -240,6 +240,10 @@ class ProcessBroadcastEmailsInInbox extends Command {
     }
     $textPlain = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textPlain));
     $textHtml = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textHtml));
+
+    if (StringHelper::null($subject)) {
+      $subject = 'Null subject';
+    }
 
     $broadcastMail = new BroadcastMail(
       $subject,

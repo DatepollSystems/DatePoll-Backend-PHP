@@ -28,7 +28,7 @@ class SendEmailJob extends Job {
     $this->sendEmail();
   }
 
-  protected function sendEmail() {
+  protected function sendEmail(): void {
     Mail::bcc($this->emailAddresses)
       ->send($this->mailable);
     Logging::info($this->mailable->jobDescription, 'Sent to ' . $this->emailAddressesString);
