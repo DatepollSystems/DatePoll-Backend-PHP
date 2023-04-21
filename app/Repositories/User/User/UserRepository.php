@@ -91,6 +91,7 @@ class UserRepository implements IUserRepository {
    * @param string|null $internalComment
    * @param bool $informationDenied
    * @param string|null $bvMember
+   * @param string|null $bvInfo
    * @param int $editorId
    * @param User|null $user
    * @return User|null
@@ -115,6 +116,7 @@ class UserRepository implements IUserRepository {
     ?string $internalComment,
     ?bool $informationDenied,
     ?string $bvMember,
+    ?string $bvInfo,
     int $editorId,
     User $user = null
   ): ?User {
@@ -139,6 +141,7 @@ class UserRepository implements IUserRepository {
         'member_number' => $memberNumber,
         'internal_comment' => $internalComment,
         'bv_member' => $bvMember,
+        'bv_info' => $bvInfo,
         'password' => 'Null',]);
 
       if (! $user->save()) {
@@ -167,6 +170,8 @@ class UserRepository implements IUserRepository {
         $user->internal_comment);
       $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember,
         $user->bv_member);
+      $this->userChangeRepository->checkForPropertyChange('bv_info', $user->id, $editorId, $bvInfo,
+        $user->bv_info);
       $this->userChangeRepository->checkForPropertyChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
       $this->userChangeRepository->checkForPropertyChange('activated', $user->id, $editorId, $activated,
         $user->activated);

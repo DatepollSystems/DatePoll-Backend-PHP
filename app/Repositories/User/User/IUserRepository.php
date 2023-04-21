@@ -54,6 +54,7 @@ interface IUserRepository {
    * @param string|null $internalComment
    * @param bool $informationDenied
    * @param string|null $bvMember
+   * @param string|null $bvInfo
    * @param int $editorId
    * @param User|null $user
    * @return User|null
@@ -78,6 +79,7 @@ interface IUserRepository {
     ?string $internalComment,
     ?bool $informationDenied,
     ?string $bvMember,
+    ?string $bvInfo,
     int $editorId,
     User $user = null
   ): ?User;
