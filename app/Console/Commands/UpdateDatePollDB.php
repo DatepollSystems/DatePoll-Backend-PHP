@@ -145,14 +145,14 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Add bv_user field to users');
     try {
-      $this->runDbStatement("ALTER TABLE 'users' ADD bv_info VARCHAR(191);");
+      $this->runDbStatement("ALTER TABLE users ADD bv_info VARCHAR(191);");
     } catch (Exception $exception) {
       return false;
     }
 
     $this->comment('Add bv_password field to users');
     try {
-      $this->runDbStatement("ALTER TABLE 'users' ADD bv_password VARCHAR(191);");
+      $this->runDbStatement("ALTER TABLE users ADD bv_password VARCHAR(191);");
     } catch (Exception $exception) {
       return false;
     }
@@ -170,7 +170,7 @@ class UpdateDatePollDB extends ACommand {
 
     $this->comment('Dropping logs table');
     try {
-      $this->runDbStatement("DROP TABLE 'logs';");
+      $this->runDbStatement("DROP TABLE logs;");
     } catch (Exception $exception) {
       return false;
     }
