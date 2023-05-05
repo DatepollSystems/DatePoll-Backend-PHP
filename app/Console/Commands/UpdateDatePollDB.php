@@ -143,9 +143,16 @@ class UpdateDatePollDB extends ACommand {
   private function migrateDatabaseVersionFrom9To10(): bool {
     $this->comment('Running migration from 9 to 10');
 
-    $this->comment('Add bv_info field to users');
+    $this->comment('Add bv_user field to users');
     try {
       $this->runDbStatement("ALTER TABLE 'users' ADD bv_info VARCHAR(191);");
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Add bv_password field to users');
+    try {
+      $this->runDbStatement("ALTER TABLE 'users' ADD bv_password VARCHAR(191);");
     } catch (Exception $exception) {
       return false;
     }
