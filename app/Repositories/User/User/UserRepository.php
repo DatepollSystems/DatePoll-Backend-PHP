@@ -11,8 +11,6 @@ use App\Models\User\UserTelephoneNumber;
 use App\Repositories\System\Setting\ISettingRepository;
 use App\Repositories\User\UserChange\IUserChangeRepository;
 use App\Repositories\User\UserSetting\IUserSettingRepository;
-use App\Repositories\User\UserSetting\UserSettingKey;
-use App\Repositories\User\UserToken\IUserTokenRepository;
 use App\Utils\ArrayHelper;
 use App\Utils\Converter;
 use App\Utils\Generator;
@@ -91,6 +89,8 @@ class UserRepository implements IUserRepository {
    * @param string|null $internalComment
    * @param bool $informationDenied
    * @param string|null $bvMember
+   * @param string|null $bvUser
+   * @param string|null $bvPassword
    * @param int $editorId
    * @param User|null $user
    * @return User|null
@@ -105,18 +105,20 @@ class UserRepository implements IUserRepository {
     string $joinDate,
     string $streetname,
     string $streetnumber,
-    int $zipcode,
-    string $location,
-    bool $activated,
-    string $activity,
-    array $phoneNumbers,
-    array $emailAddresses,
+    int     $zipcode,
+    string  $location,
+    bool    $activated,
+    string  $activity,
+    array   $phoneNumbers,
+    array   $emailAddresses,
     ?string $memberNumber,
     ?string $internalComment,
-    ?bool $informationDenied,
+    ?bool   $informationDenied,
     ?string $bvMember,
-    int $editorId,
-    User $user = null
+    ?string $bvUser,
+    ?string $bvPassword,
+    int     $editorId,
+    User    $user = null
   ): ?User {
     if ($bvMember == null) {
       $bvMember = '';
@@ -139,6 +141,8 @@ class UserRepository implements IUserRepository {
         'member_number' => $memberNumber,
         'internal_comment' => $internalComment,
         'bv_member' => $bvMember,
+        'bv_user' => $bvUser,
+        'bv_password' => $bvPassword,
         'password' => 'Null',]);
 
       if (! $user->save()) {
@@ -167,6 +171,10 @@ class UserRepository implements IUserRepository {
         $user->internal_comment);
       $this->userChangeRepository->checkForPropertyChange('bv_member', $user->id, $editorId, $bvMember,
         $user->bv_member);
+      $this->userChangeRepository->checkForPropertyChange('bv_user', $user->id, $editorId, $bvUser,
+        $user->bv_user);
+      $this->userChangeRepository->checkForPropertyChange('bv_password', $user->id, $editorId, $bvUser,
+        $user->bv_password);
       $this->userChangeRepository->checkForPropertyChange('zipcode', $user->id, $editorId, $zipcode, $user->zipcode);
       $this->userChangeRepository->checkForPropertyChange('activated', $user->id, $editorId, $activated,
         $user->activated);
@@ -189,6 +197,8 @@ class UserRepository implements IUserRepository {
       $user->member_number = $memberNumber;
       $user->internal_comment = $internalComment;
       $user->bv_member = $bvMember;
+      $user->bv_user = $bvUser;
+      $user->bv_password = $bvPassword;
     }
     if ($informationDenied == null) {
       $user->information_denied = false;

@@ -230,7 +230,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
 
   private function forwardEmailToDatePollCommunityLeaders(
     IncomingMail $mail,
-    string $subject,
+    ?string $subject,
     string $fromAddress
   ): void {
     $textPlain = $mail->textPlain;
@@ -240,6 +240,10 @@ class ProcessBroadcastEmailsInInbox extends Command {
     }
     $textPlain = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textPlain));
     $textHtml = StringHelper::removeImageHtmlTag(Encoding::toUTF8($textHtml));
+
+    if (StringHelper::null($subject)) {
+      $subject = 'Null subject';
+    }
 
     $broadcastMail = new BroadcastMail(
       $subject,
@@ -303,7 +307,7 @@ class ProcessBroadcastEmailsInInbox extends Command {
   }
 
   /**
-   * @param string $subject
+   * @param string|null $subject
    * Possible subjects:
    *  - "[All]Test"
    *  - "[Leaders,Dancers] Test"
@@ -311,7 +315,13 @@ class ProcessBroadcastEmailsInInbox extends Command {
    *  - "[Mitglieder] "
    * @return bool
    */
-  private function isBroadcastSubjectValid(string $subject): bool {
+  private function isBroadcastSubjectValid(?string $subject): bool {
+    if (StringHelper::null($subject)) {
+      Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Subject null');
+
+      return false;
+    }
+
     // "[A]T" is the smallest possible valid email subject
     if (StringHelper::length($subject) < 4) {
       Logging::info('processBroadcastEmails', 'Broadcast subject invalid. Length < 4');

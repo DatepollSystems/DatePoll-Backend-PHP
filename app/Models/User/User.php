@@ -39,6 +39,8 @@ use Illuminate\Support\Facades\DB;
  * @property boolean $information_denied
  * @property string $activity
  * @property string $bv_member
+ * @property string|null $bv_user
+ * @property string|null $bv_password
  * @property string $created_at
  * @property string $updated_at
  */
@@ -63,6 +65,8 @@ class User extends Model {
     'internal_comment',
     'information_denied',
     'bv_member',
+    'bv_user',
+    'bv_password',
     'created_at',
     'updated_at',
     'activated',
@@ -289,13 +293,18 @@ class User extends Model {
    */
   public function toArray(): array {
     $permissions = [];
+
+    $userPermissions = ArrayHelper::getPropertyArrayOfObjectArray($this->getPermissions(), 'permission');
+
     foreach ($this->getGroups() as $group) {
-      foreach ($group->toArray()['permissions'] as $permission) {
-        $permissions[] = $permission;
+      foreach ($group->toArray()['permissions'] as $groupPermission) {
+        if (!in_array($groupPermission, $userPermissions, true)) {
+          $permissions[] = $groupPermission;
+        }
       }
     }
-    foreach ($this->getPermissions() as $permission) {
-      $permissions[] = $permission->permission;
+    foreach ($userPermissions as $permission) {
+      $permissions[] = $permission;
     }
 
     return [
@@ -316,6 +325,8 @@ class User extends Model {
       'internal_comment' => $this->internal_comment,
       'information_denied' => $this->information_denied,
       'bv_member' => $this->bv_member,
+      'bv_user' => $this->bv_user,
+      'bv_password' => $this->bv_password,
       'force_password_change' => $this->force_password_change,
       'phone_numbers' => $this->telephoneNumbers(),
       'email_addresses' => $this->getEmailAddresses(),

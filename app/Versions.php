@@ -3,10 +3,10 @@
 namespace App;
 
 class Versions {
-  private static string $application_version_string = '0.15.1';
-  private static int $application_version = 35;
+  private static string $application_version_string = '0.16.0';
+  private static int $application_version = 36;
 
-  private static int $database_version = 8;
+  private static int $database_version = 10;
 
   /**
    * @return string

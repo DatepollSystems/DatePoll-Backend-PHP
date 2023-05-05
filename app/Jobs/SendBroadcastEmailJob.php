@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Logging;
-use App\Mail\ADatePollMailable;
 use App\Mail\BroadcastMail;
 use App\Models\Broadcasts\BroadcastUserInfo;
 use JetBrains\PhpStorm\Pure;

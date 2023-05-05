@@ -26,7 +26,9 @@ class UpdateDatePollDB extends ACommand {
    * @return void
    */
   public function handle(): void {
+    $this->info('Clearing cache...');
     Cache::flush();
+    $this->info('Cache cleared');
 
     $this->comment('Application database version: ' . Versions::getApplicationDatabaseVersion());
 
@@ -113,6 +115,13 @@ class UpdateDatePollDB extends ACommand {
             return;
           }
           break;
+        case 10:
+          if (! $this->migrateDatabaseVersionFrom9To10()) {
+            $this->error('Migration failed!');
+
+            return;
+          }
+          break;
       }
 
       $this->comment('Saving new database version');
@@ -126,6 +135,31 @@ class UpdateDatePollDB extends ACommand {
     }
 
     $this->info('Database update finished!');
+  }
+
+  /**
+   * @return bool
+   */
+  private function migrateDatabaseVersionFrom9To10(): bool {
+    $this->comment('Running migration from 9 to 10');
+
+    $this->comment('Add bv_user field to users');
+    try {
+      $this->runDbStatement("ALTER TABLE 'users' ADD bv_info VARCHAR(191);");
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Add bv_password field to users');
+    try {
+      $this->runDbStatement("ALTER TABLE 'users' ADD bv_password VARCHAR(191);");
+    } catch (Exception $exception) {
+      return false;
+    }
+
+    $this->comment('Running migration from 9 to 10 finished!');
+
+    return true;
   }
 
   /**

@@ -4,20 +4,15 @@ namespace App\Http\Controllers\EventControllers;
 
 use App\Http\AuthenticatedRequest;
 use App\Http\Controllers\Abstracts\AHasYears;
-use App\Logging;
 use App\Permissions;
 use App\Repositories\Event\Event\IEventRepository;
 use App\Repositories\Event\EventDate\IEventDateRepository;
-use App\Utils\Converter;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class EventController extends AHasYears {
-  public static string $GET_SINGLE_CACHE_KEY = 'events.results.anonymous.';
-
   public function __construct(protected IEventRepository $eventRepository, protected IEventDateRepository $eventDateRepository) {
     parent::__construct($this->eventRepository);
     $this->YEARS_CACHE_KEY = 'events.years';
@@ -39,23 +34,9 @@ class EventController extends AHasYears {
     $anonymous = ! ($user->hasPermission(Permissions::$ROOT_ADMINISTRATION) ||
       $user->hasPermission(Permissions::$EVENTS_ADMINISTRATION) ||
       $user->hasPermission(Permissions::$EVENTS_VIEW_DETAILS));
-    $anonymousString = Converter::booleanToString($anonymous);
-
-    $cacheKey = self::$GET_SINGLE_CACHE_KEY . $anonymousString . '.' . $id;
-    if (Cache::has($cacheKey)) {
-      Logging::info('getSingleEvent', 'Receiving ' . $cacheKey . ' from cache');
-
-      return response()->json([
-        'msg' => 'Event information',
-        'event' => Cache::get($cacheKey), ]);
-    }
-    Logging::info('getSingleEvent', 'Generating ' . $cacheKey . ' and saving to cache');
 
     $toReturnEvent = $event->toArrayWithUserDecisionByUserId($user->id);
     $toReturnEvent['resultGroups'] = $this->eventRepository->getResultsForEvent($event, $anonymous);
-
-    // Time to live 10 minutes
-    Cache::put($cacheKey, $toReturnEvent, 60 * 10);
 
     return response()->json([
       'msg' => 'Event information',
@@ -144,8 +125,6 @@ class EventController extends AHasYears {
     }
 
     $this->forgetCache();
-    Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'true.' . $event->id);
-    Cache::forget(self::$GET_SINGLE_CACHE_KEY . 'false.' . $event->id);
 
     return response()->json([
       'msg' => 'Successful updated event',

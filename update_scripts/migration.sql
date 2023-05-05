@@ -139,6 +139,11 @@ DROP TABLE movie_years;
 ALTER TABLE places ADD location VARCHAR(191);
 DROP TABLE place_reservation_notify_groups;
 
-# 7 to 8
+# 8 to 9
 # -------------------------------------------------------------------------------------------
 DROP TABLE logs;
+
+# 9 to 10
+# -------------------------------------------------------------------------------------------
+ALTER TABLE `users` ADD bv_user VARCHAR(191);
+ALTER TABLE `users` ADD bv_password VARCHAR(191);

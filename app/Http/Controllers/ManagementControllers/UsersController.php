@@ -58,6 +58,8 @@ class UsersController extends Controller {
       'internal_comment' => 'string|nullable',
       'information_denied' => 'boolean|nullable',
       'bv_member' => 'string|max:190|nullable',
+      'bv_user' => 'string|max:190|nullable',
+      'bv_password' => 'string|max:190|nullable',
       'member_number' => 'max:190',
       'phone_numbers' => 'array',
       'permissions' => 'array',
@@ -81,6 +83,8 @@ class UsersController extends Controller {
     $internalComment = $request->input('internal_comment');
     $informationDenied = $request->input('information_denied');
     $bvMember = $request->input('bv_member');
+    $bvUser = $request->input('bv_user');
+    $bvPassword = $request->input('bv_password');
     $emailAddresses = $request->input('email_addresses');
     $phoneNumbers = $request->input('phone_numbers');
     $permissions = $request->input('permissions');
@@ -110,6 +114,8 @@ class UsersController extends Controller {
       $internalComment,
       $informationDenied,
       $bvMember,
+      $bvUser,
+      $bvPassword,
       $request->auth->id,
     );
 
@@ -175,6 +181,8 @@ class UsersController extends Controller {
       'member_number' => 'max:190',
       'information_denied' => 'boolean|nullable',
       'bv_member' => 'string|max:190|nullable',
+      'bv_user' => 'string|max:190|nullable',
+      'bv_password' => 'string|max:190|nullable',
       'internal_comment' => 'string|nullable',
       'phone_numbers' => 'array',
       'permissions' => 'array',
@@ -215,6 +223,8 @@ class UsersController extends Controller {
     $internalComment = $request->input('internal_comment');
     $informationDenied = $request->input('information_denied');
     $bvMember = $request->input('bv_member');
+    $bvUser = $request->input('bv_user');
+    $bvPassword = $request->input('bv_password');
     $emailAddresses = (array)$request->input('email_addresses');
     $phoneNumbers = (array)$request->input('phone_numbers');
     $permissions = (array)$request->input('permissions');
@@ -238,6 +248,8 @@ class UsersController extends Controller {
       $internalComment,
       $informationDenied,
       $bvMember,
+      $bvUser,
+      $bvPassword,
       $request->auth->id,
       $user
     );

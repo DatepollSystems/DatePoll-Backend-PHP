@@ -54,6 +54,8 @@ interface IUserRepository {
    * @param string|null $internalComment
    * @param bool $informationDenied
    * @param string|null $bvMember
+   * @param string|null $bvUser
+   * @param string|null $bvPassword
    * @param int $editorId
    * @param User|null $user
    * @return User|null
@@ -68,18 +70,20 @@ interface IUserRepository {
     string $joinDate,
     string $streetname,
     string $streetnumber,
-    int $zipcode,
-    string $location,
-    bool $activated,
-    string $activity,
-    array $phoneNumbers,
-    array $emailAddresses,
+    int     $zipcode,
+    string  $location,
+    bool    $activated,
+    string  $activity,
+    array   $phoneNumbers,
+    array   $emailAddresses,
     ?string $memberNumber,
     ?string $internalComment,
-    ?bool $informationDenied,
+    ?bool   $informationDenied,
     ?string $bvMember,
-    int $editorId,
-    User $user = null
+    ?string $bvUser,
+    ?string $bvPassword,
+    int     $editorId,
+    User    $user = null
   ): ?User;
 
   /**
